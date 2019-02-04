@@ -1,5 +1,9 @@
 bin/
+dist/
 lib/
 lib64
 pyvenv.cfg
 share/
+
+normalizer.egg-info/
+normalizer/__pycache__/
