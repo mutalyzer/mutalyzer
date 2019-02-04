@@ -1,2 +1,2 @@
-def normalize(variants, reference, observed):
+def normalize(variants, reference=None, observed=None):
     print(variants)
