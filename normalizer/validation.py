@@ -1,9 +1,9 @@
 from schema import Schema, And, Or, Optional, Use
 
 
-def is_valid_IUPAC_NT(s):
-    for ch in s:
-        if ch not in ('A', 'C', 'G', 'T', 'U', 'Y', 'K', 'M', 'S', 'W', 'B', 'D', 'H', 'V', 'N'):
+def is_valid_IUPAC_NT(sequence):
+    for nt in sequence:
+        if nt not in ('A', 'C', 'G', 'T', 'U', 'Y', 'K', 'M', 'S', 'W', 'B', 'D', 'H', 'V', 'N'):
             return False
     return True
 
@@ -53,4 +53,4 @@ variant = Schema({'type':               And(str, Or('equal', 'deletion_insertion
                   Optional('inserted'): [insertion],
                   Optional('deleted'):  [deletion]})
 
-variants = Schema(Or([{'type': And(str, 'equal')}], [variant]))
+variants = Schema(Or([{'type': And(str, 'equal'), 'source': And(str, 'reference')}], [variant]))
