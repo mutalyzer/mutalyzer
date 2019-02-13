@@ -33,7 +33,7 @@ location_range = Schema({'type':  And(str, 'range'),
 
 location = Schema(Or(location_point, location_range))
 
-insertion_location = Schema({'source':             And(str, Or('observed', 'reference')),
+insertion_location = Schema({'source':             And(str, len),
                              'location':           location,
                              Optional('inverted'): bool})
 
