@@ -1,13 +1,17 @@
-from schema import Schema, And, Or, Optional
+from schema import Schema, And, Or, Optional, Use
 
-location_offset_exact = Schema({'value': int})
 
-location_offset_uncertain = Schema({'uncertain': And(bool, True)})
+def is_valid_IUPAC_NT(s):
+    for ch in s:
+        if ch not in ('A', 'C', 'G', 'T', 'U', 'Y', 'K', 'M', 'S', 'W', 'B', 'D', 'H', 'V', 'N'):
+            return False
+    return True
 
-location_offset = Schema(Or(location_offset_exact, location_offset_uncertain))
+
+location_offset = Schema(Or({'value': int}, {'uncertain': And(bool, True)}))
 
 location_point_exact = Schema({'type':                  And(str, 'point'),
-                               'position':              int,
+                               'position':              And(int, lambda n : n >= 0),
                                Optional('offset'):      location_offset,
                                Optional('outside_cds'): And(str, Or('downstream', 'upstream'))})
 
@@ -33,22 +37,20 @@ insertion_location = Schema({'source':             And(str, Or('observed', 'refe
                              'location':           location,
                              Optional('inverted'): bool})
 
-insertion_sequence = Schema({'source':   And(str, 'description'),
-                             'sequence': str})
+sequence = Schema({'source':   And(str, 'description'),
+                   'sequence': And(str, len, Use(str.upper), lambda s : is_valid_IUPAC_NT(s))})
 
-insertion = Schema(Or(insertion_location, insertion_sequence))
-
-deletion_sequence = Schema({'source': And(str, 'description'),
-                            'sequence': str})
+insertion = Schema(Or(insertion_location, sequence))
 
 deletion_length = Schema({'source': And(str, 'description'),
-                          'length': int})
+                          'length': And(int, lambda n : n > 0)})
 
-deletion = Schema(Or(deletion_sequence, deletion_length))
+deletion = Schema(Or(sequence, deletion_length))
 
-variant = Schema({'type':     And(str, Or('equal', 'delins', 'inv', 'substitution', 'del', 'ins', 'dup', 'con')),
-                  'location': location,
-                  Optional('insertions'): [insertion],
-                  Optional('deleted'):    [deletion]})
+variant = Schema({'type':               And(str, Or('equal', 'deletion_insertion', 'inversion', 'substitution', 'deletion', 'insertion', 'duplication', 'conversion')),
+                  'location':           location,
+                  'source':             And(str, 'reference'),
+                  Optional('inserted'): [insertion],
+                  Optional('deleted'):  [deletion]})
 
 variants = Schema(Or([{'type': And(str, 'equal')}], [variant]))
