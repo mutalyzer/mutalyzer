@@ -35,7 +35,7 @@ location = Schema(Or(location_point, location_range))
 
 insertion_location = Schema({'source':             And(str, len),
                              'location':           location,
-                             Optional('inverted'): bool})
+                             Optional('inverted'): And(bool, True)})
 
 sequence = Schema({'source':   And(str, 'description'),
                    'sequence': And(str, len, Use(str.upper), lambda s : is_valid_IUPAC_NT(s))})
