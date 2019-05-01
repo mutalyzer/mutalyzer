@@ -10,8 +10,10 @@ if not RELEASE:
     VERSION += '-dev'
 
 
-setup(name = 'normalizer',
-      version = VERSION,
+setup(name='normalizer',
+      version=VERSION,
       packages=['normalizer'],
-      description = 'HGVS variant description normalizer'
-)
+      description='HGVS variant description normalizer',
+      entry_points={
+          'console_scripts': ['normalizer=normalizer.cli:main']}
+      )
