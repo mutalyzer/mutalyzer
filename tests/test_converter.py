@@ -1,150 +1,28 @@
-from normalizer.converter import to_internal_indexing
 import pytest
+from .commons import get_variants_tuple
+from normalizer.converter import convert_indexing
+
+HGVS_INTERNAL = [get_variants_tuple('4del', '3_4del'),
+                 get_variants_tuple('4_5del', '3_5del'),
+                 get_variants_tuple('4A>T', '3_4A>T'),
+                 get_variants_tuple('4_5insT', '4_4insT'),
+                 get_variants_tuple('4_5ins7_8', '4_4ins6_8'),
+                 get_variants_tuple('4_5ins[7_8;10_20]', '4_4ins[6_8;9_20]'),
+                 get_variants_tuple('4_5ins[7_8;10_20;T]',
+                                    '4_4ins[6_8;9_20;T]'),
+                 get_variants_tuple('4=', '3_4='),
+                 get_variants_tuple('3_4=', '2_4='),
+                 get_variants_tuple('4dup', '3_4dup'),
+                 get_variants_tuple('3_4dup', '2_4dup'),
+                 get_variants_tuple('4_5con7_8', '3_5con6_8'),
+                 get_variants_tuple('4delins7_8', '3_4delins6_8')]
 
 
-def locations(start, end=None):
-    if end:
-        return {'type': 'range',
-                'start': locations(start),
-                'end': locations(end)}
-    else:
-        return {'type': 'point',
-                'position': start}
+@pytest.mark.parametrize('hgvs, internal', HGVS_INTERNAL)
+def test_to_internal_indexing(hgvs, internal):
+    assert convert_indexing(hgvs, indexing='internal') == internal
 
 
-VARIANTS = {
-    '4del': {'type': 'deletion',
-             'source': 'reference',
-             'location': locations(4)},
-    '4_5del': {'type': 'deletion',
-               'source': 'reference',
-               'location': locations(4, 5)},
-    '3_5del': {'type': 'deletion',
-               'source': 'reference',
-               'location': locations(3, 5)},
-    '3_4del': {'type': 'deletion',
-               'source': 'reference',
-               'location': locations(3, 4)},
-    '4A>T': {'type': 'substitution',
-             'source': 'reference',
-             'location': locations(4)},
-    '3_4A>T': {'type': 'substitution',
-               'source': 'reference',
-               'location': locations(3, 4)},
-    '4_5insT': {'type': 'insertion',
-                'source': 'reference',
-                'location': locations(4, 5),
-                'inserted': [{'sequence': 'T',
-                              'source': 'description'}]},
-    '4_4insT': {'type': 'insertion',
-                'source': 'reference',
-                'location': locations(4, 4),
-                'inserted': [{'sequence': 'T',
-                              'source': 'description'}]},
-    '4_5ins7_8': {'type': 'insertion',
-                  'source': 'reference',
-                  'location': locations(4, 5),
-                  'inserted': [{'source': 'reference',
-                                'location': locations(7, 8)}]},
-    '4_4ins6_8': {'type': 'insertion',
-                  'source': 'reference',
-                  'location': locations(4, 4),
-                  'inserted': [{'source': 'reference',
-                                'location': locations(6, 8)}]},
-    '4_5ins[7_8;10_20]': {'type': 'insertion',
-                          'source': 'reference',
-                          'location': locations(4, 5),
-                          'inserted': [{'source': 'reference',
-                                        'location': locations(7, 8)},
-                                       {'source': 'reference',
-                                        'location': locations(10, 20)}]},
-    '4_4ins[6_8;9_20]': {'type': 'insertion',
-                         'source': 'reference',
-                         'location': locations(4, 4),
-                         'inserted': [{'source': 'reference',
-                                       'location': locations(6, 8)},
-                                      {'source': 'reference',
-                                       'location': locations(9, 20)}]},
-    '4_5ins[7_8;10_20;T]': {'type': 'insertion',
-                            'source': 'reference',
-                            'location': locations(4, 5),
-                            'inserted': [{'source': 'reference',
-                                          'location': locations(7, 8)},
-                                         {'source': 'reference',
-                                          'location': locations(10, 20)},
-                                         {'sequence': 'T',
-                                          'source': 'description'}]},
-    '4_4ins[6_8;9_20;T]': {'type': 'insertion',
-                           'source': 'reference',
-                           'location': locations(4, 4),
-                           'inserted': [{'source': 'reference',
-                                         'location': locations(6, 8)},
-                                        {'source': 'reference',
-                                         'location': locations(9, 20)},
-                                        {'sequence': 'T',
-                                         'source': 'description'}]},
-    '4=': {'type': 'equal',
-           'source': 'reference',
-           'location': locations(4)},
-    '3_4=': {'type': 'equal',
-             'source': 'reference',
-             'location': locations(3, 4)},
-    '2_4=': {'type': 'equal',
-             'source': 'reference',
-             'location': locations(2, 4)},
-    '4dup': {'type': 'duplication',
-             'source': 'reference',
-             'location': locations(4)},
-    '3_4dup': {'type': 'duplication',
-               'source': 'reference',
-               'location': locations(3, 4)},
-    '2_4dup': {'type': 'duplication',
-               'source': 'reference',
-               'location': locations(2, 4)},
-    '4_5con7_8': {'type': 'conversion',
-                  'source': 'reference',
-                  'location': locations(4, 5),
-                  'inserted': [{'source': 'reference',
-                                'location': locations(7, 8)}]},
-    '3_5con6_8': {'type': 'conversion',
-                  'source': 'reference',
-                  'location': locations(3, 5),
-                  'inserted': [{'source': 'reference',
-                                'location': locations(6, 8)}]},
-    '4delins7_8': {'type': 'deletion_insertion',
-                   'source': 'reference',
-                   'location': locations(4),
-                   'inserted': [{'source': 'reference',
-                                 'location': locations(7, 8)}]},
-    '3_4delins6_8': {'type': 'deletion_insertion',
-                     'source': 'reference',
-                     'location': locations(3, 4),
-                     'inserted': [{'source': 'reference',
-                                   'location': locations(6, 8)}]},
-}
-
-
-def variants(input_variant, expected):
-    return [VARIANTS[input_variant]], [VARIANTS[expected]]
-
-
-@pytest.mark.parametrize('input_variant, expected',
-                         [variants('4del', '3_4del'),
-                          variants('4_5del', '3_5del'),
-                          variants('4A>T', '3_4A>T'),
-                          variants('4_5insT', '4_4insT'),
-                          variants('4_5ins7_8', '4_4ins6_8'),
-                          variants('4_5ins[7_8;10_20]',
-                                   '4_4ins[6_8;9_20]'),
-                          variants('4_5ins[7_8;10_20;T]',
-                                   '4_4ins[6_8;9_20;T]'),
-                          variants('4=', '3_4='),
-                          variants('3_4=', '2_4='),
-                          variants('4dup', '3_4dup'),
-                          variants('3_4dup', '2_4dup'),
-                          variants('4_5con7_8', '3_5con6_8'),
-                          variants('4delins7_8', '3_4delins6_8'),
-                          ])
-def test_to_internal_indexing(input_variant, expected):
-    assert to_internal_indexing(input_variant) == expected
-
+@pytest.mark.parametrize('hgvs, internal', HGVS_INTERNAL)
+def test_to_hgvs_indexing(hgvs, internal):
+    assert convert_indexing(internal, indexing='hgvs') == hgvs
