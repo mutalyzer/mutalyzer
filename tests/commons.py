@@ -271,3 +271,11 @@ def get_variants_tuple(input_variant, expected):
 
 def get_variants(variant_key_list):
     return [VARIANTS[variant_key] for variant_key in variant_key_list]
+
+
+def get_input_expected_tests(variant_tuple_keys):
+    test_list = []
+    for variant_tuple in variant_tuple_keys:
+        test_list.append(([get_variant(variant_tuple[0])],
+                          [get_variant(variant_tuple[1])]))
+    return test_list
