@@ -14,6 +14,10 @@ def get_start(location):
         return location['position']
 
 
+def set_start(location, start):
+    location['start']['position'] = start
+
+
 def get_end(location):
     """
     Get the end position of a location. For point locations the position value
