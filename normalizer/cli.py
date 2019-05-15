@@ -1,7 +1,9 @@
-from .checker import is_overlap, is_sorted, check_semantics
+from .checker import is_overlap, are_sorted, check_semantics
 from .validation import variants as schema_variants
-from .converter import to_delins, to_internal_indexing
+from .converter import to_delins, to_hgvs, convert_indexing
 import json
+
+from tests.commons import get_variants, SEQUENCES
 
 
 def locations(start, end=None):
@@ -14,132 +16,22 @@ def locations(start, end=None):
                 'position': start}
 
 
-VARIANTS = {
-    '4del': {'type': 'deletion',
-             'source': 'reference',
-             'location': locations(4)},
-    '4_5del': {'type': 'deletion',
-               'source': 'reference',
-               'location': locations(4, 5)},
-    '3_5del': {'type': 'deletion',
-               'source': 'reference',
-               'location': locations(3, 5)},
-    '3_4del': {'type': 'deletion',
-               'source': 'reference',
-               'location': locations(3, 4)},
-    '4A>T': {'type': 'substitution',
-             'source': 'reference',
-             'location': locations(4)},
-    '3_4A>T': {'type': 'substitution',
-               'source': 'reference',
-               'location': locations(3, 4)},
-    '4_5insT': {'type': 'insertion',
-                'source': 'reference',
-                'location': locations(4, 5),
-                'inserted': [{'sequence': 'T',
-                              'source': 'description'}]},
-    '4_4insT': {'type': 'insertion',
-                'source': 'reference',
-                'location': locations(4, 4),
-                'inserted': [{'sequence': 'T',
-                              'source': 'description'}]},
-    '4_5ins7_8': {'type': 'insertion',
-                  'source': 'reference',
-                  'location': locations(4, 5),
-                  'inserted': [{'source': 'reference',
-                                'location': locations(7, 8)}]},
-    '4_4ins6_8': {'type': 'insertion',
-                  'source': 'reference',
-                  'location': locations(4, 4),
-                  'inserted': [{'source': 'reference',
-                                'location': locations(6, 8)}]},
-    '4_5ins[7_8;10_20]': {'type': 'insertion',
-                          'source': 'reference',
-                          'location': locations(4, 5),
-                          'inserted': [{'source': 'reference',
-                                        'location': locations(7, 8)},
-                                       {'source': 'reference',
-                                        'location': locations(10, 20)}]},
-    '4_4ins[6_8;9_20]': {'type': 'insertion',
-                         'source': 'reference',
-                         'location': locations(4, 4),
-                         'inserted': [{'source': 'reference',
-                                       'location': locations(6, 8)},
-                                      {'source': 'reference',
-                                       'location': locations(9, 20)}]},
-    '4_5ins[7_8;10_20;T]': {'type': 'insertion',
-                            'source': 'reference',
-                            'location': locations(4, 5),
-                            'inserted': [{'source': 'reference',
-                                          'location': locations(7, 8)},
-                                         {'source': 'reference',
-                                          'location': locations(10, 20)},
-                                         {'sequence': 'T',
-                                          'source': 'description'}]},
-    '4_4ins[6_8;9_20;T]': {'type': 'insertion',
-                           'source': 'reference',
-                           'location': locations(4, 4),
-                           'inserted': [{'source': 'reference',
-                                         'location': locations(6, 8)},
-                                        {'source': 'reference',
-                                         'location': locations(9, 20)},
-                                        {'sequence': 'T',
-                                         'source': 'description'}]},
-    '4=': {'type': 'equal',
-           'source': 'reference',
-           'location': locations(4)},
-    '3_4=': {'type': 'equal',
-             'source': 'reference',
-             'location': locations(3, 4)},
-    '2_4=': {'type': 'equal',
-             'source': 'reference',
-             'location': locations(2, 4)},
-    '4dup': {'type': 'duplication',
-             'source': 'reference',
-             'location': locations(4)},
-    '3_4dup': {'type': 'duplication',
-               'source': 'reference',
-               'location': locations(3, 4)},
-    '2_4dup': {'type': 'duplication',
-               'source': 'reference',
-               'location': locations(2, 4)},
-    '4_5con7_8': {'type': 'conversion',
-                  'source': 'reference',
-                  'location': locations(4, 5),
-                  'inserted': [{'source': 'reference',
-                                'location': locations(7, 8)}]},
-    '3_5con6_8': {'type': 'conversion',
-                  'source': 'reference',
-                  'location': locations(3, 5),
-                  'inserted': [{'source': 'reference',
-                                'location': locations(6, 8)}]},
-    '4delins7_8': {'type': 'deletion_insertion',
-                   'source': 'reference',
-                   'location': locations(4),
-                   'inserted': [{'source': 'reference',
-                                 'location': locations(7, 8)}]},
-    '3_4delins6_8': {'type': 'deletion_insertion',
-                     'source': 'reference',
-                     'location': locations(3, 4),
-                     'inserted': [{'source': 'reference',
-                                   'location': locations(6, 8)}]},
-    '4_4delins6_8': {'type': 'deletion_insertion',
-                     'source': 'reference',
-                     'location': locations(4, 4),
-                     'inserted': [{'source': 'reference',
-                                   'location': locations(6, 8)}]},
-}
-
-
 def main():
 
     # print(check_semantics([variants['4_4delinsAA'], variants['10del']]))
     # print(check_semantics([variants['20_10='], variants['4_4delinsAA']]))
 
-    print(json.dumps(to_internal_indexing([
-        VARIANTS['4_4delins6_8']
-    ]),
-        indent=2))
+    variants = get_variants(['6_7delins[substitution6_7]'])
 
-    # print(json.dumps(to_delins([variants['8C>A'],
-    #                             variants['3_4dup']]), indent=2))
+    # print(schema_variants.is_valid(variants))
+
+    # print(check_semantics(variants, indexing='hgvs'))
+
+    # variants_internal = convert_indexing(variants, indexing='internal')
+    # print(json.dumps(variants_internal, indent=2))
+
+    variants_delins = to_hgvs(variants, SEQUENCES)
+
+    print(json.dumps(variants_delins, indent=2))
+
+    # print(schema_variants.is_valid(variants_delins))

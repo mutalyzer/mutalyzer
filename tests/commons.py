@@ -10,21 +10,35 @@ def get_location(start, end=None):
                 'position': start}
 
 
+SEQUENCES = {
+    'reference': 'ACGTCGATTCGCTAGCTTCGGGGGATAGATAGAGATATAGAGAT',
+    'substitution': 'ACGTCGGTTCGCTAGCTTCGGGGGATAGATAGAGATATAGAGAT',
+    'duplication': 'ACGTCGAATTCGCTAGCTTCGGGGGATAGATAGAGATATAGAGAT'
+}
+
 VARIANTS = {
     '4A>T': {'type': 'substitution',
              'source': 'reference',
+             'location': get_location(4),
              'deleted': [{'sequence': 'A',
                           'source': 'description'}],
              'inserted': [{'sequence': 'T',
-                           'source': 'description'}],
-             'location': get_location(4)},
+                           'source': 'description'}]},
     '3_4A>T': {'type': 'substitution',
                'source': 'reference',
+               'location': get_location(3, 4),
                'deleted': [{'sequence': 'A',
                             'source': 'description'}],
                'inserted': [{'sequence': 'T',
-                             'source': 'description'}],
-               'location': get_location(3, 4)},
+                             'source': 'description'}]},
+    '6_7A>G_special': {'type': 'substitution',
+                       'source': 'reference',
+                       'location': get_location(6, 7),
+                       'deleted': [{'sequence': 'A',
+                                    'source': 'reference'}],
+                       'inserted': [{'sequence': 'G',
+                                     'source': 'substitution',
+                                     'location': get_location(6, 7)}]},
     '4del': {'type': 'deletion',
              'source': 'reference',
              'location': get_location(4)},
@@ -206,6 +220,11 @@ VARIANTS = {
                      'location': get_location(3, 5),
                      'inserted': [{'source': 'reference',
                                    'location': get_location(6, 8)}]},
+    '4_4delins6_8': {'type': 'deletion_insertion',
+                     'source': 'reference',
+                     'location': get_location(4, 4),
+                     'inserted': [{'source': 'reference',
+                                   'location': get_location(6, 8)}]},
     '4_5delins7_8': {'type': 'deletion_insertion',
                      'source': 'reference',
                      'location': get_location(4, 5),
@@ -235,6 +254,17 @@ VARIANTS = {
                                  'sequence': 'A'}],
                     'inserted': [{'source': 'description',
                                   'sequence': 'T'}]},
+    '6_7delins[substitution6_7]': {'type': 'deletion_insertion',
+                                   'source': 'reference',
+                                   'location': get_location(6, 7),
+                                   'inserted': [{'source': 'substitution',
+                                                 'location': get_location(6, 7)}]},
+    '7_7delins[duplication7_8]': {'type': 'deletion_insertion',
+                                  'location': get_location(7, 7),
+                                  'source': 'reference',
+                                  'inserted': [{'source': 'observed',
+                                                'location': get_location(7, 8)}]},
+
     '10_13delins10_13inv': {'type': 'deletion_insertion',
                             'source': 'reference',
                             'location': get_location(10, 13),
@@ -273,7 +303,7 @@ def get_variants(variant_key_list):
     return [VARIANTS[variant_key] for variant_key in variant_key_list]
 
 
-def get_input_expected_tests(variant_tuple_keys):
+def get_input_expected_tests(variant_tuple_keys, sequences=None):
     test_list = []
     for variant_tuple in variant_tuple_keys:
         test_list.append(([get_variant(variant_tuple[0])],

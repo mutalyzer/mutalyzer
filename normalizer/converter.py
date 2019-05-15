@@ -1,5 +1,5 @@
 import copy
-from .util import get_start, get_end, set_start
+from .util import get_start, get_end, set_start, get_location_length
 
 
 def get_indexing_shift(indexing='internal'):
@@ -167,9 +167,90 @@ def to_delins(variants):
     return new_variants
 
 
-def to_hgvs(variants):
+def delins_to_substitution(variant, sequences):
+    new_variant = copy.deepcopy(variant)
+    new_variant['type'] = 'substitution'
+    return new_variant
+
+
+def delins_to_deletion(variant):
+    return {'type': 'deletion',
+            'source': 'reference',
+            'location': copy.deepcopy(variant['location'])}
+
+
+def delins_to_duplication(variant, sequences):
+    new_variant = copy.deepcopy(variant)
+    return new_variant
+
+
+def delins_to_insertion(variant):
+    new_variant = copy.deepcopy(variant)
+    new_variant['type'] = 'insertion'
+    return new_variant
+
+
+def delins_to_inversion(variant):
+    return {'type': 'inversion',
+            'source': 'reference',
+            'location': copy.deepcopy(variant['location'])}
+
+
+def delins_to_conversion(variant):
+    new_variant = copy.deepcopy(variant)
+    new_variant['type'] = 'deletion_insertion'
+    return new_variant
+
+
+def delins_to_deletion_insertion(variant):
+    return copy.deepcopy(variant)
+
+
+def delins_to_equal(variant):
+    return {'type': 'equal',
+            'source': 'reference',
+            'location': copy.deepcopy(variant['location'])}
+
+
+def is_duplication(delins_variant, sequences):
+    if get_location_length(delins_variant['location']) != 0:
+        return False
+
+
+def variant_to_hgvs(variant, sequences):
+    if variant.get('inserted') is None:
+        return delins_to_deletion(variant)
+
+    elif len(variant.get('inserted')) == 0:
+        return delins_to_deletion(variant)
+
+    elif get_start(variant['location']) == get_end(variant['location']):
+        return delins_to_insertion(variant)
+
+    elif len(variant['inserted']) == 1:
+        if variant['inserted'][0]['location'] == variant['location'] and \
+                variant['inserted'][0]['source'] == 'reference':
+            # Todo: what happens if the source is different than the reference
+            #       but the actual sequence is the same? Should we check that?
+            if variant['inserted'][0].get('inverted') is True:
+                return delins_to_inversion(variant)
+            return delins_to_equal(variant)
+        if get_location_length(variant['location']) == \
+                get_location_length(variant['inserted'][0]['location']) == 1:
+            return delins_to_substitution(variant, sequences)
+
+        if is_duplication(variant, sequences):
+            return delins_to_duplication(variant)
+
+    return delins_to_deletion_insertion(variant)
+
+
+def to_hgvs(variants, sequences=None):
     """
     Convert the variants to an HGVS format (e.g., a deletion insertion of one
     nucleotide is converted to a substitution).
     """
-    pass
+    new_variants = []
+    for variant in variants:
+        new_variants.append(variant_to_hgvs(variant, sequences))
+    return new_variants

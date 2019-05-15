@@ -35,6 +35,10 @@ def update_position(location, start_end,  value):
                                'position': value}
 
 
+def get_location_length(location):
+    return abs(get_end(location) - get_start(location))
+
+
 def sort_variants(variants):
     return sorted(variants,
                   key=lambda variant: get_start(variant['location']))
