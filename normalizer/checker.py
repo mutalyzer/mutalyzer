@@ -1,7 +1,10 @@
 from .util import get_start, get_end, update_position, sort_variants
 
 
-def is_sorted(variants):
+def are_sorted(variants):
+    """
+    Check if the provided variants list is sorted.
+    """
     current_position = 0
     for variant in variants:
         if get_start(variant['location']) < current_position:
@@ -27,31 +30,37 @@ def is_overlap(variants):
     return False
 
 
-def check_start_end(variant):
-    if get_start(variant['location']) <= get_end(variant['location']):
-        return True
-    else:
-        return False
+def check_location_start_end(location, indexing='internal'):
+    if indexing == 'internal':
+        return get_start(location) <= get_end(location)
+    elif indexing == 'hgvs':
+        if location['type'] == 'point':
+            return True
+        else:
+            return get_start(location) < get_end(location)
 
 
-def check_substitution(variant):
+def check_variant_start_end(variant, reference=None, indexing='internal'):
+    if indexing == 'internal':
+        return get_start(variant['location']) <= get_end(variant['location'])
+    elif indexing == 'hgvs':
+        return get_start(variant['location']) < get_end(variant['location'])
+
+
+def check_substitution(variant, reference=None):
     pass
 
 
-def check_deletion(variant):
+def check_deletion(variant, reference=None):
     pass
 
 
-def check_semantics(variants):
+def check_semantics(variants, reference=None, indexing='internal'):
     start_end = []
     for variant in variants:
-        start_end.append(check_start_end(variant))
-    output = {'sorted': is_sorted(variants),
+        start_end.append(check_variant_start_end(variant))
+    output = {'sorted': are_sorted(variants),
               'overlap': is_overlap(variants),
               'start_end': start_end}
 
     return output
-
-
-def check_semantics_reference(model, reference):
-    pass
