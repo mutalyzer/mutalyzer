@@ -4,7 +4,8 @@ from .util import get_start, get_end, set_start, get_location_length
 
 def get_indexing_shift(indexing='internal'):
     """
-    Derive the correct shift to be used when applying the provided indexing.
+    Derive the correct shift to be used when applying the provided
+    indexing.
     """
     if indexing == 'internal':
         shift = -1
@@ -46,8 +47,8 @@ def convert_location_index(location, variant_type=None, indexing='internal'):
     Converts a location positions according to the provided indexing.
 
     :param location: A location model complying object.
-    :param variant_type: Required in order to be able to deal with special
-    cases as, e.g., insertions.
+    :param variant_type: Required in order to be able to deal with
+    special cases as, e.g., insertions.
     :param indexing: To what indexing to apply the conversion applied.
     :return: A converted location instance.
     """
@@ -105,6 +106,7 @@ def substitution_to_delins(variant):
 def deletion_to_delins(variant):
     new_variant = copy.deepcopy(variant)
     new_variant['type'] = 'deletion_insertion'
+    new_variant['inserted'] = []
     return new_variant
 
 
@@ -112,8 +114,8 @@ def duplication_to_delins(variant):
     new_variant = copy.deepcopy(variant)
     new_variant['type'] = 'deletion_insertion'
     new_variant['inserted'] = [{'source': 'reference',
-                               'location': copy.deepcopy(
-                                   new_variant['location'])}]
+                                'location': copy.deepcopy(
+                                    new_variant['location'])}]
     set_start(new_variant['location'], get_end(new_variant['location']))
     return new_variant
 
@@ -158,8 +160,8 @@ def equal_to_delins(variant):
 
 def to_delins(variants):
     """
-    Convert the variants list to its deletion insertion only equivalent. It
-    considers that internal indexing is employed.
+    Convert the variants list to its deletion insertion only
+    equivalent. It considers that internal indexing is employed.
     """
     new_variants = []
     for variant in variants:
@@ -218,6 +220,10 @@ def is_duplication(delins_variant, sequences):
 
 
 def variant_to_hgvs(variant, sequences):
+    if variant.get('type') != 'deletion_insertion':
+        raise ValueError('The variant type is not deletion insertion, '
+                         'but \'{}\'.'.format(variant.get('type')))
+
     if variant.get('inserted') is None:
         return delins_to_deletion(variant)
 
@@ -247,10 +253,11 @@ def variant_to_hgvs(variant, sequences):
 
 def to_hgvs(variants, sequences=None):
     """
-    Convert the variants to an HGVS format (e.g., a deletion insertion of one
-    nucleotide is converted to a substitution).
+    Convert the variants to an HGVS format (e.g., a deletion insertion
+    of one nucleotide is converted to a substitution).
     """
     new_variants = []
     for variant in variants:
         new_variants.append(variant_to_hgvs(variant, sequences))
+
     return new_variants
