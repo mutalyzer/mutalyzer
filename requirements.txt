@@ -4,17 +4,17 @@ certifi==2019.3.9
 chardet==3.0.4
 configparser==3.5.0
 contextlib2==0.5.5
--e git+https://github.com/mutalyzer/crossmapper.git@28626853508f4ffb7fbdc7815fb5341208290415#egg=crossmapper
--e git+https://github.com/mutalyzer/description-extractor.git@2c2edbffa063749bb3894518d87e29fb26fafe2d#egg=description_extractor
--e git+https://github.com/mutalyzer/hgvs-parser@1c4a792f7e69676d3c15fca742f9fc79aa3a71e2#egg=hgvsparser
+-e git+https://github.com/mutalyzer/crossmapper.git@rewrite#egg=crossmapper
+-e git+https://github.com/mutalyzer/description-extractor.git@mutalyzer3#egg=description_extractor
+-e git+https://github.com/mutalyzer/hgvs-parser@master#egg=hgvsparser
 idna==2.8
-lark-parser==0.7.1
--e git+https://github.com/mutalyzer/mutator.git@3ea0ac217b5239041d4a3fea0ca0d0fa73249736#egg=mutalyzer_mutator
+lark-parser==0.7.0
+-e git+https://github.com/mutalyzer/mutator.git@master#egg=mutalyzer_mutator
 numpy==1.16.3
 pyparsing==2.4.0
 redis==3.2.1
 requests==2.21.0
--e git+https://github.com/mutalyzer/retriever.git@e3543ce12f63ad188d684fdfe73aaaca551bc7ff#egg=retriever
+-e git+https://github.com/mutalyzer/retriever.git@new_model#egg=retriever
 schema==0.7.0
 six==1.12.0
 urllib3==1.24.3
