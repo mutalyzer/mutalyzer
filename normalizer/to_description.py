@@ -84,45 +84,52 @@ def variants_to_description(variants, sequences=None):
 def variant_to_description(variant, sequences=None):
     """
     Convert the variant dictionary model to string.
-    :param p: Variant dictionary.
     :return: Equivalent variant string representation.
     """
-    location = insertions = ''
+
+    location = inserted = ''
     if variant.get('location'):
         location = location_to_description(variant.get('location'))
-    if variant.get('insertions'):
-        insertions = insertions_to_description(variant['insertions'])
+    if variant.get('inserted'):
+        inserted = inserted_to_description(variant['inserted'], sequences)
+        print(inserted)
     variant_type = variant.get('type')
     if variant_type == 'substitution':
         variant_type = '{}>'.format(
-            sequences[variant['inserted'][0]['source']][variant['inserted'][0]['location']['position']])
+            sequences[variant['source']][
+                variant['location']['position']-1])
     elif variant_type == 'deletion':
         variant_type = 'del'
+    elif variant_type == 'deletion_insertion':
+        variant_type = 'delins'
+    elif variant_type == 'insertion':
+        variant_type = 'delins'
     elif variant_type == 'equal':
         variant_type = '='
-    return '{}{}{}'.format(location, variant_type, insertions)
+    return '{}{}{}'.format(location, variant_type, inserted)
 
 
-def insertions_to_description(insertions):
+def inserted_to_description(inserted, sequences):
     """
     Convert the insertions dictionary model to string.
-    :param insertions: Insertions dictionary.
+    :param inserted: Insertions dictionary.
     :return: Equivalent insertions string representation.
     """
-    insertions_list = []
-    for i in insertions:
-        if i.get('sequence'):
-            insertions_list.append(i.get('sequence'))
-        elif i.get('location'):
-            insertions_list.append(location_to_description(i['location']))
-            if i.get('inverted'):
-                insertions_list[-1] += 'inv'
-        elif i.get('reference_location'):
-            insertions_list.append(model_to_description(i))
-    if len(insertions) > 1:
-        return '[{}]'.format(';'.join(insertions_list))
+    print(inserted)
+    descriptions = []
+    for insertion in inserted:
+        if insertion.get('sequence'):
+            descriptions.append(insertion.get('sequence'))
+        elif insertion.get('location'):
+            descriptions.append(location_to_description(insertion['location']))
+            if insertion.get('inverted'):
+                descriptions[-1] += 'inv'
+        elif insertion.get('reference_location'):
+            descriptions.append(model_to_description(insertion))
+    if len(inserted) > 1:
+        return '[{}]'.format(';'.join(descriptions))
     else:
-        return insertions_list[0]
+        return descriptions[0]
 
 
 def location_to_description(location):
