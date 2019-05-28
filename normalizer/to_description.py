@@ -1,9 +1,11 @@
+
+
 def to_string(references, variants, sequences):
     return '{}{}:{}.{}'.format(
-        reference_to_description(references['reference']),
+        references['reference']['id'],
         specific_locus_to_description(
             references['reference'].get('specific_locus')),
-        references['reference'].get('coordinate_system'),
+        references['coordinate_system'],
         variants_to_description(variants, sequences)
     )
 

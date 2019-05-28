@@ -5,13 +5,14 @@ from .converter import to_delins, to_hgvs, convert_indexing
 from .to_description import to_string
 import json
 from hgvsparser.hgvs_parser import HgvsParser
-from hgvsparser.to_model import parse_tree_to_model
+from hgvsparser import to_model
 from retriever import retriever
 from crossmapper import crossmapper
 from mutator.mutator import mutate
 import extractor
 import json
 import argparse
+
 
 def locations(start, end=None):
     if end:
@@ -24,28 +25,36 @@ def locations(start, end=None):
 
 
 def get_reference_id(description_model):
-    reference = description_model['references']['reference']
-    if reference.get('type') == 'genbank':
-        if reference.get('version') is not None:
-            return '{}.{}'.format(reference['accession'], reference['version'])
-        else:
-            return reference['accession']
-    elif reference.get('type') == 'lrg':
-        return reference['id']
+    return description_model['reference']['id']
+
+
+def get_reference_models(description_model):
+    reference_id = description_model['reference']['id']
+    reference_model = retriever.retrieve(reference_id, parse=True)
+    reference_model.update({'coordinate_system':
+                                description_model.get('coordinate_system')})
+    references_models = {reference_id: reference_model}
+
+    for variant in description_model['variants']:
+        if variant.get('inserted') is not None:
+            for inserted in variant.get('inserted'):
+                pass
+
+    return references_models
 
 
 def mutalyzer3(description):
-    # description = 'ENSG00000157764:g.100del'
 
     parser = HgvsParser()
     parse_tree = parser.parse(description)
-    description_model = parse_tree_to_model(parse_tree).get('model')
+    description_model = to_model.convert(parse_tree)
     variants = description_model['variants']
 
-    reference_id = get_reference_id(description_model)
-    reference_model = retriever.retrieve(reference_id, parse=True)
+    # reference_id = get_reference_id(description_model)
+    # reference_model = retriever.retrieve(reference_id, parse=True)
 
-    sequences = {'reference': reference_model['sequence']}
+    # sequences = {'reference': reference_model['sequence']}
+    references = get_reference_models(description_model)
 
     # We need to use the crossmapper to convert the variant locations
     # to our internal indexing, using the coordinate system provided.
@@ -57,7 +66,16 @@ def mutalyzer3(description):
     # We need to convert the variants to delins.
     variants_delins = to_delins(variants_internal)
 
-    sequences['observed'] = mutate(sequences, variants_delins)
+    sequences = {}
+    for reference_id in references:
+        if reference_id == description_model['reference']['id']:
+            sequences['reference'] = references[reference_id]['sequence']
+        else:
+            sequences[reference_id] = references[reference_id]['sequence']
+
+    observed_sequence = mutate(sequences, variants_delins)
+
+    sequences['observed'] = observed_sequence
 
     de_variants = extractor.describe_dna(sequences['reference'],
                                          sequences['observed'])
@@ -68,9 +86,7 @@ def mutalyzer3(description):
 
     de_variants_hgvs_indexing = convert_indexing(de_variants_hgvs, 'hgvs')
 
-    print(json.dumps(description_model['references']))
-    print(to_string(description_model['references'],
-                    de_variants_hgvs_indexing, sequences))
+    print(to_string(description_model, de_variants_hgvs_indexing, sequences))
 
 
 def main():
