@@ -4,7 +4,7 @@ certifi==2019.3.9
 chardet==3.0.4
 configparser==3.5.0
 contextlib2==0.5.5
--e git+https://github.com/mutalyzer/crossmapper.git@rewrite#egg=crossmapper
+-e git+https://github.com/mutalyzer/crossmap.git@master#egg=crossmaper
 -e git+https://github.com/mutalyzer/description-extractor.git@mutalyzer3#egg=description_extractor
 -e git+https://github.com/mutalyzer/hgvs-parser@master#egg=hgvsparser
 idna==2.8
