@@ -1,5 +1,6 @@
 import copy
 from .util import get_start, get_end, set_start, get_location_length
+from crossmapper import Crossmap
 
 
 def get_indexing_shift(indexing='internal'):
@@ -94,6 +95,55 @@ def convert_indexing(variants, indexing='internal'):
     new_variants = []
     for variant in variants:
         new_variants.append(convert_variant_indexing(variant, indexing))
+    return new_variants
+
+
+def location_to_internal(location, to_function, variant_type):
+    new_location = copy.deepcopy(location)
+    if location['type'] == 'range':
+        new_location['start']['position'] = to_function(
+            location['start']['position'])
+        new_location['end']['position'] = to_function(
+            location['end']['position'])
+    elif location['type'] == 'point':
+        new_location['position'] = to_function(
+            location['position'])
+
+    if variant_type == 'insertion':
+        new_location['start']['position'] += 1
+    elif location['type'] == 'range':
+        new_location['end']['position'] += 1
+    elif location['type'] == 'point':
+        new_location = point_to_range(location)
+
+    return new_location
+
+
+def variants_locations_to_internal(variants, references, from_cs):
+    if from_cs == 'g':
+        crossmap = Crossmap()
+        to_function = crossmap.genomic_to_coordinate
+    else:
+        raise(ValueError('Locations conversion from \'{}\' coordinate system'
+                         'not supported.'.format(from_cs)))
+    new_variants = []
+    for variant in variants:
+        new_variant = copy.deepcopy(variant)
+        new_variant['location'] = location_to_internal(
+            variant['location'],
+            to_function,
+            variant['type'])
+        if new_variant.get('inserted'):
+            for insertion in new_variant['inserted']:
+                if insertion.get('location'):
+                    if isinstance(insertion['source'], dict):
+                        insertion_to_internal(insertion, references, from_cs)
+                    else:
+                        insertion['location'] = location_to_internal(
+                            insertion['location'],
+                            to_function,
+                            None)
+        new_variants.append(new_variant)
     return new_variants
 
 

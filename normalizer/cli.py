@@ -1,7 +1,8 @@
 from .checker import is_overlap, are_sorted, check_semantics
 from .validation import variants as schema_variants
 from .normalizer import sanitize
-from .converter import to_delins, to_hgvs, convert_indexing
+from .converter import to_delins, to_hgvs, convert_indexing,\
+    variants_locations_to_internal
 from .to_description import to_string
 import json
 from hgvsparser.hgvs_parser import HgvsParser
@@ -28,18 +29,20 @@ def get_reference_id(description_model):
     return description_model['reference']['id']
 
 
+def get_reference_model(reference_id):
+    return {reference_id: retriever.retrieve(reference_id, parse=True)}
+
+
 def get_reference_models(description_model):
-    reference_id = description_model['reference']['id']
-    reference_model = retriever.retrieve(reference_id, parse=True)
-    reference_model.update({'coordinate_system':
-                                description_model.get('coordinate_system')})
-    references_models = {reference_id: reference_model}
+    references_models = get_reference_model(
+        description_model['reference']['id'])
 
     for variant in description_model['variants']:
         if variant.get('inserted') is not None:
             for inserted in variant.get('inserted'):
-                pass
-
+                if isinstance(inserted['source'], dict):
+                    references_models.update(get_reference_model(
+                        inserted['source']['id']))
     return references_models
 
 
@@ -61,7 +64,10 @@ def mutalyzer3(description):
     # For the moment we use our trivial implementation, considering
     # only genomic coordinates as input.
 
-    variants_internal = convert_indexing(variants)
+    variants_internal = variants_locations_to_internal(
+        variants, references, description_model['coordinate_system'])
+
+    # variants_internal = convert_indexing(variants)
 
     # We need to convert the variants to delins.
     variants_delins = to_delins(variants_internal)

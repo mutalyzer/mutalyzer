@@ -94,7 +94,6 @@ def variant_to_description(variant, sequences=None):
         location = location_to_description(variant.get('location'))
     if variant.get('inserted'):
         inserted = inserted_to_description(variant['inserted'], sequences)
-        print(inserted)
     variant_type = variant.get('type')
     if variant_type == 'substitution':
         variant_type = '{}>'.format(
@@ -117,7 +116,6 @@ def inserted_to_description(inserted, sequences):
     :param inserted: Insertions dictionary.
     :return: Equivalent insertions string representation.
     """
-    print(inserted)
     descriptions = []
     for insertion in inserted:
         if insertion.get('sequence'):
