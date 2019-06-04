@@ -1,5 +1,6 @@
 import copy
-from .util import get_start, get_end, set_start, get_location_length
+from .util import get_start, get_end, set_start, get_location_length, roll,\
+    get_inserted_length
 from crossmapper import Crossmap
 
 
@@ -219,7 +220,7 @@ def to_delins(variants):
     return new_variants
 
 
-def delins_to_substitution(variant, sequences):
+def delins_to_substitution(variant, sequences, o_index):
     new_variant = copy.deepcopy(variant)
     new_variant['type'] = 'substitution'
     return new_variant
@@ -248,12 +249,6 @@ def delins_to_inversion(variant):
             'location': copy.deepcopy(variant['location'])}
 
 
-def delins_to_conversion(variant):
-    new_variant = copy.deepcopy(variant)
-    new_variant['type'] = 'deletion_insertion'
-    return new_variant
-
-
 def delins_to_deletion_insertion(variant):
     return copy.deepcopy(variant)
 
@@ -269,21 +264,29 @@ def is_duplication(delins_variant, sequences):
         return False
 
 
-def variant_to_hgvs(variant, sequences):
+def is_deletion(delins_variant):
+    if (delins_variant.get('inserted') is None) or\
+            (len(delins_variant.get('inserted')) == 0):
+        return True
+    for inserted in delins_variant['inserted']:
+        if get_location_length(inserted['location']) > 0:
+            return False
+    return True
+
+
+def variant_to_hgvs(variant, sequences, o_index):
     if variant.get('type') != 'deletion_insertion':
-        raise ValueError('The variant type is not deletion insertion, '
+        raise ValueError('The variant type is not \'deletion_insertion\', '
                          'but \'{}\'.'.format(variant.get('type')))
 
-    if variant.get('inserted') is None:
-        return delins_to_deletion(variant)
-
-    elif len(variant.get('inserted')) == 0:
-        return delins_to_deletion(variant)
-
-    elif get_start(variant['location']) == get_end(variant['location']):
+    if get_start(variant['location']) == get_end(variant['location']):
         return delins_to_insertion(variant)
 
-    elif len(variant['inserted']) == 1:
+    if (variant.get('inserted') is None) or \
+            (len(variant.get('inserted')) == 0):
+        return delins_to_deletion(variant)
+
+    if len(variant['inserted']) == 1:
         if variant['inserted'][0]['location'] == variant['location'] and \
                 variant['inserted'][0]['source'] == 'reference':
             # Todo: what happens if the source is different than the reference
@@ -308,6 +311,91 @@ def to_hgvs(variants, sequences=None):
     """
     new_variants = []
     for variant in variants:
-        new_variants.append(variant_to_hgvs(variant, sequences))
+        new_variants.append(variant_to_hgvs(variant, sequences, 0))
+
+    return new_variants
+
+
+def updated_inserted_with_sequences(inserted, sequences):
+    for insert in inserted:
+        if insert['source'] == 'observed':
+            insert['sequence'] = sequences['observed'][
+                get_start(insert['location']):get_end(insert['location'])]
+
+
+def de_to_hgvs(variants, sequences=None):
+    """
+    Convert the variants to an HGVS format (e.g., a deletion insertion
+    of one nucleotide is converted to a substitution).
+    """
+    new_variants = []
+    o_index = 0
+    for variant in variants:
+        if variant.get('type') == 'equal':
+            o_index += get_location_length(variant['location'])
+        elif variant.get('type') == 'inversion':
+            o_index += get_location_length(variant['location'])
+            new_variants.append(copy.deepcopy(variant))
+        elif variant.get('type') == 'deletion_insertion':
+            o_index += get_inserted_length(variant['inserted'])
+            if get_start(variant['location']) == get_end(variant['location']):
+                # delins_to_insertion
+                shift5, shift3 = roll(sequences['observed'],
+                                      o_index,
+                                      o_index + get_inserted_length(
+                                          variant['inserted']))
+                o_index += shift3
+                new_variant = copy.deepcopy(variant)
+                new_variant['type'] = 'insertion'
+                new_variants.append(new_variant)
+                new_variant['location']['start']['position'] += shift3
+                new_variant['location']['end']['position'] += shift3
+                updated_inserted_with_sequences(new_variant['inserted'],
+                                                sequences)
+
+            elif is_deletion(variant):
+                # delins_to_deletion
+                new_variant = {'type': 'deletion',
+                               'source': 'reference',
+                               'location': copy.deepcopy(variant['location'])}
+                new_variants.append(new_variant)
+
+            elif len(variant['inserted']) == 1:
+                if variant['inserted'][0]['location'] == variant['location'] \
+                        and variant['inserted'][0]['source'] == 'reference':
+                    if variant['inserted'][0].get('inverted') is True:
+                        # delins_to_inversion
+                        new_variant = {'type': 'inversion',
+                                       'source': 'reference',
+                                       'location': copy.deepcopy(
+                                           variant['location'])}
+                        new_variants.append(new_variant)
+                elif get_location_length(variant['location']) == \
+                        get_location_length(
+                            variant['inserted'][0]['location']) == 1:
+                    # delins_to_substitution
+                    new_variant = copy.deepcopy(variant)
+                    new_variant['type'] = 'substitution'
+                    updated_inserted_with_sequences(new_variant['inserted'],
+                                                    sequences)
+                    new_variant['deleted'] = {
+                        'sequence': sequences['reference'][
+                                    get_start(new_variant['location']):
+                                    get_end(new_variant['location'])],
+                        'source': 'reference_location'
+                    }
+                    new_variants.append(new_variant)
+
+                elif is_duplication(variant, sequences):
+                    # delins_to_duplication
+                    new_variant = copy.deepcopy(variant)
+                    new_variants.append(new_variant)
+
+                else:
+                    # delins_to_deletion_insertion
+                    new_variants.append(copy.deepcopy(variant))
+        else:
+            raise ValueError('Unexpected variant type: \'{}\'.'.format(
+                variant.get('type')))
 
     return new_variants
