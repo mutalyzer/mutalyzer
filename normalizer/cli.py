@@ -12,7 +12,7 @@ def main():
 
     args = parser.parse_args()
 
-    mutalyzer3(args.description)
+    print(mutalyzer3(args.description))
 
 
 if __name__ == '__main__':

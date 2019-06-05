@@ -78,8 +78,6 @@ def mutalyzer3(description):
     description_model = to_model.convert(parse_tree)
     variants = description_model['variants']
 
-    print(json.dumps(variants, indent=2))
-
     references = get_reference_models(description_model)
 
     variants_internal = variants_locations_to_internal(
@@ -101,19 +99,8 @@ def mutalyzer3(description):
     de_variants = extractor.describe_dna(sequences['reference'],
                                          sequences['observed'])
 
-    print('\nde_variants:\n {}'.format(
-        to_string(description_model, de_variants, sequences)))
-
     de_variants_hgvs = de_to_hgvs(de_variants, sequences)
 
-    print(json.dumps(de_variants_hgvs, indent=2))
-
-    print('\nde_variants_hgvs:\n {}'.format(
-        to_string(description_model, de_variants_hgvs, sequences)))
-
     de_variants_hgvs_indexing = convert_indexing(de_variants_hgvs, 'hgvs')
-
-    print('\nde_variants_hgvs_indexing:\n {}'.format(
-        to_string(description_model, de_variants_hgvs_indexing, sequences)))
 
     return to_string(description_model, de_variants_hgvs_indexing, sequences)
