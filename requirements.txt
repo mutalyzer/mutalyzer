@@ -1,5 +1,6 @@
 bcbio-gff==0.6.6
 biopython==1.73
+cachetools==3.1.1
 certifi==2019.3.9
 chardet==3.0.4
 configparser==3.5.0
@@ -8,7 +9,7 @@ contextlib2==0.5.5
 -e git+https://github.com/mutalyzer/description-extractor.git@mutalyzer3#egg=description_extractor
 -e git+https://github.com/mutalyzer/hgvs-parser@master#egg=hgvsparser
 idna==2.8
-lark-parser==0.7.0
+lark-parser==0.7.1
 -e git+https://github.com/mutalyzer/mutator.git@master#egg=mutalyzer_mutator
 numpy==1.16.3
 pyparsing==2.4.0
