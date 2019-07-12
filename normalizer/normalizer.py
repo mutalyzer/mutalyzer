@@ -11,48 +11,16 @@ from .converter import to_delins, de_to_hgvs, convert_indexing,\
 from .to_description import to_string
 import json
 import copy
+from cachetools import cached, TTLCache
 
-
-def fix_start_end(variant):
-    start = get_start(variant['location'])
-    end = get_end(variant['location'])
-    if start > end:
-        update_position(variant['location'], 'start', end)
-        update_position(variant['location'], 'end', start)
-
-
-def fix_substitution(variant):
-    pass
-
-
-def normalize(variants, reference=None, observed=None):
-    for variant in variants:
-        fix_start_end(variant)
-
-
-def sanitize_variant(variant):
-    sanitized = copy.deepcopy(variant)
-    if variant.get('inserted'):
-        new_inserted = []
-        for inserted in variant['inserted']:
-            if get_location_length(inserted['location']) > 0:
-                new_inserted.append(inserted)
-        sanitized['inserted'] = new_inserted
-    return sanitized
-
-
-def sanitize(variants):
-    sanitized = []
-    for variant in variants:
-        if variant.get('type') != 'equal':
-            sanitized.append(sanitize_variant(variant))
-    return sanitized
+# cache = TTLCache(maxsize=100, ttl=300)
 
 
 def get_reference_id(description_model):
     return description_model['reference']['id']
 
 
+@cached(cache={})
 def get_reference_model(reference_id):
     return {reference_id: retriever.retrieve(reference_id, parse=True)}
 
@@ -66,17 +34,41 @@ def get_reference_models(description_model):
     for variant in description_model['variants']:
         if variant.get('inserted') is not None:
             for inserted in variant.get('inserted'):
-                if isinstance(inserted['source'], dict):
-                    references_models.update(get_reference_model(
-                        inserted['source']['id']))
+                if inserted.get('source') is not None:
+                    if isinstance(inserted['source'], dict):
+                        references_models.update(get_reference_model(
+                            inserted['source']['id']))
     return references_models
+
+
+def check_fuzzy_location():
+    pass
+
+
+def check_variants(variants):
+    for variant in variants:
+        check_fuzzy_location()
+
+
+def process_reference(description_model, status):
+    reference_model = retriever.retrieve(
+        description_model['reference']['id'],
+        parse=True)
+    if reference_model is None:
+        status['reference'] = 'No reference model (reference not retrieved).'
 
 
 def mutalyzer3(description):
     parser = HgvsParser()
-    parse_tree = parser.parse(description)
+    try:
+        parse_tree = parser.parse(description)
+    except:
+        print('fsdsdf')
+        return
     description_model = to_model.convert(parse_tree)
     variants = description_model['variants']
+
+    # print(json.dumps(description_model, indent=2))
 
     references = get_reference_models(description_model)
 
@@ -99,8 +91,19 @@ def mutalyzer3(description):
     de_variants = extractor.describe_dna(sequences['reference'],
                                          sequences['observed'])
 
+    # print('\nde_variants:\n {}'.format(
+    #     to_string(description_model, de_variants, sequences)))
+
     de_variants_hgvs = de_to_hgvs(de_variants, sequences)
 
+    # print(json.dumps(de_variants_hgvs, indent=2))
+
+    # print('\nde_variants_hgvs:\n {}'.format(
+    #     to_string(description_model, de_variants_hgvs, sequences)))
+
     de_variants_hgvs_indexing = convert_indexing(de_variants_hgvs, 'hgvs')
+
+    # print('\nde_variants_hgvs_indexing:\n {}'.format(
+    #     to_string(description_model, de_variants_hgvs_indexing, sequences)))
 
     return to_string(description_model, de_variants_hgvs_indexing, sequences)

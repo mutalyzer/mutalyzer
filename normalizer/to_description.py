@@ -86,7 +86,6 @@ def variant_to_description(variant, sequences=None):
     Convert the variant dictionary model to string.
     :return: Equivalent variant string representation.
     """
-
     deleted = inserted = ''
     if variant.get('location'):
         deleted = location_to_description(variant.get('location'))
@@ -103,6 +102,9 @@ def variant_to_description(variant, sequences=None):
         variant_type = 'delins'
     elif variant_type == 'insertion':
         variant_type = 'ins'
+    elif variant_type == 'duplication':
+        variant_type = 'dup'
+        inserted = ''
     elif variant_type == 'inversion':
         variant_type = 'inv'
     elif variant_type == 'equal':
