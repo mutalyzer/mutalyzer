@@ -1,8 +1,8 @@
 import pytest
 from .commons import get_variants_tuple, get_input_expected_tests, VARIANTS,\
  SEQUENCES
-from normalizer.converter import convert_indexing, to_delins, to_hgvs,\
- variants_locations_to_internal
+from normalizer.converter import to_delins, to_hgvs,\
+ variants_locations_to_internal, variants_locations_to_hgvs
 
 
 HGVS_TO_INTERNAL_AND_VICE_VERSA = get_input_expected_tests(
@@ -25,18 +25,22 @@ HGVS_TO_INTERNAL_AND_VICE_VERSA = get_input_expected_tests(
 
 
 @pytest.mark.parametrize('hgvs, internal', HGVS_TO_INTERNAL_AND_VICE_VERSA)
-def test_to_internal_indexing(hgvs, internal):
-    assert convert_indexing(hgvs, indexing='internal') == internal
-
-
-@pytest.mark.parametrize('hgvs, internal', HGVS_TO_INTERNAL_AND_VICE_VERSA)
 def test_variants_locations_to_internal(hgvs, internal):
     assert variants_locations_to_internal(hgvs, None, 'g') == internal
 
 
 @pytest.mark.parametrize('hgvs, internal', HGVS_TO_INTERNAL_AND_VICE_VERSA)
-def test_to_hgvs_indexing(hgvs, internal):
-    assert convert_indexing(internal, indexing='hgvs') == hgvs
+def test_variants_locations_to_hgvs(hgvs, internal):
+    import json
+    print('{}\ninternal\n{}'.format('-' * 40, '-' * 40))
+    print(json.dumps(internal, indent=2))
+    print('{}\nexpected hgvs\n{}'.format('-' * 40, '-' * 40))
+    print(json.dumps(hgvs, indent=2))
+    result = variants_locations_to_hgvs(internal, None, 'g')
+    print('{}\nresult\n{}'.format('-' * 40, '-' * 40))
+    print(json.dumps(result, indent=2))
+
+    assert result == hgvs
 
 
 @pytest.mark.parametrize('any_variant, delins', get_input_expected_tests(
@@ -65,9 +69,8 @@ def test_to_delins(any_variant, delins):
      ('3_4delins6_8', '3_4delins6_8'),
      ('3_4=', '3_4delins3_4')]))
 def test_to_hgvs_no_sequences(any_variant, delins):
-     assert to_hgvs(delins) == any_variant
+    assert to_hgvs(delins) == any_variant
 
 
 def test_convert_indexing_crossmap():
     references = {}
-

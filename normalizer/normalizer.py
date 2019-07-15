@@ -6,8 +6,8 @@ from mutator.mutator import mutate
 import extractor
 from .checker import is_overlap, are_sorted, check_semantics
 from .validation import variants as schema_variants
-from .converter import to_delins, de_to_hgvs, convert_indexing,\
-    variants_locations_to_internal
+from .converter import to_delins, de_to_hgvs,\
+    variants_locations_to_internal, variants_locations_to_hgvs
 from .to_description import to_string
 import json
 import copy
@@ -72,8 +72,15 @@ def mutalyzer3(description):
 
     references = get_reference_models(description_model)
 
+    import json
+    print('{}\nvariants\n{}'.format('-' * 40, '-' * 40))
+    print(json.dumps(variants, indent=2))
+
     variants_internal = variants_locations_to_internal(
         variants, references, description_model['coordinate_system'])
+
+    print('{}\nvariants internal\n{}'.format('-' * 40, '-' * 40))
+    print(json.dumps(variants_internal, indent=2))
 
     variants_delins = to_delins(variants_internal)
 
@@ -91,17 +98,29 @@ def mutalyzer3(description):
     de_variants = extractor.describe_dna(sequences['reference'],
                                          sequences['observed'])
 
+    print('{}\nde variants\n{}'.format('-' * 40, '-' * 40))
+    print(json.dumps(de_variants, indent=2))
+
     # print('\nde_variants:\n {}'.format(
     #     to_string(description_model, de_variants, sequences)))
 
     de_variants_hgvs = de_to_hgvs(de_variants, sequences)
 
+    print('{}\nde variants hgvs\n{}'.format('-' * 40, '-' * 40))
+    print(json.dumps(de_variants_hgvs, indent=2))
+
     # print(json.dumps(de_variants_hgvs, indent=2))
 
-    # print('\nde_variants_hgvs:\n {}'.format(
-    #     to_string(description_model, de_variants_hgvs, sequences)))
+    print('\nde_variants_hgvs:\n {}'.format(
+        to_string(description_model, de_variants_hgvs, sequences)))
 
-    de_variants_hgvs_indexing = convert_indexing(de_variants_hgvs, 'hgvs')
+    # de_variants_hgvs_indexing = convert_indexing(de_variants_hgvs, 'hgvs')
+    de_variants_hgvs_indexing = variants_locations_to_hgvs(
+        de_variants_hgvs, references, description_model['coordinate_system'])
+
+    print('{}\nde variants hgvs indexing\n{}'.format('-' * 40, '-' * 40))
+    print(json.dumps(de_variants_hgvs_indexing, indent=2))
+
 
     # print('\nde_variants_hgvs_indexing:\n {}'.format(
     #     to_string(description_model, de_variants_hgvs_indexing, sequences)))

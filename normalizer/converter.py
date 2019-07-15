@@ -44,61 +44,6 @@ def range_to_point(range_location):
         return range_location
 
 
-def convert_location_index(location, variant_type=None, indexing='internal'):
-    """
-    Converts a location positions according to the provided indexing.
-
-    :param location: A location model complying object.
-    :param variant_type: Required in order to be able to deal with
-    special cases as, e.g., insertions.
-    :param indexing: To what indexing to apply the conversion applied.
-    :return: A converted location instance.
-    """
-    shift = get_indexing_shift(indexing)
-    new_location = copy.deepcopy(location)
-    if variant_type == 'insertion':
-        new_location['end']['position'] += shift
-    elif location['type'] == 'range':
-        new_location['start']['position'] += shift
-        if indexing == 'hgvs' and variant_type != 'duplication':
-            new_location = range_to_point(new_location)
-    elif location['type'] == 'point' and indexing == 'internal':
-        new_location = point_to_range(location)
-    return new_location
-
-
-def convert_variant_indexing(variant, indexing='internal'):
-    """
-    Convert a variant locations to the internal/HGVS indexing scheme.
-    """
-    new_variant = copy.deepcopy(variant)
-    new_variant['location'] = convert_location_index(
-        location=variant['location'],
-        variant_type=variant['type'],
-        indexing=indexing)
-    if new_variant.get('inserted'):
-        for insertion in new_variant['inserted']:
-            if insertion.get('location'):
-                insertion['location'] = convert_location_index(
-                    location=insertion['location'],
-                    indexing=indexing)
-    return new_variant
-
-
-def convert_indexing(variants, indexing='internal'):
-    """
-    Converts variants locations to the internal/HGVS indexing scheme.
-
-    :param variants: List with variants to be converted.
-    :param indexing: To what indexing to convert to.
-    :return: Converted variants list instance.
-    """
-    new_variants = []
-    for variant in variants:
-        new_variants.append(convert_variant_indexing(variant, indexing))
-    return new_variants
-
-
 def location_to_internal(location, to_function, variant_type):
     new_location = copy.deepcopy(location)
     if location['type'] == 'range':
@@ -118,6 +63,34 @@ def location_to_internal(location, to_function, variant_type):
         new_location = point_to_range(location)
 
     return new_location
+
+
+def location_to_hgvs(location, to_function, variant_type):
+    # import json
+    # print('{}\nlocation\n{}'.format('-' * 40, '-' * 40))
+    # print(json.dumps(location, indent=2))
+
+    new_location = copy.deepcopy(location)
+    if location['type'] == 'range':
+        new_location['start']['position'] = to_function(
+            location['start']['position'])
+        new_location['end']['position'] = to_function(
+            location['end']['position'])
+    elif location['type'] == 'point':
+        new_location['position'] = to_function(location['position'])
+
+    if variant_type == 'insertion':
+        new_location['start']['position'] -= 1
+    elif location['type'] == 'range':
+        new_location['end']['position'] -= 1
+        if get_start(new_location) == get_end(new_location):
+            new_location = range_to_point(new_location)
+
+    return new_location
+
+
+def insertion_to_internal():
+    pass
 
 
 def variants_locations_to_internal(variants, references, from_cs):
@@ -141,6 +114,34 @@ def variants_locations_to_internal(variants, references, from_cs):
                         insertion_to_internal(insertion, references, from_cs)
                     else:
                         insertion['location'] = location_to_internal(
+                            insertion['location'],
+                            to_function,
+                            None)
+        new_variants.append(new_variant)
+    return new_variants
+
+
+def variants_locations_to_hgvs(variants, references, to_cs):
+    if to_cs == 'g':
+        crossmap = Crossmap()
+        to_function = crossmap.coordinate_to_genomic
+    else:
+        raise ValueError('Locations conversion from \'{}\' coordinate system '
+                         'not supported.'.format(to_cs))
+    new_variants = []
+    for variant in variants:
+        new_variant = copy.deepcopy(variant)
+        new_variant['location'] = location_to_hgvs(
+            variant['location'],
+            to_function,
+            variant['type'])
+        if new_variant.get('inserted'):
+            for insertion in new_variant['inserted']:
+                if insertion.get('location'):
+                    if isinstance(insertion['source'], dict):
+                        insertion_to_internal(insertion, references, to_cs)
+                    else:
+                        insertion['location'] = location_to_hgvs(
                             insertion['location'],
                             to_function,
                             None)
@@ -358,12 +359,8 @@ def de_to_hgvs(variants, sequences=None):
                    get_start(variant['location']) - ins_length:
                    get_end(variant['location'])] == ins_seq:
                     new_variant['type'] = 'duplication'
-                    if ins_length == 1:
-                        new_variant['location'] = \
-                            new_variant['location']['start']
-                    else:
-                        new_variant['location']['start']['position'] = \
-                            get_start(new_variant['location']) - ins_length
+                    new_variant['location']['start']['position'] = \
+                        get_start(new_variant['location']) - ins_length
                 else:
                     new_variant['type'] = 'insertion'
 
