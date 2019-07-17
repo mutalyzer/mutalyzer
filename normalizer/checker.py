@@ -64,3 +64,75 @@ def check_semantics(variants, reference=None, indexing='internal'):
               'start_end': start_end}
 
     return output
+
+
+def is_fuzzy_point(point_location):
+    if point_location.get('uncertain'):
+        return True
+    if point_location.get('offset') and \
+            point_location['offset'].get('uncertain'):
+        return True
+    return False
+
+
+def is_fuzzy_range(range_location):
+    if range_location.get('uncertain'):
+        return True
+    if is_fuzzy_point(range_location['start']):
+        return True
+    if is_fuzzy_point(range_location['end']):
+        return True
+    return False
+
+
+def is_fuzzy_location(location):
+    if location['type'] == 'range':
+        return is_fuzzy_range(location)
+    if location['type'] == 'point':
+        return is_fuzzy_point(location)
+
+
+def check_for_fuzzy(variants):
+    for variant in variants:
+        if variant.get('location') and is_fuzzy_location(variant['location']):
+            return True
+        if variant.get('inserted'):
+            for inserted in variant['inserted']:
+                if inserted.get('location') and \
+                        is_fuzzy_location(inserted['location']):
+                    return True
+    return False
+
+
+def is_intronic_point(point_location):
+    if point_location.get('offset') and point_location['offset']['value'] != 0:
+        return True
+    return False
+
+
+def is_intronic_range(range_location):
+    if is_intronic_point(range_location['start']):
+        return True
+    if is_intronic_point(range_location['end']):
+        return True
+
+
+def is_intronic_location(location):
+    if location['type'] == 'range':
+        return is_intronic_range(location)
+    elif location['type'] == 'point':
+        return is_intronic_point(location)
+
+
+def check_intronic_positions(variants):
+    for variant in variants:
+        if variant.get('location') and \
+                is_intronic_location(variant['location']):
+            return True
+        if variant.get('inserted'):
+            for inserted in variant['inserted']:
+                if inserted.get('location') and \
+                        is_intronic_location(inserted['location']):
+                    return True
+    return False
+

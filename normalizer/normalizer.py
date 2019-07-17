@@ -4,7 +4,8 @@ from hgvsparser import to_model
 from retriever import retriever
 from mutator.mutator import mutate
 import extractor
-from .checker import is_overlap, are_sorted, check_semantics
+from .checker import is_overlap, are_sorted, check_semantics, check_for_fuzzy, \
+    check_intronic_positions
 from .validation import variants as schema_variants
 from .converter import to_delins, de_to_hgvs,\
     variants_locations_to_internal, variants_locations_to_hgvs
@@ -70,14 +71,19 @@ def mutalyzer3(description):
     description_model = to_model.convert(parse_tree)
     variants = description_model['variants']
 
-    # print(json.dumps(description_model, indent=2))
+    # print('{}\nvariants\n{}'.format('-' * 40, '-' * 40))
+    # print(json.dumps(variants, indent=2))
+
+    if check_for_fuzzy(variants):
+        raise Exception('Fuzzy location found.')
 
     # print(json.dumps(description_model, indent=2))
 
     references = get_reference_models(description_model)
 
-    # print('{}\nvariants\n{}'.format('-' * 40, '-' * 40))
-    # print(json.dumps(variants, indent=2))
+    mol_type = get_mol_type(references[description_model['reference']['id']])
+    if mol_type == 'mRNA' and check_intronic_positions(variants):
+        raise Exception('Intronic positions.')
 
     variants_internal = variants_locations_to_internal(
         variants=variants,
@@ -127,7 +133,6 @@ def mutalyzer3(description):
     # print('{}\nde variants hgvs indexing\n{}'.format('-' * 40, '-' * 40))
     # print(json.dumps(de_variants_hgvs_indexing, indent=2))
 
-    mol_type = get_mol_type(references[description_model['reference']['id']])
     if mol_type == 'mRNA' and description_model['coordinate_system'] == 'c':
         description_model['coordinate_system'] = 'n'
     else:

@@ -146,6 +146,8 @@ def get_exon_cds_for_genomic_reference(sequences, reference):
                                     part['start']['position'].position)
                                 cds.append(
                                     part['end']['position'].position)
+    if len(cds) < 2:
+        raise Exception('CDS not retrieved')
     cds = sorted(cds)
     return sorted(exons), (cds[0], cds[-1])
 
