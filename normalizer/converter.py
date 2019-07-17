@@ -4,18 +4,6 @@ from .util import get_start, get_end, set_start, get_location_length, roll,\
 from crossmapper import Crossmap
 
 
-def get_indexing_shift(indexing='internal'):
-    """
-    Derive the correct shift to be used when applying the provided
-    indexing.
-    """
-    if indexing == 'internal':
-        shift = -1
-    elif indexing == 'hgvs':
-        shift = +1
-    return shift
-
-
 def point_to_range(point_location):
     """
     Convert a point location to a range location.
@@ -25,9 +13,9 @@ def point_to_range(point_location):
     """
     return {'type': 'range',
             'start': {'type': 'point',
-                      'position': point_location['position'] - 1},
+                      'position': point_location['position']},
             'end': {'type': 'point',
-                    'position': point_location['position']}}
+                    'position': point_location['position'] + 1}}
 
 
 def range_to_point(range_location):
@@ -44,32 +32,51 @@ def range_to_point(range_location):
         return range_location
 
 
-def location_to_internal(location, to_function, variant_type):
+def point_to_coordinate(point):
+    position = point['position']
+    if point.get('outside_cds'):
+        if point['outside_cds'] == 'upstream':
+            section = 0
+            position = -1 * position
+        elif point['outside_cds'] == 'downstream':
+            section = 2
+    else:
+        section = 1
+    if point.get('offset'):
+        offset = point['offset']['value']
+    else:
+        offset = 0
+    print(point)
+    print(position, offset, section)
+    return position, offset, section
+
+
+def get_point_value(point):
+    return point['position']
+
+
+def location_to_internal(location, crossmap_function, point_function,
+                         variant_type):
     new_location = copy.deepcopy(location)
     if location['type'] == 'range':
-        new_location['start']['position'] = to_function(
-            location['start']['position'])
-        new_location['end']['position'] = to_function(
-            location['end']['position'])
+        new_location['start']['position'] = crossmap_function(
+            point_function(location['start']))
+        new_location['end']['position'] = crossmap_function(
+            point_function(location['end']))
     elif location['type'] == 'point':
-        new_location['position'] = to_function(
-            location['position'])
+        new_location['position'] = crossmap_function(
+            point_function(location))
 
     if variant_type == 'insertion':
         new_location['start']['position'] += 1
     elif location['type'] == 'range':
         new_location['end']['position'] += 1
     elif location['type'] == 'point':
-        new_location = point_to_range(location)
-
+        new_location = point_to_range(new_location)
     return new_location
 
 
 def location_to_hgvs(location, to_function, variant_type):
-    # import json
-    # print('{}\nlocation\n{}'.format('-' * 40, '-' * 40))
-    # print(json.dumps(location, indent=2))
-
     new_location = copy.deepcopy(location)
     if location['type'] == 'range':
         new_location['start']['position'] = to_function(
@@ -93,10 +100,49 @@ def insertion_to_internal():
     pass
 
 
-def variants_locations_to_internal(variants, references, from_cs):
+def get_mol_type(reference_model):
+    for part in reference_model['model']:
+        if part['type'] == 'region':
+            return part['qualifiers'].get('mol_type')
+
+
+def get_selector_details(sequences, reference):
+    exons = []
+    cds = []
+    if reference.get('selector'):
+        reference_model = sequences[reference['id']]
+        mol_type = get_mol_type(reference_model)
+        if mol_type == 'genomic DNA':
+            for feature in reference_model['model']:
+                if feature['type'] == 'gene':
+                    for sub_feature in feature['sub_features']:
+                        if sub_feature['type'] == 'mRNA' and \
+                                reference['selector']['id'] == \
+                                sub_feature['id'].split('-')[1]:
+                            for part in sub_feature['sub_features']:
+                                if part['type'] == 'exon':
+                                    exons.append(
+                                        (part['start']['position'].position,
+                                         part['end']['position'].position))
+                                elif part['type'] == 'CDS':
+                                    cds.append(
+                                        part['start']['position'].position)
+                                    cds.append(
+                                        part['end']['position'].position)
+    cds = sorted(cds)
+    return sorted(exons), (cds[0], cds[-1])
+
+
+def variants_locations_to_internal(variants, sequences, from_cs, reference):
     if from_cs == 'g':
         crossmap = Crossmap()
-        to_function = crossmap.genomic_to_coordinate
+        crossmap_function = crossmap.genomic_to_coordinate
+        point_function = get_point_value
+    elif from_cs == 'c':
+        exons, cds = get_selector_details(sequences, reference)
+        crossmap = Crossmap(locations=exons, cds=cds)
+        crossmap_function = crossmap.coding_to_coordinate
+        point_function = point_to_coordinate
     else:
         raise(ValueError('Locations conversion from \'{}\' coordinate system '
                          'not supported.'.format(from_cs)))
@@ -104,19 +150,21 @@ def variants_locations_to_internal(variants, references, from_cs):
     for variant in variants:
         new_variant = copy.deepcopy(variant)
         new_variant['location'] = location_to_internal(
-            variant['location'],
-            to_function,
-            variant['type'])
+            location=variant['location'],
+            crossmap_function=crossmap_function,
+            point_function=point_function,
+            variant_type=variant['type'])
         if new_variant.get('inserted'):
             for insertion in new_variant['inserted']:
                 if insertion.get('location'):
                     if isinstance(insertion['source'], dict):
-                        insertion_to_internal(insertion, references, from_cs)
+                        insertion_to_internal(insertion, sequences, from_cs)
                     else:
                         insertion['location'] = location_to_internal(
-                            insertion['location'],
-                            to_function,
-                            None)
+                            location=insertion['location'],
+                            crossmap_function=crossmap_function,
+                            point_function=point_function,
+                            variant_type=None)
         new_variants.append(new_variant)
     return new_variants
 
@@ -132,9 +180,9 @@ def variants_locations_to_hgvs(variants, references, to_cs):
     for variant in variants:
         new_variant = copy.deepcopy(variant)
         new_variant['location'] = location_to_hgvs(
-            variant['location'],
-            to_function,
-            variant['type'])
+            location=variant['location'],
+            to_function=to_function,
+            variant_type=variant['type'])
         if new_variant.get('inserted'):
             for insertion in new_variant['inserted']:
                 if insertion.get('location'):
@@ -142,9 +190,9 @@ def variants_locations_to_hgvs(variants, references, to_cs):
                         insertion_to_internal(insertion, references, to_cs)
                     else:
                         insertion['location'] = location_to_hgvs(
-                            insertion['location'],
-                            to_function,
-                            None)
+                            location=insertion['location'],
+                            to_function=to_function,
+                            variant_type=None)
         new_variants.append(new_variant)
     return new_variants
 
@@ -338,22 +386,29 @@ def de_to_hgvs(variants, sequences=None):
             o_index += get_location_length(variant['location'])
             new_variants.append(copy.deepcopy(variant))
         elif variant.get('type') == 'deletion_insertion':
-            o_index += get_inserted_length(variant['inserted'])
             if get_start(variant['location']) == get_end(variant['location']):
                 # delins_to_insertion
-                # shift5, shift3 = roll(sequences['observed'],
-                #                       o_index,
-                #                       o_index + get_inserted_length(
-                #                           variant['inserted']))
-                # o_index += shift3
+                shift5, shift3 = roll(sequences['observed'],
+                                      o_index,
+                                      o_index + get_inserted_length(
+                                          variant['inserted']))
+                print(o_index)
+                print(shift5, shift3)
+                print('sequences_observed[{}]={}'.format(
+                    get_start(variant['location']),
+                    sequences['observed'][get_start(variant['location'])]))
+                print('sequences_observed[{}]={}'.format(
+                    get_start(variant['location']) + 1,
+                    sequences['observed'][get_start(variant['location']) + 1]))
+                o_index += shift3
                 new_variant = copy.deepcopy(variant)
                 ins_length = get_location_length(
                     variant['inserted'][0]['location'])
                 ins_seq = sequences['observed'][
                     get_start(variant['inserted'][0]['location']):
                     get_end(variant['inserted'][0]['location'])]
-                # new_variant['location']['start']['position'] += shift3
-                # new_variant['location']['end']['position'] += shift3
+                new_variant['location']['start']['position'] += shift3
+                new_variant['location']['end']['position'] += shift3
 
                 if sequences['observed'][
                    get_start(variant['location']) - ins_length:
@@ -367,7 +422,6 @@ def de_to_hgvs(variants, sequences=None):
                 update_inserted_with_sequences(new_variant['inserted'],
                                                sequences)
                 new_variants.append(new_variant)
-
 
             elif is_deletion(variant):
                 # delins_to_deletion
@@ -400,18 +454,14 @@ def de_to_hgvs(variants, sequences=None):
                                     get_end(new_variant['location'])],
                         'source': 'reference_location'}
                     new_variants.append(new_variant)
-
-                # elif is_duplication(variant, sequences):
-                #     # delins_to_duplication
-                #     new_variant = copy.deepcopy(variant)
-                #     new_variants.append(new_variant)
-
                 else:
                     # delins_to_deletion_insertion
                     new_variant = copy.deepcopy(variant)
                     update_inserted_with_sequences(new_variant['inserted'],
                                                    sequences)
                     new_variants.append(new_variant)
+            o_index += get_inserted_length(variant['inserted'])
+
         else:
             raise ValueError('Unexpected variant type: \'{}\'.'.format(
                 variant.get('type')))

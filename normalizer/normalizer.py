@@ -12,6 +12,8 @@ from .to_description import to_string
 import json
 import copy
 from cachetools import cached, TTLCache
+import json
+
 
 # cache = TTLCache(maxsize=100, ttl=300)
 
@@ -68,16 +70,20 @@ def mutalyzer3(description):
     description_model = to_model.convert(parse_tree)
     variants = description_model['variants']
 
+    print(json.dumps(description_model, indent=2))
+
     # print(json.dumps(description_model, indent=2))
 
     references = get_reference_models(description_model)
 
-    import json
     print('{}\nvariants\n{}'.format('-' * 40, '-' * 40))
     print(json.dumps(variants, indent=2))
 
     variants_internal = variants_locations_to_internal(
-        variants, references, description_model['coordinate_system'])
+        variants=variants,
+        sequences=references,
+        from_cs=description_model['coordinate_system'],
+        reference=description_model['reference'])
 
     print('{}\nvariants internal\n{}'.format('-' * 40, '-' * 40))
     print(json.dumps(variants_internal, indent=2))
@@ -116,13 +122,17 @@ def mutalyzer3(description):
 
     # de_variants_hgvs_indexing = convert_indexing(de_variants_hgvs, 'hgvs')
     de_variants_hgvs_indexing = variants_locations_to_hgvs(
-        de_variants_hgvs, references, description_model['coordinate_system'])
+        de_variants_hgvs, references, 'g')
 
     print('{}\nde variants hgvs indexing\n{}'.format('-' * 40, '-' * 40))
     print(json.dumps(de_variants_hgvs_indexing, indent=2))
 
+    description_model['coordinate_system'] = 'g'
 
     # print('\nde_variants_hgvs_indexing:\n {}'.format(
     #     to_string(description_model, de_variants_hgvs_indexing, sequences)))
+
+    print(sequences['reference'][0:100])
+    print(sequences['observed'][0:100])
 
     return to_string(description_model, de_variants_hgvs_indexing, sequences)
