@@ -13,7 +13,7 @@ import json
 import copy
 from cachetools import cached, TTLCache
 import json
-
+from .converter import get_mol_type
 
 # cache = TTLCache(maxsize=100, ttl=300)
 
@@ -70,14 +70,14 @@ def mutalyzer3(description):
     description_model = to_model.convert(parse_tree)
     variants = description_model['variants']
 
-    print(json.dumps(description_model, indent=2))
+    # print(json.dumps(description_model, indent=2))
 
     # print(json.dumps(description_model, indent=2))
 
     references = get_reference_models(description_model)
 
-    print('{}\nvariants\n{}'.format('-' * 40, '-' * 40))
-    print(json.dumps(variants, indent=2))
+    # print('{}\nvariants\n{}'.format('-' * 40, '-' * 40))
+    # print(json.dumps(variants, indent=2))
 
     variants_internal = variants_locations_to_internal(
         variants=variants,
@@ -85,8 +85,8 @@ def mutalyzer3(description):
         from_cs=description_model['coordinate_system'],
         reference=description_model['reference'])
 
-    print('{}\nvariants internal\n{}'.format('-' * 40, '-' * 40))
-    print(json.dumps(variants_internal, indent=2))
+    # print('{}\nvariants internal\n{}'.format('-' * 40, '-' * 40))
+    # print(json.dumps(variants_internal, indent=2))
 
     variants_delins = to_delins(variants_internal)
 
@@ -104,35 +104,36 @@ def mutalyzer3(description):
     de_variants = extractor.describe_dna(sequences['reference'],
                                          sequences['observed'])
 
-    print('{}\nde variants\n{}'.format('-' * 40, '-' * 40))
-    print(json.dumps(de_variants, indent=2))
+    # print('{}\nde variants\n{}'.format('-' * 40, '-' * 40))
+    # print(json.dumps(de_variants, indent=2))
 
     # print('\nde_variants:\n {}'.format(
     #     to_string(description_model, de_variants, sequences)))
 
     de_variants_hgvs = de_to_hgvs(de_variants, sequences)
 
-    print('{}\nde variants hgvs\n{}'.format('-' * 40, '-' * 40))
-    print(json.dumps(de_variants_hgvs, indent=2))
+    # print('{}\nde variants hgvs\n{}'.format('-' * 40, '-' * 40))
+    # print(json.dumps(de_variants_hgvs, indent=2))
 
     # print(json.dumps(de_variants_hgvs, indent=2))
 
-    print('\nde_variants_hgvs:\n {}'.format(
-        to_string(description_model, de_variants_hgvs, sequences)))
+    # print('\nde_variants_hgvs:\n {}'.format(
+    #     to_string(description_model, de_variants_hgvs, sequences)))
 
     # de_variants_hgvs_indexing = convert_indexing(de_variants_hgvs, 'hgvs')
     de_variants_hgvs_indexing = variants_locations_to_hgvs(
         de_variants_hgvs, references, 'g')
 
-    print('{}\nde variants hgvs indexing\n{}'.format('-' * 40, '-' * 40))
-    print(json.dumps(de_variants_hgvs_indexing, indent=2))
+    # print('{}\nde variants hgvs indexing\n{}'.format('-' * 40, '-' * 40))
+    # print(json.dumps(de_variants_hgvs_indexing, indent=2))
 
-    description_model['coordinate_system'] = 'g'
+    mol_type = get_mol_type(references[description_model['reference']['id']])
+    if mol_type == 'mRNA' and description_model['coordinate_system'] == 'c':
+        description_model['coordinate_system'] = 'n'
+    else:
+        description_model['coordinate_system'] = 'g'
 
     # print('\nde_variants_hgvs_indexing:\n {}'.format(
     #     to_string(description_model, de_variants_hgvs_indexing, sequences)))
-
-    print(sequences['reference'][0:100])
-    print(sequences['observed'][0:100])
 
     return to_string(description_model, de_variants_hgvs_indexing, sequences)

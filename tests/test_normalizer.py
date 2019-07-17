@@ -52,6 +52,10 @@ def fetch_sequence(reference_id, reference_source=None):
       'NG_012337.1:g.13948del'),
      ('NG_012337.1(NM_003002.2):c.*824+10del',
       'NG_012337.1:g.13958del'),
+     ('NM_003002.4:c.1del',
+      'NM_003002.4:n.36del'),
+     ('NG_029724.1(NM_004321.7):c.101del',
+      'NG_029724.1:g.27557del'),
 
      # To be curated.
      # --------------

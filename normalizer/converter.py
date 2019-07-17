@@ -46,8 +46,6 @@ def point_to_coordinate(point):
         offset = point['offset']['value']
     else:
         offset = 0
-    print(point)
-    print(position, offset, section)
     return position, offset, section
 
 
@@ -106,19 +104,18 @@ def get_mol_type(reference_model):
             return part['qualifiers'].get('mol_type')
 
 
-def get_selector_details(sequences, reference):
+def get_exon_cds_for_genomic_reference(sequences, reference):
     exons = []
     cds = []
-    if reference.get('selector'):
-        reference_model = sequences[reference['id']]
-        mol_type = get_mol_type(reference_model)
-        if mol_type == 'genomic DNA':
-            for feature in reference_model['model']:
-                if feature['type'] == 'gene':
-                    for sub_feature in feature['sub_features']:
-                        if sub_feature['type'] == 'mRNA' and \
-                                reference['selector']['id'] == \
-                                sub_feature['id'].split('-')[1]:
+    if '_v' in reference['selector']['id']:
+        gene_id = reference['selector']['id'].split('_v')[0]
+        transcript_number = int(reference['selector']['id'].split('_v')[1])
+        for feature in sequences[reference['id']]['model']:
+            if feature['type'] == 'gene' and feature['id'].split('-')[1] == gene_id:
+                rna_id = 1
+                for sub_feature in feature['sub_features']:
+                    if 'rna' in sub_feature['id']:
+                        if rna_id == transcript_number:
                             for part in sub_feature['sub_features']:
                                 if part['type'] == 'exon':
                                     exons.append(
@@ -129,6 +126,46 @@ def get_selector_details(sequences, reference):
                                         part['start']['position'].position)
                                     cds.append(
                                         part['end']['position'].position)
+                                    break
+                        else:
+                            rna_id += 1
+    else:
+        for feature in sequences[reference['id']]['model']:
+            if feature['type'] == 'gene':
+                for sub_feature in feature['sub_features']:
+                    if sub_feature['type'] == 'mRNA' and \
+                            reference['selector']['id'] == \
+                            sub_feature['id'].split('-')[1]:
+                        for part in sub_feature['sub_features']:
+                            if part['type'] == 'exon':
+                                exons.append(
+                                    (part['start']['position'].position,
+                                     part['end']['position'].position))
+                            elif part['type'] == 'CDS':
+                                cds.append(
+                                    part['start']['position'].position)
+                                cds.append(
+                                    part['end']['position'].position)
+    cds = sorted(cds)
+    return sorted(exons), (cds[0], cds[-1])
+
+
+def get_exon_cds_for_mrna_reference(sequences, reference):
+    exons = []
+    cds = []
+    import json
+    for feature in sequences[reference['id']]['model']:
+        if feature['type'] == 'gene':
+            for sub_feature in feature['sub_features']:
+                if sub_feature['type'] == 'CDS':
+                    cds.append(
+                        sub_feature['start']['position'].position)
+                    cds.append(
+                        sub_feature['end']['position'].position)
+                elif sub_feature['type'] == 'exon':
+                    exons.append(
+                        (sub_feature['start']['position'].position,
+                         sub_feature['end']['position'].position))
     cds = sorted(cds)
     return sorted(exons), (cds[0], cds[-1])
 
@@ -139,7 +176,12 @@ def variants_locations_to_internal(variants, sequences, from_cs, reference):
         crossmap_function = crossmap.genomic_to_coordinate
         point_function = get_point_value
     elif from_cs == 'c':
-        exons, cds = get_selector_details(sequences, reference)
+        mol_type = get_mol_type(sequences[reference['id']])
+        if mol_type == 'genomic DNA':
+            exons, cds = get_exon_cds_for_genomic_reference(sequences,
+                                                            reference)
+        if mol_type == 'mRNA':
+            exons, cds = get_exon_cds_for_mrna_reference(sequences, reference)
         crossmap = Crossmap(locations=exons, cds=cds)
         crossmap_function = crossmap.coding_to_coordinate
         point_function = point_to_coordinate
@@ -392,14 +434,6 @@ def de_to_hgvs(variants, sequences=None):
                                       o_index,
                                       o_index + get_inserted_length(
                                           variant['inserted']))
-                print(o_index)
-                print(shift5, shift3)
-                print('sequences_observed[{}]={}'.format(
-                    get_start(variant['location']),
-                    sequences['observed'][get_start(variant['location'])]))
-                print('sequences_observed[{}]={}'.format(
-                    get_start(variant['location']) + 1,
-                    sequences['observed'][get_start(variant['location']) + 1]))
                 o_index += shift3
                 new_variant = copy.deepcopy(variant)
                 ins_length = get_location_length(

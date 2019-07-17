@@ -1,0 +1,12 @@
+##sequence-region NM_003002.4 1 1339
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=9606
+NM_003002.4	RefSeq	region	1	1339	.	+	.	ID=NM_003002.4:1..1339;Dbxref=taxon:9606;Name=11;chromosome=11;gbkey=Src;genome=genomic;map=11q23.1;mol_type=mRNA
+NM_003002.4	RefSeq	gene	1	1339	.	+	.	ID=gene-SDHD;Dbxref=GeneID:6392,HGNC:HGNC:10683,MIM:602690;Name=SDHD;description=succinate dehydrogenase complex subunit D;gbkey=Gene;gene=SDHD;gene_synonym=CBT1,CII-4,CWS3,cybS,PGL,PGL1,QPs3,SDH4
+NM_003002.4	RefSeq	CDS	36	515	.	+	0	ID=cds-NP_002993.1;Parent=gene-SDHD;Dbxref=CCDS:CCDS31678.1,Genbank:NP_002993.1,GeneID:6392,HGNC:HGNC:10683,MIM:602690;Name=NP_002993.1;Note=isoform a precursor is encoded by transcript variant 1;gbkey=CDS;gene=SDHD;product=succinate dehydrogenase [ubiquinone] cytochrome b small subunit%2C mitochondrial isoform a precursor;protein_id=NP_002993.1
+NM_003002.4	RefSeq	exon	1	87	.	+	.	ID=id-SDHD;Parent=gene-SDHD;Dbxref=GeneID:6392,HGNC:HGNC:10683,MIM:602690;gbkey=exon;gene=SDHD;inference=alignment:Splign:2.1.0
+NM_003002.4	RefSeq	exon	88	204	.	+	.	ID=id-SDHD-2;Parent=gene-SDHD;Dbxref=GeneID:6392,HGNC:HGNC:10683,MIM:602690;gbkey=exon;gene=SDHD;inference=alignment:Splign:2.1.0
+NM_003002.4	RefSeq	exon	205	349	.	+	.	ID=id-SDHD-3;Parent=gene-SDHD;Dbxref=GeneID:6392,HGNC:HGNC:10683,MIM:602690;gbkey=exon;gene=SDHD;inference=alignment:Splign:2.1.0
+NM_003002.4	RefSeq	exon	350	1339	.	+	.	ID=id-SDHD-4;Parent=gene-SDHD;Dbxref=GeneID:6392,HGNC:HGNC:10683,MIM:602690;gbkey=exon;gene=SDHD;inference=alignment:Splign:2.1.0
+NM_003002.4	RefSeq	sequence_feature	18	20	.	+	.	ID=id-SDHD-5;Dbxref=GeneID:6392,HGNC:HGNC:10683,MIM:602690;Note=upstream in-frame stop codon;gbkey=misc_feature;gene=SDHD
+
+
