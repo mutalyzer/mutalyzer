@@ -94,8 +94,29 @@ def location_to_hgvs(location, to_function, variant_type):
     return new_location
 
 
-def insertion_to_internal():
-    pass
+def inserted_to_internal(inserted, sequences, from_cs, reference):
+    if from_cs == 'g':
+        crossmap = Crossmap()
+        crossmap_function = crossmap.genomic_to_coordinate
+        point_function = get_point_value
+    elif from_cs == 'c':
+        mol_type = get_mol_type(sequences[reference['id']])
+        if mol_type == 'genomic DNA':
+            exons, cds = get_exon_cds_for_genomic_reference(sequences,
+                                                            reference)
+        if mol_type == 'mRNA':
+            exons, cds = get_exon_cds_for_mrna_reference(sequences, reference)
+        crossmap = Crossmap(locations=exons, cds=cds)
+        crossmap_function = crossmap.coding_to_coordinate
+        point_function = point_to_coordinate
+    else:
+        raise (ValueError('Locations conversion from \'{}\' coordinate system '
+                          'not supported.'.format(from_cs)))
+    inserted['location'] = location_to_internal(
+        location=inserted['location'],
+        crossmap_function=crossmap_function,
+        point_function=point_function,
+        variant_type=None)
 
 
 def get_mol_type(reference_model):
@@ -111,7 +132,8 @@ def get_exon_cds_for_genomic_reference(sequences, reference):
         gene_id = reference['selector']['id'].split('_v')[0]
         transcript_number = int(reference['selector']['id'].split('_v')[1])
         for feature in sequences[reference['id']]['model']:
-            if feature['type'] == 'gene' and feature['id'].split('-')[1] == gene_id:
+            if feature['type'] == 'gene' and \
+                    feature['id'].split('-')[1] == gene_id:
                 rna_id = 1
                 for sub_feature in feature['sub_features']:
                     if 'rna' in sub_feature['id']:
@@ -202,7 +224,12 @@ def variants_locations_to_internal(variants, sequences, from_cs, reference):
             for insertion in new_variant['inserted']:
                 if insertion.get('location'):
                     if isinstance(insertion['source'], dict):
-                        insertion_to_internal(insertion, sequences, from_cs)
+                        if insertion.get('coordinate_system'):
+                            inserted_to_internal(
+                                insertion,
+                                sequences,
+                                insertion.get('coordinate_system'),
+                                insertion.get('source'))
                     else:
                         insertion['location'] = location_to_internal(
                             location=insertion['location'],
@@ -231,7 +258,7 @@ def variants_locations_to_hgvs(variants, references, to_cs):
             for insertion in new_variant['inserted']:
                 if insertion.get('location'):
                     if isinstance(insertion['source'], dict):
-                        insertion_to_internal(insertion, references, to_cs)
+                        inserted_to_internal(insertion, references, to_cs)
                     else:
                         insertion['location'] = location_to_hgvs(
                             location=insertion['location'],

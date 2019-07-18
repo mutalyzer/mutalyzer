@@ -136,3 +136,54 @@ def check_intronic_positions(variants):
                     return True
     return False
 
+
+def is_out_of_range(location, sequence):
+    if location['type'] == 'point':
+        if not 0 < location['position'] < len(sequence) - 1:
+            return True
+    if location['type'] == 'range':
+        if not 0 < location['start']['position'] < len(sequence) - 1:
+            return True
+        if not 0 < location['end']['position'] < len(sequence) - 1:
+            return True
+
+
+def check_out_of_range(variants, sequences):
+    for variant in variants:
+        if variant.get('location') and \
+                is_out_of_range(variant['location'], sequences['reference']):
+            return True
+        if variant.get('inserted'):
+            for inserted in variant['inserted']:
+                if inserted.get('location'):
+                    if isinstance(inserted['source'], dict):
+                        if is_out_of_range(
+                                inserted['location'],
+                                sequences[inserted['source']['id']]):
+                            return True
+                    elif inserted.get('source') == 'reference':
+                        if is_out_of_range(
+                                inserted['location'],
+                                sequences[inserted['source']]):
+                            return True
+    return False
+
+
+def check_description_sequences(variants, sequence):
+    for variant in variants:
+        if variant.get('deleted'):
+            for deleted in variant['deleted']:
+                if sequence[
+                   variant['location']['start']['position']:
+                   variant['location']['end']['position']] != \
+                        deleted['sequence']:
+                    return True
+        if variant['type'] == 'duplication':
+            if variant.get('inserted'):
+                for inserted in variant['inserted']:
+                    if sequence[
+                       variant['location']['start']['position']:
+                       variant['location']['end']['position']] != \
+                            inserted['sequence']:
+                        return True
+    return False

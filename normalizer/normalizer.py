@@ -4,8 +4,9 @@ from hgvsparser import to_model
 from retriever import retriever
 from mutator.mutator import mutate
 import extractor
-from .checker import is_overlap, are_sorted, check_semantics, check_for_fuzzy, \
-    check_intronic_positions
+from .checker import is_overlap, are_sorted, check_semantics, \
+    check_for_fuzzy, check_intronic_positions, check_out_of_range,\
+    check_description_sequences
 from .validation import variants as schema_variants
 from .converter import to_delins, de_to_hgvs,\
     variants_locations_to_internal, variants_locations_to_hgvs
@@ -85,6 +86,13 @@ def mutalyzer3(description):
     if mol_type == 'mRNA' and check_intronic_positions(variants):
         raise Exception('Intronic positions.')
 
+    sequences = {}
+    for reference_id in references:
+        if reference_id == description_model['reference']['id']:
+            sequences['reference'] = references[reference_id]['sequence']
+        else:
+            sequences[reference_id] = references[reference_id]['sequence']
+
     variants_internal = variants_locations_to_internal(
         variants=variants,
         sequences=references,
@@ -94,14 +102,13 @@ def mutalyzer3(description):
     # print('{}\nvariants internal\n{}'.format('-' * 40, '-' * 40))
     # print(json.dumps(variants_internal, indent=2))
 
-    variants_delins = to_delins(variants_internal)
+    if check_description_sequences(variants_internal, sequences['reference']):
+        raise Exception('Description sequence mismatch.')
 
-    sequences = {}
-    for reference_id in references:
-        if reference_id == description_model['reference']['id']:
-            sequences['reference'] = references[reference_id]['sequence']
-        else:
-            sequences[reference_id] = references[reference_id]['sequence']
+    if check_out_of_range(variants_internal, sequences):
+        raise Exception('Out of range.')
+
+    variants_delins = to_delins(variants_internal)
 
     observed_sequence = mutate(sequences, variants_delins)
 

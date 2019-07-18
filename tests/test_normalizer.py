@@ -28,7 +28,7 @@ def fetch_sequence(reference_id, reference_source=None):
       'NG_012337.1:g.[3_4insGGTT;4_5ins12_50]'),
      ('NG_012337.1:g.26_31del',
       'NG_012337.1:g.29_34del'),
-     ('NG_012337.1:g.4A>T',
+     ('NG_012337.1:g.4C>T',
       'NG_012337.1:g.4C>T'),
      ('NG_012337.1:g.100_200delins100_101',
       'NG_012337.1:g.102_200del'),
@@ -56,6 +56,12 @@ def fetch_sequence(reference_id, reference_source=None):
       'NM_003002.4:n.36del'),
      ('NG_029724.1(NM_004321.7):c.101del',
       'NG_029724.1:g.27557del'),
+     ('NG_029724.1(NM_004321.7):c.101del',
+      'NG_029724.1:g.27557del'),
+     # ('NG_029724.1(NM_004321.7):c.100_*900000del',
+     #  'Out of range'),
+     # ('NM_003002.4:c.736_741delins10-40',
+     #  'Intronic positions.'),
 
      # To be curated.
      # --------------
