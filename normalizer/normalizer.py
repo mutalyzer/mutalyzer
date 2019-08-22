@@ -72,7 +72,7 @@ def mutalyzer3(description):
     description_model = to_model.convert(parse_tree)
     variants = description_model['variants']
 
-    # print('{}\nvariants\n{}'.format('-' * 40, '-' * 40))
+    # print('{}\nvariants hgvs indexing\n{}'.format('-' * 40, '-' * 40))
     # print(json.dumps(variants, indent=2))
 
     if check_for_fuzzy(variants):
@@ -81,6 +81,8 @@ def mutalyzer3(description):
     # print(json.dumps(description_model, indent=2))
 
     references = get_reference_models(description_model)
+
+    # print(json.dumps(references, indent=2))
 
     mol_type = get_mol_type(references[description_model['reference']['id']])
     if mol_type == 'mRNA' and check_intronic_positions(variants):
@@ -99,7 +101,7 @@ def mutalyzer3(description):
         from_cs=description_model['coordinate_system'],
         reference=description_model['reference'])
 
-    # print('{}\nvariants internal\n{}'.format('-' * 40, '-' * 40))
+    # print('{}\nvariants internal indexing\n{}'.format('-' * 40, '-' * 40))
     # print(json.dumps(variants_internal, indent=2))
 
     if check_description_sequences(variants_internal, sequences['reference']):
@@ -117,7 +119,7 @@ def mutalyzer3(description):
     de_variants = extractor.describe_dna(sequences['reference'],
                                          sequences['observed'])
 
-    # print('{}\nde variants\n{}'.format('-' * 40, '-' * 40))
+    # print('{}\nde variants internal indexing\n{}'.format('-' * 40, '-' * 40))
     # print(json.dumps(de_variants, indent=2))
 
     # print('\nde_variants:\n {}'.format(
@@ -125,9 +127,7 @@ def mutalyzer3(description):
 
     de_variants_hgvs = de_to_hgvs(de_variants, sequences)
 
-    # print('{}\nde variants hgvs\n{}'.format('-' * 40, '-' * 40))
-    # print(json.dumps(de_variants_hgvs, indent=2))
-
+    # print('{}\noutput variants internal indexing\n{}'.format('-' * 40, '-' * 40))
     # print(json.dumps(de_variants_hgvs, indent=2))
 
     # print('\nde_variants_hgvs:\n {}'.format(
@@ -137,7 +137,7 @@ def mutalyzer3(description):
     de_variants_hgvs_indexing = variants_locations_to_hgvs(
         de_variants_hgvs, references, 'g')
 
-    # print('{}\nde variants hgvs indexing\n{}'.format('-' * 40, '-' * 40))
+    # print('{}\noutput variants hgvs indexing\n{}'.format('-' * 40, '-' * 40))
     # print(json.dumps(de_variants_hgvs_indexing, indent=2))
 
     if mol_type == 'mRNA' and description_model['coordinate_system'] == 'c':

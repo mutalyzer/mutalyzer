@@ -148,7 +148,6 @@ def get_exon_cds_for_genomic_reference(sequences, reference):
                                         part['start']['position'].position)
                                     cds.append(
                                         part['end']['position'].position)
-                                    break
                         else:
                             rna_id += 1
     else:
@@ -460,7 +459,7 @@ def de_to_hgvs(variants, sequences=None):
             if get_start(variant['location']) == get_end(variant['location']):
                 # delins_to_insertion
                 shift5, shift3 = roll(sequences['observed'],
-                                      o_index,
+                                      o_index + 1,
                                       o_index + get_inserted_length(
                                           variant['inserted']))
                 o_index += shift3
