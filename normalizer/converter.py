@@ -490,6 +490,12 @@ def de_to_hgvs(variants, sequences=None):
                 new_variant = {'type': 'deletion',
                                'source': 'reference',
                                'location': copy.deepcopy(variant['location'])}
+                shift5, shift3 = roll(
+                    sequences['reference'],
+                    new_variant['location']['start']['position'] + 1,
+                    new_variant['location']['end']['position'])
+                new_variant['location']['start']['position'] += shift3
+                new_variant['location']['end']['position'] += shift3
                 new_variants.append(new_variant)
 
             elif len(variant['inserted']) == 1:
