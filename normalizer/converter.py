@@ -2,6 +2,7 @@ import copy
 from .util import get_start, get_end, set_start, get_location_length, roll,\
     get_inserted_length
 from crossmapper import Crossmap
+import json
 
 
 def point_to_range(point_location):
@@ -448,7 +449,6 @@ def de_to_hgvs(variants, sequences=None):
     """
     new_variants = []
     o_index = 0
-    import json
     for variant in variants:
         if variant.get('type') == 'equal':
             o_index += get_location_length(variant['location'])
@@ -462,13 +462,12 @@ def de_to_hgvs(variants, sequences=None):
                                       o_index + 1,
                                       o_index + get_inserted_length(
                                           variant['inserted']))
+                ins_seq = sequences['observed'][
+                    o_index:o_index + get_inserted_length(variant['inserted'])]
                 o_index += shift3
                 new_variant = copy.deepcopy(variant)
                 ins_length = get_location_length(
                     variant['inserted'][0]['location'])
-                ins_seq = sequences['observed'][
-                    get_start(variant['inserted'][0]['location']):
-                    get_end(variant['inserted'][0]['location'])]
                 new_variant['location']['start']['position'] += shift3
                 new_variant['location']['end']['position'] += shift3
 

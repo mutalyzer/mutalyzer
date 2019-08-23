@@ -34,6 +34,8 @@ def fetch_sequence(reference_id, reference_source=None):
       'NG_017013.2:g.17013_17014del'),
      ('NG_017013.2:g.17415_17417delinsGCG',
       'NG_017013.2:g.[17415C>G;17417A>G]'),
+     ('NG_017013.2:g.17496_17497insAGCTGCTCAGATAGCGA',
+      'NG_017013.2:g.17496_17497ins[A;17481_17496]'),
      ('NG_012337.1:g.4delins7_50',
       'NG_012337.1:g.[3_4insGGTT;5_6ins12_50]'),
      ('NG_012337.1:g.26_31del',
