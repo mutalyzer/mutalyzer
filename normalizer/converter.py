@@ -206,6 +206,10 @@ def variants_locations_to_internal(variants, sequences, from_cs, reference):
                                                             reference)
         if mol_type == 'mRNA':
             exons, cds = get_exon_cds_for_mrna_reference(sequences, reference)
+        if not exons:
+            raise Exception('No exons retrieved from the reference.')
+        if not cds:
+            raise Exception('No CDS retrieved from the reference.')
         crossmap = Crossmap(locations=exons, cds=cds)
         crossmap_function = crossmap.coding_to_coordinate
         point_function = point_to_coordinate
@@ -464,6 +468,7 @@ def de_to_hgvs(variants, sequences=None):
                                           variant['inserted']))
                 ins_seq = sequences['observed'][
                     o_index:o_index + get_inserted_length(variant['inserted'])]
+                print(shift5, shift3)
                 o_index += shift3
                 new_variant = copy.deepcopy(variant)
                 ins_length = get_location_length(
