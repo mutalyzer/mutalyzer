@@ -139,12 +139,12 @@ def check_intronic_positions(variants):
 
 def is_out_of_range(location, sequence):
     if location['type'] == 'point':
-        if not 0 < location['position'] < len(sequence) - 1:
+        if not 0 <= location['position'] <= len(sequence):
             return True
     if location['type'] == 'range':
-        if not 0 < location['start']['position'] < len(sequence) - 1:
+        if not 0 <= location['start']['position'] <= len(sequence):
             return True
-        if not 0 < location['end']['position'] < len(sequence) - 1:
+        if not 0 <= location['end']['position'] <= len(sequence):
             return True
 
 
