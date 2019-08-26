@@ -58,8 +58,6 @@ def mutalyzer3(description):
     if mol_type == 'mRNA' and check_intronic_positions(variants):
         raise Exception('Intronic positions for mRNA reference.')
 
-    print(json.dumps(description_model, indent=2))
-
     sequences = {}
     for reference_id in references:
         if reference_id == description_model['reference']['id']:
