@@ -169,7 +169,7 @@ def get_exon_cds_for_genomic_reference(sequences, reference):
                                 cds.append(
                                     part['end']['position'].position)
     if len(cds) < 2:
-        raise Exception('CDS not retrieved')
+        raise Exception('CDS not retrieved.')
     cds = sorted(cds)
     return sorted(exons), (cds[0], cds[-1])
 
@@ -468,7 +468,6 @@ def de_to_hgvs(variants, sequences=None):
                                           variant['inserted']))
                 ins_seq = sequences['observed'][
                     o_index:o_index + get_inserted_length(variant['inserted'])]
-                print(shift5, shift3)
                 o_index += shift3
                 new_variant = copy.deepcopy(variant)
                 ins_length = get_location_length(

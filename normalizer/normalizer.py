@@ -6,7 +6,7 @@ from mutator.mutator import mutate
 import extractor
 from .checker import is_overlap, are_sorted, check_semantics, \
     check_for_fuzzy, check_intronic_positions, check_out_of_range,\
-    check_description_sequences
+    check_description_sequences, check_coordinate_system
 from .validation import variants as schema_variants
 from .converter import to_delins, de_to_hgvs,\
     variants_locations_to_internal, variants_locations_to_hgvs
@@ -19,7 +19,12 @@ from functools import lru_cache
 
 @lru_cache(maxsize=32)
 def get_reference_model(reference_id):
-    return {reference_id: retriever.retrieve(reference_id, parse=True)}
+    reference = retriever.retrieve(reference_id, parse=True)
+    if isinstance(reference['model'], list) and reference['model'] == []:
+        raise Exception('No model.')
+    if reference['sequence'] is None:
+        raise Exception('No sequence.')
+    return {reference_id: reference}
 
 
 def get_reference_models(description_model):
@@ -51,7 +56,9 @@ def mutalyzer3(description):
 
     mol_type = get_mol_type(references[description_model['reference']['id']])
     if mol_type == 'mRNA' and check_intronic_positions(variants):
-        raise Exception('Intronic positions.')
+        raise Exception('Intronic positions for mRNA reference.')
+
+    print(json.dumps(description_model, indent=2))
 
     sequences = {}
     for reference_id in references:
@@ -59,6 +66,8 @@ def mutalyzer3(description):
             sequences['reference'] = references[reference_id]['sequence']
         else:
             sequences[reference_id] = references[reference_id]['sequence']
+
+    check_coordinate_system(description_model, references)
 
     variants_internal = variants_locations_to_internal(
         variants=variants,

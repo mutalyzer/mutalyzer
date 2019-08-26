@@ -93,3 +93,22 @@ def test_mutalyzer3(hgvs_description, normalized_description, monkeypatch):
     monkeypatch.setattr('retriever.retriever.fetch_sequence',
                         fetch_sequence)
     assert mutalyzer3(hgvs_description) == normalized_description
+
+
+@pytest.mark.parametrize(
+    'hgvs_description, exception_text',
+    [('NG_012337.1:c.10del',
+      'No selector mentioned for c. with a genomic reference.'),
+     ('NG_029724.1(NM_004321.2):c.101del',
+      'CDS not retrieved.'),
+     ('NM_003002.4:c.205-40dupC',
+      'Intronic positions for mRNA reference.'),
+    ])
+def test_mutalyzer3_exceptions(hgvs_description, exception_text, monkeypatch):
+    monkeypatch.setattr('retriever.retriever.fetch_annotations',
+                        fetch_annotation)
+    monkeypatch.setattr('retriever.retriever.fetch_sequence',
+                        fetch_sequence)
+    with pytest.raises(Exception) as exc:
+        mutalyzer3(hgvs_description)
+    assert exception_text == str(exc.value)

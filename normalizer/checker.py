@@ -1,5 +1,6 @@
 from .util import get_start, get_end, update_position, sort_variants
-
+from .converter import get_mol_type
+from .references import get_transcripts_ids
 
 def are_sorted(variants):
     """
@@ -187,3 +188,12 @@ def check_description_sequences(variants, sequence):
                             inserted['sequence']:
                         return True
     return False
+
+
+def check_coordinate_system(description_model, references):
+    reference = references[description_model['reference']['id']]
+    if description_model.get('coordinate_system') == 'c':
+        if get_mol_type(reference) == 'genomic DNA' and \
+                (description_model['reference'].get('selector') is None):
+            raise Exception('No selector mentioned for c. with a genomic '
+                            'reference.')
