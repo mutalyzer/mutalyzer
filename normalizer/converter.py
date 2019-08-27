@@ -168,16 +168,17 @@ def get_exon_cds_for_genomic_reference(sequences, reference):
                                     part['start']['position'].position)
                                 cds.append(
                                     part['end']['position'].position)
-    if len(cds) < 2:
-        raise Exception('CDS not retrieved.')
+    if len(cds) >= 2:
+        cds = sorted([cds[0], cds[-1]])
+    else:
+        cds = []
     cds = sorted(cds)
-    return sorted(exons), (cds[0], cds[-1])
+    return sorted(exons), cds
 
 
 def get_exon_cds_for_mrna_reference(sequences, reference):
     exons = []
     cds = []
-    import json
     for feature in sequences[reference['id']]['model']:
         if feature['type'] == 'gene':
             for sub_feature in feature['sub_features']:
@@ -190,8 +191,11 @@ def get_exon_cds_for_mrna_reference(sequences, reference):
                     exons.append(
                         (sub_feature['start']['position'].position,
                          sub_feature['end']['position'].position))
-    cds = sorted(cds)
-    return sorted(exons), (cds[0], cds[-1])
+    if len(cds) >= 2:
+        cds = sorted([cds[0], cds[-1]])
+    else:
+        cds = []
+    return sorted(exons), cds
 
 
 def variants_locations_to_internal(variants, sequences, from_cs, reference):
@@ -207,9 +211,9 @@ def variants_locations_to_internal(variants, sequences, from_cs, reference):
         if mol_type == 'mRNA':
             exons, cds = get_exon_cds_for_mrna_reference(sequences, reference)
         if not exons:
-            raise Exception('No exons retrieved from the reference.')
+            raise Exception('No exons.')
         if not cds:
-            raise Exception('No CDS retrieved from the reference.')
+            raise Exception('No CDS.')
         crossmap = Crossmap(locations=exons, cds=cds)
         crossmap_function = crossmap.coding_to_coordinate
         point_function = point_to_coordinate

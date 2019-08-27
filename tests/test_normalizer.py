@@ -100,9 +100,13 @@ def test_mutalyzer3(hgvs_description, normalized_description, monkeypatch):
     [('NG_012337.1:c.10del',
       'No selector mentioned for c. with a genomic reference.'),
      ('NG_029724.1(NM_004321.2):c.101del',
-      'CDS not retrieved.'),
+      'No exons.'),
+     ('NM_001003806.1:c.323delG',
+      'No CDS.'),
      ('NM_003002.4:c.205-40dupC',
       'Intronic positions for mRNA reference.'),
+     ('NM_003002.4:c.10del5',
+      'Different deletion length.'),
     ])
 def test_mutalyzer3_exceptions(hgvs_description, exception_text, monkeypatch):
     monkeypatch.setattr('retriever.retriever.fetch_annotations',
