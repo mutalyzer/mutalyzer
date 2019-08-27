@@ -2,6 +2,7 @@ from .util import get_start, get_end, update_position, sort_variants
 from .converter import get_mol_type
 from .references import get_transcripts_ids
 
+
 def are_sorted(variants):
     """
     Check if the provided variants list is sorted.
@@ -171,14 +172,24 @@ def check_out_of_range(variants, sequences):
 
 
 def check_description_sequences(variants, sequence):
+    """
+    Check if there is a match between the actual sequence and the
+    user provided ones.
+    """
     for variant in variants:
         if variant.get('deleted'):
             for deleted in variant['deleted']:
-                if sequence[
-                   variant['location']['start']['position']:
-                   variant['location']['end']['position']] != \
+                if deleted.get('sequence') and \
+                        sequence[variant['location']['start']['position']:
+                        variant['location']['end']['position']] != \
                         deleted['sequence']:
                     return True
+                if deleted.get('length') and \
+                        variant['location']['end']['position'] - \
+                        variant['location']['start']['position'] != \
+                        deleted['length']['value']:
+                    return True
+
         if variant['type'] == 'duplication':
             if variant.get('inserted'):
                 for inserted in variant['inserted']:
