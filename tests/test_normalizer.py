@@ -119,7 +119,17 @@ def test_mutalyzer3(hgvs_description, normalized_description, monkeypatch):
       'Description sequence mismatch.'),
      ('NM_003002.4:c.10del5',
       'Description sequence mismatch.'),
-    ])
+     ('NM_003002.4:c.10_12insA',
+      'Not consecutive positions in insertion.'),
+     ('NM_003002.4:c.10_11ins6',
+      'Length in inserted not supported.'),
+     ('NM_003002.4:c.10_11ins(5)',
+      'Length in inserted not supported.'),
+     ('NM_003002.4:c.10_11ins[5]',
+      'Length in inserted not supported.'),
+     ('NM_003002.4:c.10_11ins[50_70;5]',
+      'Length in inserted not supported.'),
+     ])
 def test_mutalyzer3_exceptions(hgvs_description, exception_text, monkeypatch):
     monkeypatch.setattr('retriever.retriever.fetch_annotations',
                         fetch_annotation)

@@ -6,7 +6,7 @@ from mutator.mutator import mutate
 import extractor
 from .checker import is_overlap, are_sorted, check_semantics, \
     check_for_fuzzy, check_intronic_positions, check_out_of_range,\
-    check_description_sequences, check_coordinate_system
+    check_description_sequences, check_coordinate_system, validate_variants
 from .validation import variants as schema_variants
 from .converter import to_delins, de_to_hgvs,\
     variants_locations_to_internal, variants_locations_to_hgvs
@@ -72,6 +72,8 @@ def mutalyzer3(description):
         sequences=references,
         from_cs=description_model['coordinate_system'],
         reference=description_model['reference'])
+
+    validate_variants(variants, sequences)
 
     if check_description_sequences(variants_internal, sequences['reference']):
         raise Exception('Description sequence mismatch.')

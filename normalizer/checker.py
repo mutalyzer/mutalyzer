@@ -57,6 +57,8 @@ def check_deletion(variant, reference=None):
     pass
 
 
+
+
 def check_semantics(variants, reference=None, indexing='internal'):
     start_end = []
     for variant in variants:
@@ -151,6 +153,9 @@ def is_out_of_range(location, sequence):
 
 
 def check_out_of_range(variants, sequences):
+    """
+    Check if the provided locations are within the reference length.
+    """
     for variant in variants:
         if variant.get('location') and \
                 is_out_of_range(variant['location'], sequences['reference']):
@@ -174,7 +179,8 @@ def check_out_of_range(variants, sequences):
 def check_description_sequences(variants, sequence):
     """
     Check if there is a match between the actual sequence and the
-    user provided ones.
+    user provided ones. Examples:
+    - NG_029724.1:g.10_11delGT: check if GT is located at 10_11.
     """
     for variant in variants:
         if variant.get('deleted'):
@@ -202,9 +208,41 @@ def check_description_sequences(variants, sequence):
 
 
 def check_coordinate_system(description_model, references):
+    """
+    Check if there is a match between the provided coordinate system the
+    reference type.
+    - A c. coordinate system can be used with a genomic reference only if a
+    selector is provided.
+    """
     reference = references[description_model['reference']['id']]
     if description_model.get('coordinate_system') == 'c':
         if get_mol_type(reference) == 'genomic DNA' and \
                 (description_model['reference'].get('selector') is None):
             raise Exception('No selector mentioned for c. with a genomic '
                             'reference.')
+
+
+def get_location_length(variant):
+    return get_end(variant['location']) - get_start(variant['location'])
+
+
+def check_location_length_is_one(variant):
+    if get_location_length(variant) != 1:
+        raise Exception('Not consecutive positions in insertion.')
+
+
+def check_length_in_inserted(variant):
+    for inserted in variant['inserted']:
+        if inserted.get('length'):
+            raise Exception('Length in inserted not supported.')
+
+
+def check_positions(variant):
+    if variant['type'] == 'insertion':
+        check_location_length_is_one(variant)
+        check_length_in_inserted(variant)
+
+
+def validate_variants(variants, sequences):
+    for variant in variants:
+        check_positions(variant)
