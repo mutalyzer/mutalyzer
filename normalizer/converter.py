@@ -149,8 +149,7 @@ def get_exon_cds_for_genomic_reference(sequences, reference):
                                         part['start']['position'].position)
                                     cds.append(
                                         part['end']['position'].position)
-                        else:
-                            rna_id += 1
+                        rna_id += 1
     else:
         for feature in sequences[reference['id']]['model']:
             if feature['type'] == 'gene':

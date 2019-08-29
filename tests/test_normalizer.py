@@ -86,6 +86,16 @@ def fetch_sequence(reference_id, reference_source=None):
       'NG_029724.1:g.10_11del'),
      ('NG_008835.1(CDH23_v001):c.1449+846delA',
       'NG_008835.1:g.255529del'),
+     ('NG_009113.2(NR2E3_v001):c.948delC',
+      'NG_009113.2:g.8038del'),
+     ('NG_007107.2(MECP2_v001):c.378-17delT',
+      'NG_007107.2:g.110661del'),
+     ('NG_009113.2(NR2E3_v002):c.948delC',
+      'NG_009113.2:g.8038del'),
+     ('NG_009113.2(NM_016346.4):c.948delC',
+      'NG_009113.2:g.8038del'),
+     ('NG_009113.2(NM_014249.4):c.948delC',
+      'NG_009113.2:g.8038del'),
      ])
 def test_mutalyzer3(hgvs_description, normalized_description, monkeypatch):
     monkeypatch.setattr('retriever.retriever.fetch_annotations',
