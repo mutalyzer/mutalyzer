@@ -84,16 +84,8 @@ def fetch_sequence(reference_id, reference_source=None):
       'NG_029724.1:g.10del'),
      ('NG_029724.1:g.10_11delGT',
       'NG_029724.1:g.10_11del'),
-     # ('NG_029724.1(NM_004321.7):c.100_*900000del',
-     #  'Out of range'),
-     # ('NM_003002.4:c.736_741delins10-40',
-     #  'Intronic positions.'),
-
-     # To be curated.
-     # --------------
-     # - Fix the ambiguity for the length/location.
-     # ('NG_012337.1:g.100_200>400',
-     #  'NG_012337.1:g.100_200delins100'),
+     ('NG_008835.1(CDH23_v001):c.1449+846delA',
+      'NG_008835.1:g.255529del'),
      ])
 def test_mutalyzer3(hgvs_description, normalized_description, monkeypatch):
     monkeypatch.setattr('retriever.retriever.fetch_annotations',
@@ -129,6 +121,12 @@ def test_mutalyzer3(hgvs_description, normalized_description, monkeypatch):
       'Length in inserted not supported.'),
      ('NM_003002.4:c.10_11ins[50_70;5]',
       'Length in inserted not supported.'),
+     ('NG_012337.1:g.100_200>400',
+      'Length in inserted not supported.'),
+     ('NM_003002.4:c.10AAA[50]',
+      'Variant type not supported.'),
+     ('NG_029724.1(NM_004321.7):c.100_*900000del',
+      'Out of range.'),
      ])
 def test_mutalyzer3_exceptions(hgvs_description, exception_text, monkeypatch):
     monkeypatch.setattr('retriever.retriever.fetch_annotations',

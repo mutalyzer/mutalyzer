@@ -134,7 +134,7 @@ def get_exon_cds_for_genomic_reference(sequences, reference):
         transcript_number = int(reference['selector']['id'].split('_v')[1])
         for feature in sequences[reference['id']]['model']:
             if feature['type'] == 'gene' and \
-                    feature['id'].split('-')[1] == gene_id:
+                    feature['id'].split('gene-')[1] == gene_id:
                 rna_id = 1
                 for sub_feature in feature['sub_features']:
                     if 'rna' in sub_feature['id']:
