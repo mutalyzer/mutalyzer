@@ -133,7 +133,8 @@ def get_exon_cds_for_genomic_reference(sequences, reference):
         gene_id = reference['selector']['id'].split('_v')[0]
         transcript_number = int(reference['selector']['id'].split('_v')[1])
         for feature in sequences[reference['id']]['model']:
-            if feature['type'] == 'gene' and \
+            if feature['type'] == 'gene' and feature.get('sub_features') and \
+                    '-' in feature['id'] and \
                     feature['id'].split('gene-')[1] == gene_id:
                 rna_id = 1
                 for sub_feature in feature['sub_features']:
@@ -153,20 +154,22 @@ def get_exon_cds_for_genomic_reference(sequences, reference):
     else:
         for feature in sequences[reference['id']]['model']:
             if feature['type'] == 'gene':
-                for sub_feature in feature['sub_features']:
-                    if sub_feature['type'] == 'mRNA' and \
-                            reference['selector']['id'] == \
-                            sub_feature['id'].split('-')[1]:
-                        for part in sub_feature['sub_features']:
-                            if part['type'] == 'exon':
-                                exons.append(
-                                    (part['start']['position'].position,
-                                     part['end']['position'].position))
-                            elif part['type'] == 'CDS':
-                                cds.append(
-                                    part['start']['position'].position)
-                                cds.append(
-                                    part['end']['position'].position)
+                if feature.get('sub_features'):
+                    for sub_feature in feature['sub_features']:
+                        if sub_feature['type'] == 'mRNA' and \
+                                '-' in sub_feature['id'] and \
+                                reference['selector']['id'] == \
+                                sub_feature['id'].split('-')[1]:
+                            for part in sub_feature['sub_features']:
+                                if part['type'] == 'exon':
+                                    exons.append(
+                                        (part['start']['position'].position,
+                                         part['end']['position'].position))
+                                elif part['type'] == 'CDS':
+                                    cds.append(
+                                        part['start']['position'].position)
+                                    cds.append(
+                                        part['end']['position'].position)
     if len(cds) >= 2:
         cds = sorted([cds[0], cds[-1]])
     else:
@@ -179,7 +182,7 @@ def get_exon_cds_for_mrna_reference(sequences, reference):
     exons = []
     cds = []
     for feature in sequences[reference['id']]['model']:
-        if feature['type'] == 'gene':
+        if feature['type'] == 'gene' and feature.get('sub_features'):
             for sub_feature in feature['sub_features']:
                 if sub_feature['type'] == 'CDS':
                     cds.append(

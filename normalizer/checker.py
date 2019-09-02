@@ -241,8 +241,21 @@ def check_positions(variant):
     if variant['type'] == 'insertion':
         check_location_length_is_one(variant)
         check_length_in_inserted(variant)
+    if variant['type'] == 'substitution':
+        check_length_in_inserted(variant)
+
+
+def is_unsupported_variant_type(variant):
+    if variant['type'] not in ['substitution', 'deletion', 'duplication',
+                               'insertion', 'inversion', 'conversion',
+                               'deletion_insertion']:
+        return True
+    else:
+        return False
 
 
 def validate_variants(variants, sequences):
     for variant in variants:
+        if is_unsupported_variant_type(variant):
+            raise Exception('Variant type not supported.')
         check_positions(variant)

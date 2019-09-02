@@ -96,6 +96,10 @@ def fetch_sequence(reference_id, reference_source=None):
       'NG_009113.2:g.8038del'),
      ('NG_009113.2(NM_014249.4):c.948delC',
       'NG_009113.2:g.8038del'),
+     ('NG_009497.1(NM_206933.2):c.8682-19dupT',
+      'NG_009497.1:g.561208dup'),
+     ('NG_009497.1(USH2A_v001):c.8682-19dup',
+      'NG_009497.1:g.561208dup'),
      ])
 def test_mutalyzer3(hgvs_description, normalized_description, monkeypatch):
     monkeypatch.setattr('retriever.retriever.fetch_annotations',
@@ -137,6 +141,8 @@ def test_mutalyzer3(hgvs_description, normalized_description, monkeypatch):
       'Variant type not supported.'),
      ('NG_029724.1(NM_004321.7):c.100_*900000del',
       'Out of range.'),
+     ('NG_009497.1(KCTD3_v001):c.8682-19dup',
+      'No exons.'),
      ])
 def test_mutalyzer3_exceptions(hgvs_description, exception_text, monkeypatch):
     monkeypatch.setattr('retriever.retriever.fetch_annotations',
