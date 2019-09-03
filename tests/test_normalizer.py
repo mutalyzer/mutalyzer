@@ -111,7 +111,8 @@ def test_mutalyzer3(hgvs_description, normalized_description, monkeypatch):
 
 @pytest.mark.parametrize(
     'hgvs_description, exception_text',
-    [('NG_012337.1:c.10del',
+    [
+     ('NG_012337.1:c.10del',
       'No selector mentioned for c. with a genomic reference.'),
      ('NG_029724.1(NM_004321.2):c.101del',
       'No exons.'),
@@ -143,6 +144,14 @@ def test_mutalyzer3(hgvs_description, normalized_description, monkeypatch):
       'Out of range.'),
      ('NG_009497.1(KCTD3_v001):c.8682-19dup',
       'No exons.'),
+     ('NG_029724.1:g.10_5del',
+      'End position is smaller then start position.'),
+     ('NM_003002.4:c.*1_10del',
+      'End position is smaller then start position.'),
+     ('NG_012337.1:g.10delins20_15',
+      'End position is smaller then start position.'),
+     ('NG_012337.1:g.10del20_15',
+      'End position is smaller then start position.'),
      ])
 def test_mutalyzer3_exceptions(hgvs_description, exception_text, monkeypatch):
     monkeypatch.setattr('retriever.retriever.fetch_annotations',

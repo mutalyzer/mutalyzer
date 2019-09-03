@@ -57,8 +57,6 @@ def check_deletion(variant, reference=None):
     pass
 
 
-
-
 def check_semantics(variants, reference=None, indexing='internal'):
     start_end = []
     for variant in variants:
@@ -209,7 +207,7 @@ def check_description_sequences(variants, sequence):
 
 def check_coordinate_system(description_model, references):
     """
-    Check if there is a match between the provided coordinate system the
+    Check if there is a match between the provided coordinate system and the
     reference type.
     - A c. coordinate system can be used with a genomic reference only if a
     selector is provided.
@@ -259,3 +257,26 @@ def validate_variants(variants, sequences):
         if is_unsupported_variant_type(variant):
             raise Exception('Variant type not supported.')
         check_positions(variant)
+
+
+def check_start_end(variant):
+    def check_inserted_deleted(to_check):
+        for ins_or_del in variant[to_check]:
+            if ins_or_del.get('location') and \
+                    ins_or_del['location']['type'] == 'range':
+                if get_start(ins_or_del['location']) > \
+                        get_end(ins_or_del['location']):
+                    raise Exception(
+                        'End position is smaller then start position.')
+    if variant['location']['type'] == 'range':
+        if get_start(variant['location']) > get_end(variant['location']):
+            raise Exception('End position is smaller then start position.')
+        if variant.get('inserted'):
+            check_inserted_deleted('inserted')
+        if variant.get('deleted'):
+            check_inserted_deleted('deleted')
+
+
+def validate_internal_variants(variants, sequences):
+    for variant in variants:
+        check_start_end(variant)
