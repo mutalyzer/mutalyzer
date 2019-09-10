@@ -65,7 +65,6 @@ def location_to_internal(location, crossmap_function, point_function,
     elif location['type'] == 'point':
         new_location['position'] = crossmap_function(
             point_function(location))
-
     if variant_type == 'insertion':
         new_location['start']['position'] += 1
     elif location['type'] == 'range':
@@ -91,7 +90,6 @@ def location_to_hgvs(location, to_function, variant_type):
         new_location['end']['position'] -= 1
         if get_start(new_location) == get_end(new_location):
             new_location = range_to_point(new_location)
-
     return new_location
 
 
@@ -124,6 +122,108 @@ def get_mol_type(reference_model):
     for part in reference_model['model']:
         if part['type'] == 'region':
             return part['qualifiers'].get('mol_type')
+
+
+def get_exon_cds_for_genomic_reference(sequences, reference):
+    exons = []
+    cds = []
+    if '_v' in reference['selector']['id']:
+        gene_id = reference['selector']['id'].split('_v')[0]
+        transcript_number = int(reference['selector']['id'].split('_v')[1])
+        for feature in sequences[reference['id']]['model']:
+            if feature['type'] == 'gene' and feature.get('sub_features') and \
+                    '-' in feature['id'] and \
+                    feature['id'].split('gene-')[1] == gene_id:
+                rna_id = 1
+                for sub_feature in feature['sub_features']:
+                    if 'rna' in sub_feature['id']:
+                        if rna_id == transcript_number:
+                            for part in sub_feature['sub_features']:
+                                if part['type'] == 'exon':
+                                    exons.append(
+                                        (part['start']['position'].position,
+                                         part['end']['position'].position))
+                                elif part['type'] == 'CDS':
+                                    cds.append(
+                                        part['start']['position'].position)
+                                    cds.append(
+                                        part['end']['position'].position)
+                        rna_id += 1
+    else:
+        for feature in sequences[reference['id']]['model']:
+            if feature['type'] == 'gene':
+                if feature.get('sub_features'):
+                    for sub_feature in feature['sub_features']:
+                        if sub_feature['type'] == 'mRNA' and \
+                                '-' in sub_feature['id'] and \
+                                reference['selector']['id'] == \
+                                sub_feature['id'].split('-')[1]:
+                            for part in sub_feature['sub_features']:
+                                if part['type'] == 'exon':
+                                    exons.append(
+                                        (part['start']['position'].position,
+                                         part['end']['position'].position))
+                                elif part['type'] == 'CDS':
+                                    cds.append(
+                                        part['start']['position'].position)
+                                    cds.append(
+                                        part['end']['position'].position)
+    if len(cds) >= 2:
+        cds = sorted([cds[0], cds[-1]])
+    else:
+        cds = []
+    cds = sorted(cds)
+    return sorted(exons), cds
+
+
+def get_exon_cds_for_genomic_reference_2(selector_id, reference_model):
+    exons = []
+    cds = []
+    if '_v' in selector_id:
+        gene_id = selector_id.split('_v')[0]
+        transcript_number = int(selector_id.split('_v')[1])
+        for feature in reference_model:
+            if feature['type'] == 'gene' and feature.get('features') and \
+                    '-' in feature['id'] and \
+                    feature['id'].split('gene-')[1] == gene_id:
+                rna_id = 1
+                for sub_feature in feature['features']:
+                    if 'rna' in sub_feature['id']:
+                        if rna_id == transcript_number:
+                            for part in sub_feature['features']:
+                                if part['type'] == 'exon':
+                                    exons.append(
+                                        (part['start']['position'].position,
+                                         part['end']['position'].position))
+                                elif part['type'] == 'CDS':
+                                    cds.append(
+                                        part['start']['position'].position)
+                                    cds.append(
+                                        part['end']['position'].position)
+                        rna_id += 1
+    else:
+        for feature in reference_model:
+            if feature['type'] == 'gene':
+                if feature.get('features'):
+                    for sub_feature in feature['features']:
+                        if sub_feature['type'] == 'mRNA' and \
+                                '-' in sub_feature['id'] and \
+                                selector_id == \
+                                sub_feature['id'].split('-')[1]:
+                            for part in sub_feature['features']:
+                                if part['type'] == 'exon':
+                                    exons.append(
+                                        (part['start']['position'].position,
+                                         part['end']['position'].position))
+                                elif part['type'] == 'CDS':
+                                    cds.append(
+                                        part['start']['position'].position)
+                                    cds.append(
+                                        part['end']['position'].position)
+    cds = sorted(cds)
+    if len(cds) >= 2:
+        cds = sorted([cds[0], cds[-1]])
+    return sorted(exons), cds
 
 
 def get_exon_cds_for_genomic_reference(sequences, reference):
