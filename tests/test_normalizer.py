@@ -1,6 +1,7 @@
 import pytest
 from normalizer.normalizer import mutalyzer3
 from pathlib import Path
+import json
 
 
 def _get_content(relative_location):
@@ -11,11 +12,11 @@ def _get_content(relative_location):
 
 
 def fetch_annotation(reference_id, reference_type=None):
-    return _get_content('data/' + reference_id + '.gff3'), 'gff', 'ncbi'
+    return _get_content('data/' + reference_id + '.gff3'), 'gff3', 'ncbi'
 
 
 def fetch_sequence(reference_id, reference_source=None):
-    return _get_content('data/' + reference_id + '.sequence')
+    return json.loads(_get_content('data/' + reference_id + '.sequence'))
 
 
 @pytest.mark.parametrize(
