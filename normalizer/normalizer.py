@@ -12,13 +12,14 @@ from .checker import is_overlap, are_sorted, check_semantics, \
     validate_internal_variants
 from .validation import variants as schema_variants
 from .converter import to_delins, de_to_hgvs,\
-    variants_locations_to_internal, variants_locations_to_hgvs, to_delins
+    variants_locations_to_internal, variants_locations_to_hgvs, to_delins, \
+    get_exon_cds_for_mrna_reference_2, get_exon_cds_genomic_lrg
 from .to_description import to_string, variant_to_description
 import json
 from cachetools import cached, TTLCache
-from .converter import get_mol_type, get_exon_cds_for_genomic_reference_2, \
+from .converter import get_mol_type, get_exon_cds_genomic_ncbi, \
     get_exon_cds_for_mrna_reference, location_to_internal, get_point_value, \
-    point_to_coordinate
+    point_to_coordinate, get_all_exon_cds_for_genomic
 from functools import lru_cache
 import copy
 
@@ -96,19 +97,34 @@ class Description(object):
             self._crossmap_function = crossmap.genomic_to_coordinate
             self._point_function = get_point_value
         if self._coordinate_system == 'c':
-            if self._mol_type == 'genomic DNA':
-                if self._description_model['reference'].get('selector'):
-                    exons, cds = get_exon_cds_for_genomic_reference_2(
-                        self._description_model['reference']['selector']['id'],
+            if self._description_model['reference'].get('selector'):
+                if self._mol_type == 'genomic DNA':
+                    if self._reference_models[self._reference_id]['source'] \
+                            == 'ncbi':
+                        exons, cds = get_exon_cds_genomic_ncbi(
+                            self._description_model['reference']['selector']['id'],
+                            self._reference_models[self._reference_id]['model'])
+                    elif self._reference_models[self._reference_id]['source'] \
+                            == 'lrg':
+                        exons, cds = get_exon_cds_genomic_lrg(
+                            self._description_model['reference']['selector']['id'],
+                            self._reference_models[self._reference_id]['model'])
+                    crossmap = Crossmap(locations=exons, cds=cds)
+                    self._crossmap_function = crossmap.coding_to_coordinate
+                    self._point_function = point_to_coordinate
+            else:
+                if self._mol_type == 'genomic DNA':
+                    selectors = get_all_exon_cds_for_genomic(
                         self._reference_models[self._reference_id]['model'])
-                else:
-                    self._add_warning('No selector (specific locus).')
-                    # search for specific locus if it is the only one,
-                    # otherwise add an error message to choose from something.
-
-                crossmap = Crossmap(locations=exons, cds=cds)
-                self._crossmap_function = crossmap.coding_to_coordinate
-                self._point_function = point_to_coordinate
+                    self._add_error('No selector. Choose from: {}.'.format(
+                        ', '.join(['{}, {}'.format(i['id1'], i['id2'])
+                                   for i in selectors])))
+                elif self._mol_type == 'mRNA':
+                    exons, cds = get_exon_cds_for_mrna_reference_2(
+                        self._reference_models[self._reference_id]['model'])
+                    crossmap = Crossmap(locations=exons, cds=cds)
+                    self._crossmap_function = crossmap.coding_to_coordinate
+                    self._point_function = point_to_coordinate
 
     def _add_error(self, error):
         self.status['errors'].append(error)
@@ -120,7 +136,11 @@ class Description(object):
         valid = True
         if reference_id not in self._reference_models.keys():
             reference = get_reference_model_2(reference_id)
-            if isinstance(reference['model'], list) and not reference['model']:
+            if reference is None:
+                self._add_error('No reference was retrieved for {}.'.format(
+                    reference_id))
+                return False
+            if reference['model'] is None:
                 self._add_error('No model for {}.'.format(reference_id))
                 valid = False
             if reference['sequence'] is None:
@@ -159,9 +179,9 @@ class Description(object):
         self._sequences = {}
         for reference_id in self._reference_models.keys():
             self._sequences[reference_id] = self._reference_models[
-                reference_id]['sequence']
+                reference_id]['sequence']['seq']
         self._sequences['reference'] = self._reference_models[
-            self._reference_id]['sequence']
+            self._reference_id]['sequence']['seq']
         self._sequences['observed'] = mutate(
             self._sequences, self._delins_variants)
 
@@ -170,10 +190,13 @@ class Description(object):
         if self.status['errors']:
             return
         self._parse_tree_to_model()
-        print(json.dumps(self._description_model, indent=2))
         self._reference_id = self._description_model['reference']['id']
         self._append_reference(self._reference_id)
+        if self.status['errors']:
+            return
         self._crossmapper_setup()
+        if self.status['errors']:
+            return
         self._to_internal_locations()
         if self.status['errors']:
             return
@@ -206,7 +229,7 @@ def mutalyzer3(hgvs_description):
 
     print(description.status)
 
-    return description.status['normalized_description']
+    return description.status.get('normalized_description')
 
     print(description.status['normalized_description'])
 
