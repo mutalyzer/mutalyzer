@@ -1,6 +1,5 @@
 from .util import get_start, get_end, update_position, sort_variants
-from .converter import get_mol_type
-from .references import get_transcripts_ids
+from .reference import get_mol_type
 
 
 def are_sorted(variants):

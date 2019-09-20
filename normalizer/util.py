@@ -1,32 +1,38 @@
 
 
-def get_start(location):
+def get_start(model):
     """
-    Get the start position of a location. For point locations the position
-    value is returned. In case of uncertain start end, the minimum is returned.
+    Get the start position of a (feature) location. For point locations
+    the position value is returned. In case of uncertain start end,
+    the minimum is returned.
     """
-    if location['type'] == 'range':
-        if location['start'].get('uncertain'):
-            return get_start(location['start'])
+    if model.get('location'):
+        model = model['location']
+    if model['type'] == 'range':
+        if model['start'].get('uncertain'):
+            return get_start(model['start'])
         else:
-            return location['start']['position']
-    elif location['type'] == 'point':
-        return location['position']
+            return model['start']['position']
+    elif model['type'] == 'point':
+        return model['position']
 
 
 def set_start(location, start):
     location['start']['position'] = start
 
 
-def get_end(location):
+def get_end(model):
     """
-    Get the end position of a location. For point locations the position value
-    is returned. In case of uncertain end range, the maximum is returned.
+    Get the end position of a (feature) location. For point locations
+    the position value is returned. In case of uncertain end range,
+    the maximum is returned.
     """
-    if location['type'] == 'range':
-        return location['end']['position']
-    elif location['type'] == 'point':
-        return location['position']
+    if model.get('location'):
+        model = model['location']
+    if model['type'] == 'range':
+        return model['end']['position']
+    elif model['type'] == 'point':
+        return model['position']
 
 
 def update_position(location, start_end,  value):
