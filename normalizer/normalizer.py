@@ -1,8 +1,6 @@
 from functools import lru_cache
 import copy
-from hgvsparser import to_model
-from hgvsparser.hgvs_parser import HgvsParser
-from hgvsparser.exceptions import UnexpectedCharacter
+from mutalyzer_hgvs_parser import parse_description_to_model
 from retriever import retriever
 from mutator.mutator import mutate
 import extractor
@@ -38,14 +36,11 @@ class Description(object):
         self.status['warnings'].append(warning)
 
     def _parse(self):
-        parser = HgvsParser()
-        try:
-            self._parse_tree = parser.parse(self.description)
-        except UnexpectedCharacter as e:
-            self._add_error(str(e))
-
-    def _parse_tree_to_model(self):
-        self._description_model = to_model.convert(self._parse_tree)
+        model = parse_description_to_model(self.description)
+        if model.get('errors'):
+            self._add_error(model['errors'])
+        else:
+            self._description_model = model
 
     def _crossmapper_setup(self):
         self._mol_type = get_mol_type(
@@ -143,7 +138,6 @@ class Description(object):
         self._parse()
         if self.status['errors']:
             return
-        self._parse_tree_to_model()
         self._reference_id = self._description_model['reference']['id']
         self._append_reference(self._reference_id)
         if self.status['errors']:
