@@ -8,7 +8,7 @@ from crossmapper import Crossmap
 from .converter import de_to_hgvs, variants_locations_to_hgvs, to_delins, \
     location_to_internal, get_point_value, point_to_coordinate
 from .reference import get_selector_model, get_exon_cds_for_mrna_reference, \
-    get_mol_type, get_all_exon_cds_for_genomic
+    get_mol_type, get_all_selectors_exon_cds
 from .to_description import to_string
 
 
@@ -66,16 +66,16 @@ class Description(object):
                     self._reference_models[self._reference_id],
                     self._mol_type,
                     self._description_model['reference']['selector']['id'])
-                crossmap = Crossmap(
-                    selector_model['exons'], selector_model['cds'])
+                crossmap = Crossmap(selector_model['exons'],
+                                    selector_model['cds'])
                 self._crossmap_function = crossmap.coding_to_coordinate
                 self._point_function = point_to_coordinate
             else:
-                if self._mol_type == 'genomic DNA':
-                    selectors = get_all_exon_cds_for_genomic(
+                if 'DNA' in self._mol_type.upper():
+                    selectors = get_all_selectors_exon_cds(
                         self._reference_models[self._reference_id]['model'])
                     self._add_error('No selector. Choose from: {}.'.format(
-                        ', '.join(['{}, {};'.format(i['id1'], i['id2'])
+                        ', '.join(['{} <-> {}'.format(i['id1'], i['id2'])
                                    for i in selectors])))
                 elif self._mol_type == 'mRNA':
                     exons, cds = get_exon_cds_for_mrna_reference(
@@ -175,6 +175,7 @@ def mutalyzer3(hgvs_description):
 
     description = Description(hgvs_description)
 
-    print(description.status)
-
-    return description.status.get('normalized_description')
+    if description.status.get('errors'):
+        return description.status
+    else:
+        return description.status.get('normalized_description')
