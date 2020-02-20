@@ -14,6 +14,6 @@ setup(name='normalizer',
       version=VERSION,
       packages=['normalizer'],
       description='HGVS variant description normalizer',
-      entry_points={
-          'console_scripts': ['normalizer=normalizer.cli:main']}
-      )
+      entry_points={'console_scripts': [
+          'normalizer-cli = normalizer.entrypoints.cli:main',
+          'normalizer-api = normalizer.entrypoints.api:main']})

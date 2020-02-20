@@ -9,3 +9,6 @@ __pycache__/
 
 normalizer.egg-info/
 normalizer/__pycache__/
+
+tests/data/*.json
+apis

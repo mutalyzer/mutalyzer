@@ -7,6 +7,7 @@ configparser==3.5.0
 contextlib2==0.5.5
 -e git+https://github.com/mutalyzer/crossmap.git@master#egg=crossmaper
 -e git+https://github.com/mutalyzer/description-extractor.git@mutalyzer3#egg=description_extractor
+flask-restx==0.1.1
 -e git+https://github.com/mutalyzer/hgvs-parser@master#egg=mutalyzer_hgvs_parser
 idna==2.8
 lark-parser==0.7.5

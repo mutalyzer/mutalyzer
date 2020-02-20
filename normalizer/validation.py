@@ -54,3 +54,11 @@ variant = Schema({'type':               And(str, Or('equal', 'deletion_insertion
                   Optional('deleted'):  [deletion]})
 
 variants = Schema(Or([{'type': And(str, 'equal'), 'source': And(str, 'reference')}], [variant]))
+
+
+import json
+print(json.dumps(variant.json_schema(''), indent=2))
+
+s = Schema({"test": str, "nested": {Optional("other"): str}})
+# print(json.dumps(s.json_schema("https://example.com/my-schema.json")))
+# print(json.dumps(s.json_schema(), indent=2))

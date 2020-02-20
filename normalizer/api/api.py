@@ -1,5 +1,5 @@
 from flask import Flask
-from flask_restplus import Resource, Api
+from flask_restx import Resource, Api
 from normalizer.normalizer import mutalyzer3, get_reference_model
 from mutalyzer_hgvs_parser import parse_description, parse_description_to_model
 
@@ -12,8 +12,7 @@ ns = api.namespace('/')
 @ns.route("/syntax_check/<string:hgvs_description>")
 class SyntaxCheck(Resource):
     def get(self, hgvs_description):
-        """Takes a variant description as input and checks
-        whether its syntax is correct."""
+        """Check the syntax correctness of a variant description."""
         try:
             parse_description(hgvs_description)
         except Exception:
@@ -39,9 +38,5 @@ class ReferenceModel(Resource):
 @ns.route("/name_check/<string:hgvs_description>")
 class NameCheck(Resource):
     def get(self, hgvs_description):
-        """Takes a variant description as input and checks
-        whether it is correct."""
+        """Normalize a variant description."""
         return mutalyzer3(hgvs_description)
-
-
-app.run(port=5001, debug=True)

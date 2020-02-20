@@ -10,6 +10,8 @@ from .converter import de_to_hgvs, variants_locations_to_hgvs, to_delins, \
 from .reference import get_selector_model, get_exon_cds_for_mrna_reference, \
     get_mol_type, get_all_selectors_exon_cds
 from .to_description import to_string
+from .util import print_time_information
+import time
 
 
 @lru_cache(maxsize=32)
@@ -22,10 +24,14 @@ class Description(object):
     def __init__(self, description):
         self.status = {'errors': [], 'warnings': []}
         self.description = description
-        self._parse_tree = None
         self._description_model = None
         self._reference_id = None
         self._reference_models = {}
+        self._mol_type = None
+        self._coordinate_system = None
+        self._crossmap_function = None
+        self._point_function = None
+        self._time_stamps = []
 
         self._normalize()
 
@@ -43,8 +49,10 @@ class Description(object):
             self._description_model = model
 
     def _crossmapper_setup(self):
+
         self._mol_type = get_mol_type(
             self._reference_models[self._reference_id])
+
         if self._description_model.get('coordinate_system') is None:
             self._coordinate_system = 'g'
             self._add_warning('No coordinate system mentioned. We assumed a '
@@ -135,11 +143,19 @@ class Description(object):
             self._sequences, self._delins_variants)
 
     def _normalize(self):
+        self._time_stamps.append(('initial', time.perf_counter()))
+
         self._parse()
         if self.status['errors']:
             return
+
+        self._time_stamps.append(('syntax parser', time.perf_counter()))
+
         self._reference_id = self._description_model['reference']['id']
         self._append_reference(self._reference_id)
+
+        self._time_stamps.append(('retriever', time.perf_counter()))
+
         if self.status['errors']:
             return
         self._crossmapper_setup()
@@ -149,10 +165,14 @@ class Description(object):
         if self.status['errors']:
             return
         self._delins_variants = to_delins(self._internal_location_variants)
+
         self._mutate()
+        self._time_stamps.append(('mutator', time.perf_counter()))
 
         de_variants = extractor.describe_dna(
             self._sequences['reference'], self._sequences['observed'])
+
+        self._time_stamps.append(('description extractor', time.perf_counter()))
 
         de_variants_hgvs = de_to_hgvs(de_variants, self._sequences)
 
@@ -169,6 +189,10 @@ class Description(object):
             self._sequences)
 
         self.status['normalized_description'] = self.normalized_description
+
+        self._time_stamps.append(('last', time.perf_counter()))
+
+        print_time_information(self._time_stamps)
 
 
 def mutalyzer3(hgvs_description):

@@ -1,13 +1,19 @@
 
 
 def to_string(references, variants, sequences):
+    """
+    Convert the variant description model to string.
+    :param references:
+    :param variants:
+    :param sequences:
+    :return: Equivalent reference string representation.
+    """
     return '{}{}:{}.{}'.format(
         references['reference']['id'],
         specific_locus_to_description(
             references['reference'].get('specific_locus')),
         references['coordinate_system'],
-        variants_to_description(variants, sequences)
-    )
+        variants_to_description(variants, sequences))
 
 
 def model_to_description(model):
