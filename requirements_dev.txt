@@ -27,7 +27,7 @@ mistune==0.8.4
 more-itertools==7.0.0
 -e git+https://github.com/mutalyzer/hgvs-parser@a182a3680381de5c0f6da5384a9594b396db00d4#egg=mutalyzer_hgvs_parser
 -e git+https://github.com/mutalyzer/mutator.git@3ea0ac217b5239041d4a3fea0ca0d0fa73249736#egg=mutalyzer_mutator
--e git+https://github.com/mutalyzer/mutator.git@gluing_new_model#egg=normalizer
+-e git+https://github.com/mutalyzer/normalizer.git@gluing_new_model#egg=normalizer
 numpy==1.16.3
 pathlib2==2.3.3
 pluggy==0.12.0
