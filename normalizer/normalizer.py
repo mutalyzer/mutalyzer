@@ -10,7 +10,7 @@ from .converter import de_to_hgvs, variants_locations_to_hgvs, to_delins, \
 from .reference import get_selector_model, get_exon_cds_for_mrna_reference, \
     get_mol_type, get_all_selectors_exon_cds
 from .to_description import to_string
-from .util import print_time_information
+from .util import print_time_information, get_time_information
 import time
 
 
@@ -74,6 +74,14 @@ class Description(object):
                     self._reference_models[self._reference_id],
                     self._mol_type,
                     self._description_model['reference']['selector']['id'])
+                if not selector_model:
+                    selectors = get_all_selectors_exon_cds(
+                        self._reference_models[self._reference_id]['model'])
+                    self._add_error('Selector {} not found. '
+                                    'Choose from: {}.'.format(
+                        self._description_model['reference']['selector']['id'],
+                        ', '.join(['{}'.format(i['id']) for i in selectors])))
+                    return
                 crossmap = Crossmap(selector_model['exons'],
                                     selector_model['cds'])
                 self._crossmap_function = crossmap.coding_to_coordinate
@@ -83,8 +91,7 @@ class Description(object):
                     selectors = get_all_selectors_exon_cds(
                         self._reference_models[self._reference_id]['model'])
                     self._add_error('No selector. Choose from: {}.'.format(
-                        ', '.join(['{} <-> {}'.format(i['id1'], i['id2'])
-                                   for i in selectors])))
+                        ', '.join(['{}'.format(i['id']) for i in selectors])))
                 elif self._mol_type == 'mRNA':
                     exons, cds = get_exon_cds_for_mrna_reference(
                         self._reference_models[self._reference_id]['model'])
@@ -192,14 +199,11 @@ class Description(object):
 
         self._time_stamps.append(('last', time.perf_counter()))
 
-        print_time_information(self._time_stamps)
+        self.status['time_information'] = get_time_information(self._time_stamps)
 
 
 def mutalyzer3(hgvs_description):
 
     description = Description(hgvs_description)
 
-    if description.status.get('errors'):
-        return description.status
-    else:
-        return description.status.get('normalized_description')
+    return {k: description.status[k] for k in description.status if description.status[k]}

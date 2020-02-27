@@ -25,6 +25,8 @@ def get_selector_model(reference_model, mol_type, selector_id=None):
     elif mol_type == 'mRNA':
         exons, cds = get_exon_cds_for_mrna_reference(
             reference_model['model'])
+    if not cds or not exons:
+        return None
     cds = sorted(cds)
     if len(cds) >= 2:
         cds = sorted([cds[0], cds[-1]])
@@ -90,17 +92,13 @@ def get_all_selectors_exon_cds(reference_model):
     if reference_model.get('features'):
         for feature in reference_model['features']:
             if feature['type'] == 'gene' and feature.get('features'):
-                rna_index = 1
                 for sub_feature in feature['features']:
-                    gene_id = '{}_v{:03}'.format(feature['id'], rna_index)
                     rna_id = sub_feature['id']
                     exons, cds = get_exons_cds(sub_feature)
                     if exons:
                         output.append({'exons': exons,
                                        'cds': cds,
-                                       'id1': gene_id,
-                                       'id2': rna_id})
-                    rna_index += 1
+                                       'id': rna_id})
     return output
 
 

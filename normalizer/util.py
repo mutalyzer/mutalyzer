@@ -111,4 +111,14 @@ def print_time_information(time_stamps):
         print('{:<30}: {:2.6f}'.format(time_stamps[i][0], time_stamps[i][1] -
                                        time_stamps[i-1][1]))
     print('{:<30}: {:2.6f}'.format('TOTAL', time_stamps[-1][1] -
-                                       time_stamps[0][1]))
+                                   time_stamps[0][1]))
+
+
+def get_time_information(time_stamps):
+    output = {}
+    for i in range(1, len(time_stamps)):
+        output[time_stamps[i][0]] = '{:2.6f}'.format(time_stamps[i][1] -
+                                                     time_stamps[i-1][1])
+    output['TOTAL'] = '{:2.6f}'.format(time_stamps[-1][1] - time_stamps[0][1])
+    return output
+

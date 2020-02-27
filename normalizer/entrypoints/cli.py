@@ -1,5 +1,6 @@
 from normalizer.normalizer import mutalyzer3
 import argparse
+import json
 
 
 def main():
@@ -11,7 +12,7 @@ def main():
 
     args = parser.parse_args()
 
-    print(mutalyzer3(args.description))
+    print(json.dumps(mutalyzer3(args.description), indent=2))
 
 
 if __name__ == '__main__':
