@@ -24,7 +24,7 @@ class SyntaxCheck(Resource):
 @ns.route("/description_to_model/<string:hgvs_description>")
 class DescriptionToModel(Resource):
     def get(self, hgvs_description):
-        """Converts a variant description to its dictionary model."""
+        """Convert a variant description to its dictionary model."""
         return parse_description_to_model(hgvs_description)
 
 

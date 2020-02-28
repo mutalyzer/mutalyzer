@@ -197,11 +197,11 @@ class Description(object):
             self._description_model, de_variants_hgvs_indexing,
             self._sequences)
 
-        self.status['normalized_description'] = self.normalized_description
+        self.status['normalized description'] = self.normalized_description
 
         self._time_stamps.append(('to HGVS description', time.perf_counter()))
 
-        self.status['time_information (s)'] = get_time_information(
+        self.status['time information (s)'] = get_time_information(
             self._time_stamps)
 
 
