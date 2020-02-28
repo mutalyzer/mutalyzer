@@ -172,6 +172,7 @@ class Description(object):
         if self.status['errors']:
             return
         self._delins_variants = to_delins(self._internal_location_variants)
+        self._time_stamps.append(('to delins', time.perf_counter()))
 
         self._mutate()
         self._time_stamps.append(('mutator', time.perf_counter()))
@@ -179,7 +180,8 @@ class Description(object):
         de_variants = extractor.describe_dna(
             self._sequences['reference'], self._sequences['observed'])
 
-        self._time_stamps.append(('description extractor', time.perf_counter()))
+        self._time_stamps.append(('description extractor',
+                                  time.perf_counter()))
 
         de_variants_hgvs = de_to_hgvs(de_variants, self._sequences)
 
@@ -197,9 +199,10 @@ class Description(object):
 
         self.status['normalized_description'] = self.normalized_description
 
-        self._time_stamps.append(('last', time.perf_counter()))
+        self._time_stamps.append(('to HGVS description', time.perf_counter()))
 
-        self.status['time_information'] = get_time_information(self._time_stamps)
+        self.status['time_information (s)'] = get_time_information(
+            self._time_stamps)
 
 
 def mutalyzer3(hgvs_description):

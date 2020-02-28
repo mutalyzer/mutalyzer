@@ -1,4 +1,4 @@
-
+from _collections import OrderedDict
 
 def get_start(model):
     """
@@ -115,7 +115,7 @@ def print_time_information(time_stamps):
 
 
 def get_time_information(time_stamps):
-    output = {}
+    output = OrderedDict()
     for i in range(1, len(time_stamps)):
         output[time_stamps[i][0]] = '{:2.6f}'.format(time_stamps[i][1] -
                                                      time_stamps[i-1][1])
