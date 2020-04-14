@@ -1,0 +1,431 @@
+##sequence-region NG_009497.1 1 807503
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=9606
+NG_009497.1	RefSeq	region	1	807503	.	+	.	ID=NG_009497.1:1..807503;Dbxref=taxon:9606;Name=1;chromosome=1;gbkey=Src;genome=genomic;map=1q41;mol_type=genomic DNA
+NG_009497.1	RefSeq	gene	5001	805503	.	+	.	ID=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;Name=USH2A;description=usherin;gbkey=Gene;gene=USH2A;gene_biotype=protein_coding;gene_synonym=dJ1111A8.1,RP39,US2,USH2
+NG_009497.1	RefSeq	exon	5001	5183	.	+	.	ID=id-USH2A-1;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=1;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=1
+NG_009497.1	RefSeq	exon	5857	6545	.	+	.	ID=id-USH2A-2;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=2;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=2
+NG_009497.1	RefSeq	exon	9718	9883	.	+	.	ID=id-USH2A-3;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=3;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=3
+NG_009497.1	RefSeq	exon	63312	63444	.	+	.	ID=id-USH2A-4;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=4;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=4
+NG_009497.1	RefSeq	exon	100743	100806	.	+	.	ID=id-USH2A-5;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=5;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=5
+NG_009497.1	RefSeq	exon	102798	103092	.	+	.	ID=id-USH2A-6;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=6;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=6
+NG_009497.1	RefSeq	exon	104045	104229	.	+	.	ID=id-USH2A-7;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=7;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=7
+NG_009497.1	RefSeq	exon	104702	104923	.	+	.	ID=id-USH2A-8;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=8;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=8
+NG_009497.1	RefSeq	exon	106421	106514	.	+	.	ID=id-USH2A-9;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=9;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=9
+NG_009497.1	RefSeq	exon	136027	136222	.	+	.	ID=id-USH2A-10;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=10;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=10
+NG_009497.1	RefSeq	exon	138987	139117	.	+	.	ID=id-USH2A-11;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=11;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=11
+NG_009497.1	RefSeq	exon	177299	177494	.	+	.	ID=id-USH2A-12;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=12;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=12
+NG_009497.1	RefSeq	exon	181171	181812	.	+	.	ID=id-USH2A-13;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=13;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=13
+NG_009497.1	RefSeq	exon	196261	196444	.	+	.	ID=id-USH2A-14;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=14;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=14
+NG_009497.1	RefSeq	exon	210847	211010	.	+	.	ID=id-USH2A-15;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=15;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=15
+NG_009497.1	RefSeq	exon	220966	221124	.	+	.	ID=id-USH2A-16;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=16;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=16
+NG_009497.1	RefSeq	exon	228276	228770	.	+	.	ID=id-USH2A-17;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=17;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=17
+NG_009497.1	RefSeq	exon	229813	230082	.	+	.	ID=id-USH2A-18;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=18;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=18
+NG_009497.1	RefSeq	exon	231675	231844	.	+	.	ID=id-USH2A-19;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=19;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=19
+NG_009497.1	RefSeq	exon	238030	238174	.	+	.	ID=id-USH2A-20;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=20;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=20
+NG_009497.1	RefSeq	exon	252915	253145	.	+	.	ID=id-USH2A-21;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=21;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=21
+NG_009497.1	RefSeq	exon	331184	331314	.	+	.	ID=id-USH2A-22;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=22;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=22
+NG_009497.1	RefSeq	exon	339258	339384	.	+	.	ID=id-USH2A-23;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=23;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=23
+NG_009497.1	RefSeq	exon	341577	341678	.	+	.	ID=id-USH2A-24;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=24;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=24
+NG_009497.1	RefSeq	exon	343520	343699	.	+	.	ID=id-USH2A-25;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=25;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=25
+NG_009497.1	RefSeq	exon	344811	344941	.	+	.	ID=id-USH2A-26;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=26;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=26
+NG_009497.1	RefSeq	exon	350035	350308	.	+	.	ID=id-USH2A-27;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=27;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=27
+NG_009497.1	RefSeq	exon	355097	355300	.	+	.	ID=id-USH2A-28;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=28;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=28
+NG_009497.1	RefSeq	exon	355428	355508	.	+	.	ID=id-USH2A-29;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=29;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=29
+NG_009497.1	RefSeq	exon	358105	358296	.	+	.	ID=id-USH2A-30;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=30;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=30
+NG_009497.1	RefSeq	exon	379750	379863	.	+	.	ID=id-USH2A-31;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=31;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=31
+NG_009497.1	RefSeq	exon	381805	381966	.	+	.	ID=id-USH2A-32;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=32;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=32
+NG_009497.1	RefSeq	exon	427835	427994	.	+	.	ID=id-USH2A-33;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=33;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=33
+NG_009497.1	RefSeq	exon	429339	429510	.	+	.	ID=id-USH2A-34;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=34;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=34
+NG_009497.1	RefSeq	exon	435230	435377	.	+	.	ID=id-USH2A-35;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=35;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=35
+NG_009497.1	RefSeq	exon	457621	457772	.	+	.	ID=id-USH2A-36;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=36;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=36
+NG_009497.1	RefSeq	exon	462918	463080	.	+	.	ID=id-USH2A-37;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=37;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=37
+NG_009497.1	RefSeq	exon	493602	493781	.	+	.	ID=id-USH2A-38;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=38;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=38
+NG_009497.1	RefSeq	exon	527492	527642	.	+	.	ID=id-USH2A-39;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=39;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=39
+NG_009497.1	RefSeq	exon	528180	528322	.	+	.	ID=id-USH2A-40;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=40;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=40
+NG_009497.1	RefSeq	exon	539343	539971	.	+	.	ID=id-USH2A-41;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=41;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=41
+NG_009497.1	RefSeq	exon	549299	549633	.	+	.	ID=id-USH2A-42;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=42;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=42
+NG_009497.1	RefSeq	exon	550517	550639	.	+	.	ID=id-USH2A-43;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=43;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=43
+NG_009497.1	RefSeq	exon	561227	561390	.	+	.	ID=id-USH2A-44;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=44;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=44
+NG_009497.1	RefSeq	exon	582364	582573	.	+	.	ID=id-USH2A-45;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=45;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=45
+NG_009497.1	RefSeq	exon	583901	584103	.	+	.	ID=id-USH2A-46;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=46;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=46
+NG_009497.1	RefSeq	exon	590294	590406	.	+	.	ID=id-USH2A-47;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=47;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=47
+NG_009497.1	RefSeq	exon	611202	611400	.	+	.	ID=id-USH2A-48;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=48;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=48
+NG_009497.1	RefSeq	exon	614493	614661	.	+	.	ID=id-USH2A-49;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=49;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=49
+NG_009497.1	RefSeq	exon	629272	629490	.	+	.	ID=id-USH2A-50;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=50;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=50
+NG_009497.1	RefSeq	exon	638115	638338	.	+	.	ID=id-USH2A-51;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=51;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=51
+NG_009497.1	RefSeq	exon	641523	641727	.	+	.	ID=id-USH2A-52;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=52;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=52
+NG_009497.1	RefSeq	exon	645462	645659	.	+	.	ID=id-USH2A-53;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=53;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=53
+NG_009497.1	RefSeq	exon	646201	646355	.	+	.	ID=id-USH2A-54;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=54;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=54
+NG_009497.1	RefSeq	exon	648356	648554	.	+	.	ID=id-USH2A-55;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=55;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=55
+NG_009497.1	RefSeq	exon	661609	661716	.	+	.	ID=id-USH2A-56;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=56;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=56
+NG_009497.1	RefSeq	exon	668554	668737	.	+	.	ID=id-USH2A-57;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=57;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=57
+NG_009497.1	RefSeq	exon	669645	669802	.	+	.	ID=id-USH2A-58;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=58;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=58
+NG_009497.1	RefSeq	exon	685062	685220	.	+	.	ID=id-USH2A-59;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=59;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=59
+NG_009497.1	RefSeq	exon	686860	687022	.	+	.	ID=id-USH2A-60;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=60;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=60
+NG_009497.1	RefSeq	exon	700013	700367	.	+	.	ID=id-USH2A-61;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=61;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=61
+NG_009497.1	RefSeq	exon	748021	748248	.	+	.	ID=id-USH2A-62;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=62;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=62
+NG_009497.1	RefSeq	exon	752781	754297	.	+	.	ID=id-USH2A-63;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=63;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=63
+NG_009497.1	RefSeq	exon	757104	757425	.	+	.	ID=id-USH2A-64;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=64;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=64
+NG_009497.1	RefSeq	exon	777596	777805	.	+	.	ID=id-USH2A-65;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=65;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=65
+NG_009497.1	RefSeq	exon	779631	779869	.	+	.	ID=id-USH2A-66;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=66;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=66
+NG_009497.1	RefSeq	exon	780667	780875	.	+	.	ID=id-USH2A-67;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=67;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=67
+NG_009497.1	RefSeq	exon	787663	787839	.	+	.	ID=id-USH2A-68;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=68;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=68
+NG_009497.1	RefSeq	exon	789159	789242	.	+	.	ID=id-USH2A-69;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=69;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=69
+NG_009497.1	RefSeq	exon	793694	793938	.	+	.	ID=id-USH2A-70;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=70;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=70
+NG_009497.1	RefSeq	exon	799362	799583	.	+	.	ID=id-USH2A-71;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=71;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=71
+NG_009497.1	RefSeq	exon	802527	805503	.	+	.	ID=id-USH2A-72;Parent=gene-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;exon_number=72;gbkey=exon;gene=USH2A;inference=alignment:Splign:2.1.0;number=72
+NG_009497.1	RefSeq	mRNA	5001	805503	.	+	.	ID=rna-NM_206933.2;Parent=gene-USH2A;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;Name=NM_206933.2;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	5001	5183	.	+	.	ID=exon-NM_206933.2-1;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	5857	6545	.	+	.	ID=exon-NM_206933.2-2;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	9718	9883	.	+	.	ID=exon-NM_206933.2-3;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	63312	63444	.	+	.	ID=exon-NM_206933.2-4;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	100743	100806	.	+	.	ID=exon-NM_206933.2-5;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	102798	103092	.	+	.	ID=exon-NM_206933.2-6;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	104045	104229	.	+	.	ID=exon-NM_206933.2-7;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	104702	104923	.	+	.	ID=exon-NM_206933.2-8;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	106421	106514	.	+	.	ID=exon-NM_206933.2-9;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	136027	136222	.	+	.	ID=exon-NM_206933.2-10;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	138987	139117	.	+	.	ID=exon-NM_206933.2-11;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	177299	177494	.	+	.	ID=exon-NM_206933.2-12;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	181171	181812	.	+	.	ID=exon-NM_206933.2-13;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	196261	196444	.	+	.	ID=exon-NM_206933.2-14;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	210847	211010	.	+	.	ID=exon-NM_206933.2-15;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	220966	221124	.	+	.	ID=exon-NM_206933.2-16;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	228276	228770	.	+	.	ID=exon-NM_206933.2-17;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	229813	230082	.	+	.	ID=exon-NM_206933.2-18;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	231675	231844	.	+	.	ID=exon-NM_206933.2-19;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	238030	238174	.	+	.	ID=exon-NM_206933.2-20;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	252915	253145	.	+	.	ID=exon-NM_206933.2-21;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	331184	331314	.	+	.	ID=exon-NM_206933.2-22;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	339258	339384	.	+	.	ID=exon-NM_206933.2-23;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	341577	341678	.	+	.	ID=exon-NM_206933.2-24;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	343520	343699	.	+	.	ID=exon-NM_206933.2-25;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	344811	344941	.	+	.	ID=exon-NM_206933.2-26;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	350035	350308	.	+	.	ID=exon-NM_206933.2-27;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	355097	355300	.	+	.	ID=exon-NM_206933.2-28;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	355428	355508	.	+	.	ID=exon-NM_206933.2-29;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	358105	358296	.	+	.	ID=exon-NM_206933.2-30;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	379750	379863	.	+	.	ID=exon-NM_206933.2-31;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	381805	381966	.	+	.	ID=exon-NM_206933.2-32;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	427835	427994	.	+	.	ID=exon-NM_206933.2-33;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	429339	429510	.	+	.	ID=exon-NM_206933.2-34;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	435230	435377	.	+	.	ID=exon-NM_206933.2-35;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	457621	457772	.	+	.	ID=exon-NM_206933.2-36;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	462918	463080	.	+	.	ID=exon-NM_206933.2-37;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	493602	493781	.	+	.	ID=exon-NM_206933.2-38;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	527492	527642	.	+	.	ID=exon-NM_206933.2-39;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	528180	528322	.	+	.	ID=exon-NM_206933.2-40;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	539343	539971	.	+	.	ID=exon-NM_206933.2-41;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	549299	549633	.	+	.	ID=exon-NM_206933.2-42;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	550517	550639	.	+	.	ID=exon-NM_206933.2-43;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	561227	561390	.	+	.	ID=exon-NM_206933.2-44;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	582364	582573	.	+	.	ID=exon-NM_206933.2-45;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	583901	584103	.	+	.	ID=exon-NM_206933.2-46;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	590294	590406	.	+	.	ID=exon-NM_206933.2-47;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	611202	611400	.	+	.	ID=exon-NM_206933.2-48;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	614493	614661	.	+	.	ID=exon-NM_206933.2-49;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	629272	629490	.	+	.	ID=exon-NM_206933.2-50;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	638115	638338	.	+	.	ID=exon-NM_206933.2-51;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	641523	641727	.	+	.	ID=exon-NM_206933.2-52;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	645462	645659	.	+	.	ID=exon-NM_206933.2-53;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	646201	646355	.	+	.	ID=exon-NM_206933.2-54;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	648356	648554	.	+	.	ID=exon-NM_206933.2-55;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	661609	661716	.	+	.	ID=exon-NM_206933.2-56;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	668554	668737	.	+	.	ID=exon-NM_206933.2-57;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	669645	669802	.	+	.	ID=exon-NM_206933.2-58;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	685062	685220	.	+	.	ID=exon-NM_206933.2-59;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	686860	687022	.	+	.	ID=exon-NM_206933.2-60;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	700013	700367	.	+	.	ID=exon-NM_206933.2-61;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	748021	748248	.	+	.	ID=exon-NM_206933.2-62;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	752781	754297	.	+	.	ID=exon-NM_206933.2-63;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	757104	757425	.	+	.	ID=exon-NM_206933.2-64;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	777596	777805	.	+	.	ID=exon-NM_206933.2-65;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	779631	779869	.	+	.	ID=exon-NM_206933.2-66;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	780667	780875	.	+	.	ID=exon-NM_206933.2-67;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	787663	787839	.	+	.	ID=exon-NM_206933.2-68;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	789159	789242	.	+	.	ID=exon-NM_206933.2-69;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	793694	793938	.	+	.	ID=exon-NM_206933.2-70;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	799362	799583	.	+	.	ID=exon-NM_206933.2-71;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	exon	802527	805503	.	+	.	ID=exon-NM_206933.2-72;Parent=rna-NM_206933.2;Dbxref=GeneID:7399,Genbank:NM_206933.2,HGNC:HGNC:12601,MIM:608400;gbkey=mRNA;gene=USH2A;product=usherin%2C transcript variant 2;transcript_id=NM_206933.2
+NG_009497.1	RefSeq	CDS	6061	6545	.	+	0	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	9718	9883	.	+	1	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	63312	63444	.	+	0	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	100743	100806	.	+	2	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	102798	103092	.	+	1	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	104045	104229	.	+	0	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	104702	104923	.	+	1	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	106421	106514	.	+	1	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	136027	136222	.	+	0	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	138987	139117	.	+	2	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	177299	177494	.	+	0	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	181171	181812	.	+	2	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	196261	196444	.	+	2	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	210847	211010	.	+	1	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	220966	221124	.	+	2	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	228276	228770	.	+	2	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	229813	230082	.	+	2	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	231675	231844	.	+	2	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	238030	238174	.	+	0	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	252915	253145	.	+	2	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	331184	331314	.	+	2	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	339258	339384	.	+	0	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	341577	341678	.	+	2	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	343520	343699	.	+	2	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	344811	344941	.	+	2	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	350035	350308	.	+	0	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	355097	355300	.	+	2	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	355428	355508	.	+	2	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	358105	358296	.	+	2	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	379750	379863	.	+	2	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	381805	381966	.	+	2	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	427835	427994	.	+	2	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	429339	429510	.	+	1	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	435230	435377	.	+	0	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	457621	457772	.	+	2	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	462918	463080	.	+	0	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	493602	493781	.	+	2	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	527492	527642	.	+	2	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	528180	528322	.	+	1	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	539343	539971	.	+	2	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	549299	549633	.	+	0	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	550517	550639	.	+	1	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	561227	561390	.	+	1	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	582364	582573	.	+	2	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	583901	584103	.	+	2	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	590294	590406	.	+	0	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	611202	611400	.	+	1	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	614493	614661	.	+	0	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	629272	629490	.	+	2	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	638115	638338	.	+	2	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	641523	641727	.	+	0	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	645462	645659	.	+	2	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	646201	646355	.	+	2	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	648356	648554	.	+	0	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	661609	661716	.	+	2	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	668554	668737	.	+	2	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	669645	669802	.	+	1	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	685062	685220	.	+	2	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	686860	687022	.	+	2	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	700013	700367	.	+	1	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	748021	748248	.	+	0	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	752781	754297	.	+	0	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	757104	757425	.	+	1	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	777596	777805	.	+	0	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	779631	779869	.	+	0	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	780667	780875	.	+	1	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	787663	787839	.	+	2	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	789159	789242	.	+	2	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	793694	793938	.	+	2	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	799362	799583	.	+	0	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	CDS	802527	802616	.	+	0	ID=cds-NP_996816.2;Parent=rna-NM_206933.2;Dbxref=CCDS:CCDS31025.1,GeneID:7399,Genbank:NP_996816.2,HGNC:HGNC:12601,MIM:608400;Name=NP_996816.2;Note=isoform B precursor is encoded by transcript variant 2;gbkey=CDS;gene=USH2A;product=usherin isoform B precursor;protein_id=NP_996816.2
+NG_009497.1	RefSeq	sequence_difference	252975	252975	.	+	.	ID=id-USH2A;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;Note=This sequence differs from the reference genome assembly (NCBI Build 36) at this position. G was replaced by A to represent the standard allele identified by SNP rs1805049.;gbkey=misc_difference;gene=USH2A;replace=g
+NG_009497.1	RefSeq	sequence_difference	381958	381958	.	+	.	ID=id-USH2A-73;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;Note=This sequence differs from the reference genome assembly (NCBI Build 36) at this position. T was replaced by C to represent the standard allele identified by SNP rs6657250.;gbkey=misc_difference;gene=USH2A;replace=t
+NG_009497.1	RefSeq	sequence_difference	753098	753098	.	+	.	ID=id-USH2A-74;Dbxref=GeneID:7399,HGNC:HGNC:12601,MIM:608400;Note=This sequence differs from the reference genome assembly (NCBI Build 36) at this position. A was replaced by G to represent the standard allele identified by SNP rs2797235.;gbkey=misc_difference;gene=USH2A;replace=a
+NG_009497.1	RefSeq	STS	153363	153545	.	+	.	ID=id-USH2A-75;Dbxref=UniSTS:93763,GeneID:7399,HGNC:HGNC:12601,MIM:608400;gbkey=STS;gene=USH2A;standard_name=AL033887
+NG_009497.1	RefSeq	STS	211177	211383	.	+	.	ID=id-USH2A-76;Dbxref=UniSTS:67214,GeneID:7399,HGNC:HGNC:12601,MIM:608400;gbkey=STS;gene=USH2A;standard_name=D1S2435
+NG_009497.1	RefSeq	STS	230869	231019	.	+	.	ID=id-USH2A-77;Dbxref=UniSTS:50772,GeneID:7399,HGNC:HGNC:12601,MIM:608400;gbkey=STS;gene=USH2A;standard_name=D1S2171
+NG_009497.1	RefSeq	STS	238977	239136	.	+	.	ID=id-USH2A-78;Dbxref=UniSTS:41728,GeneID:7399,HGNC:HGNC:12601,MIM:608400;gbkey=STS;gene=USH2A;standard_name=AL009851
+NG_009497.1	RefSeq	STS	254259	254420	.	+	.	ID=id-USH2A-79;Dbxref=UniSTS:90212,GeneID:7399,HGNC:HGNC:12601,MIM:608400;gbkey=STS;gene=USH2A;standard_name=RH79627
+NG_009497.1	RefSeq	STS	326080	326357	.	+	.	ID=id-USH2A-80;Dbxref=UniSTS:181917,GeneID:7399,HGNC:HGNC:12601,MIM:608400;gbkey=STS;gene=USH2A;standard_name=SHGC-111484
+NG_009497.1	RefSeq	STS	348739	349024	.	+	.	ID=id-USH2A-81;Dbxref=UniSTS:104780,GeneID:7399,HGNC:HGNC:12601,MIM:608400;gbkey=STS;gene=USH2A;standard_name=SHGC-84884
+NG_009497.1	RefSeq	STS	359418	359586	.	+	.	ID=id-USH2A-82;Dbxref=UniSTS:13111,GeneID:7399,HGNC:HGNC:12601,MIM:608400;gbkey=STS;gene=USH2A;standard_name=AL009345
+NG_009497.1	RefSeq	STS	369960	370093	.	+	.	ID=id-USH2A-83;Dbxref=UniSTS:78303,GeneID:7399,HGNC:HGNC:12601,MIM:608400;gbkey=STS;gene=USH2A;standard_name=SHGC-76355
+NG_009497.1	RefSeq	STS	373099	373377	.	+	.	ID=id-USH2A-84;Dbxref=UniSTS:174316,GeneID:7399,HGNC:HGNC:12601,MIM:608400;gbkey=STS;gene=USH2A;standard_name=SHGC-144902
+NG_009497.1	RefSeq	STS	454397	454504	.	+	.	ID=id-USH2A-85;Dbxref=UniSTS:6625,GeneID:7399,HGNC:HGNC:12601,MIM:608400;gbkey=STS;gene=USH2A;standard_name=143XF10
+NG_009497.1	RefSeq	STS	462380	462646	.	+	.	ID=id-USH2A-86;Dbxref=UniSTS:170766,GeneID:7399,HGNC:HGNC:12601,MIM:608400;gbkey=STS;gene=USH2A;standard_name=SHGC-132295
+NG_009497.1	RefSeq	STS	462387	462530	.	+	.	ID=id-USH2A-87;Dbxref=UniSTS:50739,GeneID:7399,HGNC:HGNC:12601,MIM:608400;gbkey=STS;gene=USH2A;standard_name=D1S2827
+NG_009497.1	RefSeq	STS	486658	486983	.	+	.	ID=id-USH2A-88;Dbxref=UniSTS:170049,GeneID:7399,HGNC:HGNC:12601,MIM:608400;gbkey=STS;gene=USH2A;standard_name=SHGC-106817
+NG_009497.1	RefSeq	STS	493054	493387	.	+	.	ID=id-USH2A-89;Dbxref=UniSTS:100906,GeneID:7399,HGNC:HGNC:12601,MIM:608400;gbkey=STS;gene=USH2A;standard_name=SHGC-78958
+NG_009497.1	RefSeq	STS	515189	515506	.	+	.	ID=id-USH2A-90;Dbxref=UniSTS:138861,GeneID:7399,HGNC:HGNC:12601,MIM:608400;gbkey=STS;gene=USH2A;standard_name=RH118881
+NG_009497.1	RefSeq	STS	548200	548364	.	+	.	ID=id-USH2A-91;Dbxref=UniSTS:61537,GeneID:7399,HGNC:HGNC:12601,MIM:608400;gbkey=STS;gene=USH2A;standard_name=AL009491
+NG_009497.1	RefSeq	STS	550581	550790	.	+	.	ID=id-USH2A-92;Dbxref=UniSTS:35009,GeneID:7399,HGNC:HGNC:12601,MIM:608400;gbkey=STS;gene=USH2A;standard_name=D1S2086
+NG_009497.1	RefSeq	STS	562143	562421	.	+	.	ID=id-USH2A-93;Dbxref=UniSTS:182068,GeneID:7399,HGNC:HGNC:12601,MIM:608400;gbkey=STS;gene=USH2A;standard_name=SHGC-155213
+NG_009497.1	RefSeq	STS	562930	563085	.	+	.	ID=id-USH2A-94;Dbxref=UniSTS:32686,GeneID:7399,HGNC:HGNC:12601,MIM:608400;gbkey=STS;gene=USH2A;standard_name=AL009286
+NG_009497.1	RefSeq	STS	613060	613367	.	+	.	ID=id-USH2A-95;Dbxref=UniSTS:139549,GeneID:7399,HGNC:HGNC:12601,MIM:608400;gbkey=STS;gene=USH2A;standard_name=G62491
+NG_009497.1	RefSeq	STS	638343	638498	.	+	.	ID=id-USH2A-96;Dbxref=UniSTS:23467,GeneID:7399,HGNC:HGNC:12601,MIM:608400;gbkey=STS;gene=USH2A;standard_name=AL009855
+NG_009497.1	RefSeq	STS	639579	639669	.	+	.	ID=id-USH2A-97;Dbxref=UniSTS:93375,GeneID:7399,HGNC:HGNC:12601,MIM:608400;gbkey=STS;gene=USH2A;standard_name=AL033963
+NG_009497.1	RefSeq	STS	662724	663024	.	+	.	ID=id-USH2A-98;Dbxref=UniSTS:133607,GeneID:7399,HGNC:HGNC:12601,MIM:608400;gbkey=STS;gene=USH2A;standard_name=RH119862
+NG_009497.1	RefSeq	STS	673496	673619	.	+	.	ID=id-USH2A-99;Dbxref=UniSTS:9033,GeneID:7399,HGNC:HGNC:12601,MIM:608400;gbkey=STS;gene=USH2A;standard_name=AL010107
+NG_009497.1	RefSeq	STS	673540	673621	.	+	.	ID=id-USH2A-100;Dbxref=UniSTS:94030,GeneID:7399,HGNC:HGNC:12601,MIM:608400;gbkey=STS;gene=USH2A;standard_name=AL034204
+NG_009497.1	RefSeq	STS	699737	699855	.	+	.	ID=id-USH2A-101;Dbxref=UniSTS:36951,GeneID:7399,HGNC:HGNC:12601,MIM:608400;gbkey=STS;gene=USH2A;standard_name=AFM248tc1
+NG_009497.1	RefSeq	STS	753089	753265	.	+	.	ID=id-USH2A-102;Dbxref=UniSTS:93917,GeneID:7399,HGNC:HGNC:12601,MIM:608400;gbkey=STS;gene=USH2A;standard_name=AL034147
+NG_009497.1	RefSeq	STS	753779	754051	.	+	.	ID=id-USH2A-103;Dbxref=UniSTS:140051,GeneID:7399,HGNC:HGNC:12601,MIM:608400;gbkey=STS;gene=USH2A;standard_name=G63076
+NG_009497.1	RefSeq	pseudogene	226571	227339	.	+	.	ID=gene-MRPS18BP1;Dbxref=GeneID:359762,HGNC:HGNC:29741;Name=MRPS18BP1;description=mitochondrial ribosomal protein S18B pseudogene 1;gbkey=Gene;gene=MRPS18BP1;gene_biotype=pseudogene;pseudo=true
+NG_009497.1	RefSeq	gene	341480	355932	.	-	.	ID=gene-LOC102723833;Dbxref=GeneID:102723833;Name=LOC102723833;description=uncharacterized LOC102723833;gbkey=Gene;gene=LOC102723833;gene_biotype=lncRNA
+NG_009497.1	RefSeq	lnc_RNA	341480	355932	.	-	.	ID=rna-NR_125993.1;Parent=gene-LOC102723833;Dbxref=GeneID:102723833,Genbank:NR_125993.1;Name=NR_125993.1;gbkey=ncRNA;gene=LOC102723833;product=uncharacterized LOC102723833%2C transcript variant 2;transcript_id=NR_125993.1
+NG_009497.1	RefSeq	exon	355797	355932	.	-	.	ID=exon-NR_125993.1-1;Parent=rna-NR_125993.1;Dbxref=GeneID:102723833,Genbank:NR_125993.1;gbkey=ncRNA;gene=LOC102723833;product=uncharacterized LOC102723833%2C transcript variant 2;transcript_id=NR_125993.1
+NG_009497.1	RefSeq	exon	341480	341675	.	-	.	ID=exon-NR_125993.1-2;Parent=rna-NR_125993.1;Dbxref=GeneID:102723833,Genbank:NR_125993.1;gbkey=ncRNA;gene=LOC102723833;product=uncharacterized LOC102723833%2C transcript variant 2;transcript_id=NR_125993.1
+NG_009497.1	RefSeq	lnc_RNA	341480	355932	.	-	.	ID=rna-NR_125992.1;Parent=gene-LOC102723833;Dbxref=GeneID:102723833,Genbank:NR_125992.1;Name=NR_125992.1;gbkey=ncRNA;gene=LOC102723833;product=uncharacterized LOC102723833%2C transcript variant 1;transcript_id=NR_125992.1
+NG_009497.1	RefSeq	exon	355797	355932	.	-	.	ID=exon-NR_125992.1-1;Parent=rna-NR_125992.1;Dbxref=GeneID:102723833,Genbank:NR_125992.1;gbkey=ncRNA;gene=LOC102723833;product=uncharacterized LOC102723833%2C transcript variant 1;transcript_id=NR_125992.1
+NG_009497.1	RefSeq	exon	349196	349324	.	-	.	ID=exon-NR_125992.1-2;Parent=rna-NR_125992.1;Dbxref=GeneID:102723833,Genbank:NR_125992.1;gbkey=ncRNA;gene=LOC102723833;product=uncharacterized LOC102723833%2C transcript variant 1;transcript_id=NR_125992.1
+NG_009497.1	RefSeq	exon	341480	341675	.	-	.	ID=exon-NR_125992.1-3;Parent=rna-NR_125992.1;Dbxref=GeneID:102723833,Genbank:NR_125992.1;gbkey=ncRNA;gene=LOC102723833;product=uncharacterized LOC102723833%2C transcript variant 1;transcript_id=NR_125992.1
+NG_009497.1	RefSeq	gene	806590	807503	.	-	.	ID=gene-KCTD3;Dbxref=GeneID:51133,HGNC:HGNC:21305,MIM:613272;Name=KCTD3;description=potassium channel tetramerization domain containing 3;end_range=807503,.;gbkey=Gene;gene=KCTD3;gene_biotype=other;gene_synonym=NY-REN-45;partial=true
+NG_009497.1	RefSeq	STS	806632	806727	.	+	.	ID=id-NG_009497.1:806632..806727;Dbxref=UniSTS:154264;gbkey=STS;standard_name=D1S2530
+NG_009497.1	RefSeq	STS	806646	806758	.	+	.	ID=id-NG_009497.1:806646..806758;Dbxref=UniSTS:80954;gbkey=STS;standard_name=WI-16536
+NG_009497.1	RefSeq	STS	807342	807450	.	+	.	ID=id-NG_009497.1:807342..807450;Dbxref=UniSTS:151499;gbkey=STS;standard_name=D1S2043E
+NG_009497.1	RefSeq	cDNA_match	4949	5183	.	+	.	ID=aln0;Target=NM_206933.3 1 235 +;idty=1;splign=235
+NG_009497.1	RefSeq	cDNA_match	5857	6545	.	+	.	ID=aln0;Target=NM_206933.3 236 924 +;idty=1;splign=689
+NG_009497.1	RefSeq	cDNA_match	9718	9883	.	+	.	ID=aln0;Target=NM_206933.3 925 1090 +;idty=1;splign=166
+NG_009497.1	RefSeq	cDNA_match	63312	63444	.	+	.	ID=aln0;Target=NM_206933.3 1091 1223 +;idty=1;splign=133
+NG_009497.1	RefSeq	cDNA_match	100743	100806	.	+	.	ID=aln0;Target=NM_206933.3 1224 1287 +;idty=1;splign=64
+NG_009497.1	RefSeq	cDNA_match	102798	103092	.	+	.	ID=aln0;Target=NM_206933.3 1288 1582 +;idty=1;splign=295
+NG_009497.1	RefSeq	cDNA_match	104045	104229	.	+	.	ID=aln0;Target=NM_206933.3 1583 1767 +;idty=1;splign=185
+NG_009497.1	RefSeq	cDNA_match	104702	104923	.	+	.	ID=aln0;Target=NM_206933.3 1768 1989 +;idty=1;splign=222
+NG_009497.1	RefSeq	cDNA_match	106421	106514	.	+	.	ID=aln0;Target=NM_206933.3 1990 2083 +;idty=1;splign=94
+NG_009497.1	RefSeq	cDNA_match	136027	136222	.	+	.	ID=aln0;Target=NM_206933.3 2084 2279 +;idty=1;splign=196
+NG_009497.1	RefSeq	cDNA_match	138987	139117	.	+	.	ID=aln0;Target=NM_206933.3 2280 2410 +;idty=1;splign=131
+NG_009497.1	RefSeq	cDNA_match	177299	177494	.	+	.	ID=aln0;Target=NM_206933.3 2411 2606 +;idty=1;splign=196
+NG_009497.1	RefSeq	cDNA_match	181171	181812	.	+	.	ID=aln0;Target=NM_206933.3 2607 3248 +;idty=1;splign=642
+NG_009497.1	RefSeq	cDNA_match	196261	196444	.	+	.	ID=aln0;Target=NM_206933.3 3249 3432 +;idty=1;splign=184
+NG_009497.1	RefSeq	cDNA_match	210847	211010	.	+	.	ID=aln0;Target=NM_206933.3 3433 3596 +;idty=1;splign=164
+NG_009497.1	RefSeq	cDNA_match	220966	221124	.	+	.	ID=aln0;Target=NM_206933.3 3597 3755 +;idty=1;splign=159
+NG_009497.1	RefSeq	cDNA_match	228276	228770	.	+	.	ID=aln0;Target=NM_206933.3 3756 4250 +;idty=1;splign=495
+NG_009497.1	RefSeq	cDNA_match	229813	230082	.	+	.	ID=aln0;Target=NM_206933.3 4251 4520 +;idty=1;splign=270
+NG_009497.1	RefSeq	cDNA_match	231675	231844	.	+	.	ID=aln0;Target=NM_206933.3 4521 4690 +;idty=1;splign=170
+NG_009497.1	RefSeq	cDNA_match	238030	238174	.	+	.	ID=aln0;Target=NM_206933.3 4691 4835 +;idty=1;splign=145
+NG_009497.1	RefSeq	cDNA_match	252915	253145	.	+	.	ID=aln0;Target=NM_206933.3 4836 5066 +;idty=1;splign=231
+NG_009497.1	RefSeq	cDNA_match	331184	331314	.	+	.	ID=aln0;Target=NM_206933.3 5067 5197 +;idty=1;splign=131
+NG_009497.1	RefSeq	cDNA_match	339258	339384	.	+	.	ID=aln0;Target=NM_206933.3 5198 5324 +;idty=1;splign=127
+NG_009497.1	RefSeq	cDNA_match	341577	341678	.	+	.	ID=aln0;Target=NM_206933.3 5325 5426 +;idty=1;splign=102
+NG_009497.1	RefSeq	cDNA_match	343520	343699	.	+	.	ID=aln0;Target=NM_206933.3 5427 5606 +;idty=1;splign=180
+NG_009497.1	RefSeq	cDNA_match	344811	344941	.	+	.	ID=aln0;Target=NM_206933.3 5607 5737 +;idty=1;splign=131
+NG_009497.1	RefSeq	cDNA_match	350035	350308	.	+	.	ID=aln0;Target=NM_206933.3 5738 6011 +;idty=1;splign=274
+NG_009497.1	RefSeq	cDNA_match	355097	355300	.	+	.	ID=aln0;Target=NM_206933.3 6012 6215 +;idty=1;splign=204
+NG_009497.1	RefSeq	cDNA_match	355428	355508	.	+	.	ID=aln0;Target=NM_206933.3 6216 6296 +;idty=1;splign=81
+NG_009497.1	RefSeq	cDNA_match	358105	358296	.	+	.	ID=aln0;Target=NM_206933.3 6297 6488 +;idty=1;splign=192
+NG_009497.1	RefSeq	cDNA_match	379750	379863	.	+	.	ID=aln0;Target=NM_206933.3 6489 6602 +;idty=1;splign=114
+NG_009497.1	RefSeq	cDNA_match	381805	381966	.	+	.	ID=aln0;Target=NM_206933.3 6603 6764 +;idty=1;splign=162
+NG_009497.1	RefSeq	cDNA_match	427835	427994	.	+	.	ID=aln0;Target=NM_206933.3 6765 6924 +;idty=1;splign=160
+NG_009497.1	RefSeq	cDNA_match	429339	429510	.	+	.	ID=aln0;Target=NM_206933.3 6925 7096 +;idty=1;splign=172
+NG_009497.1	RefSeq	cDNA_match	435230	435377	.	+	.	ID=aln0;Target=NM_206933.3 7097 7244 +;idty=1;splign=148
+NG_009497.1	RefSeq	cDNA_match	457621	457772	.	+	.	ID=aln0;Target=NM_206933.3 7245 7396 +;idty=1;splign=152
+NG_009497.1	RefSeq	cDNA_match	462918	463080	.	+	.	ID=aln0;Target=NM_206933.3 7397 7559 +;idty=1;splign=163
+NG_009497.1	RefSeq	cDNA_match	493602	493781	.	+	.	ID=aln0;Target=NM_206933.3 7560 7739 +;idty=1;splign=180
+NG_009497.1	RefSeq	cDNA_match	527492	527642	.	+	.	ID=aln0;Target=NM_206933.3 7740 7890 +;idty=1;splign=151
+NG_009497.1	RefSeq	cDNA_match	528180	528322	.	+	.	ID=aln0;Target=NM_206933.3 7891 8033 +;idty=1;splign=143
+NG_009497.1	RefSeq	cDNA_match	539343	539971	.	+	.	ID=aln0;Target=NM_206933.3 8034 8662 +;idty=1;splign=629
+NG_009497.1	RefSeq	cDNA_match	549299	549633	.	+	.	ID=aln0;Target=NM_206933.3 8663 8997 +;idty=1;splign=335
+NG_009497.1	RefSeq	cDNA_match	550517	550639	.	+	.	ID=aln0;Target=NM_206933.3 8998 9120 +;idty=1;splign=123
+NG_009497.1	RefSeq	cDNA_match	561227	561390	.	+	.	ID=aln0;Target=NM_206933.3 9121 9284 +;idty=1;splign=164
+NG_009497.1	RefSeq	cDNA_match	582364	582573	.	+	.	ID=aln0;Target=NM_206933.3 9285 9494 +;idty=1;splign=210
+NG_009497.1	RefSeq	cDNA_match	583901	584103	.	+	.	ID=aln0;Target=NM_206933.3 9495 9697 +;idty=1;splign=203
+NG_009497.1	RefSeq	cDNA_match	590294	590406	.	+	.	ID=aln0;Target=NM_206933.3 9698 9810 +;idty=1;splign=113
+NG_009497.1	RefSeq	cDNA_match	611202	611400	.	+	.	ID=aln0;Target=NM_206933.3 9811 10009 +;idty=1;splign=199
+NG_009497.1	RefSeq	cDNA_match	614493	614661	.	+	.	ID=aln0;Target=NM_206933.3 10010 10178 +;idty=1;splign=169
+NG_009497.1	RefSeq	cDNA_match	629272	629490	.	+	.	ID=aln0;Target=NM_206933.3 10179 10397 +;idty=1;splign=219
+NG_009497.1	RefSeq	cDNA_match	638115	638338	.	+	.	ID=aln0;Target=NM_206933.3 10398 10621 +;idty=1;splign=224
+NG_009497.1	RefSeq	cDNA_match	641523	641727	.	+	.	ID=aln0;Target=NM_206933.3 10622 10826 +;idty=1;splign=205
+NG_009497.1	RefSeq	cDNA_match	645462	645659	.	+	.	ID=aln0;Target=NM_206933.3 10827 11024 +;idty=1;splign=198
+NG_009497.1	RefSeq	cDNA_match	646201	646355	.	+	.	ID=aln0;Target=NM_206933.3 11025 11179 +;idty=1;splign=155
+NG_009497.1	RefSeq	cDNA_match	648356	648554	.	+	.	ID=aln0;Target=NM_206933.3 11180 11378 +;idty=1;splign=199
+NG_009497.1	RefSeq	cDNA_match	661609	661716	.	+	.	ID=aln0;Target=NM_206933.3 11379 11486 +;idty=1;splign=108
+NG_009497.1	RefSeq	cDNA_match	668554	668737	.	+	.	ID=aln0;Target=NM_206933.3 11487 11670 +;idty=1;splign=184
+NG_009497.1	RefSeq	cDNA_match	669645	669802	.	+	.	ID=aln0;Target=NM_206933.3 11671 11828 +;idty=1;splign=158
+NG_009497.1	RefSeq	cDNA_match	685062	685220	.	+	.	ID=aln0;Target=NM_206933.3 11829 11987 +;idty=1;splign=159
+NG_009497.1	RefSeq	cDNA_match	686860	687022	.	+	.	ID=aln0;Target=NM_206933.3 11988 12150 +;idty=1;splign=163
+NG_009497.1	RefSeq	cDNA_match	700013	700367	.	+	.	ID=aln0;Target=NM_206933.3 12151 12505 +;idty=1;splign=355
+NG_009497.1	RefSeq	cDNA_match	748021	748248	.	+	.	ID=aln0;Target=NM_206933.3 12506 12733 +;idty=1;splign=228
+NG_009497.1	RefSeq	cDNA_match	752781	754297	.	+	.	ID=aln0;Target=NM_206933.3 12734 14250 +;idty=1;splign=1517
+NG_009497.1	RefSeq	cDNA_match	757104	757425	.	+	.	ID=aln0;Target=NM_206933.3 14251 14572 +;idty=1;splign=322
+NG_009497.1	RefSeq	cDNA_match	777596	777805	.	+	.	ID=aln0;Target=NM_206933.3 14573 14782 +;idty=1;splign=210
+NG_009497.1	RefSeq	cDNA_match	779631	779869	.	+	.	ID=aln0;Target=NM_206933.3 14783 15021 +;idty=1;splign=239
+NG_009497.1	RefSeq	cDNA_match	780667	780875	.	+	.	ID=aln0;Target=NM_206933.3 15022 15230 +;idty=1;splign=209
+NG_009497.1	RefSeq	cDNA_match	787663	787839	.	+	.	ID=aln0;Target=NM_206933.3 15231 15407 +;idty=1;splign=177
+NG_009497.1	RefSeq	cDNA_match	789159	789242	.	+	.	ID=aln0;Target=NM_206933.3 15408 15491 +;idty=1;splign=84
+NG_009497.1	RefSeq	cDNA_match	793694	793938	.	+	.	ID=aln0;Target=NM_206933.3 15492 15736 +;idty=1;splign=245
+NG_009497.1	RefSeq	cDNA_match	799362	799583	.	+	.	ID=aln0;Target=NM_206933.3 15737 15958 +;idty=1;splign=222
+NG_009497.1	RefSeq	cDNA_match	802527	805506	.	+	.	ID=aln0;Target=NM_206933.3 15959 18938 +;idty=1;splign=2980
+NG_009497.1	RefSeq	cDNA_match	5001	5183	.	+	.	ID=aln1;Target=NM_206933.2 1 183 +;idty=1;splign=183
+NG_009497.1	RefSeq	cDNA_match	5857	6545	.	+	.	ID=aln1;Target=NM_206933.2 184 872 +;idty=1;splign=689
+NG_009497.1	RefSeq	cDNA_match	9718	9883	.	+	.	ID=aln1;Target=NM_206933.2 873 1038 +;idty=1;splign=166
+NG_009497.1	RefSeq	cDNA_match	63312	63444	.	+	.	ID=aln1;Target=NM_206933.2 1039 1171 +;idty=1;splign=133
+NG_009497.1	RefSeq	cDNA_match	100743	100806	.	+	.	ID=aln1;Target=NM_206933.2 1172 1235 +;idty=1;splign=64
+NG_009497.1	RefSeq	cDNA_match	102798	103092	.	+	.	ID=aln1;Target=NM_206933.2 1236 1530 +;idty=1;splign=295
+NG_009497.1	RefSeq	cDNA_match	104045	104229	.	+	.	ID=aln1;Target=NM_206933.2 1531 1715 +;idty=1;splign=185
+NG_009497.1	RefSeq	cDNA_match	104702	104923	.	+	.	ID=aln1;Target=NM_206933.2 1716 1937 +;idty=1;splign=222
+NG_009497.1	RefSeq	cDNA_match	106421	106514	.	+	.	ID=aln1;Target=NM_206933.2 1938 2031 +;idty=1;splign=94
+NG_009497.1	RefSeq	cDNA_match	136027	136222	.	+	.	ID=aln1;Target=NM_206933.2 2032 2227 +;idty=1;splign=196
+NG_009497.1	RefSeq	cDNA_match	138987	139117	.	+	.	ID=aln1;Target=NM_206933.2 2228 2358 +;idty=1;splign=131
+NG_009497.1	RefSeq	cDNA_match	177299	177494	.	+	.	ID=aln1;Target=NM_206933.2 2359 2554 +;idty=1;splign=196
+NG_009497.1	RefSeq	cDNA_match	181171	181812	.	+	.	ID=aln1;Target=NM_206933.2 2555 3196 +;idty=1;splign=642
+NG_009497.1	RefSeq	cDNA_match	196261	196444	.	+	.	ID=aln1;Target=NM_206933.2 3197 3380 +;idty=1;splign=184
+NG_009497.1	RefSeq	cDNA_match	210847	211010	.	+	.	ID=aln1;Target=NM_206933.2 3381 3544 +;idty=1;splign=164
+NG_009497.1	RefSeq	cDNA_match	220966	221124	.	+	.	ID=aln1;Target=NM_206933.2 3545 3703 +;idty=1;splign=159
+NG_009497.1	RefSeq	cDNA_match	228276	228770	.	+	.	ID=aln1;Target=NM_206933.2 3704 4198 +;idty=1;splign=495
+NG_009497.1	RefSeq	cDNA_match	229813	230082	.	+	.	ID=aln1;Target=NM_206933.2 4199 4468 +;idty=1;splign=270
+NG_009497.1	RefSeq	cDNA_match	231675	231844	.	+	.	ID=aln1;Target=NM_206933.2 4469 4638 +;idty=1;splign=170
+NG_009497.1	RefSeq	cDNA_match	238030	238174	.	+	.	ID=aln1;Target=NM_206933.2 4639 4783 +;idty=1;splign=145
+NG_009497.1	RefSeq	cDNA_match	252915	253145	.	+	.	ID=aln1;Target=NM_206933.2 4784 5014 +;idty=1;splign=231
+NG_009497.1	RefSeq	cDNA_match	331184	331314	.	+	.	ID=aln1;Target=NM_206933.2 5015 5145 +;idty=1;splign=131
+NG_009497.1	RefSeq	cDNA_match	339258	339384	.	+	.	ID=aln1;Target=NM_206933.2 5146 5272 +;idty=1;splign=127
+NG_009497.1	RefSeq	cDNA_match	341577	341678	.	+	.	ID=aln1;Target=NM_206933.2 5273 5374 +;idty=1;splign=102
+NG_009497.1	RefSeq	cDNA_match	343520	343699	.	+	.	ID=aln1;Target=NM_206933.2 5375 5554 +;idty=1;splign=180
+NG_009497.1	RefSeq	cDNA_match	344811	344941	.	+	.	ID=aln1;Target=NM_206933.2 5555 5685 +;idty=1;splign=131
+NG_009497.1	RefSeq	cDNA_match	350035	350308	.	+	.	ID=aln1;Target=NM_206933.2 5686 5959 +;idty=1;splign=274
+NG_009497.1	RefSeq	cDNA_match	355097	355300	.	+	.	ID=aln1;Target=NM_206933.2 5960 6163 +;idty=1;splign=204
+NG_009497.1	RefSeq	cDNA_match	355428	355508	.	+	.	ID=aln1;Target=NM_206933.2 6164 6244 +;idty=1;splign=81
+NG_009497.1	RefSeq	cDNA_match	358105	358296	.	+	.	ID=aln1;Target=NM_206933.2 6245 6436 +;idty=1;splign=192
+NG_009497.1	RefSeq	cDNA_match	379750	379863	.	+	.	ID=aln1;Target=NM_206933.2 6437 6550 +;idty=1;splign=114
+NG_009497.1	RefSeq	cDNA_match	381805	381966	.	+	.	ID=aln1;Target=NM_206933.2 6551 6712 +;idty=1;splign=162
+NG_009497.1	RefSeq	cDNA_match	427835	427994	.	+	.	ID=aln1;Target=NM_206933.2 6713 6872 +;idty=1;splign=160
+NG_009497.1	RefSeq	cDNA_match	429339	429510	.	+	.	ID=aln1;Target=NM_206933.2 6873 7044 +;idty=1;splign=172
+NG_009497.1	RefSeq	cDNA_match	435230	435377	.	+	.	ID=aln1;Target=NM_206933.2 7045 7192 +;idty=1;splign=148
+NG_009497.1	RefSeq	cDNA_match	457621	457772	.	+	.	ID=aln1;Target=NM_206933.2 7193 7344 +;idty=1;splign=152
+NG_009497.1	RefSeq	cDNA_match	462918	463080	.	+	.	ID=aln1;Target=NM_206933.2 7345 7507 +;idty=1;splign=163
+NG_009497.1	RefSeq	cDNA_match	493602	493781	.	+	.	ID=aln1;Target=NM_206933.2 7508 7687 +;idty=1;splign=180
+NG_009497.1	RefSeq	cDNA_match	527492	527642	.	+	.	ID=aln1;Target=NM_206933.2 7688 7838 +;idty=1;splign=151
+NG_009497.1	RefSeq	cDNA_match	528180	528322	.	+	.	ID=aln1;Target=NM_206933.2 7839 7981 +;idty=1;splign=143
+NG_009497.1	RefSeq	cDNA_match	539343	539971	.	+	.	ID=aln1;Target=NM_206933.2 7982 8610 +;idty=1;splign=629
+NG_009497.1	RefSeq	cDNA_match	549299	549633	.	+	.	ID=aln1;Target=NM_206933.2 8611 8945 +;idty=1;splign=335
+NG_009497.1	RefSeq	cDNA_match	550517	550639	.	+	.	ID=aln1;Target=NM_206933.2 8946 9068 +;idty=1;splign=123
+NG_009497.1	RefSeq	cDNA_match	561227	561390	.	+	.	ID=aln1;Target=NM_206933.2 9069 9232 +;idty=1;splign=164
+NG_009497.1	RefSeq	cDNA_match	582364	582573	.	+	.	ID=aln1;Target=NM_206933.2 9233 9442 +;idty=1;splign=210
+NG_009497.1	RefSeq	cDNA_match	583901	584103	.	+	.	ID=aln1;Target=NM_206933.2 9443 9645 +;idty=1;splign=203
+NG_009497.1	RefSeq	cDNA_match	590294	590406	.	+	.	ID=aln1;Target=NM_206933.2 9646 9758 +;idty=1;splign=113
+NG_009497.1	RefSeq	cDNA_match	611202	611400	.	+	.	ID=aln1;Target=NM_206933.2 9759 9957 +;idty=1;splign=199
+NG_009497.1	RefSeq	cDNA_match	614493	614661	.	+	.	ID=aln1;Target=NM_206933.2 9958 10126 +;idty=1;splign=169
+NG_009497.1	RefSeq	cDNA_match	629272	629490	.	+	.	ID=aln1;Target=NM_206933.2 10127 10345 +;idty=1;splign=219
+NG_009497.1	RefSeq	cDNA_match	638115	638338	.	+	.	ID=aln1;Target=NM_206933.2 10346 10569 +;idty=1;splign=224
+NG_009497.1	RefSeq	cDNA_match	641523	641727	.	+	.	ID=aln1;Target=NM_206933.2 10570 10774 +;idty=1;splign=205
+NG_009497.1	RefSeq	cDNA_match	645462	645659	.	+	.	ID=aln1;Target=NM_206933.2 10775 10972 +;idty=1;splign=198
+NG_009497.1	RefSeq	cDNA_match	646201	646355	.	+	.	ID=aln1;Target=NM_206933.2 10973 11127 +;idty=1;splign=155
+NG_009497.1	RefSeq	cDNA_match	648356	648554	.	+	.	ID=aln1;Target=NM_206933.2 11128 11326 +;idty=1;splign=199
+NG_009497.1	RefSeq	cDNA_match	661609	661716	.	+	.	ID=aln1;Target=NM_206933.2 11327 11434 +;idty=1;splign=108
+NG_009497.1	RefSeq	cDNA_match	668554	668737	.	+	.	ID=aln1;Target=NM_206933.2 11435 11618 +;idty=1;splign=184
+NG_009497.1	RefSeq	cDNA_match	669645	669802	.	+	.	ID=aln1;Target=NM_206933.2 11619 11776 +;idty=1;splign=158
+NG_009497.1	RefSeq	cDNA_match	685062	685220	.	+	.	ID=aln1;Target=NM_206933.2 11777 11935 +;idty=1;splign=159
+NG_009497.1	RefSeq	cDNA_match	686860	687022	.	+	.	ID=aln1;Target=NM_206933.2 11936 12098 +;idty=1;splign=163
+NG_009497.1	RefSeq	cDNA_match	700013	700367	.	+	.	ID=aln1;Target=NM_206933.2 12099 12453 +;idty=1;splign=355
+NG_009497.1	RefSeq	cDNA_match	748021	748248	.	+	.	ID=aln1;Target=NM_206933.2 12454 12681 +;idty=1;splign=228
+NG_009497.1	RefSeq	cDNA_match	752781	754297	.	+	.	ID=aln1;Target=NM_206933.2 12682 14198 +;idty=1;splign=1517
+NG_009497.1	RefSeq	cDNA_match	757104	757425	.	+	.	ID=aln1;Target=NM_206933.2 14199 14520 +;idty=1;splign=322
+NG_009497.1	RefSeq	cDNA_match	777596	777805	.	+	.	ID=aln1;Target=NM_206933.2 14521 14730 +;idty=1;splign=210
+NG_009497.1	RefSeq	cDNA_match	779631	779869	.	+	.	ID=aln1;Target=NM_206933.2 14731 14969 +;idty=1;splign=239
+NG_009497.1	RefSeq	cDNA_match	780667	780875	.	+	.	ID=aln1;Target=NM_206933.2 14970 15178 +;idty=1;splign=209
+NG_009497.1	RefSeq	cDNA_match	787663	787839	.	+	.	ID=aln1;Target=NM_206933.2 15179 15355 +;idty=1;splign=177
+NG_009497.1	RefSeq	cDNA_match	789159	789242	.	+	.	ID=aln1;Target=NM_206933.2 15356 15439 +;idty=1;splign=84
+NG_009497.1	RefSeq	cDNA_match	793694	793938	.	+	.	ID=aln1;Target=NM_206933.2 15440 15684 +;idty=1;splign=245
+NG_009497.1	RefSeq	cDNA_match	799362	799583	.	+	.	ID=aln1;Target=NM_206933.2 15685 15906 +;idty=1;splign=222
+NG_009497.1	RefSeq	cDNA_match	802527	805503	.	+	.	ID=aln1;Target=NM_206933.2 15907 18883 +;idty=1;splign=2977
+NG_009497.1	RefSeq	cDNA_match	5001	5183	.	+	.	ID=aln2;Target=NM_007123.5 1 183 +;idty=1;splign=183
+NG_009497.1	RefSeq	cDNA_match	5857	6545	.	+	.	ID=aln2;Target=NM_007123.5 184 872 +;idty=1;splign=689
+NG_009497.1	RefSeq	cDNA_match	9718	9883	.	+	.	ID=aln2;Target=NM_007123.5 873 1038 +;idty=1;splign=166
+NG_009497.1	RefSeq	cDNA_match	63312	63444	.	+	.	ID=aln2;Target=NM_007123.5 1039 1171 +;idty=1;splign=133
+NG_009497.1	RefSeq	cDNA_match	100743	100806	.	+	.	ID=aln2;Target=NM_007123.5 1172 1235 +;idty=1;splign=64
+NG_009497.1	RefSeq	cDNA_match	102798	103092	.	+	.	ID=aln2;Target=NM_007123.5 1236 1530 +;idty=1;splign=295
+NG_009497.1	RefSeq	cDNA_match	104045	104229	.	+	.	ID=aln2;Target=NM_007123.5 1531 1715 +;idty=1;splign=185
+NG_009497.1	RefSeq	cDNA_match	104702	104923	.	+	.	ID=aln2;Target=NM_007123.5 1716 1937 +;idty=1;splign=222
+NG_009497.1	RefSeq	cDNA_match	106421	106514	.	+	.	ID=aln2;Target=NM_007123.5 1938 2031 +;idty=1;splign=94
+NG_009497.1	RefSeq	cDNA_match	136027	136222	.	+	.	ID=aln2;Target=NM_007123.5 2032 2227 +;idty=1;splign=196
+NG_009497.1	RefSeq	cDNA_match	138987	139117	.	+	.	ID=aln2;Target=NM_007123.5 2228 2358 +;idty=1;splign=131
+NG_009497.1	RefSeq	cDNA_match	177299	177494	.	+	.	ID=aln2;Target=NM_007123.5 2359 2554 +;idty=1;splign=196
+NG_009497.1	RefSeq	cDNA_match	181171	181812	.	+	.	ID=aln2;Target=NM_007123.5 2555 3196 +;idty=1;splign=642
+NG_009497.1	RefSeq	cDNA_match	196261	196444	.	+	.	ID=aln2;Target=NM_007123.5 3197 3380 +;idty=1;splign=184
+NG_009497.1	RefSeq	cDNA_match	210847	211010	.	+	.	ID=aln2;Target=NM_007123.5 3381 3544 +;idty=1;splign=164
+NG_009497.1	RefSeq	cDNA_match	220966	221124	.	+	.	ID=aln2;Target=NM_007123.5 3545 3703 +;idty=1;splign=159
+NG_009497.1	RefSeq	cDNA_match	228276	228770	.	+	.	ID=aln2;Target=NM_007123.5 3704 4198 +;idty=1;splign=495
+NG_009497.1	RefSeq	cDNA_match	229813	230082	.	+	.	ID=aln2;Target=NM_007123.5 4199 4468 +;idty=1;splign=270
+NG_009497.1	RefSeq	cDNA_match	231675	231844	.	+	.	ID=aln2;Target=NM_007123.5 4469 4638 +;idty=1;splign=170
+NG_009497.1	RefSeq	cDNA_match	238030	238174	.	+	.	ID=aln2;Target=NM_007123.5 4639 4783 +;idty=1;splign=145
+NG_009497.1	RefSeq	cDNA_match	252915	254451	.	+	.	ID=aln2;Target=NM_007123.5 4784 6320 +;idty=1;splign=1537
+
