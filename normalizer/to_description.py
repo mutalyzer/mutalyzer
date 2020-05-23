@@ -11,7 +11,7 @@ def to_string(references, variants, sequences):
     return '{}{}:{}.{}'.format(
         references['reference']['id'],
         specific_locus_to_description(
-            references['reference'].get('specific_locus')),
+            references['reference'].get('selector')),
         references['coordinate_system'],
         variants_to_description(variants, sequences))
 
@@ -57,22 +57,8 @@ def specific_locus_to_description(specific_locus):
     :return: Equivalent specific locus string representation.
     """
     if isinstance(specific_locus, dict):
-        if specific_locus.get('type') == 'accession':
-            return '({}.{})'.format(specific_locus['accession'],
-                                    specific_locus['version'])
-        elif specific_locus.get('type') == 'gene':
-            if specific_locus.get('transcript_variant'):
-                selector = '_v{}'.format(
-                    specific_locus.get('transcript_variant'))
-            elif specific_locus.get('protein_isoform'):
-                selector = '_i{}'.format(specific_locus.get('protein_isoform'))
-            else:
-                selector = ''
-            return '({}{})'.format((specific_locus.get('id'), selector))
-        elif specific_locus.get('type') == 'lrg transcript':
-            return specific_locus.get('transcript_variant')
-        elif specific_locus.get('type') == 'lrg protein':
-            return specific_locus.get('protein_isoform')
+        if specific_locus.get('id'):
+            return '({})'.format(specific_locus.get('id'))
     return ''
 
 
@@ -176,7 +162,7 @@ def point_to_description(point):
     else:
         position = str(point.get('position'))
     if point.get('offset'):
-        offset = '%+d' % point.get('offset')
+        offset = '%+d' % point['offset']['value']
     if point.get('uncertain_offset'):
         offset = point.get('uncertain_offset')
     return '{}{}{}'.format(outside_cds, position, offset)

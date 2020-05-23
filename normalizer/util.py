@@ -122,3 +122,7 @@ def get_time_information(time_stamps):
     output['TOTAL'] = '{:2.6f}'.format(time_stamps[-1][1] - time_stamps[0][1])
     return output
 
+
+def sort_location_tuples(locations):
+    sorted_locations = sorted([i for j in locations for i in j])
+    return list(zip(sorted_locations[0::2], sorted_locations[1::2]))

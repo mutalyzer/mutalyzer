@@ -1,10 +1,13 @@
-from flask import Flask
-from flask_restx import Resource, Api
+from flask import Flask, Blueprint, render_template, request
+from flask_restx import Resource, Api, fields, marshal
 from normalizer.normalizer import mutalyzer3, get_reference_model
 from mutalyzer_hgvs_parser import parse_description, parse_description_to_model
+from crossmapper import Crossmap
 
-app = Flask(__name__)
-api = Api(app, version='1.0', title='Mutalyzer3 API')
+
+blueprint = Blueprint('api', __name__)
+
+api = Api(blueprint, version='1.0', title='Mutalyzer3 API')
 
 ns = api.namespace('/')
 
@@ -40,3 +43,21 @@ class NameCheck(Resource):
     def get(self, hgvs_description):
         """Normalize a variant description."""
         return mutalyzer3(hgvs_description)
+
+
+crossmap_input = api.model('CrossmapInput', {
+    'exons': fields.List(fields.Integer,
+                         description='Exons'),
+    'cds': fields.List(fields.Integer,
+                         description='CDS'),
+})
+
+
+@ns.route("/crossmap/")
+class Crossmap(Resource):
+    @api.doc(body=crossmap_input)
+    def post(self):
+        print(request.data)
+        print(marshal(request.data, crossmap_input))
+        return "OK"
+

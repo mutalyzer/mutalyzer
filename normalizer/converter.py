@@ -1,9 +1,11 @@
 import json
 import copy
+import warnings
 from .util import get_start, get_end, set_start, get_location_length, roll,\
-    get_inserted_length
+    get_inserted_length, sort_location_tuples
 from crossmapper import Crossmap
-from .reference import get_mol_type
+from .reference import *
+from .description import *
 
 
 def point_to_range(point_location):
@@ -34,7 +36,11 @@ def range_to_point(range_location):
         return range_location
 
 
-def point_to_coordinate(point):
+def get_noncoding_downstream_position(crossmap, selector_model):
+    pass
+
+
+def point_to_coordinate(point, selector_model):
     position = point['position']
     if point.get('outside_cds'):
         if point['outside_cds'] == 'upstream':
@@ -51,12 +57,90 @@ def point_to_coordinate(point):
     return position, offset, section
 
 
+def point_to_x_coding(point):
+    position = point['position']
+    if point.get('outside_cds'):
+        if point['outside_cds'] == 'upstream':
+            section = 0
+            position = -1 * position
+        elif point['outside_cds'] == 'downstream':
+            section = 2
+    else:
+        section = 1
+    if point.get('offset'):
+        offset = point['offset']['value']
+    else:
+        offset = 0
+    return position, offset, section
+
+
+def point_to_x_noncoding(point):
+    position = point['position']
+    if point.get('offset'):
+        offset = point['offset']['value']
+    else:
+        offset = 0
+    if point.get('outside_cds'):
+        if point['outside_cds'] == 'upstream':
+            position = 1
+            offset = -1 * position
+        elif point['outside_cds'] == 'downstream':
+            offset = position
+            # TODO: Include the orientation.
+    return position, offset
+
+
+def x_coding_to_point(coding):
+    position, offset, section = coding
+    point = {'type': 'point',
+             'position': position}
+
+    if section == 0:
+        point['outside_cds'] = 'upstream'
+        point['position'] *= -1
+    elif section == 2:
+        point['outside_cds'] = 'downstream'
+
+    if offset != 0:
+        point['offset'] = {'value': offset}
+
+    return point
+
+
+def coding_to_point(coding):
+    position, offset, section = coding
+    point = {'type': 'point',
+             'position': position}
+
+    if section == 0:
+        point['outside_cds'] = 'upstream'
+        point['position'] *= -1
+    elif section == 2:
+        point['outside_cds'] = 'downstream'
+
+    if offset != 0:
+        point['offset'] = {'value': offset}
+
+    return point
+
+
+def x_noncoding_to_point(noncoding):
+    position, offset = noncoding
+    point = {'type': 'point',
+             'position': position}
+
+    if offset != 0:
+        point['offset'] = {'value': offset}
+
+    return point
+
+
 def get_point_value(point):
     return point['position']
 
 
-def location_to_internal(location, crossmap_function, point_function,
-                         variant_type):
+def location_to_internal(location, variant_type,
+                         crossmap_function, point_function):
     new_location = copy.deepcopy(location)
     if location['type'] == 'range':
         new_location['start']['position'] = crossmap_function(
@@ -94,6 +178,19 @@ def location_to_hgvs(location, to_function, variant_type):
     return new_location
 
 
+def location_to_hgvs_2(location, variant_type):
+    new_location = copy.deepcopy(location)
+
+    if variant_type == 'insertion':
+        new_location['start']['position'] -= 1
+    elif location['type'] == 'range':
+        new_location['end']['position'] -= 1
+        if get_start(new_location) == get_end(new_location):
+            new_location = range_to_point(new_location)
+
+    return new_location
+
+
 def inserted_to_internal(inserted, sequences, from_cs, reference):
     if from_cs == 'g':
         crossmap = Crossmap()
@@ -114,9 +211,9 @@ def inserted_to_internal(inserted, sequences, from_cs, reference):
                           'not supported.'.format(from_cs)))
     inserted['location'] = location_to_internal(
         location=inserted['location'],
+        variant_type=None,
         crossmap_function=crossmap_function,
-        point_function=point_function,
-        variant_type=None)
+        point_function=point_function)
 
 
 def variants_locations_to_hgvs(variants, references, to_cs):
@@ -369,5 +466,124 @@ def de_to_hgvs(variants, sequences=None):
         else:
             raise ValueError('Unexpected variant type: \'{}\'.'.format(
                 variant.get('type')))
+
+    return new_variants
+
+
+def fix_selector_id(reference_models, reference_id, coordinate_system):
+    available_selectors = get_available_selectors(
+        reference_models[reference_id]['model'],
+        coordinate_system)
+    if len(available_selectors) == 0:
+        raise(
+            'ENOSELECTOR: {} coordinate system used but no selector ID '
+            'provided in the description. In addition, there is no '
+            'selector available in the reference model.'.format(
+                coordinate_system))
+    elif len(available_selectors) == 1:
+        warnings.warn(
+            'WNOSELECTOR: {} coordinate system used but no selector ID '
+            'provided in the description. Only {} present in the reference,'
+            ' which is chosen as default.'.format(
+                coordinate_system, available_selectors[0]))
+        return available_selectors[0]
+    elif len(available_selectors) > 1:
+        raise(
+            'ENOSELECTOR: {} coordinate system used but no selector ID '
+            'provided in the description. Please choose between the '
+            'following selectors available in the reference: {}'.format(
+                coordinate_system, available_selectors))
+
+
+def crossmap_genomic_to_coordinate_setup():
+    crossmap = Crossmap()
+    return {'crossmap_function': crossmap.genomic_to_coordinate,
+            'point_function': get_point_value}
+
+
+def crossmap_coding_to_coordinate_setup(description, references):
+    reference_id = description['reference']['id']
+
+    selector_id = get_selector_id(description)
+    if selector_id is None:
+        selector_id = fix_selector_id(
+            references, reference_id, 'c')
+
+    selector = get_selector_model_2(
+        references[reference_id]['model'], selector_id)
+
+    crossmap = Crossmap(selector['exon'], selector['cds'], selector['inverted'])
+    return {'crossmap_function': crossmap.coding_to_coordinate,
+            'point_function': point_to_x_coding}
+
+
+def crossmap_noncoding_to_coordinate_setup(description, references):
+    reference_id = description['reference']['id']
+
+    selector_id = get_selector_id(description)
+    if selector_id is None:
+        selector_id = fix_selector_id(
+            references, reference_id, 'n')
+
+    selector = get_selector_model_2(
+        references[reference_id]['model'], selector_id)
+    selector['exon'] = sort_location_tuples(selector['exon'])
+    crossmap = Crossmap(selector['exon'], None, selector['inverted'])
+    return {'crossmap_function': crossmap.noncoding_to_coordinate,
+            'point_function': point_to_x_noncoding}
+
+
+def crossmap_to_x_setup(description, references):
+    """
+    Returns a crossmap instance able to convert from the coordinate system
+    provided in the description model to the to internal system (crossmap
+    coordinate).
+    :param description: Description model.
+    :param references: References models.
+    :return: {'crossmap_function' : ..., 'point_function': ...}
+    """
+    coordinate_system = get_coordinate_system(description)
+    if coordinate_system is None:
+        warnings.warn('No coordinate system, we assume g.')
+        # TODO: Improve message
+        coordinate_system = 'g'
+        # TODO: Update also the description model.
+
+    if coordinate_system == 'g':
+        crossmap = crossmap_genomic_to_coordinate_setup()
+    elif coordinate_system == 'c':
+        crossmap = crossmap_coding_to_coordinate_setup(description, references)
+    elif coordinate_system == 'n':
+        crossmap = crossmap_noncoding_to_coordinate_setup(description,
+                                                          references)
+    else:
+        raise Exception('Unsupported coordinate system: {}.'.format(
+            coordinate_system))
+
+    return crossmap
+
+
+def to_internal_locations(description, references):
+    """
+    Converts the variant locations present in the description model to the
+    internal coordinate system.
+
+    :param description: Description model, dictionary.
+    :param references: References models, dictionary.
+    :return: Variants with locations in the internal coordinate system.
+    """
+
+    crossmap = crossmap_to_x_setup(description, references)
+    new_variants = []
+
+    for variant in description['variants']:
+        new_variant = copy.deepcopy(variant)
+        new_variant['location'] = location_to_internal(
+            variant['location'], variant['type'], **crossmap)
+        if new_variant.get('inserted'):
+            for ins in new_variant['inserted']:
+                if ins.get('location'):
+                    pass
+        new_variants.append(new_variant)
 
     return new_variants

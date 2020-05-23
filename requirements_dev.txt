@@ -9,7 +9,7 @@ chardet==3.0.4
 Click==7.0
 configparser==3.5.0
 contextlib2==0.5.5
--e git+https://github.com/mutalyzer/crossmap.git@787baadd7ee31b756098fb43bf496a4041a448e2#egg=crossmapper
+-e git+https://github.com/mutalyzer/crossmap.git@851eac3ab235d53aae298cae0e3398fc54da2b4b#egg=crossmapper
 -e git+https://github.com/mutalyzer/description-extractor.git@2c2edbffa063749bb3894518d87e29fb26fafe2d#egg=description_extractor
 flasgger==0.9.3
 Flask==1.0.3

@@ -19,7 +19,35 @@ def fetch_sequence(reference_id, reference_source=None):
     return json.loads(_get_content('data/' + reference_id + '.sequence'))
 
 
+TESTS_ALL = [
+    {'keywords': ['correct input', 'no errors', 'no warnings',
+                  'NCBI', 'g.', 'single', 'substitution'],
+     'input': 'NG_012337.1:g.4C>T',
+     'output': 'NG_012337.1:g.4C>T'},
+
+    {'keywords': ['correct input', 'no errors', 'no warnings',
+                  'NCBI', 'g.', 'single', 'del'],
+     'input': 'NG_017013.2:g.17013_17014del',
+     'output': 'NG_017013.2:g.17013_17014del'},
+
+
+]
+
+
 TESTS = [
+    # Correct input, no errors, no warnings
+    # -------------------------------------
+    # NCBI g. substitution
+    ('NG_012337.1:g.4C>T',
+     'NG_012337.1:g.4C>T'),
+
+    # NCBI g. deletion single
+
+
+    # NCBI g. deletion multiple
+
+    ('NG_017013.2:g.17013_17014del',
+     'NG_017013.2:g.17013_17014del'),
     ('NG_012337.1:g.4delins7_31',
      'NG_012337.1:g.4delins7_31'),
     # Specific locus
@@ -34,8 +62,6 @@ TESTS = [
      'NG_017013.2:g.[16985A>T;17013_17014del]'),
     ('NG_017013.2:g.[16985A>T;17011_17012del]',
      'NG_017013.2:g.[16985A>T;17013_17014del]'),
-    ('NG_017013.2:g.17013_17014del',
-     'NG_017013.2:g.17013_17014del'),
     ('NG_017013.2:g.17011_17012del',
      'NG_017013.2:g.17013_17014del'),
     ('NG_017013.2:g.17415_17417delinsGCG',
@@ -46,8 +72,6 @@ TESTS = [
      'NG_012337.1:g.[3_4insGGTT;5_6ins12_50]'),
     ('NG_012337.1:g.26_31del',
      'NG_012337.1:g.29_34del'),
-    ('NG_012337.1:g.4C>T',
-     'NG_012337.1:g.4C>T'),
     ('NG_012337.1:g.100_200delins100_101',
      'NG_012337.1:g.102_200del'),
     ('NG_017013.2:g.19258dup',
@@ -114,7 +138,7 @@ def test_mutalyzer3(hgvs_description, normalized_description, monkeypatch):
                         fetch_annotation)
     monkeypatch.setattr('retriever.retriever.fetch_sequence',
                         fetch_sequence)
-    assert mutalyzer3(hgvs_description) == normalized_description
+    assert mutalyzer3(hgvs_description)['normalized description'] == normalized_description
 
 
 @pytest.mark.parametrize(

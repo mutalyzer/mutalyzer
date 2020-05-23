@@ -1,4 +1,4 @@
-from normalizer.api.api import app
+from normalizer.api import app
 
 
 def main():

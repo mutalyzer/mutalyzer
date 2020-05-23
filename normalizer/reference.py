@@ -8,14 +8,78 @@ def get_mol_type(reference):
             return reference['model']['qualifiers']['mol_type']
 
 
-def get_transcripts_ids(reference_model):
-    transcript_ids = set()
-    for feature in reference_model:
+def is_feature_inverted(feature):
+    if feature['location']['strand'] == -1:
+        return True
+    else:
+        return False
+
+
+def get_transcripts_ids(reference_annotations, coordinate_system='c'):
+    ids = set()
+    if coordinate_system == 'c':
+        check = ['mRNA']
+    elif coordinate_system == 'n':
+        check = ['ncRNA']
+    for feature in reference_annotations['features']:
         if feature['type'] == 'gene':
-            for sub_feature in feature['sub_features']:
-                if sub_feature['type'] == 'mRNA':
-                    transcript_ids.add(sub_feature['id'].split('-')[1])
-    return list(transcript_ids)
+            for sub_feature in feature['features']:
+                if sub_feature['type'] in check:
+                    ids.add(sub_feature['id'])
+    return list(ids)
+
+
+def is_id_equal(feature, feature_id):
+    """
+    Runs a series of checks to identify if the feature has the provided ID.
+    """
+    if feature_id == feature['id']:
+        return True
+    # if '-' in feature['id'] and feature_id == feature['id'].split('-')[1]:
+    #     return True
+    return False
+
+
+def get_feature(reference_model, feature_id):
+    """
+    Extract the feature model, if found, otherwise None.
+    """
+    for feature in reference_model['features']:
+        if feature['type'] == 'gene' and feature.get('features'):
+            for sub_feature in feature['features']:
+                if is_id_equal(sub_feature, feature_id):
+                    return sub_feature
+
+
+def get_feature_locations(feature):
+    sub_features_locations = {}
+    if feature.get('features'):
+        for sub_feature in feature['features']:
+            if sub_feature['type'] not in sub_features_locations:
+                sub_features_locations[sub_feature['type']] = []
+            sub_features_locations[sub_feature['type']].append(
+                (get_start(sub_feature), get_end(sub_feature)))
+    return sub_features_locations
+
+
+def get_selector_model_2(reference_model, selector_id):
+    """
+    Searches for the appropriate selector model:
+    - exons and cds for coding selectors;
+    - only the exons for the non-coding ones.
+    The model includes the selector type.
+    :return:
+    """
+    feature = get_feature(reference_model, selector_id)
+    if feature:
+        output = {'type': feature['type'],
+                  'inverted': is_feature_inverted(feature)}
+        output.update(get_feature_locations(feature))
+        return output
+
+
+def get_available_selectors(reference_annotations, coordinate_system):
+    return get_transcripts_ids(reference_annotations, coordinate_system)
 
 
 def get_selector_model(reference_model, mol_type, selector_id=None):
