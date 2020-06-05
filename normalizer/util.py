@@ -1,5 +1,6 @@
 from _collections import OrderedDict
 
+
 def get_start(model):
     """
     Get the start position of a (feature) location. For point locations
@@ -126,3 +127,6 @@ def get_time_information(time_stamps):
 def sort_location_tuples(locations):
     sorted_locations = sorted([i for j in locations for i in j])
     return list(zip(sorted_locations[0::2], sorted_locations[1::2]))
+
+def string_k_v(width, key, value):
+    return ' {k:<{w}} : {v}\n'.format(w=width, k=key, v=value)

@@ -16,23 +16,6 @@ def to_string(references, variants, sequences):
         variants_to_description(variants, sequences))
 
 
-def model_to_description(model):
-    """
-    Convert the variant description model to string.
-    :param model: Dictionary holding the variant description model.
-    :return: Equivalent reference string representation.
-    """
-    reference = reference_to_description(model.get('reference'))
-    specific_locus = specific_locus_to_description(model.get('specific_locus'))
-    if model.get('coordinate_system'):
-        coordinate_system = model.get('coordinate_system') + '.'
-    else:
-        coordinate_system = ''
-    variants = variants_to_description(model.get('variants'))
-    return '{}{}:{}{}'.format(reference, specific_locus,
-                              coordinate_system, variants)
-
-
 def reference_to_description(reference):
     """
     Convert the reference dictionary model to string.
@@ -119,7 +102,7 @@ def inserted_to_description(inserted, sequences):
             if insert.get('inverted'):
                 descriptions[-1] += 'inv'
         elif insert.get('reference_location'):
-            descriptions.append(model_to_description(insert))
+            descriptions.append(model_to_string(insert))
     if len(inserted) > 1:
         return '[{}]'.format(';'.join(descriptions))
     else:
