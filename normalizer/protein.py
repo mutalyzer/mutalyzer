@@ -1,4 +1,12 @@
+from Bio.Alphabet import generic_dna
+from Bio.Seq import Seq
 from Bio.SeqUtils import seq3
+from mutator.mutator import mutate
+
+from .converter import to_cds_coordinate
+from .reference import extract_sequences
+from .reference import get_mol_type
+from .reference import get_protein_selector_models
 
 
 def longest_common_prefix(s1, s2):
@@ -248,7 +256,82 @@ def protein_description(cds_stop, s1, s2):
 #protein_description
 
 
+def extract_cds_sequence(sequence, selector_model):
+    cds_start = selector_model["cds"][0][0]
+    cds_end = selector_model["cds"][0][1]
+    slices = []
+    for exon in selector_model["exon"]:
+        if cds_start < exon[0] < cds_end and cds_start < exon[1] < cds_end:
+            slices.append(exon)
+        elif exon[0] < cds_start < exon[1]:
+            slices.append((cds_start, exon[1]))
+        elif exon[0] < cds_end < exon[1]:
+            slices.append((exon[0], cds_end))
+    output = ''
+    for s in slices:
+        output += sequence[s[0]:s[1]]
+    return output
 
 
-if __name__ == '__main__':
-    print(protein_description(34, 'MTAPQQMT*', 'MTAQQMT*'))
+def get_protein_description(variants, references, selector_model):
+    """
+    Retrieves the protein description.
+
+    :param variants: Only deletion_insertion variants with coordinate locations.
+                     Preferable, from the description extractor.
+    :param references: References models. Required to be able to retrieve the
+                       inserted sequences.
+    :param selector_model:
+    """
+
+    sequences = extract_sequences(references)
+    cds_variants = to_cds_coordinate(variants, sequences, selector_model)
+    cds_sequence = extract_cds_sequence(
+        sequences[references['reference']['model']['id']], selector_model)
+
+    cds_mutated_sequence = mutate({"reference": cds_sequence}, cds_variants)
+
+    cds_sequence = Seq(cds_sequence, generic_dna).translate()
+    cds_mutated_sequence = Seq(cds_mutated_sequence, generic_dna).translate()
+
+    # Up to and including the first '*', or the entire string.
+    try:
+        stop = str(cds_mutated_sequence).index('*')
+        cds_mutated_sequence = str(cds_mutated_sequence)[:stop + 1]
+    except ValueError:
+        pass
+
+    description = protein_description(
+        len(cds_mutated_sequence), str(cds_sequence), str(cds_mutated_sequence))
+
+    return '{}({}):{}'.format(
+        references['reference']['model']['id'], selector_model['protein_id'],
+        description[0]
+    )
+
+
+def get_protein_descriptions(variants, references):
+    """
+    Retrieves all the possible protein descriptions.
+
+    - First, it identifies if protein descriptions can be obtained for this
+      particular reference.
+    - Next, it retrieves the selector models for which a protein description
+      can be obtained.
+    - Finally, it loops over the selector models and calls the appropriate
+      function to obtain the protein descriptions.
+
+    :param variants: Only deletion_insertion variants with coordinate locations.
+                     Preferable, from the description extractor.
+    :param references: References models. Required to be able to retrieve the
+                       inserted sequences.
+    """
+    if get_mol_type(references['reference']) not in ['genomic DNA', 'mRNA', 'dna']:
+        return
+    selector_models = get_protein_selector_models(references['reference']['model'])
+    protein_descriptions = []
+    for selector_id in selector_models:
+        protein_descriptions.append(
+            get_protein_description(
+                variants, references, selector_models[selector_id]))
+    return protein_descriptions

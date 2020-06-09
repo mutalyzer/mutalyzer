@@ -1,3 +1,6 @@
+import time
+import json
+
 from functools import lru_cache
 from mutalyzer_hgvs_parser import parse_description_to_model
 from retriever import retriever
@@ -8,17 +11,35 @@ from .converter import to_delins
 from .converter import to_internal_locations
 from .converter import de_to_hgvs
 from .converter import to_hgvs_locations
+from .converter import to_cds_coordinate
 from .reference import get_mol_type
 from .reference import get_selectors_ids
 from .reference import get_selector_model
 from .reference import get_available_selectors
+from .reference import extract_sequences
+from .protein import get_protein_description
+from .protein import get_protein_descriptions
 from .description import model_to_string
 from .description import get_selector_id
 from .description import get_coordinate_system
 from .util import get_time_information
 from .util import string_k_v
-import time
-import json
+from .visualization import to_be_visualized
+
+
+def extract_sequences(references):
+    """
+    Return a dictionary with reference ids as keys and their corresponding
+    sequences as values.
+
+    :param references: Dictionary with reference models.
+    :rtype: dict
+    :return: Reference ids as keys and their corresponding sequences as values
+    """
+    sequences = {}
+    for reference in references:
+        sequences[reference] = references[reference]['sequence']['seq']
+    return sequences
 
 
 @lru_cache(maxsize=32)
@@ -112,6 +133,7 @@ class Description(object):
         """
         self._reference_id = self._input_description_model['reference']['id']
         self._append_reference(self._reference_id)
+        self._reference_models['reference'] = self._reference_models[self._reference_id]
         self._selector_id = get_selector_id(self._input_description_model)
         if self._selector_id:
             self._selector_model = get_selector_model(
@@ -157,7 +179,8 @@ class Description(object):
 
     def _append_reference(self, reference_id):
         """
-        Appends the corresponding reference ID model to the _reference_models.
+        Retrieves and appends to the _reference_models the reference model
+        corresponding to provided reference_id.
         """
         if reference_id not in self._reference_models.keys():
             reference = get_reference_model(reference_id)
@@ -167,18 +190,34 @@ class Description(object):
             else:
                 self._reference_models[reference_id] = reference
 
+    def _get_sequence(self, reference_id):
+        """
+        Retrieves from the _reference_models the sequence that corresponds to
+        the provided reference_id.
+        :param reference_id:
+        :return:
+        """
+        return self._reference_models[reference_id]['sequence']['seq']
+
+    def _append_reference_sequence(self, reference_id, sequence):
+        """
+        Appends the provided sequence in the _reference_models.
+        """
+        self._reference_models[reference_id] = {'sequence': {'seq': sequence}}
+
+    def _get_sequences(self):
+        """
+        Retrieves a dictionary from the _reference_models with reference ids
+        as keys and their corresponding sequences as values.
+        """
+        return extract_sequences(self._reference_models)
+
     def _mutate(self):
-        self._sequences = {}
-        for reference_id in self._reference_models.keys():
-            self._sequences[reference_id] = self._reference_models[
-                reference_id]['sequence']['seq']
-        self._sequences['reference'] = self._reference_models[
-            self._reference_id]['sequence']['seq']
-        self._sequences['observed'] = mutate(
-            self._sequences, self._delins_variants)
+
+        self._append_reference_sequence('observed', mutate(
+            self._get_sequences(), self._delins_variants))
 
     def get_equivalent_descriptions(self):
-
         equivalent_descriptions = []
 
         transcript_ids = get_selectors_ids(
@@ -195,13 +234,17 @@ class Description(object):
         return equivalent_descriptions
 
     def _get_normalized_description(self):
-        normalized_description_model = to_hgvs_locations(
-                self._de_hgvs_variants,
-                self._reference_models[self._reference_id],
-                self._selector_id)
+        self._normalized_description_model = to_hgvs_locations(
+            self._de_hgvs_variants,
+            self._reference_models[self._reference_id],
+            self._selector_id)
 
         self.normalized_description = model_to_string(
-            normalized_description_model)
+            self._normalized_description_model)
+
+    def _is_to_extract_protein_description(self):
+        if self._coordinate_system == 'c' and self._selector_model:
+            return True
 
     def _normalize(self):
         self._time_stamps.append(('initial', time.perf_counter()))
@@ -232,12 +275,12 @@ class Description(object):
         self._time_stamps.append(('mutator', time.perf_counter()))
 
         de_variants = extractor.describe_dna(
-            self._sequences['reference'], self._sequences['observed'])
+            self._get_sequence('reference'), self._get_sequence('observed'))
 
         self._time_stamps.append(('description extractor',
                                   time.perf_counter()))
 
-        self._de_hgvs_variants = de_to_hgvs(de_variants, self._sequences)
+        self._de_hgvs_variants = de_to_hgvs(de_variants, self._get_sequences())
 
         self._get_normalized_description()
 
@@ -250,9 +293,18 @@ class Description(object):
         self.status['time information (s)'] = get_time_information(
             self._time_stamps)
 
+        self.status['visualize'] = to_be_visualized(
+            de_variants, self._normalized_description_model['variants'])
+
+        protein_descriptions = get_protein_descriptions(
+            de_variants, self._reference_models)
+        if protein_descriptions:
+            self.status['protein_descriptions'] = protein_descriptions
+
 
 def mutalyzer3(hgvs_description):
 
     description = Description(hgvs_description)
 
     return {k: description.status[k] for k in description.status if description.status[k]}
+

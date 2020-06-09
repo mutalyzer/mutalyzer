@@ -53,6 +53,10 @@ def get_inserted_length(inserted):
     return length
 
 
+def get_location_as_list(location):
+    return [get_start(location), get_end(location)]
+
+
 def sort_variants(variants):
     return sorted(variants,
                   key=lambda variant: get_start(variant['location']))
@@ -127,6 +131,7 @@ def get_time_information(time_stamps):
 def sort_location_tuples(locations):
     sorted_locations = sorted([i for j in locations for i in j])
     return list(zip(sorted_locations[0::2], sorted_locations[1::2]))
+
 
 def string_k_v(width, key, value):
     return ' {k:<{w}} : {v}\n'.format(w=width, k=key, v=value)

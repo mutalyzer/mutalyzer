@@ -9,7 +9,7 @@ def get_mol_type(reference):
 
 
 def is_feature_inverted(feature):
-    if feature['location'].get('strand'):
+    if feature.get('location') and  feature['location'].get('strand'):
         if feature['location']['strand'] == -1:
             return True
         else:
@@ -85,7 +85,7 @@ def get_selector_model(reference_model, selector_id):
     - exons and cds for coding selectors;
     - only the exons for the non-coding ones.
     The model includes the selector type.
-    :return:
+    :return: Dictionary.
     """
     feature = get_feature(reference_model, selector_id)
     if feature:
@@ -97,3 +97,49 @@ def get_selector_model(reference_model, selector_id):
 
 def get_available_selectors(reference_annotations, coordinate_system):
     return get_selectors_ids(reference_annotations, coordinate_system)
+
+
+def get_protein_selector_models(reference):
+    """
+
+    :param reference: Reference annotations model (not the sequence).
+    :return:
+    """
+    selector_models = {}
+    selector_ids = get_selectors_ids(reference, 'c')
+    for selector_id in selector_ids:
+        selector_model = get_selector_model(reference, selector_id)
+        mrna = get_feature(reference, selector_id)
+        protein_ids = []
+        if mrna.get('features'):
+            for feature in mrna['features']:
+                if feature['type'] == 'CDS':
+                    protein_ids.append(feature['id'])
+        if len(protein_ids) == 1:
+            selector_model['protein_id'] = protein_ids[0]
+            selector_model['transcript_id'] = selector_id
+            selector_models[selector_id] = selector_model
+
+    return selector_models
+
+
+def extract_reference_id(references):
+    if references.get('reference') and \
+            references['reference'].get('model') and \
+            references['reference']['model'].get('id'):
+        return references['reference']['model']['id']
+
+
+def extract_sequences(references):
+    """
+    Return a dictionary with reference ids as keys and their corresponding
+    sequences as values.
+
+    :param references: Dictionary with reference models.
+    :rtype: dict
+    :return: Reference ids as keys and their corresponding sequences as values
+    """
+    sequences = {}
+    for reference in references:
+        sequences[reference] = references[reference]['sequence']['seq']
+    return sequences
