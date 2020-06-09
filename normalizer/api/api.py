@@ -1,15 +1,14 @@
-from flask import Flask, Blueprint, render_template, request
-from flask_restx import Resource, Api, fields, marshal
-from normalizer.normalizer import mutalyzer3, get_reference_model
-from mutalyzer_hgvs_parser import parse_description, parse_description_to_model
 from crossmapper import Crossmap
+from flask import Blueprint, Flask, render_template, request
+from flask_restx import Api, Resource, fields, marshal
+from mutalyzer_hgvs_parser import parse_description, parse_description_to_model
+from normalizer.normalizer import get_reference_model, mutalyzer3
 
+blueprint = Blueprint("api", __name__)
 
-blueprint = Blueprint('api', __name__)
+api = Api(blueprint, version="1.0", title="Mutalyzer3 API")
 
-api = Api(blueprint, version='1.0', title='Mutalyzer3 API')
-
-ns = api.namespace('/')
+ns = api.namespace("/")
 
 
 @ns.route("/syntax_check/<string:hgvs_description>")
@@ -19,9 +18,9 @@ class SyntaxCheck(Resource):
         try:
             parse_description(hgvs_description)
         except Exception:
-            return 'Some error occurred.'
+            return "Some error occurred."
         else:
-            return 'Correct syntax.'
+            return "Correct syntax."
 
 
 @ns.route("/description_to_model/<string:hgvs_description>")
@@ -45,12 +44,13 @@ class NameCheck(Resource):
         return mutalyzer3(hgvs_description)
 
 
-crossmap_input = api.model('CrossmapInput', {
-    'exons': fields.List(fields.Integer,
-                         description='Exons'),
-    'cds': fields.List(fields.Integer,
-                         description='CDS'),
-})
+crossmap_input = api.model(
+    "CrossmapInput",
+    {
+        "exons": fields.List(fields.Integer, description="Exons"),
+        "cds": fields.List(fields.Integer, description="CDS"),
+    },
+)
 
 
 @ns.route("/crossmap/")
@@ -60,4 +60,3 @@ class Crossmap(Resource):
         print(request.data)
         print(marshal(request.data, crossmap_input))
         return "OK"
-

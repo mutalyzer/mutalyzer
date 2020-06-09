@@ -27,20 +27,19 @@ def _point_to_cds_coordinate(point, selector_model, crossmap):
 
 
 def get_inserted_sequence(insertion, sequences):
-    return sequences[insertion['source']][
-        get_start(insertion['location']):get_end(insertion['location'])]
+    return sequences[insertion["source"]][
+        get_start(insertion["location"]) : get_end(insertion["location"])
+    ]
 
 
 def merge_inserted_to_string(inserted, sequences):
-    inserted_value = ''
+    inserted_value = ""
     for insertion in inserted:
-        if insertion.get('sequence'):
-            inserted_value += insertion.get('sequence')
+        if insertion.get("sequence"):
+            inserted_value += insertion.get("sequence")
         else:
             inserted_value += get_inserted_sequence(insertion, sequences)
-    return {
-        "source": "description",
-        "sequence": inserted_value}
+    return {"source": "description", "sequence": inserted_value}
 
 
 def variant_to_cds_coordinate(variant, sequences, selector_model, crossmap):
@@ -57,8 +56,10 @@ def variant_to_cds_coordinate(variant, sequences, selector_model, crossmap):
         )
     else:
         location = _point_to_cds_coordinate(location, selector_model, crossmap)
-    if new_variant.get('inserted'):
-        new_variant['inserted'] = [merge_inserted_to_string(new_variant['inserted'], sequences)]
+    if new_variant.get("inserted"):
+        new_variant["inserted"] = [
+            merge_inserted_to_string(new_variant["inserted"], sequences)
+        ]
     return new_variant
 
 

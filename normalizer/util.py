@@ -7,19 +7,19 @@ def get_start(model):
     the position value is returned. In case of uncertain start end,
     the minimum is returned.
     """
-    if model.get('location'):
-        model = model['location']
-    if model['type'] == 'range':
-        if model['start'].get('uncertain'):
-            return get_start(model['start'])
+    if model.get("location"):
+        model = model["location"]
+    if model["type"] == "range":
+        if model["start"].get("uncertain"):
+            return get_start(model["start"])
         else:
-            return model['start']['position']
-    elif model['type'] == 'point':
-        return model['position']
+            return model["start"]["position"]
+    elif model["type"] == "point":
+        return model["position"]
 
 
 def set_start(location, start):
-    location['start']['position'] = start
+    location["start"]["position"] = start
 
 
 def get_end(model):
@@ -28,18 +28,17 @@ def get_end(model):
     the position value is returned. In case of uncertain end range,
     the maximum is returned.
     """
-    if model.get('location'):
-        model = model['location']
-    if model['type'] == 'range':
-        return model['end']['position']
-    elif model['type'] == 'point':
-        return model['position']
+    if model.get("location"):
+        model = model["location"]
+    if model["type"] == "range":
+        return model["end"]["position"]
+    elif model["type"] == "point":
+        return model["position"]
 
 
-def update_position(location, start_end,  value):
-    if location.get('type') == range:
-        location[start_end] = {'type': 'point',
-                               'position': value}
+def update_position(location, start_end, value):
+    if location.get("type") == range:
+        location[start_end] = {"type": "point", "position": value}
 
 
 def get_location_length(location):
@@ -49,7 +48,7 @@ def get_location_length(location):
 def get_inserted_length(inserted):
     length = 0
     for insert in inserted:
-        length += get_location_length(insert['location'])
+        length += get_location_length(insert["location"])
     return length
 
 
@@ -58,8 +57,7 @@ def get_location_as_list(location):
 
 
 def sort_variants(variants):
-    return sorted(variants,
-                  key=lambda variant: get_start(variant['location']))
+    return sorted(variants, key=lambda variant: get_start(variant["location"]))
 
 
 def to_description(variant):
@@ -91,7 +89,7 @@ def roll(s, first, last):
                   the right.
     @rtype: tuple(int, int)
     """
-    pattern = s[first - 1:last]   # Extract the pattern
+    pattern = s[first - 1 : last]  # Extract the pattern
     pattern_length = len(pattern)
 
     # Keep rolling to the left as long as a cyclic permutation matches.
@@ -113,18 +111,21 @@ def roll(s, first, last):
 
 def print_time_information(time_stamps):
     for i in range(1, len(time_stamps)):
-        print('{:<30}: {:2.6f}'.format(time_stamps[i][0], time_stamps[i][1] -
-                                       time_stamps[i-1][1]))
-    print('{:<30}: {:2.6f}'.format('TOTAL', time_stamps[-1][1] -
-                                   time_stamps[0][1]))
+        print(
+            "{:<30}: {:2.6f}".format(
+                time_stamps[i][0], time_stamps[i][1] - time_stamps[i - 1][1]
+            )
+        )
+    print("{:<30}: {:2.6f}".format("TOTAL", time_stamps[-1][1] - time_stamps[0][1]))
 
 
 def get_time_information(time_stamps):
     output = OrderedDict()
     for i in range(1, len(time_stamps)):
-        output[time_stamps[i][0]] = '{:2.6f}'.format(time_stamps[i][1] -
-                                                     time_stamps[i-1][1])
-    output['TOTAL'] = '{:2.6f}'.format(time_stamps[-1][1] - time_stamps[0][1])
+        output[time_stamps[i][0]] = "{:2.6f}".format(
+            time_stamps[i][1] - time_stamps[i - 1][1]
+        )
+    output["TOTAL"] = "{:2.6f}".format(time_stamps[-1][1] - time_stamps[0][1])
     return output
 
 
@@ -134,4 +135,4 @@ def sort_location_tuples(locations):
 
 
 def string_k_v(width, key, value):
-    return ' {k:<{w}} : {v}\n'.format(w=width, k=key, v=value)
+    return " {k:<{w}} : {v}\n".format(w=width, k=key, v=value)
