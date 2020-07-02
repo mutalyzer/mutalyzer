@@ -318,24 +318,29 @@ def get_protein_description(variants, references, selector_model):
 
     sequences = extract_sequences(references)
     cds_variants = to_cds_coordinate(variants, sequences, selector_model)
+    import json
+    print(json.dumps(cds_variants, indent=2))
     cds_sequence = extract_cds_sequence(
         sequences[references["reference"]["model"]["id"]], selector_model
     )
 
     cds_mutated_sequence = mutate({"reference": cds_sequence}, cds_variants)
 
-    cds_sequence = Seq(cds_sequence, generic_dna).translate()
-    cds_mutated_sequence = Seq(cds_mutated_sequence, generic_dna).translate()
+    reference_protein = Seq(cds_sequence, generic_dna).translate()
+    predicted_protein = Seq(cds_mutated_sequence, generic_dna).translate()
 
     # Up to and including the first '*', or the entire string.
     try:
-        stop = str(cds_mutated_sequence).index("*")
-        cds_mutated_sequence = str(cds_mutated_sequence)[: stop + 1]
+        stop = str(predicted_protein).index("*")
+        predicted_protein = str(predicted_protein)[: stop + 1]
     except ValueError:
         pass
 
+    print('reference_protein\n', reference_protein)
+    print('predicted protein\n', predicted_protein)
+
     description = protein_description(
-        len(cds_mutated_sequence), str(cds_sequence), str(cds_mutated_sequence)
+        len(cds_mutated_sequence), str(reference_protein), str(predicted_protein)
     )
 
     return "{}({}):{}".format(
