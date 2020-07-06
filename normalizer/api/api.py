@@ -1,4 +1,4 @@
-from crossmapper import Crossmap
+from mutalyzer_crossmapper import Crossmap
 from flask import Blueprint, Flask, render_template, request
 from flask_restx import Api, Resource, fields, marshal
 from mutalyzer_hgvs_parser import parse_description, parse_description_to_model

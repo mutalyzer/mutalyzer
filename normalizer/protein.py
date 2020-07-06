@@ -1,7 +1,7 @@
 from Bio.Alphabet import generic_dna
 from Bio.Seq import Seq
 from Bio.SeqUtils import seq3
-from mutator.mutator import mutate
+from mutalyzer_mutator import mutate
 
 from .converter import to_cds_coordinate
 from .reference import extract_sequences, get_mol_type, get_protein_selector_models
@@ -319,6 +319,7 @@ def get_protein_description(variants, references, selector_model):
     sequences = extract_sequences(references)
     cds_variants = to_cds_coordinate(variants, sequences, selector_model)
     import json
+
     print(json.dumps(cds_variants, indent=2))
     cds_sequence = extract_cds_sequence(
         sequences[references["reference"]["model"]["id"]], selector_model
@@ -336,8 +337,8 @@ def get_protein_description(variants, references, selector_model):
     except ValueError:
         pass
 
-    print('reference_protein\n', reference_protein)
-    print('predicted protein\n', predicted_protein)
+    print("reference_protein\n", reference_protein)
+    print("predicted protein\n", predicted_protein)
 
     description = protein_description(
         len(cds_mutated_sequence), str(reference_protein), str(predicted_protein)

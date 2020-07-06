@@ -4,8 +4,8 @@ from functools import lru_cache
 
 import extractor
 from mutalyzer_hgvs_parser import parse_description_to_model
-from mutator.mutator import mutate
-from retriever import retriever
+from mutalyzer_mutator.mutator import mutate
+from mutalyzer_retriever import retriever
 
 from .converter import (
     de_to_hgvs,

@@ -117,7 +117,6 @@ variants = Schema(
 )
 
 
-
 print(json.dumps(variant.json_schema(""), indent=2))
 
 s = Schema({"test": str, "nested": {Optional("other"): str}})

@@ -1,6 +1,6 @@
 import warnings
 import copy
-from crossmapper import Crossmap
+from mutalyzer_crossmapper import Crossmap
 
 from normalizer.reference import get_available_selectors, get_selector_model
 from normalizer.description import *

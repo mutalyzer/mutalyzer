@@ -1,5 +1,5 @@
 import copy
-from crossmapper import Crossmap
+from mutalyzer_crossmapper import Crossmap
 
 from normalizer.util import get_start, get_end
 from normalizer.reference import get_mol_type, get_selector_model

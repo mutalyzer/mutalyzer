@@ -1,7 +1,7 @@
 import copy
 import json
 
-from crossmapper import Crossmap
+from mutalyzer_crossmapper import Crossmap
 
 from .to_hgvs_locations import genomic_to_point
 from normalizer.util import get_start, get_end
