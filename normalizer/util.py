@@ -1,6 +1,18 @@
 from _collections import OrderedDict
 
 
+def create_exact_point_model(point):
+    return {"type": "point", "position": point}
+
+
+def create_exact_range_model(start, end):
+    return {
+        "type": "range",
+        "start": create_exact_point_model(start),
+        "end": create_exact_point_model(end),
+    }
+
+
 def get_start(model):
     """
     Get the start position of a (feature) location. For point locations
@@ -136,3 +148,8 @@ def sort_location_tuples(locations):
 
 def string_k_v(width, key, value):
     return " {k:<{w}} : {v}\n".format(w=width, k=key, v=value)
+
+
+def add_to_dict(d, source_d, k):
+    if source_d.get(k):
+        d[k] = source_d[k]

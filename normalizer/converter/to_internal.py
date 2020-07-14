@@ -1,18 +1,11 @@
-import warnings
 import copy
+import warnings
+
 from mutalyzer_crossmapper import Crossmap
 
-from normalizer.reference import get_available_selectors, get_selector_model
 from normalizer.description import *
-from normalizer.util import (
-    get_start,
-    get_end,
-    set_start,
-    get_location_length,
-    roll,
-    get_inserted_length,
-    sort_location_tuples,
-)
+from normalizer.reference import get_available_selectors, get_selector_model
+from normalizer.util import create_exact_point_model, sort_location_tuples
 
 
 def point_to_x_coding(point):
@@ -142,6 +135,12 @@ def point_to_range(point_location):
     :param point_location: A point location model complying object.
     :return: A range location model complying object.
     """
+    if point_location.get("uncertain"):
+        return {
+            "type": "range",
+            "start": {"type": "point", "uncertain": True},
+            "end": {"type": "point", "uncertain": True},
+        }
     return {
         "type": "range",
         "start": {"type": "point", "position": point_location["position"]},
@@ -149,63 +148,99 @@ def point_to_range(point_location):
     }
 
 
-def location_to_internal(location, variant_type, crossmap_function, point_function):
+def update_interval(range_location, variant_type):
+    if (
+        variant_type == "insertion"
+        and range_location["start"]["type"] == "point"
+        and not range_location["start"].get("uncertain")
+    ):
+        range_location["start"]["position"] += 1
+    elif (
+        not range_location["end"].get("uncertain")
+        and range_location["end"]["type"] == "point"
+    ):
+        range_location["end"]["position"] += 1
+
+
+def point_to_coding(point, crossmap_function, point_function):
+    if point.get("uncertain"):
+        return {"type": "point", "uncertain": True}
+    else:
+        return create_exact_point_model(crossmap_function(point_function(point)))
+
+
+def point_to_internal(point, variant_type, crossmap):
+    new_point = point_to_range(point_to_coding(point, **crossmap))
+    return new_point
+
+
+def range_to_internal(range_location, variant_type, crossmap):
+    new_range = {
+        "start": point_to_coding(range_location["start"], **crossmap),
+        "end": point_to_coding(range_location["end"], **crossmap),
+        "type": "range",
+    }
+
+    if range_location.get("uncertain"):
+        new_range["uncertain"] = range_location["uncertain"]
+    update_interval(new_range, variant_type)
+
+    return new_range
+
+
+def location_to_internal(location, variant_type, crossmap):
     """
 
     :param location:
     :param variant_type:
-    :param crossmap_function:
-    :param point_function:
+    :param crossmap:
     :return:
     """
-    new_location = copy.deepcopy(location)
+    print(location)
     if location["type"] == "range":
-        new_location["start"]["position"] = crossmap_function(
-            point_function(location["start"])
-        )
-        new_location["end"]["position"] = crossmap_function(
-            point_function(location["end"])
-        )
+        if location["start"]["type"] == "range":
+            new_location = {
+                "start": range_to_internal(location["start"], variant_type, crossmap)
+            }
+        else:
+            new_location = {"start": point_to_coding(location["start"], **crossmap)}
+        if location["end"]["type"] == "range":
+            new_location["end"] = range_to_internal(
+                location["end"], variant_type, crossmap
+            )
+        else:
+            new_location["end"] = point_to_coding(location["end"], **crossmap)
+        new_location["type"] = "range"
+        if location.get("uncertain"):
+            new_location["uncertain"] = "uncertain"
+        update_interval(new_location, variant_type)
     elif location["type"] == "point":
-        new_location["position"] = crossmap_function(point_function(location))
-    if variant_type == "insertion":
-        new_location["start"]["position"] += 1
-    elif location["type"] == "range":
-        new_location["end"]["position"] += 1
-    elif location["type"] == "point":
-        new_location = point_to_range(new_location)
+        new_location = point_to_internal(location, variant_type, crossmap)
+    else:
+        # Should never happen. TODO: Maybe raise an error?
+        pass
+    print(new_location)
+
     return new_location
 
 
 def inserted_to_internal(inserted):
-    crossmap = Crossmap()
-    crossmap_function = crossmap.genomic_to_coordinate
-    point_function = get_point_value
+    crossmap = {
+        "crossmap_function": Crossmap().genomic_to_coordinate,
+        "point_function": get_point_value,
+    }
     return location_to_internal(
-        location=inserted["location"],
-        variant_type=None,
-        crossmap_function=crossmap_function,
-        point_function=point_function,
+        location=inserted["location"], variant_type=None, crossmap=crossmap
     )
 
 
-def to_internal_locations(description, references):
-    """
-    Converts the variant locations present in the description model to the
-    internal coordinate system.
-
-    :param description: Description model, dictionary.
-    :param references: References models, dictionary.
-    :return: Variants with locations in the internal coordinate system.
-    """
-
-    crossmap = crossmap_to_x_setup(description, references)
+def variants_to_internal_locations(variants, crossmap):
     new_variants = []
 
-    for variant in description["variants"]:
+    for variant in variants:
         new_variant = copy.deepcopy(variant)
         new_variant["location"] = location_to_internal(
-            variant["location"], variant["type"], **crossmap
+            variant["location"], variant["type"], crossmap
         )
         if new_variant.get("inserted"):
             for ins in new_variant["inserted"]:
@@ -214,3 +249,24 @@ def to_internal_locations(description, references):
         new_variants.append(new_variant)
 
     return new_variants
+
+
+def to_internal_locations(description_model, references):
+    """
+    Converts the variant locations present in the description model to the
+    internal coordinate system.
+
+    :param description_model: Description model, dictionary.
+    :param references: References models, dictionary.
+    :return: Variants with locations in the internal coordinate system.
+    """
+
+    crossmap = crossmap_to_x_setup(description_model, references)
+
+    return {
+        "reference": {"id": description_model["reference"]["id"]},
+        "coordinate_system": "x",
+        "variants": variants_to_internal_locations(
+            description_model["variants"], crossmap
+        ),
+    }

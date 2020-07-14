@@ -67,7 +67,7 @@ def variant_to_description(variant, sequences=None):
     variant_type = variant.get("type")
     if variant_type == "substitution":
         if variant.get("deleted"):
-            deleted += variant["deleted"]["sequence"]
+            deleted += variant["deleted"][0]["sequence"]
         variant_type = ">"
     elif variant_type == "deletion":
         variant_type = "del"
