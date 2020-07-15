@@ -196,7 +196,6 @@ def location_to_internal(location, variant_type, crossmap):
     :param crossmap:
     :return:
     """
-    print(location)
     if location["type"] == "range":
         if location["start"]["type"] == "range":
             new_location = {
@@ -219,7 +218,6 @@ def location_to_internal(location, variant_type, crossmap):
     else:
         # Should never happen. TODO: Maybe raise an error?
         pass
-    print(new_location)
 
     return new_location
 
