@@ -8,6 +8,7 @@ from normalizer.converter.to_internal import (
     point_to_x_coding,
     to_internal_locations,
 )
+from normalizer.converter.to_hgvs_locations import to_hgvs_locations, location_to_hgvs
 from normalizer.description import location_to_description, model_to_string
 
 from .generator import append_transcript, generate_references
@@ -230,13 +231,13 @@ TESTS_SET = [
                 "x": "7_14",
                 "g": {"hgvs": "8_14"},
                 "c": {"hgvs": "-2-1_3+1", "other": []},
-                "n": {"hgvs": "3+2_8+1", "other": []},
+                "n": {"hgvs": "4-1_8+1", "other": []},
             },
             {
                 "x": "7_22",
                 "g": {"hgvs": "8_22"},
                 "c": {"hgvs": "-2-1_*2+1", "other": []},
-                "n": {"hgvs": "3+2_13+1", "other": []},
+                "n": {"hgvs": "4-1_13+1", "other": []},
             },
             {
                 "x": "0_29",
@@ -485,9 +486,7 @@ def test_to_internal_locations(description_in, description_expected, references)
         ("R1:g.(4_?)_7del", "R1:x.(3_?)_7del"),
         ("R1:g.(?_4)_7del", "R1:x.(?_4)_7del"),
         ("R1:g.4_(5_?)del", "R1:x.3_(4_?)del"),
-
         # ("R1:g.4_5ins[R1:c.7_8;10_20]", "R1:x.4_4ins[R1:x.6_8;9_20]"),
-
     ],
 )
 def test_to_internal_locations_simple(hgvs, hgvs_internal_indexing):
@@ -504,3 +503,159 @@ def test_to_internal_locations_simple(hgvs, hgvs_internal_indexing):
     hgvs_internal_indexing_out = model_to_string(to_internal_locations(d_m, r_model))
 
     assert hgvs_internal_indexing_out == hgvs_internal_indexing
+
+
+@pytest.mark.parametrize(
+    "hgvs, hgvs_internal_indexing",
+    [
+        # # Deletion
+        ("R1:g.4del", "R1:x.3_4del"),
+        ("R1:g.3_4del", "R1:x.2_4del"),
+        # Substitution
+        ("R1:g.4A>T", "R1:x.3_4A>T"),
+        ("R1:g.4_6AAT>G", "R1:x.3_6AAT>G"),
+        ("R1:g.4_6AAT>6_9", "R1:x.3_6AAT>5_9"),
+        ("R1(t1):c.1A>T", "R1:x.10_11A>T"),
+        ("R1(t1):c.4A>T", "R1:x.16_17A>T"),
+        ("R1(t1):c.2_6AAT>G", "R1:x.11_19AAT>G"),
+        ("R1(t1):c.4_6AAT>7_9", "R1:x.16_19AAT>6_9"),
+        # Insertion
+        ("R1:g.4_5insT", "R1:x.4_4insT"),
+        ("R1:g.4_5ins7_8", "R1:x.4_4ins6_8"),
+        ("R1:g.4_5ins[7_8;10_20]", "R1:x.4_4ins[6_8;9_20]"),
+        #
+        # Duplication
+        ("R1:g.4dup", "R1:x.3_4dup"),
+        ("R1:g.3_4dup", "R1:x.2_4dup"),
+        # # Inversion
+        ("R1:g.11_13inv", "R1:x.10_13inv"),
+        # Conversion
+        # ("R1:g.4_5con7_8", "R1:x.3_5con6_8"),
+        #
+        # Deletion-insertion
+        ("R1:g.4delins7_8", "R1:x.3_4delins6_8"),
+        ("R1:g.4delins6_31", "R1:x.3_4delins5_31"),
+        ("R1:g.4del", "R1:x.3_4del"),
+        ("R1(t1):c.-8_*7A>T", "R1:x.0_29A>T"),
+        # ("R1:g.?del", "R1:x.?_?del"), # Impossible to determine.
+        ("R1:g.?_?del", "R1:x.?_?del"),
+        ("R1:g.(?_?)del", "R1:x.(?_?)del"),
+        ("R1:g.(?_?)_(?_?)del", "R1:x.(?_?)_(?_?)del"),
+        ("R1:g.3_?del", "R1:x.2_?del"),
+        ("R1:g.(4_7)del", "R1:x.(3_7)del"),
+        ("R1:g.(4_?)del", "R1:x.(3_?)del"),
+        ("R1:g.(4_?)_(5_7)del", "R1:x.(3_?)_(4_7)del"),
+        ("R1:g.(4_?)_7del", "R1:x.(3_?)_7del"),
+        ("R1:g.(?_4)_7del", "R1:x.(?_4)_7del"),
+        ("R1:g.4_(5_?)del", "R1:x.3_(4_?)del"),
+        ("R1(t1):c.-4A>T", "R1:x.4_5A>T"),
+        ("R1(t1):c.-2-1A>T", "R1:x.7_8A>T"),
+        ("R1(t1):c.-2-1_*2+1del", "R1:x.7_22del")
+        # ("R1:g.4_5ins[R1:c.7_8;10_20]", "R1:x.4_4ins[R1:x.6_8;9_20]"),
+    ],
+)
+def test_to_hgvs_locations_simple(hgvs, hgvs_internal_indexing):
+    r_model = generate_references(
+        {
+            "id": "t1",
+            "type": "mRNA",
+            "inverted": False,
+            "exon": [(3, 6), (8, 13), (16, 21), (24, 26)],
+            "cds": (10, 19),
+        }
+    )
+
+    if "c." in hgvs:
+        selector_id = "t1"
+        degenerate = True
+    else:
+        selector_id = None
+        degenerate = False
+    d_m = parse_description_to_model(hgvs_internal_indexing.replace("x", "g"))
+    hgvs_internal_indexing_out = model_to_string(
+        to_hgvs_locations(d_m["variants"], r_model["R1"], selector_id, degenerate)
+    )
+
+    assert hgvs_internal_indexing_out == hgvs
+
+
+def generate_to_hgvs_location_test(t, loc, d, refs):
+    tests = [
+        (d.format("", "x", loc["x"]), d.format("", "g", loc["g"]["hgvs"]), refs,),
+        (
+            d.format("", "x", loc["x"]),
+            d.format("({})".format(t["c"]["id"]), "c", loc["c"]["hgvs"]),
+            refs,
+        ),
+        (
+            d.format("", "x", loc["x"]),
+            d.format("({})".format(t["n"]["id"]), "n", loc["n"]["hgvs"]),
+            refs,
+        ),
+    ]
+    return tests
+
+
+def generate_to_hgvs_locations_tests(tests_set):
+    deleted = [
+        # "R1{}:{}.{}A>T",
+        "R1{}:{}.{}del",
+        # "R1{}:{}.{}delinsA",
+        # "R1{}:{}.{}dup",
+        # "R1{}:{}.{}inv",
+        # "R1{}:{}.{}=",
+    ]
+    deleted_insertion = [
+        "R1{}:{}.{}insA",
+    ]
+
+    tests = []
+    for test in tests_set:
+        references = generate_references(test["c"])
+        append_transcript(references, test["n"])
+        for description in deleted:
+            for location in test["deleted"]:
+                tests += generate_to_hgvs_location_test(
+                    test, location, description, references
+                )
+        for description in deleted_insertion:
+            for location in test["deleted_insertion"]:
+                tests += generate_to_hgvs_location_test(
+                    test, location, description, references
+                )
+        return tests
+
+
+@pytest.mark.parametrize(
+    "description_in, description_expected, references",
+    generate_to_hgvs_locations_tests(TESTS_SET),
+)
+def test_to_hgvs_locations(description_in, description_expected, references):
+    print(description_in)
+    print(description_expected)
+    description_model = parse_description_to_model(description_in.replace("x.", "g."))
+    print(description_model)
+    if "c." in description_expected:
+        description_out = model_to_string(
+            to_hgvs_locations(
+                description_model["variants"],
+                references["reference"],
+                selector_id="t1",
+                degenerate=True,
+            )
+        )
+    elif "n." in description_expected:
+        description_out = model_to_string(
+            to_hgvs_locations(
+                description_model["variants"],
+                references["reference"],
+                selector_id="t2",
+                degenerate=True,
+            )
+        )
+    else:
+        description_out = model_to_string(
+            to_hgvs_locations(description_model["variants"], references["reference"])
+        )
+
+    assert description_out == description_expected

@@ -14,7 +14,7 @@ def range_to_point(range_location):
     """
     if range_location.get("uncertain") or range_location["start"].get("uncertain") or range_location["end"].get("uncertain"):
         return range_location
-    elif get_start(range_location) == get_end(range_location):
+    elif range_location["start"] == range_location["end"]:
         return range_location["start"]
     return range_location
 
@@ -32,7 +32,7 @@ def identify_coordinate_system(selector_model):
 
 
 def coding_to_point(coding):
-    position, offset, section = coding
+    position, offset, section = coding[:3]
     point = {"type": "point", "position": position}
 
     if section == 0:
