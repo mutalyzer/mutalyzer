@@ -332,7 +332,7 @@ class Checker(object):
             if location["start"].get("uncertain") or location["end"].get("uncertain"):
                 return
             else:
-                if self._checked_variant["type"] is not "insertion":
+                if self._checked_variant["type"] != "insertion":
                     if location["start"]["position"] >= location["end"]["position"]:
                         self.add_info("ERANGE", "Start location greater than end location.")
 
