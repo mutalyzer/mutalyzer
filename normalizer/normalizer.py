@@ -25,6 +25,7 @@ from .reference import (
 )
 from .util import get_time_information, string_k_v
 from .visualization import to_be_visualized
+from .checker import run_checks
 
 
 def extract_sequences(references):
@@ -243,6 +244,7 @@ class Description(object):
             self._de_hgvs_variants,
             self._reference_models[self._reference_id],
             self._selector_id,
+            degenerate=True
         )
 
         self.normalized_description = model_to_string(
@@ -266,13 +268,16 @@ class Description(object):
         self.construct_reference()
 
         self.check_description_reference_consistency()
-        print(self)
 
         self._time_stamps.append(("retriever", time.perf_counter()))
 
         internal_locations_variants = to_internal_locations(
-            self._input_description_model, self._reference_models
-        )
+            self._input_description_model, self._reference_models)["variants"]
+
+        stop, messages = run_checks(internal_locations_variants, self._reference_models)
+        self.status["messages"] = messages
+        if stop:
+            return
 
         if self.status["errors"]:
             return

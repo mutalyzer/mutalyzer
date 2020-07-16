@@ -1,4 +1,4 @@
-from .reference import get_mol_type
+from .reference import get_mol_type, get_sequence_length
 from .util import get_end, get_start, sort_variants, update_position
 
 
@@ -295,3 +295,61 @@ def check_start_end(variant):
 def validate_internal_variants(variants, sequences):
     for variant in variants:
         check_start_end(variant)
+
+
+class Checker(object):
+    def __init__(self, variants, references):
+        self._variants = variants
+        self._references = references
+        self.messages = []
+        self.stop = False
+        self._checked_variant = None
+        self._checked_variant_index = None
+
+    def add_info(self, code, msg):
+        self.messages.append({code: msg})
+        if code.startswith("E"):
+            self.stop = True
+
+    def _check_point_in_sequence(self, location, sequence_length):
+        if location.get("uncertain"):
+            self.add_info("EFUZZY", "Fuzzy point.")
+        if location["position"] < 0:
+            self.add_info("EOUTOFSEQBOUNDS", "Position lower than 0.")
+        if location["position"] > sequence_length:
+            self.add_info("EOUTOFSEQBOUNDS", "Position greater than sequence length.")
+
+    def _check_location_in_sequence(self, location, sequence_length):
+        if location["type"] == "point":
+            self._check_point_in_sequence(location, sequence_length)
+        if location["type"] == "range":
+            self._check_location_in_sequence(location["start"], sequence_length)
+            self._check_location_in_sequence(location["end"], sequence_length)
+
+    def _check_location_range(self, location):
+        print(location)
+        if location["start"]["type"] == "point" and location["end"]["type"] == "point":
+            if location["start"].get("uncertain") or location["end"].get("uncertain"):
+                return
+            else:
+                if self._checked_variant["type"] is not "insertion":
+                    if location["start"]["position"] >= location["end"]["position"]:
+                        self.add_info("ERANGE", "Start location greater than end location.")
+
+    def _check_location(self, variant):
+        self._check_location_in_sequence(
+            variant["location"], get_sequence_length(self._references, "reference"))
+        self._check_location_range(variant["location"])
+
+    def check_variants(self):
+        print(get_sequence_length(self._references, "reference"))
+        for i, variant in enumerate(self._variants):
+            self._checked_variant = variant
+            self._checked_variant_index = i
+            self._check_location(variant)
+
+
+def run_checks(description_model, references):
+    check = Checker(description_model, references)
+    check.check_variants()
+    return check.stop, check.messages

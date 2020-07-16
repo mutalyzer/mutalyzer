@@ -318,9 +318,6 @@ def get_protein_description(variants, references, selector_model):
 
     sequences = extract_sequences(references)
     cds_variants = to_cds_coordinate(variants, sequences, selector_model)
-    import json
-
-    print(json.dumps(cds_variants, indent=2))
     cds_sequence = extract_cds_sequence(
         sequences[references["reference"]["model"]["id"]], selector_model
     )
@@ -336,9 +333,6 @@ def get_protein_description(variants, references, selector_model):
         predicted_protein = str(predicted_protein)[: stop + 1]
     except ValueError:
         pass
-
-    print("reference_protein\n", reference_protein)
-    print("predicted protein\n", predicted_protein)
 
     description = protein_description(
         len(cds_mutated_sequence), str(reference_protein), str(predicted_protein)

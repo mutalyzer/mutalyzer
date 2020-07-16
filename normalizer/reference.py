@@ -146,3 +146,7 @@ def extract_sequences(references):
     for reference in references:
         sequences[reference] = references[reference]["sequence"]["seq"]
     return sequences
+
+
+def get_sequence_length(references, reference_id):
+    return len(references[reference_id]["sequence"]["seq"])

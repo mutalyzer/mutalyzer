@@ -55,7 +55,10 @@ def fix_selector_id(reference_models, reference_id, coordinate_system):
 
 
 def get_point_value(point):
-    return point["position"]
+    value = point["position"]
+    if point.get("outside_cds") and point["outside_cds"] == "upstream":
+        value *= -1
+    return value
 
 
 def crossmap_genomic_to_coordinate_setup():
