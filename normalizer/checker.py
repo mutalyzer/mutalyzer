@@ -334,6 +334,9 @@ class Checker(object):
                 if self._checked_variant["type"] != "insertion":
                     if location["start"]["position"] >= location["end"]["position"]:
                         self.add_info("ERANGE", "Start location greater than end location.")
+                else:
+                    if location["start"]["position"] != location["end"]["position"]:
+                        self.add_info("EINSRANGE", "No consecutive positions in insertion.")
 
     def _check_location(self, variant):
         self._check_location_in_sequence(
