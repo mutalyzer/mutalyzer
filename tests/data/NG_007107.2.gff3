@@ -1,0 +1,69 @@
+##sequence-region NG_007107.2 1 122315
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=9606
+NG_007107.2	RefSeq	region	1	122315	.	+	.	ID=NG_007107.2:1..122315;Dbxref=taxon:9606;Name=X;chromosome=X;gbkey=Src;genome=genomic;map=Xq28;mol_type=genomic DNA
+NG_007107.2	RefSeq	gene	44391	120315	.	+	.	ID=gene-MECP2;Dbxref=GeneID:4204,HGNC:HGNC:6990,MIM:300005;Name=MECP2;description=methyl-CpG binding protein 2;gbkey=Gene;gene=MECP2;gene_biotype=protein_coding;gene_synonym=AUTSX3,MRX16,MRX79,MRXS13,MRXSL,PPMX,RS,RTS,RTT
+NG_007107.2	RefSeq	exon	44391	44518	.	+	.	ID=id-MECP2-1;Parent=gene-MECP2;Dbxref=GeneID:4204,HGNC:HGNC:6990,MIM:300005;exon_number=1;gbkey=exon;gene=MECP2;inference=alignment:Splign:2.1.0;number=1
+NG_007107.2	RefSeq	exon	49814	49937	.	+	.	ID=id-MECP2-2;Parent=gene-MECP2;Dbxref=GeneID:4204,HGNC:HGNC:6990,MIM:300005;exon_number=2;gbkey=exon;gene=MECP2;inference=alignment:Splign:2.1.0;number=2
+NG_007107.2	RefSeq	exon	109571	109921	.	+	.	ID=id-MECP2-3;Parent=gene-MECP2;Dbxref=GeneID:4204,HGNC:HGNC:6990,MIM:300005;exon_number=3;gbkey=exon;gene=MECP2;inference=alignment:Splign:2.1.0;number=3
+NG_007107.2	RefSeq	exon	110678	120315	.	+	.	ID=id-MECP2-4b;Parent=gene-MECP2;Dbxref=GeneID:4204,HGNC:HGNC:6990,MIM:300005;exon_number=4b;gbkey=exon;gene=MECP2;inference=alignment:Splign:2.1.0;number=4b
+NG_007107.2	RefSeq	exon	110678	111894	.	+	.	ID=id-MECP2-4a;Parent=gene-MECP2;Dbxref=GeneID:4204,HGNC:HGNC:6990,MIM:300005;exon_number=4a;gbkey=exon;gene=MECP2;inference=alignment:Splign:2.1.0;number=4a
+NG_007107.2	RefSeq	mRNA	44391	120315	.	+	.	ID=rna-NM_004992.3;Parent=gene-MECP2;Dbxref=GeneID:4204,Genbank:NM_004992.3,HGNC:HGNC:6990,MIM:300005;Name=NM_004992.3;gbkey=mRNA;gene=MECP2;product=methyl-CpG binding protein 2%2C transcript variant 1;transcript_id=NM_004992.3
+NG_007107.2	RefSeq	exon	44391	44518	.	+	.	ID=exon-NM_004992.3-1;Parent=rna-NM_004992.3;Dbxref=GeneID:4204,Genbank:NM_004992.3,HGNC:HGNC:6990,MIM:300005;gbkey=mRNA;gene=MECP2;product=methyl-CpG binding protein 2%2C transcript variant 1;transcript_id=NM_004992.3
+NG_007107.2	RefSeq	exon	49814	49937	.	+	.	ID=exon-NM_004992.3-2;Parent=rna-NM_004992.3;Dbxref=GeneID:4204,Genbank:NM_004992.3,HGNC:HGNC:6990,MIM:300005;gbkey=mRNA;gene=MECP2;product=methyl-CpG binding protein 2%2C transcript variant 1;transcript_id=NM_004992.3
+NG_007107.2	RefSeq	exon	109571	109921	.	+	.	ID=exon-NM_004992.3-3;Parent=rna-NM_004992.3;Dbxref=GeneID:4204,Genbank:NM_004992.3,HGNC:HGNC:6990,MIM:300005;gbkey=mRNA;gene=MECP2;product=methyl-CpG binding protein 2%2C transcript variant 1;transcript_id=NM_004992.3
+NG_007107.2	RefSeq	exon	110678	120315	.	+	.	ID=exon-NM_004992.3-4;Parent=rna-NM_004992.3;Dbxref=GeneID:4204,Genbank:NM_004992.3,HGNC:HGNC:6990,MIM:300005;gbkey=mRNA;gene=MECP2;product=methyl-CpG binding protein 2%2C transcript variant 1;transcript_id=NM_004992.3
+NG_007107.2	RefSeq	CDS	49912	49937	.	+	0	ID=cds-NP_004983.1;Parent=rna-NM_004992.3;Dbxref=CCDS:CCDS14741.1,GeneID:4204,Genbank:NP_004983.1,HGNC:HGNC:6990,MIM:300005;Name=NP_004983.1;Note=isoform 1 is encoded by transcript variant 1;gbkey=CDS;gene=MECP2;product=methyl-CpG-binding protein 2 isoform 1;protein_id=NP_004983.1
+NG_007107.2	RefSeq	CDS	109571	109921	.	+	1	ID=cds-NP_004983.1;Parent=rna-NM_004992.3;Dbxref=CCDS:CCDS14741.1,GeneID:4204,Genbank:NP_004983.1,HGNC:HGNC:6990,MIM:300005;Name=NP_004983.1;Note=isoform 1 is encoded by transcript variant 1;gbkey=CDS;gene=MECP2;product=methyl-CpG-binding protein 2 isoform 1;protein_id=NP_004983.1
+NG_007107.2	RefSeq	CDS	110678	111761	.	+	1	ID=cds-NP_004983.1;Parent=rna-NM_004992.3;Dbxref=CCDS:CCDS14741.1,GeneID:4204,Genbank:NP_004983.1,HGNC:HGNC:6990,MIM:300005;Name=NP_004983.1;Note=isoform 1 is encoded by transcript variant 1;gbkey=CDS;gene=MECP2;product=methyl-CpG-binding protein 2 isoform 1;protein_id=NP_004983.1
+NG_007107.2	RefSeq	mRNA	44391	111894	.	+	.	ID=rna-NM_001110792.1;Parent=gene-MECP2;Dbxref=GeneID:4204,Genbank:NM_001110792.1,HGNC:HGNC:6990,MIM:300005;Name=NM_001110792.1;gbkey=mRNA;gene=MECP2;product=methyl-CpG binding protein 2%2C transcript variant 2;transcript_id=NM_001110792.1
+NG_007107.2	RefSeq	exon	44391	44518	.	+	.	ID=exon-NM_001110792.1-1;Parent=rna-NM_001110792.1;Dbxref=GeneID:4204,Genbank:NM_001110792.1,HGNC:HGNC:6990,MIM:300005;gbkey=mRNA;gene=MECP2;product=methyl-CpG binding protein 2%2C transcript variant 2;transcript_id=NM_001110792.1
+NG_007107.2	RefSeq	exon	109571	109921	.	+	.	ID=exon-NM_001110792.1-2;Parent=rna-NM_001110792.1;Dbxref=GeneID:4204,Genbank:NM_001110792.1,HGNC:HGNC:6990,MIM:300005;gbkey=mRNA;gene=MECP2;product=methyl-CpG binding protein 2%2C transcript variant 2;transcript_id=NM_001110792.1
+NG_007107.2	RefSeq	exon	110678	111894	.	+	.	ID=exon-NM_001110792.1-3;Parent=rna-NM_001110792.1;Dbxref=GeneID:4204,Genbank:NM_001110792.1,HGNC:HGNC:6990,MIM:300005;gbkey=mRNA;gene=MECP2;product=methyl-CpG binding protein 2%2C transcript variant 2;transcript_id=NM_001110792.1
+NG_007107.2	RefSeq	CDS	44457	44518	.	+	0	ID=cds-NP_001104262.1;Parent=rna-NM_001110792.1;Dbxref=CCDS:CCDS48193.1,GeneID:4204,Genbank:NP_001104262.1,HGNC:HGNC:6990,MIM:300005;Name=NP_001104262.1;Note=isoform 2 is encoded by transcript variant 2;gbkey=CDS;gene=MECP2;product=methyl-CpG-binding protein 2 isoform 2;protein_id=NP_001104262.1
+NG_007107.2	RefSeq	CDS	109571	109921	.	+	1	ID=cds-NP_001104262.1;Parent=rna-NM_001110792.1;Dbxref=CCDS:CCDS48193.1,GeneID:4204,Genbank:NP_001104262.1,HGNC:HGNC:6990,MIM:300005;Name=NP_001104262.1;Note=isoform 2 is encoded by transcript variant 2;gbkey=CDS;gene=MECP2;product=methyl-CpG-binding protein 2 isoform 2;protein_id=NP_001104262.1
+NG_007107.2	RefSeq	CDS	110678	111761	.	+	1	ID=cds-NP_001104262.1;Parent=rna-NM_001110792.1;Dbxref=CCDS:CCDS48193.1,GeneID:4204,Genbank:NP_001104262.1,HGNC:HGNC:6990,MIM:300005;Name=NP_001104262.1;Note=isoform 2 is encoded by transcript variant 2;gbkey=CDS;gene=MECP2;product=methyl-CpG-binding protein 2 isoform 2;protein_id=NP_001104262.1
+NG_007107.2	RefSeq	sequence_difference	113037	113037	.	+	.	ID=id-MECP2;Dbxref=GeneID:4204,HGNC:HGNC:6990,MIM:300005;Note=This sequence differs from the reference genome assembly (NCBI Build 37) at this position. A was replaced by G to represent the standard allele identified by RettBASE.;gbkey=misc_difference;gene=MECP2;replace=a
+NG_007107.2	RefSeq	gene	122139	122208	.	+	.	ID=gene-MIR718;Dbxref=GeneID:100313781,HGNC:HGNC:37317,MIM:300929,miRBase:MI0012489;Name=MIR718;description=microRNA 718;gbkey=Gene;gene=MIR718;gene_biotype=miRNA;gene_synonym=hsa-mir-718
+NG_007107.2	RefSeq	primary_transcript	122139	122208	.	+	.	ID=rna-NR_031757.1;Parent=gene-MIR718;Dbxref=GeneID:100313781,Genbank:NR_031757.1,HGNC:HGNC:37317,MIM:300929,miRBase:MI0012489;Name=NR_031757.1;gbkey=precursor_RNA;gene=MIR718;product=microRNA 718;transcript_id=NR_031757.1
+NG_007107.2	RefSeq	exon	122139	122208	.	+	.	ID=exon-NR_031757.1-1;Parent=rna-NR_031757.1;Dbxref=GeneID:100313781,Genbank:NR_031757.1,HGNC:HGNC:37317,MIM:300929,miRBase:MI0012489;gbkey=precursor_RNA;gene=MIR718;product=microRNA 718;transcript_id=NR_031757.1
+NG_007107.2	RefSeq	miRNA	122180	122200	.	+	.	ID=rna-MIR718;Parent=rna-NR_031757.1;Dbxref=miRBase:MIMAT0012735,GeneID:100313781,HGNC:HGNC:37317,MIM:300929,miRBase:MI0012489;gbkey=ncRNA;gene=MIR718;product=hsa-miR-718
+NG_007107.2	RefSeq	exon	122180	122200	.	+	.	ID=exon-MIR718-1;Parent=rna-MIR718;Dbxref=miRBase:MIMAT0012735,GeneID:100313781,HGNC:HGNC:37317,MIM:300929,miRBase:MI0012489;gbkey=ncRNA;gene=MIR718;product=hsa-miR-718
+NG_007107.2	RefSeq	gene	122226	122315	.	+	.	ID=gene-IRAK1;Dbxref=GeneID:3654,HGNC:HGNC:6112,MIM:300283;Name=IRAK1;description=interleukin 1 receptor associated kinase 1;end_range=122315,.;gbkey=Gene;gene=IRAK1;gene_biotype=other;gene_synonym=IRAK,pelle;partial=true
+NG_007107.2	RefSeq	cDNA_match	44391	44518	.	+	.	ID=aln0;Target=NM_004992.3 1 128 +;idty=1;splign=128
+NG_007107.2	RefSeq	cDNA_match	49814	49937	.	+	.	ID=aln0;Target=NM_004992.3 129 252 +;idty=1;splign=124
+NG_007107.2	RefSeq	cDNA_match	109571	109921	.	+	.	ID=aln0;Target=NM_004992.3 253 603 +;idty=1;splign=351
+NG_007107.2	RefSeq	cDNA_match	110678	120315	.	+	.	ID=aln0;Target=NM_004992.3 604 10241 +;idty=1;splign=9638
+NG_007107.2	RefSeq	cDNA_match	44391	44518	.	+	.	ID=aln1;Target=NM_001110792.1 1 128 +;idty=1;splign=128
+NG_007107.2	RefSeq	cDNA_match	109571	109921	.	+	.	ID=aln1;Target=NM_001110792.1 129 479 +;idty=1;splign=351
+NG_007107.2	RefSeq	cDNA_match	110678	111894	.	+	.	ID=aln1;Target=NM_001110792.1 480 1696 +;idty=1;splign=1217
+NG_007107.2	RefSeq	cDNA_match	44405	44518	.	+	.	ID=aln2;Target=NM_001110792.2 1 114 +;idty=1;splign=114
+NG_007107.2	RefSeq	cDNA_match	109571	109921	.	+	.	ID=aln2;Target=NM_001110792.2 115 465 +;idty=1;splign=351
+NG_007107.2	RefSeq	cDNA_match	110678	120555	.	+	.	ID=aln2;Target=NM_001110792.2 466 10343 +;idty=0.999899;splign=9875.96
+NG_007107.2	RefSeq	cDNA_match	44405	44518	.	+	.	ID=aln3;Target=NM_001316337.2 1 114 +;idty=1;splign=114
+NG_007107.2	RefSeq	cDNA_match	49814	49937	.	+	.	ID=aln3;Target=NM_001316337.2 115 238 +;idty=1;splign=124
+NG_007107.2	RefSeq	cDNA_match	83562	83729	.	+	.	ID=aln3;Target=NM_001316337.2 239 406 +;idty=1;splign=168
+NG_007107.2	RefSeq	cDNA_match	109571	109921	.	+	.	ID=aln3;Target=NM_001316337.2 407 757 +;idty=1;splign=351
+NG_007107.2	RefSeq	cDNA_match	110678	120555	.	+	.	ID=aln3;Target=NM_001316337.2 758 10635 +;idty=0.999899;splign=9875.96
+NG_007107.2	RefSeq	cDNA_match	44405	44518	.	+	.	ID=aln4;Target=NM_001369391.2 1 114 +;idty=1;splign=114
+NG_007107.2	RefSeq	cDNA_match	49814	49937	.	+	.	ID=aln4;Target=NM_001369391.2 115 238 +;idty=1;splign=124
+NG_007107.2	RefSeq	cDNA_match	83606	83729	.	+	.	ID=aln4;Target=NM_001369391.2 239 362 +;idty=1;splign=124
+NG_007107.2	RefSeq	cDNA_match	84286	84385	.	+	.	ID=aln4;Target=NM_001369391.2 363 462 +;idty=1;splign=100
+NG_007107.2	RefSeq	cDNA_match	84949	85187	.	+	.	ID=aln4;Target=NM_001369391.2 463 701 +;idty=1;splign=239
+NG_007107.2	RefSeq	cDNA_match	109571	109921	.	+	.	ID=aln4;Target=NM_001369391.2 702 1052 +;idty=1;splign=351
+NG_007107.2	RefSeq	cDNA_match	110678	120555	.	+	.	ID=aln4;Target=NM_001369391.2 1053 10930 +;idty=0.999899;splign=9875.96
+NG_007107.2	RefSeq	cDNA_match	44405	44518	.	+	.	ID=aln5;Target=NM_001369392.2 1 114 +;idty=1;splign=114
+NG_007107.2	RefSeq	cDNA_match	49814	49937	.	+	.	ID=aln5;Target=NM_001369392.2 115 238 +;idty=1;splign=124
+NG_007107.2	RefSeq	cDNA_match	102225	102336	.	+	.	ID=aln5;Target=NM_001369392.2 239 350 +;idty=1;splign=112
+NG_007107.2	RefSeq	cDNA_match	109571	109921	.	+	.	ID=aln5;Target=NM_001369392.2 351 701 +;idty=1;splign=351
+NG_007107.2	RefSeq	cDNA_match	110678	120555	.	+	.	ID=aln5;Target=NM_001369392.2 702 10579 +;idty=0.999899;splign=9875.96
+NG_007107.2	RefSeq	cDNA_match	44405	44518	.	+	.	ID=aln6;Target=NM_001369393.2 1 114 +;idty=1;splign=114
+NG_007107.2	RefSeq	cDNA_match	102225	102336	.	+	.	ID=aln6;Target=NM_001369393.2 115 226 +;idty=1;splign=112
+NG_007107.2	RefSeq	cDNA_match	109571	109921	.	+	.	ID=aln6;Target=NM_001369393.2 227 577 +;idty=1;splign=351
+NG_007107.2	RefSeq	cDNA_match	110678	120555	.	+	.	ID=aln6;Target=NM_001369393.2 578 10455 +;idty=0.999899;splign=9875.96
+NG_007107.2	RefSeq	cDNA_match	45152	45308	.	+	.	ID=aln7;Target=NM_001369394.1 1 157 +;idty=1;splign=157
+NG_007107.2	RefSeq	cDNA_match	109571	109921	.	+	.	ID=aln7;Target=NM_001369394.1 158 508 +;idty=1;splign=351
+NG_007107.2	RefSeq	cDNA_match	110678	111894	.	+	.	ID=aln7;Target=NM_001369394.1 509 1725 +;idty=1;splign=1217
+NG_007107.2	EMBL	cDNA_match	49837	49937	.	+	.	ID=aln8;Target=AJ132917.1 1 101 +;idty=1;splign=101
+NG_007107.2	EMBL	cDNA_match	109571	109921	.	+	.	ID=aln8;Target=AJ132917.1 102 452 +;idty=1;splign=351
+NG_007107.2	EMBL	cDNA_match	110678	120316	.	+	.	ID=aln8;Target=AJ132917.1 453 10091 +;idty=0.999585;splign=9630.82
+

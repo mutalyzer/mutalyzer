@@ -1,0 +1,18 @@
+##sequence-region NM_001003806.1 1 1027
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=9606
+NM_001003806.1	RefSeq	region	1	1027	.	+	.	ID=NM_001003806.1:1..1027;Dbxref=taxon:9606;Name=7;chromosome=7;gbkey=Src;genome=genomic;map=7p14.1;mol_type=mRNA
+NM_001003806.1	RefSeq	gene	1	1027	.	+	.	ID=gene-TARP;Dbxref=GeneID:445347,MIM:609642;Name=TARP;description=TCR gamma alternate reading frame protein;gbkey=Gene;gene=TARP;gene_synonym=CD3G,TCRG,TCRGC1,TCRGC2,TCRGV
+NM_001003806.1	RefSeq	C_gene_segment	62	582	.	+	.	ID=id-TARP;Parent=gene-TARP;Dbxref=GeneID:445347,MIM:609642;Note=C region TRGC1;gbkey=C_region;gene=TARP
+NM_001003806.1	RefSeq	exon	62	582	.	+	.	ID=exon-id-TARP-1;Parent=id-TARP;Dbxref=GeneID:445347,MIM:609642;Note=C region TRGC1;gbkey=C_region;gene=TARP
+NM_001003806.1	RefSeq	CDS	247	582	.	+	0	ID=cds-NP_001003806.1;Parent=id-TARP;Dbxref=Genbank:NP_001003806.1,GeneID:445347,MIM:609642;Name=NP_001003806.1;Note=isoform 2 is encoded by transcript variant 2;gbkey=CDS;gene=TARP;product=TCR gamma alternate reading frame protein isoform 2;protein_id=NP_001003806.1
+NM_001003806.1	RefSeq	exon	1	61	.	+	.	ID=id-TARP-2;Parent=gene-TARP;Dbxref=GeneID:445347,MIM:609642;gbkey=exon;gene=TARP;inference=alignment:Splign:2.1.0
+NM_001003806.1	RefSeq	exon	62	391	.	+	.	ID=id-TARP-3;Parent=gene-TARP;Dbxref=GeneID:445347,MIM:609642;gbkey=exon;gene=TARP;inference=alignment:Splign:2.1.0
+NM_001003806.1	RefSeq	exon	392	439	.	+	.	ID=id-TARP-4;Parent=gene-TARP;Dbxref=GeneID:445347,MIM:609642;gbkey=exon;gene=TARP;inference=alignment:Splign:2.1.0
+NM_001003806.1	RefSeq	exon	440	1027	.	+	.	ID=id-TARP-5;Parent=gene-TARP;Dbxref=GeneID:445347,MIM:609642;gbkey=exon;gene=TARP;inference=alignment:Splign:2.1.0
+NM_001003806.1	RefSeq	J_gene_segment	1	61	.	+	.	ID=id-TARP-6;Parent=gene-TARP;Dbxref=GeneID:445347,MIM:609642;Note=J segment TRGJP;gbkey=J_segment;gene=TARP
+NM_001003806.1	RefSeq	exon	1	61	.	+	.	ID=exon-id-TARP-6-1;Parent=id-TARP-6;Dbxref=GeneID:445347,MIM:609642;Note=J segment TRGJP;gbkey=J_segment;gene=TARP
+NM_001003806.1	RefSeq	STS	466	791	.	+	.	ID=id-TARP-7;Dbxref=UniSTS:9391,GeneID:445347,MIM:609642;gbkey=STS;gene=TARP;standard_name=TCRG
+NM_001003806.1	RefSeq	STS	661	821	.	+	.	ID=id-TARP-8;Dbxref=UniSTS:82071,GeneID:445347,MIM:609642;gbkey=STS;gene=TARP;standard_name=D7S2865
+NM_001003806.1	RefSeq	polyA_signal_sequence	1003	1008	.	+	.	ID=id-TARP-9;Dbxref=GeneID:445347,MIM:609642;gbkey=regulatory;gene=TARP;regulatory_class=polyA_signal_sequence
+
+
