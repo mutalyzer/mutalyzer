@@ -115,7 +115,10 @@ class Description(object):
         If successful, the self._input_description_model is populated,
         otherwise the parsing error is added to the errors list.
         """
-        model = parse_description_to_model(self.input_description)
+        try:
+            model = parse_description_to_model(self.input_description)
+        except Exception as e:
+            model = {"errors": "Some parsing error occured."}
         if model.get("errors"):
             self._add_error(model["errors"])
         else:

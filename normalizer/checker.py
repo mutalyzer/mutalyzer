@@ -327,7 +327,6 @@ class Checker(object):
             self._check_location_in_sequence(location["end"], sequence_length)
 
     def _check_location_range(self, location):
-        print(location)
         if location["start"]["type"] == "point" and location["end"]["type"] == "point":
             if location["start"].get("uncertain") or location["end"].get("uncertain"):
                 return
@@ -342,7 +341,6 @@ class Checker(object):
         self._check_location_range(variant["location"])
 
     def check_variants(self):
-        print(get_sequence_length(self._references, "reference"))
         for i, variant in enumerate(self._variants):
             self._checked_variant = variant
             self._checked_variant_index = i
