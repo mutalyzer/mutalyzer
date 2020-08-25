@@ -1,5 +1,5 @@
 import copy
-from mutalyzer_crossmapper import Crossmap
+from mutalyzer_crossmapper import Genomic, NonCoding, Coding
 
 from normalizer.util import get_start, get_end, create_exact_point_model
 from normalizer.reference import get_mol_type, get_selector_model
@@ -35,11 +35,22 @@ def coding_to_point(coding):
     position, offset, section = coding[:3]
     point = {"type": "point", "position": position}
 
-    if section == 0:
+    if section == -1:
         point["outside_cds"] = "upstream"
         point["position"] = abs(point["position"])
-    elif section == 2:
+    elif section == 1:
         point["outside_cds"] = "downstream"
+
+    if offset != 0:
+        point["offset"] = {"value": offset}
+    print(coding)
+    print(point)
+    return point
+
+
+def noncoding_to_point(noncoding):
+    position, offset, section = noncoding[:3]
+    point = {"type": "point", "position": position}
 
     if offset != 0:
         point["offset"] = {"value": offset}
@@ -47,7 +58,7 @@ def coding_to_point(coding):
 
 
 def crossmap_coordinate_to_genomic_setup():
-    crossmap = Crossmap()
+    crossmap = Genomic()
     return {
         "crossmap_function": crossmap.coordinate_to_genomic,
         "point_function": genomic_to_point,
@@ -55,7 +66,7 @@ def crossmap_coordinate_to_genomic_setup():
 
 
 def crossmap_coordinate_to_coding_setup(selector, degenerate=False):
-    crossmap = Crossmap(selector["exon"], selector["cds"][0], selector["inverted"])
+    crossmap = Coding(selector["exon"], selector["cds"][0], selector["inverted"])
     return {
         "crossmap_function": crossmap.coordinate_to_coding,
         "point_function": coding_to_point,
@@ -64,11 +75,10 @@ def crossmap_coordinate_to_coding_setup(selector, degenerate=False):
 
 
 def crossmap_coordinate_to_noncoding_setup(selector, degenerate=False):
-    cds = (selector["exon"][0][0], selector["exon"][-1][-1])
-    crossmap = Crossmap(selector["exon"], cds, selector["inverted"])
+    crossmap = NonCoding(selector["exon"], selector["inverted"])
     return {
-        "crossmap_function": crossmap.coordinate_to_coding,
-        "point_function": coding_to_point,
+        "crossmap_function": crossmap.coordinate_to_noncoding,
+        "point_function": noncoding_to_point,
         "degenerate": degenerate
     }
 
@@ -83,7 +93,7 @@ def crossmap_to_hgvs_setup(coordinate_system, selector_model=None, degenerate=Fa
     elif coordinate_system == "c":
         crossmap = crossmap_coordinate_to_coding_setup(selector_model, degenerate)
     elif coordinate_system == "n":
-        crossmap = crossmap_coordinate_to_noncoding_setup(selector_model, degenerate)
+        crossmap = crossmap_coordinate_to_noncoding_setup(selector_model)
     else:
         raise Exception("Unsupported coordinate system: {}.".format(coordinate_system))
 
@@ -92,7 +102,7 @@ def crossmap_to_hgvs_setup(coordinate_system, selector_model=None, degenerate=Fa
 
 def inserted_to_hgvs(inserted):
     crossmap = {
-        "crossmap_function": Crossmap().coordinate_to_genomic,
+        "crossmap_function": Genomic().coordinate_to_genomic,
         "point_function": genomic_to_point,
     }
     return location_to_hgvs(

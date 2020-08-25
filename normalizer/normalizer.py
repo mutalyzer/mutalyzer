@@ -300,7 +300,7 @@ class Description(object):
 
         self._get_normalized_description()
 
-        self.status["equivalent descriptions"] = self.get_equivalent_descriptions()
+        # self.status["equivalent descriptions"] = self.get_equivalent_descriptions()
 
         self.status["normalized description"] = self.normalized_description
 
@@ -312,11 +312,12 @@ class Description(object):
             de_variants, self._normalized_description_model["variants"]
         )
 
-        protein_descriptions = get_protein_descriptions(
-            de_variants, self._reference_models
-        )
-        if protein_descriptions:
-            self.status["protein descriptions"] = protein_descriptions
+        # protein_descriptions = get_protein_descriptions(
+        #     de_variants, self._reference_models
+        # )
+        # if protein_descriptions:
+        #     self.status["protein descriptions"] = protein_descriptions
+        print("done")
 
 
 def mutalyzer3(hgvs_description):

@@ -1,7 +1,8 @@
 from flask import Blueprint, Flask, render_template, request
-from flask_restx import Api, Resource, fields, marshal
+from flask_restx import Api, Resource, fields, marshal, reqparse, inputs
 from mutalyzer_hgvs_parser import parse_description, parse_description_to_model
 from normalizer.normalizer import get_reference_model, mutalyzer3
+from normalizer.position_convert import position_convert
 
 blueprint = Blueprint("api", __name__)
 
@@ -45,3 +46,31 @@ class NameCheck(Resource):
     def get(self, hgvs_description):
         """Normalize a variant description."""
         return mutalyzer3(hgvs_description)
+
+
+parser = reqparse.RequestParser()
+parser.add_argument('reference_id', type=str,
+                    help="Reference ID.",
+                    # default="NC_000001.11",
+                    default="NG_012337.1",
+                    required=True)
+parser.add_argument('selector_id', type=str,
+                    help="Selector ID.",
+                    # default="NM_001232.3",
+                    default="NM_003002.2",
+                    required=True)
+parser.add_argument('position', type=str,
+                    help="Position to be converted.",
+                    default="100", required=True)
+parser.add_argument('relative_to', type=str,
+                    help="Relative to the reference or the selector.",
+                    default="reference", required=True)
+
+
+@ns.route("/position_convert/")
+class PositionConvert(Resource):
+    @api.expect(parser)
+    def get(self):
+        """Convert a position."""
+        args = parser.parse_args()
+        return position_convert(**args)

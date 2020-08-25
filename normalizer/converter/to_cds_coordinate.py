@@ -1,9 +1,9 @@
 import copy
 import json
 
-from mutalyzer_crossmapper import Crossmap
+from mutalyzer_crossmapper import Genomic, Coding
 
-from .to_hgvs_locations import genomic_to_point
+from .to_hgvs import genomic_to_point
 from normalizer.util import get_start, get_end
 
 
@@ -16,7 +16,7 @@ def _get_last_exon_cds_coding(selector_model, crossmap):
 
 
 def _point_to_cds_coordinate(point, selector_model, crossmap):
-    genomic_to_coordinate = Crossmap().genomic_to_coordinate
+    genomic_to_coordinate = Genomic().genomic_to_coordinate
     coding = crossmap.coordinate_to_coding(point["position"])
     if coding[2] == 0:
         return genomic_to_point(0)
@@ -71,7 +71,7 @@ def to_cds_coordinate(variants, sequences, selector_model):
     :param selector_model:
     :param crossmap:
     """
-    crossmap = Crossmap(
+    crossmap = Coding(
         selector_model["exon"], selector_model["cds"][0], selector_model["inverted"]
     )
     new_variants = []

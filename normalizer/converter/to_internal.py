@@ -1,7 +1,7 @@
 import copy
 import warnings
 
-from mutalyzer_crossmapper import Crossmap
+from mutalyzer_crossmapper import Genomic, NonCoding, Coding
 
 from normalizer.description import *
 from normalizer.reference import get_available_selectors, get_selector_model
@@ -12,17 +12,18 @@ def point_to_x_coding(point):
     position = point["position"]
     if point.get("outside_cds"):
         if point["outside_cds"] == "upstream":
-            section = 0
+            section = -1
             position = -1 * position
         elif point["outside_cds"] == "downstream":
-            section = 2
+            section = 1
     else:
-        section = 1
+        section = 0
     if point.get("offset"):
         offset = point["offset"]["value"]
     else:
         offset = 0
-    return position, offset, section
+    print(position, offset, section, 0)
+    return position, offset, section, 0
 
 
 def fix_selector_id(reference_models, reference_id, coordinate_system):
@@ -62,7 +63,7 @@ def get_point_value(point):
 
 
 def crossmap_genomic_to_coordinate_setup():
-    crossmap = Crossmap()
+    crossmap = Genomic()
     return {
         "crossmap_function": crossmap.genomic_to_coordinate,
         "point_function": get_point_value,
@@ -78,7 +79,7 @@ def crossmap_coding_to_coordinate_setup(description, references):
 
     selector = get_selector_model(references[reference_id]["model"], selector_id)
 
-    crossmap = Crossmap(selector["exon"], selector["cds"][0], selector["inverted"])
+    crossmap = Coding(selector["exon"], selector["cds"][0], selector["inverted"])
 
     return {
         "crossmap_function": crossmap.coding_to_coordinate,
@@ -95,10 +96,9 @@ def crossmap_noncoding_to_coordinate_setup(description, references):
 
     selector = get_selector_model(references[reference_id]["model"], selector_id)
     selector["exon"] = sort_location_tuples(selector["exon"])
-    cds = (selector["exon"][0][0], selector["exon"][-1][-1])
-    crossmap = Crossmap(selector["exon"], cds, selector["inverted"])
+    crossmap = NonCoding(selector["exon"], selector["inverted"])
     return {
-        "crossmap_function": crossmap.coding_to_coordinate,
+        "crossmap_function": crossmap.noncoding_to_coordinate,
         "point_function": point_to_x_coding,
     }
 
@@ -199,6 +199,8 @@ def location_to_internal(location, variant_type, crossmap):
     :param crossmap:
     :return:
     """
+    import json
+    print(json.dumps(location, indent=2))
     if location["type"] == "range":
         if location["start"]["type"] == "range":
             new_location = {
@@ -221,13 +223,13 @@ def location_to_internal(location, variant_type, crossmap):
     else:
         # Should never happen. TODO: Maybe raise an error?
         pass
-
+    print(json.dumps(new_location, indent=2))
     return new_location
 
 
 def inserted_to_internal(inserted):
     crossmap = {
-        "crossmap_function": Crossmap().genomic_to_coordinate,
+        "crossmap_function": Genomic().genomic_to_coordinate,
         "point_function": get_point_value,
     }
     return location_to_internal(

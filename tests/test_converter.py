@@ -1,5 +1,5 @@
 import pytest
-from mutalyzer_crossmapper import Crossmap
+from mutalyzer_crossmapper import Genomic, NonCoding, Coding
 from mutalyzer_hgvs_parser import parse_description_to_model
 
 from normalizer.converter.to_internal import (
@@ -8,7 +8,7 @@ from normalizer.converter.to_internal import (
     point_to_x_coding,
     to_internal_locations,
 )
-from normalizer.converter.to_hgvs_locations import to_hgvs_locations, location_to_hgvs
+from normalizer.converter.to_hgvs import to_hgvs_locations, location_to_hgvs
 from normalizer.description import location_to_description, model_to_string
 
 from .generator import append_transcript, generate_references
@@ -33,25 +33,19 @@ TESTS_SET = [
                 "x": "0_1",
                 "g": {"hgvs": "1"},
                 "c": {"hgvs": "-8", "other": ["-5-3"]},
-                "n": {"hgvs": "-3", "other": []},
+                "n": {"other": ["1-3", "-3"]},
             },
             {
                 "x": "1_2",
                 "g": {"hgvs": "2"},
                 "c": {"hgvs": "-7", "other": ["-5-2"]},
-                "n": {"hgvs": "-2", "other": []},
+                "n": {"hgvs": "1-2", "other": ["-3"]},
             },
             {
                 "x": "2_3",
                 "g": {"hgvs": "3"},
                 "c": {"hgvs": "-6", "other": ["-5-1"]},
-                "n": {"hgvs": "-1", "other": []},
-            },
-            {
-                "x": "2_3",
-                "g": {"hgvs": "3"},
-                "c": {"hgvs": "-6", "other": ["-5-1"]},
-                "n": {"hgvs": "-1", "other": []},
+                "n": {"hgvs": "1-1", "other": ["-1"]},
             },
             {
                 "x": "3_4",
@@ -195,19 +189,19 @@ TESTS_SET = [
                 "x": "26_27",
                 "g": {"hgvs": "27"},
                 "c": {"hgvs": "*5", "other": ["*4+1"]},
-                "n": {"hgvs": "*1", "other": []},
+                "n": {"other": ["15+1", "*1"]},
             },
             {
                 "x": "27_28",
                 "g": {"hgvs": "28"},
                 "c": {"hgvs": "*6", "other": ["*4+2"]},
-                "n": {"hgvs": "*2", "other": []},
+                "n": {"other": ["15+2", "*2"]},
             },
             {
                 "x": "28_29",
                 "g": {"hgvs": "29"},
                 "c": {"hgvs": "*7", "other": ["*4+3"]},
-                "n": {"hgvs": "*3", "other": []},
+                "n": {"other": ["15+3", "*3"]},
             },
             {
                 "x": "3_6",
@@ -225,7 +219,7 @@ TESTS_SET = [
                 "x": "2_7",
                 "g": {"hgvs": "3_7"},
                 "c": {"hgvs": "-6_-3+1", "other": []},
-                "n": {"hgvs": "-1_3+1", "other": []},
+                "n": {"hgvs": "1-1_3+1", "other": []},
             },
             {
                 "x": "7_14",
@@ -243,25 +237,25 @@ TESTS_SET = [
                 "x": "0_29",
                 "g": {"hgvs": "1_29"},
                 "c": {"hgvs": "-8_*7", "other": []},
-                "n": {"hgvs": "-3_*3", "other": []},
+                "n": {"hgvs": "1-3_15+3", "other": []},
             },
             {
                 "x": "0_?",
                 "g": {"hgvs": "1_?"},
                 "c": {"hgvs": "-8_?", "other": []},
-                "n": {"hgvs": "-3_?", "other": []},
+                "n": {"hgvs": "1-3_?", "other": []},
             },
             {
                 "x": "(0_?)",
                 "g": {"hgvs": "(1_?)"},
                 "c": {"hgvs": "(-8_?)", "other": []},
-                "n": {"hgvs": "(-3_?)", "other": []},
+                "n": {"hgvs": "(1-3_?)", "other": []},
             },
             {
                 "x": "(0_2)",
                 "g": {"hgvs": "(1_2)"},
                 "c": {"hgvs": "(-8_-7)", "other": []},
-                "n": {"hgvs": "(-3_-2)", "other": []},
+                "n": {"hgvs": "(1-3_1-2)", "other": []},
             },
         ],
         "deleted_insertion": [
@@ -269,7 +263,7 @@ TESTS_SET = [
                 "x": "1_1",
                 "g": {"hgvs": "1_2"},
                 "c": {"hgvs": "-8_-7", "other": ["-7-1_-5-2"]},
-                "n": {"hgvs": "-3_-2", "other": ["*3-28_13-19"]},
+                "n": {"hgvs": "1-3_1-2", "other": ["*3-28_13-19"]},
             },
         ],
     },
@@ -309,16 +303,16 @@ TESTS_SET = [
 def generate_tests_location_to_internal_raw(t_s, c_s):
     tests = []
     if c_s == "g":
-        crossmap = Crossmap().genomic_to_coordinate
+        crossmap = Genomic().genomic_to_coordinate
         point_function = get_point_value
     elif c_s == "c":
-        crossmap = Crossmap(
+        crossmap = Coding(
             t_s["c"]["exon"], t_s["c"]["cds"], t_s["c"]["inverted"]
         ).coding_to_coordinate
         point_function = point_to_x_coding
     elif c_s == "n":
         cds = (t_s["n"]["exon"][0][0], t_s["n"]["exon"][-1][-1])
-        crossmap = Crossmap(
+        crossmap = Coding(
             t_s["c"]["exon"], cds, t_s["c"]["inverted"],
         ).coding_to_coordinate
         point_function = point_to_x_coding
@@ -376,11 +370,6 @@ def generate_to_internal_location_test(t, loc, d, refs):
             d.format("", "x", loc["x"]),
             refs,
         ),
-        (
-            d.format("({})".format(t["n"]["id"]), "n", loc["n"]["hgvs"]),
-            d.format("", "x", loc["x"]),
-            refs,
-        ),
     ]
     if loc["c"].get("other"):
         for other in loc["c"]["other"]:
@@ -390,6 +379,15 @@ def generate_to_internal_location_test(t, loc, d, refs):
                     d.format("", "x", loc["x"]),
                     refs,
                 )
+            )
+    if loc["n"].get("hgvs"):
+            tests.append(
+                (
+                    d.format("({})".format(t["n"]["id"]), "n",
+                             loc["n"]["hgvs"]),
+                    d.format("", "x", loc["x"]),
+                    refs,
+                ),
             )
     if loc["n"].get("other"):
         for other in loc["n"]["other"]:
@@ -550,7 +548,8 @@ def test_to_internal_locations_simple(hgvs, hgvs_internal_indexing):
         ("R1:g.4_(5_?)del", "R1:x.3_(4_?)del"),
         ("R1(t1):c.-4A>T", "R1:x.4_5A>T"),
         ("R1(t1):c.-2-1A>T", "R1:x.7_8A>T"),
-        ("R1(t1):c.-2-1_*2+1del", "R1:x.7_22del")
+        ("R1(t1):c.-2-1_*2+1del", "R1:x.7_22del"),
+        ("R1(t2):n.1-3_15+3A>T", "R1:x.0_29A>T")
         # ("R1:g.4_5ins[R1:c.7_8;10_20]", "R1:x.4_4ins[R1:x.6_8;9_20]"),
     ],
 )
@@ -564,9 +563,18 @@ def test_to_hgvs_locations_simple(hgvs, hgvs_internal_indexing):
             "cds": (10, 19),
         }
     )
+    append_transcript(r_model, {
+            "id": "t2",
+            "type": "ncRNA",
+            "inverted": False,
+            "exon": [(3, 6), (8, 13), (16, 21), (24, 26)],
+        })
 
     if "c." in hgvs:
         selector_id = "t1"
+        degenerate = True
+    elif "n." in hgvs:
+        selector_id = "t2"
         degenerate = True
     else:
         selector_id = None
@@ -587,12 +595,14 @@ def generate_to_hgvs_location_test(t, loc, d, refs):
             d.format("({})".format(t["c"]["id"]), "c", loc["c"]["hgvs"]),
             refs,
         ),
-        (
+    ]
+    if loc["n"].get("hgvs"):
+        tests.append((
             d.format("", "x", loc["x"]),
             d.format("({})".format(t["n"]["id"]), "n", loc["n"]["hgvs"]),
             refs,
-        ),
-    ]
+        ))
+
     return tests
 
 
@@ -657,5 +667,5 @@ def test_to_hgvs_locations(description_in, description_expected, references):
         description_out = model_to_string(
             to_hgvs_locations(description_model["variants"], references["reference"])
         )
-
+    print(description_out)
     assert description_out == description_expected
