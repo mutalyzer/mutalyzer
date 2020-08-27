@@ -49,22 +49,31 @@ class NameCheck(Resource):
 
 
 parser = reqparse.RequestParser()
-parser.add_argument('reference_id', type=str,
+parser.add_argument('reference_id',
+                    type=str,
                     help="Reference ID.",
-                    # default="NC_000001.11",
                     default="NG_012337.1",
                     required=True)
-parser.add_argument('selector_id', type=str,
+parser.add_argument('selector_id',
+                    type=str,
                     help="Selector ID.",
-                    # default="NM_001232.3",
                     default="NM_003002.2",
                     required=True)
-parser.add_argument('position', type=str,
+parser.add_argument('position',
+                    type=str,
                     help="Position to be converted.",
-                    default="100", required=True)
-parser.add_argument('relative_to', type=str,
-                    help="Relative to the reference or the selector.",
-                    default="reference", required=True)
+                    default="300",
+                    required=True)
+parser.add_argument('relative_to',
+                    type=str,
+                    help="Position relative to the reference or the selector.",
+                    default="Reference",
+                    required=True)
+parser.add_argument('include_overlapping',
+                    type=bool,
+                    help="Include overlapping selectors.",
+                    default=False,
+                    required=False)
 
 
 @ns.route("/position_convert/")
@@ -73,4 +82,5 @@ class PositionConvert(Resource):
     def get(self):
         """Convert a position."""
         args = parser.parse_args()
+        print(args)
         return position_convert(**args)

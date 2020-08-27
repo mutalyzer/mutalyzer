@@ -1,33 +1,16 @@
-import json
-import time
-from functools import lru_cache
-
-import extractor
 from mutalyzer_hgvs_parser import parse_description_to_model
-from mutalyzer_mutator.mutator import mutate
-from mutalyzer_retriever import retriever
 
 from .converter import (
-    de_to_hgvs,
-    to_cds_coordinate,
-    to_delins,
     to_hgvs,
-    to_internal_locations,
     to_internal
 )
 from .description import location_to_description
-from .protein import get_protein_description, get_protein_descriptions
 from .reference import (
-    extract_sequences,
-    get_available_selectors,
     get_mol_type,
     get_selector_model,
-    get_selectors_ids,
+    get_selectors_overlap,
 )
-from .util import get_time_information, string_k_v
-from .visualization import to_be_visualized
-from .checker import run_checks
-
+from .normalizer import get_reference_model
 from mutalyzer_crossmapper import Genomic, NonCoding, Coding
 
 
@@ -46,11 +29,10 @@ def crossmap_to_x_setup(selector_model, mol_type, relative_to):
                 "crossmap_function": crossmap.coding_to_coordinate,
                 "point_function": to_internal.point_to_x_coding,
             }
-        elif relative_to == "selector" and selector_model["type"] in ["ncRNA"]:
-            crossmap = Coding(selector_model["exon"], selector_model["cds"][0],
-                              selector_model["inverted"])
+        elif relative_to == "Selector" and selector_model["type"] in ["lnc_RNA", "ncRNA"]:
+            crossmap = NonCoding(selector_model["exon"], selector_model["inverted"])
             return {
-                "crossmap_function": crossmap.coding_to_coordinate,
+                "crossmap_function": crossmap.noncoding_to_coordinate,
                 "point_function": to_internal.point_to_x_coding,
             }
 
@@ -65,31 +47,92 @@ def crossmap_to_hgvs_setup(selector_model, mol_type, relative_to):
                 "point_function": to_hgvs.coding_to_point,
                 "degenerate": True
             }
+        if selector_model['type'] in ["lnc_RNA", "ncRNA"]:
+            crossmap = NonCoding(selector_model["exon"], selector_model["inverted"])
+            return {
+                "crossmap_function": crossmap.coordinate_to_noncoding,
+                "point_function": to_hgvs.noncoding_to_point,
+            }
+    elif relative_to == "Selector":
+        if mol_type in ['genomic DNA', 'dna']:
+            crossmap = Genomic()
+            return {
+                "crossmap_function": crossmap.coordinate_to_genomic,
+                "point_function": to_hgvs.genomic_to_point,
+            }
 
 
-def position_convert(reference_id, selector_id, position, relative_to):
-    reference_model = retriever.retrieve(reference_id, parse=True)
+def position_convert(reference_id, selector_id, position, relative_to, include_overlapping=False):
+    reference_model = get_reference_model(reference_id)
     if reference_model:
         mol_type = get_mol_type(reference_model)
+        if mol_type in ['genomic DNA', 'dna']:
+            reference_coordinate_system = 'g'
+        else:
+            return {"errors": [{"code": "EMOLTYPE",
+                                "details": mol_type}]}
     else:
-        return 'Reference not retrieved'
+        return {"errors": [{"code": "ERETR"}]}
+
     location_model = parse_description_to_model(position, start_rule='location')
-    if reference_model:
-        selector_model = get_selector_model(reference_model["model"], selector_id)
-        crossmap = crossmap_to_x_setup(selector_model, mol_type, relative_to)
-        internal = to_internal.point_to_coding(location_model, **crossmap)
-        crossmap = crossmap_to_hgvs_setup(selector_model, mol_type, relative_to)
-        hgvs = to_hgvs.point_to_hgvs(internal, **crossmap)
-        return {
+    if location_model.get('errors'):
+        return {"errors": [{"code": "ESYNTAX",
+                            "details": location_model['errors'][0]}]}
+    if location_model["type"] == "range":
+        return {"errors": [{"code": "ERANGELOCATION"}]}
+
+    selector_model = get_selector_model(reference_model["model"], selector_id)
+    if selector_model:
+        if selector_model["type"] in ["mRNA"]:
+            selector_coordinate_system = "c"
+        elif selector_model["type"] in ["lnc_RNA", "ncRNA"]:
+            selector_coordinate_system = "n"
+    else:
+        return {"errors": [{"code": "ENOSELECTOR"}]}
+    crossmap = crossmap_to_x_setup(selector_model, mol_type, relative_to)
+    internal = to_internal.point_to_coding(location_model, **crossmap)
+    crossmap = crossmap_to_hgvs_setup(selector_model, mol_type, relative_to)
+    hgvs = to_hgvs.point_to_hgvs(internal, **crossmap)
+    if relative_to == 'Reference':
+        output = {
             "reference": {
                 "id": reference_id,
-                "position": position
+                "position": position,
+                "coordinate_system": reference_coordinate_system
             },
             "selector": {
                 "id": selector_id,
-                "position": location_to_description(hgvs)
+                "position": location_to_description(hgvs),
+                "coordinate_system": selector_coordinate_system
             }
         }
+    elif relative_to == 'Selector':
+        output = {
+            "reference": {
+                "id": reference_id,
+                "position": location_to_description(hgvs),
+                "coordinate_system": reference_coordinate_system
+            },
+            "selector": {
+                "id": selector_id,
+                "position": position,
+                "coordinate_system": selector_coordinate_system
+            }
+        }
+    print(include_overlapping)
+    if include_overlapping:
+        for selector in get_selectors_overlap(internal['position'], reference_model["model"]):
+            crossmap = crossmap_to_hgvs_setup(selector, mol_type, "Reference")
+            hgvs = to_hgvs.point_to_hgvs(internal, **crossmap)
+            if selector['id'] != selector_id:
+                if output.get('other_selectors') is None:
+                    output['other_selectors'] = []
+                output['other_selectors'].append({
+                        "id": selector['id'],
+                        "position": location_to_description(hgvs),
+                        "coordinate_system": selector['coordinate_system']
+                    })
+    return output
 
 
 
