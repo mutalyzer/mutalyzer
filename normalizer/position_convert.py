@@ -1,21 +1,14 @@
+from mutalyzer_crossmapper import Coding, Genomic, NonCoding
 from mutalyzer_hgvs_parser import parse_description_to_model
 
-from .converter import (
-    to_hgvs,
-    to_internal
-)
+from .converter import to_hgvs, to_internal
 from .description import location_to_description
-from .reference import (
-    get_mol_type,
-    get_selector_model,
-    get_selectors_overlap,
-)
 from .normalizer import get_reference_model
-from mutalyzer_crossmapper import Genomic, NonCoding, Coding
+from .reference import get_mol_type, get_selector_model, get_selectors_overlap
 
 
 def crossmap_to_x_setup(selector_model, mol_type, relative_to):
-    if mol_type in ['genomic DNA', 'dna']:
+    if mol_type in ["genomic DNA", "dna"]:
         if relative_to == "Reference":
             crossmap = Genomic()
             return {
@@ -23,13 +16,19 @@ def crossmap_to_x_setup(selector_model, mol_type, relative_to):
                 "point_function": to_internal.get_point_value,
             }
         elif relative_to == "Selector" and selector_model["type"] in ["mRNA"]:
-            crossmap = Coding(selector_model["exon"], selector_model["cds"][0],
-                              selector_model["inverted"])
+            crossmap = Coding(
+                selector_model["exon"],
+                selector_model["cds"][0],
+                selector_model["inverted"],
+            )
             return {
                 "crossmap_function": crossmap.coding_to_coordinate,
                 "point_function": to_internal.point_to_x_coding,
             }
-        elif relative_to == "Selector" and selector_model["type"] in ["lnc_RNA", "ncRNA"]:
+        elif relative_to == "Selector" and selector_model["type"] in [
+            "lnc_RNA",
+            "ncRNA",
+        ]:
             crossmap = NonCoding(selector_model["exon"], selector_model["inverted"])
             return {
                 "crossmap_function": crossmap.noncoding_to_coordinate,
@@ -39,22 +38,25 @@ def crossmap_to_x_setup(selector_model, mol_type, relative_to):
 
 def crossmap_to_hgvs_setup(selector_model, mol_type, relative_to):
     if relative_to == "Reference":
-        if selector_model['type'] in ["mRNA"]:
-            crossmap = Coding(selector_model["exon"], selector_model["cds"][0],
-                              selector_model["inverted"])
+        if selector_model["type"] in ["mRNA"]:
+            crossmap = Coding(
+                selector_model["exon"],
+                selector_model["cds"][0],
+                selector_model["inverted"],
+            )
             return {
                 "crossmap_function": crossmap.coordinate_to_coding,
                 "point_function": to_hgvs.coding_to_point,
-                "degenerate": True
+                "degenerate": True,
             }
-        if selector_model['type'] in ["lnc_RNA", "ncRNA"]:
+        if selector_model["type"] in ["lnc_RNA", "ncRNA"]:
             crossmap = NonCoding(selector_model["exon"], selector_model["inverted"])
             return {
                 "crossmap_function": crossmap.coordinate_to_noncoding,
                 "point_function": to_hgvs.noncoding_to_point,
             }
     elif relative_to == "Selector":
-        if mol_type in ['genomic DNA', 'dna']:
+        if mol_type in ["genomic DNA", "dna"]:
             crossmap = Genomic()
             return {
                 "crossmap_function": crossmap.coordinate_to_genomic,
@@ -62,22 +64,22 @@ def crossmap_to_hgvs_setup(selector_model, mol_type, relative_to):
             }
 
 
-def position_convert(reference_id, selector_id, position, relative_to, include_overlapping=False):
+def position_convert(
+    reference_id, selector_id, position, relative_to, include_overlapping=False
+):
     reference_model = get_reference_model(reference_id)
     if reference_model:
         mol_type = get_mol_type(reference_model)
-        if mol_type in ['genomic DNA', 'dna']:
-            reference_coordinate_system = 'g'
+        if mol_type in ["genomic DNA", "dna"]:
+            reference_coordinate_system = "g"
         else:
-            return {"errors": [{"code": "EMOLTYPE",
-                                "details": mol_type}]}
+            return {"errors": [{"code": "EMOLTYPE", "details": mol_type}]}
     else:
         return {"errors": [{"code": "ERETR"}]}
 
-    location_model = parse_description_to_model(position, start_rule='location')
-    if location_model.get('errors'):
-        return {"errors": [{"code": "ESYNTAX",
-                            "details": location_model['errors'][0]}]}
+    location_model = parse_description_to_model(position, start_rule="location")
+    if location_model.get("errors"):
+        return {"errors": [{"code": "ESYNTAX", "details": location_model["errors"][0]}]}
     if location_model["type"] == "range":
         return {"errors": [{"code": "ERANGELOCATION"}]}
 
@@ -91,48 +93,53 @@ def position_convert(reference_id, selector_id, position, relative_to, include_o
         return {"errors": [{"code": "ENOSELECTOR"}]}
     crossmap = crossmap_to_x_setup(selector_model, mol_type, relative_to)
     internal = to_internal.point_to_coding(location_model, **crossmap)
+
+    if internal["position"] < 0:
+        return {"errors": [{"code": "EOUTOFBOUNDARY"}]}
+    if internal["position"] > len(reference_model["sequence"]["seq"]):
+        return {"errors": [{"code": "EOUTOFBOUNDARY"}]}
+
     crossmap = crossmap_to_hgvs_setup(selector_model, mol_type, relative_to)
     hgvs = to_hgvs.point_to_hgvs(internal, **crossmap)
-    if relative_to == 'Reference':
+    if relative_to == "Reference":
         output = {
             "reference": {
                 "id": reference_id,
                 "position": position,
-                "coordinate_system": reference_coordinate_system
+                "coordinate_system": reference_coordinate_system,
             },
             "selector": {
                 "id": selector_id,
                 "position": location_to_description(hgvs),
-                "coordinate_system": selector_coordinate_system
-            }
+                "coordinate_system": selector_coordinate_system,
+            },
         }
-    elif relative_to == 'Selector':
+    elif relative_to == "Selector":
         output = {
             "reference": {
                 "id": reference_id,
                 "position": location_to_description(hgvs),
-                "coordinate_system": reference_coordinate_system
+                "coordinate_system": reference_coordinate_system,
             },
             "selector": {
                 "id": selector_id,
                 "position": position,
-                "coordinate_system": selector_coordinate_system
-            }
+                "coordinate_system": selector_coordinate_system,
+            },
         }
-    print(include_overlapping)
     if include_overlapping:
-        for selector in get_selectors_overlap(internal['position'], reference_model["model"]):
+        output["other_selectors"] = []
+        for selector in get_selectors_overlap(
+            internal["position"], reference_model["model"]
+        ):
             crossmap = crossmap_to_hgvs_setup(selector, mol_type, "Reference")
             hgvs = to_hgvs.point_to_hgvs(internal, **crossmap)
-            if selector['id'] != selector_id:
-                if output.get('other_selectors') is None:
-                    output['other_selectors'] = []
-                output['other_selectors'].append({
-                        "id": selector['id'],
+            if selector["id"] != selector_id:
+                output["other_selectors"].append(
+                    {
+                        "id": selector["id"],
                         "position": location_to_description(hgvs),
-                        "coordinate_system": selector['coordinate_system']
-                    })
+                        "coordinate_system": selector["coordinate_system"],
+                    }
+                )
     return output
-
-
-
