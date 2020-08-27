@@ -1,6 +1,8 @@
 from flask import Blueprint, Flask, render_template, request
-from flask_restx import Api, Resource, fields, marshal, reqparse, inputs
+from flask_restx import Api, Resource, fields, inputs, marshal, reqparse
 from mutalyzer_hgvs_parser import parse_description, parse_description_to_model
+
+from normalizer.description_extractor import description_extractor
 from normalizer.normalizer import get_reference_model, mutalyzer3
 from normalizer.position_convert import position_convert
 
@@ -49,31 +51,29 @@ class NameCheck(Resource):
 
 
 parser = reqparse.RequestParser()
-parser.add_argument('reference_id',
-                    type=str,
-                    help="Reference ID.",
-                    default="NG_012337.1",
-                    required=True)
-parser.add_argument('selector_id',
-                    type=str,
-                    help="Selector ID.",
-                    default="NM_003002.2",
-                    required=True)
-parser.add_argument('position',
-                    type=str,
-                    help="Position to be converted.",
-                    default="300",
-                    required=True)
-parser.add_argument('relative_to',
-                    type=str,
-                    help="Position relative to the reference or the selector.",
-                    default="Reference",
-                    required=True)
-parser.add_argument('include_overlapping',
-                    type=bool,
-                    help="Include overlapping selectors.",
-                    default=False,
-                    required=False)
+parser.add_argument(
+    "reference_id", type=str, help="Reference ID.", default="NG_012337.1", required=True
+)
+parser.add_argument(
+    "selector_id", type=str, help="Selector ID.", default="NM_003002.2", required=True
+)
+parser.add_argument(
+    "position", type=str, help="Position to be converted.", default="300", required=True
+)
+parser.add_argument(
+    "relative_to",
+    type=str,
+    help="Position relative to the reference or the selector.",
+    default="Reference",
+    required=True,
+)
+parser.add_argument(
+    "include_overlapping",
+    type=inputs.boolean,
+    help="Include overlapping selectors.",
+    default=False,
+    required=False,
+)
 
 
 @ns.route("/position_convert/")
@@ -82,5 +82,30 @@ class PositionConvert(Resource):
     def get(self):
         """Convert a position."""
         args = parser.parse_args()
-        print(args)
         return position_convert(**args)
+
+
+de_parser = reqparse.RequestParser()
+de_parser.add_argument(
+    "reference",
+    type=str,
+    help="Reference sequence.",
+    default="AAAATTTCCCCCGGGG",
+    required=True,
+)
+de_parser.add_argument(
+    "observed",
+    type=str,
+    help="Observed sequence.",
+    default="AAAATTTCCCCCGGGG",
+    required=True,
+)
+
+
+@ns.route("/description_extract/")
+class DescriptionExtract(Resource):
+    @api.expect(de_parser)
+    def get(self):
+        """Convert a position."""
+        args = de_parser.parse_args()
+        return description_extractor(**args)
