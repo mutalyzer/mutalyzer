@@ -5,6 +5,7 @@ from mutalyzer_hgvs_parser import parse_description, parse_description_to_model
 from normalizer.description_extractor import description_extractor
 from normalizer.normalizer import get_reference_model, mutalyzer3
 from normalizer.position_convert import position_convert
+from normalizer.reference import get_selectors_ids
 
 blueprint = Blueprint("api", __name__)
 
@@ -52,20 +53,37 @@ class NameCheck(Resource):
 
 parser = reqparse.RequestParser()
 parser.add_argument(
-    "reference_id", type=str, help="Reference ID.", default="NG_012337.1", required=True
-)
-parser.add_argument(
-    "selector_id", type=str, help="Selector ID.", default="NM_003002.2", required=True
-)
-parser.add_argument(
-    "position", type=str, help="Position to be converted.", default="300", required=True
-)
-parser.add_argument(
-    "relative_to",
+    "reference_id",
     type=str,
-    help="Position relative to the reference or the selector.",
-    default="Reference",
+    help="Reference ID on which the positions are considered.",
     required=True,
+)
+parser.add_argument(
+    "from_selector_id",
+    type=str,
+    help="Selector ID from which to convert from.",
+    required=False,
+)
+parser.add_argument(
+    "from_coordinate_system",
+    type=str,
+    help="Coordinate system.",
+    required=False,
+)
+parser.add_argument(
+    "position", type=str, help="Position to be converted.", required=True
+)
+parser.add_argument(
+    "to_selector_id",
+    type=str,
+    help="Selector ID to which to convert to.",
+    required=True,
+)
+parser.add_argument(
+    "to_coordinate_system",
+    type=str,
+    help="Coordinate system.",
+    required=False,
 )
 parser.add_argument(
     "include_overlapping",
@@ -80,7 +98,8 @@ parser.add_argument(
 class PositionConvert(Resource):
     @api.expect(parser)
     def get(self):
-        """Convert a position."""
+        """Converts reference positions to selector orientated
+        positions and vice versa."""
         args = parser.parse_args()
         return position_convert(**args)
 
@@ -109,3 +128,29 @@ class DescriptionExtract(Resource):
         """Convert a position."""
         args = de_parser.parse_args()
         return description_extractor(**args)
+
+
+get_selectors_model = api.model(
+    "getSelectorsModel",
+    {
+        "reference_id": fields.String(
+            description="The reference ID", required=True, example="LRG_24"
+        ),
+    },
+)
+
+
+@ns.route("/get_selectors/<string:reference_id>")
+class GetSelectors(Resource):
+    @api.doc(get_selectors_model)
+    def get(self, reference_id):
+        """Retrieve available selectors for the provided reference."""
+        import sys
+
+        reference_model = get_reference_model(reference_id)
+        selectors = get_selectors_ids(reference_model["model"])
+        print(len(selectors))
+        print(sys.getsizeof(selectors))
+        if reference_model:
+            return {"reference": reference_id, "selectors": selectors}
+        return {"errors": [{"code": "ERETR"}]}

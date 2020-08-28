@@ -45,6 +45,15 @@ def extract_sequences(references):
 
 @lru_cache(maxsize=32)
 def get_reference_model(reference_id):
+    import os.path
+    print('trie')
+    if os.path.isfile('references/' + reference_id):
+        print("from file")
+        with open('references/' + reference_id) as json_file:
+            return json.load(json_file)
+    else:
+        print("not from file")
+
     return retriever.retrieve(reference_id, parse=True)
 
 

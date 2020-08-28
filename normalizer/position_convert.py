@@ -65,8 +65,11 @@ def crossmap_to_hgvs_setup(selector_model, mol_type, relative_to):
 
 
 def position_convert(
-    reference_id, selector_id, position, relative_to, include_overlapping=False
+    reference_id, position, from_selector_id=None, from_coordinate_system=None,
+        to_selector_id=None, to_coordinate_system=None, include_overlapping=False
 ):
+    # Retrieve the reference model. Identify its mol_type and check if is within
+    # the supported ones. Set the reference coordinate system. Report any errors.
     reference_model = get_reference_model(reference_id)
     if reference_model:
         mol_type = get_mol_type(reference_model)
@@ -77,13 +80,19 @@ def position_convert(
     else:
         return {"errors": [{"code": "ERETR"}]}
 
+    # Retrieve the location model and report any syntax errors.
     location_model = parse_description_to_model(position, start_rule="location")
     if location_model.get("errors"):
         return {"errors": [{"code": "ESYNTAX", "details": location_model["errors"][0]}]}
     if location_model["type"] == "range":
         return {"errors": [{"code": "ERANGELOCATION"}]}
 
-    selector_model = get_selector_model(reference_model["model"], selector_id)
+    if from_selector_id is None and from_coordinate_system is None:
+        from_coordinate_system = reference_coordinate_system
+    # If from_selector_id supplied, try to retrieve the selector model. However,
+    # maybe is better to check whether the
+    if from_selector_id:
+        selector_model = get_selector_model(reference_model["model"], from_selector_id)
     if selector_model:
         if selector_model["type"] in ["mRNA"]:
             selector_coordinate_system = "c"
@@ -109,7 +118,7 @@ def position_convert(
                 "coordinate_system": reference_coordinate_system,
             },
             "selector": {
-                "id": selector_id,
+                "id": from_selector_id,
                 "position": location_to_description(hgvs),
                 "coordinate_system": selector_coordinate_system,
             },
@@ -122,7 +131,7 @@ def position_convert(
                 "coordinate_system": reference_coordinate_system,
             },
             "selector": {
-                "id": selector_id,
+                "id": from_selector_id,
                 "position": position,
                 "coordinate_system": selector_coordinate_system,
             },
@@ -134,7 +143,7 @@ def position_convert(
         ):
             crossmap = crossmap_to_hgvs_setup(selector, mol_type, "Reference")
             hgvs = to_hgvs.point_to_hgvs(internal, **crossmap)
-            if selector["id"] != selector_id:
+            if selector["id"] != from_selector_id:
                 output["other_selectors"].append(
                     {
                         "id": selector["id"],
