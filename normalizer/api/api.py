@@ -56,7 +56,8 @@ parser.add_argument(
     "reference_id",
     type=str,
     help="Reference ID on which the positions are considered.",
-    required=True,
+    # required=True,
+    required=False,
 )
 parser.add_argument(
     "from_selector_id",
@@ -71,13 +72,16 @@ parser.add_argument(
     required=False,
 )
 parser.add_argument(
-    "position", type=str, help="Position to be converted.", required=True
+    "position", type=str, help="Position to be converted.",
+    # required=True,
+    required=False,
 )
 parser.add_argument(
     "to_selector_id",
     type=str,
     help="Selector ID to which to convert to.",
-    required=True,
+    # required=True,
+    required=False,
 )
 parser.add_argument(
     "to_coordinate_system",
@@ -154,3 +158,5 @@ class GetSelectors(Resource):
         if reference_model:
             return {"reference": reference_id, "selectors": selectors}
         return {"errors": [{"code": "ERETR"}]}
+
+
