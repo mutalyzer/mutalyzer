@@ -43,8 +43,8 @@ def coding_to_point(coding):
 
     if offset != 0:
         point["offset"] = {"value": offset}
-    print(coding)
-    print(point)
+    # print(coding)
+    # print(point)
     return point
 
 

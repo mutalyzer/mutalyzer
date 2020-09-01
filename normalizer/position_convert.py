@@ -394,7 +394,6 @@ class PositionConvert(object):
     def add_overlapping(self):
         if self.include_overlapping and self.internal:
             other_selectors = []
-            print(self.internal)
             for selector in get_selectors_overlap(
                 self.internal["position"], self.reference_model["model"]
             ):
@@ -434,13 +433,13 @@ class PositionConvert(object):
             }
             if self.to_selector_id:
                 converted_position["selector_id"] = self.to_selector_id
-            self.output = {
+            self.output["conversion"] = {
                 "reference_id": self.reference_id,
                 "input_position": input_position,
                 "converted_position": converted_position,
             }
             if self.include_overlapping:
-                self.output["overlapping"] = self.overlapping
+                self.output["conversion"]["overlapping"] = self.overlapping
 
 
 def position_convert(

@@ -165,7 +165,7 @@ def get_selectors_overlap(point, reference_model):
             for sub_feature in feature["features"]:
                 if sub_feature.get('type') and sub_feature['type'] in ['mRNA', 'lnc_RNA', 'ncRNA']:
                     if point_within_feature(point, sub_feature):
-                        print("Within", sub_feature["id"],)
+                        # print("Within", sub_feature["id"],)
                         output = {"type": sub_feature["type"],
                                   "id": sub_feature["id"],
                                   "coordinate_system": 'c' if sub_feature[
@@ -175,8 +175,8 @@ def get_selectors_overlap(point, reference_model):
                         output.update(
                             sort_locations(get_feature_locations(sub_feature)))
                         yield output
-                    else:
-                        print("Outside", sub_feature["id"],)
+                    # else:
+                    #     print("Outside", sub_feature["id"],)
 
 
 
