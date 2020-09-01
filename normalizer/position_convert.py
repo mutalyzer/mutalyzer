@@ -7,195 +7,130 @@ from .normalizer import get_reference_model
 from .reference import get_mol_type, get_selector_model, get_selectors_overlap
 
 
-def crossmap_to_x_setup(selector_model, mol_type, relative_to):
-    if mol_type in ["genomic DNA", "dna"]:
-        if relative_to == "Reference":
-            crossmap = Genomic()
-            return {
-                "crossmap_function": crossmap.genomic_to_coordinate,
-                "point_function": to_internal.get_point_value,
-            }
-        elif relative_to == "Selector" and selector_model["type"] in ["mRNA"]:
-            crossmap = Coding(
-                selector_model["exon"],
-                selector_model["cds"][0],
-                selector_model["inverted"],
-            )
-            return {
-                "crossmap_function": crossmap.coding_to_coordinate,
-                "point_function": to_internal.point_to_x_coding,
-            }
-        elif relative_to == "Selector" and selector_model["type"] in [
-            "lnc_RNA",
-            "ncRNA",
-        ]:
-            crossmap = NonCoding(selector_model["exon"], selector_model["inverted"])
-            return {
-                "crossmap_function": crossmap.noncoding_to_coordinate,
-                "point_function": to_internal.point_to_x_coding,
-            }
-
-
-def crossmap_to_hgvs_setup(selector_model, mol_type, relative_to):
-    if relative_to == "Reference":
-        if selector_model["type"] in ["mRNA"]:
-            crossmap = Coding(
-                selector_model["exon"],
-                selector_model["cds"][0],
-                selector_model["inverted"],
-            )
-            return {
-                "crossmap_function": crossmap.coordinate_to_coding,
-                "point_function": to_hgvs.coding_to_point,
-                "degenerate": True,
-            }
-        if selector_model["type"] in ["lnc_RNA", "ncRNA"]:
-            crossmap = NonCoding(selector_model["exon"], selector_model["inverted"])
-            return {
-                "crossmap_function": crossmap.coordinate_to_noncoding,
-                "point_function": to_hgvs.noncoding_to_point,
-            }
-    elif relative_to == "Selector":
-        if mol_type in ["genomic DNA", "dna"]:
-            crossmap = Genomic()
-            return {
-                "crossmap_function": crossmap.coordinate_to_genomic,
-                "point_function": to_hgvs.genomic_to_point,
-            }
-
-
-def position_convert_(
-    reference_id, position, from_selector_id=None, from_coordinate_system=None,
-        to_selector_id=None, to_coordinate_system=None, include_overlapping=False
-):
-    # Retrieve the reference model. Identify its mol_type and check if is within
-    # the supported ones. Set the reference coordinate system. Report any errors.
-    reference_model = get_reference_model(reference_id)
-    if reference_model:
-        mol_type = get_mol_type(reference_model)
-        if mol_type in ["genomic DNA", "dna"]:
-            reference_coordinate_system = "g"
-        else:
-            return {"errors": [{"code": "EMOLTYPE", "details": mol_type}]}
+def get_coordinate_system(selector_model):
+    if selector_model["type"] in ["mRNA"]:
+        return "c"
+    elif selector_model["type"] in ["ncRNA"]:
+        return "n"
     else:
-        return {"errors": [{"code": "ERETR"}]}
+        return ""
 
-    # Retrieve the location model and report any syntax errors.
-    location_model = parse_description_to_model(position, start_rule="location")
-    if location_model.get("errors"):
-        return {"errors": [{"code": "ESYNTAX", "details": location_model["errors"][0]}]}
-    if location_model["type"] == "range":
-        return {"errors": [{"code": "ERANGELOCATION"}]}
 
-    if from_selector_id is None and from_coordinate_system is None:
-        from_coordinate_system = reference_coordinate_system
-    # If from_selector_id supplied, try to retrieve the selector model. However,
-    # maybe is better to check whether the
-    if from_selector_id:
-        selector_model = get_selector_model(reference_model["model"], from_selector_id)
-    if selector_model:
-        if selector_model["type"] in ["mRNA"]:
-            selector_coordinate_system = "c"
-        elif selector_model["type"] in ["lnc_RNA", "ncRNA"]:
-            selector_coordinate_system = "n"
-    else:
-        return {"errors": [{"code": "ENOSELECTOR"}]}
-    crossmap = crossmap_to_x_setup(selector_model, mol_type, relative_to)
-    internal = to_internal.point_to_coding(location_model, **crossmap)
-
-    if internal["position"] < 0:
-        return {"errors": [{"code": "EOUTOFBOUNDARY"}]}
-    if internal["position"] > len(reference_model["sequence"]["seq"]):
-        return {"errors": [{"code": "EOUTOFBOUNDARY"}]}
-
-    crossmap = crossmap_to_hgvs_setup(selector_model, mol_type, relative_to)
-    hgvs = to_hgvs.point_to_hgvs(internal, **crossmap)
-    if relative_to == "Reference":
-        output = {
-            "reference": {
-                "id": reference_id,
-                "position": position,
-                "coordinate_system": reference_coordinate_system,
-            },
-            "selector": {
-                "id": from_selector_id,
-                "position": location_to_description(hgvs),
-                "coordinate_system": selector_coordinate_system,
-            },
+def crossmap_to_x_setup(coordinate_system, selector_model=None):
+    if coordinate_system == "g":
+        crossmap = Genomic()
+        return {
+            "crossmap_function": crossmap.genomic_to_coordinate,
+            "point_function": to_internal.get_point_value,
         }
-    elif relative_to == "Selector":
-        output = {
-            "reference": {
-                "id": reference_id,
-                "position": location_to_description(hgvs),
-                "coordinate_system": reference_coordinate_system,
-            },
-            "selector": {
-                "id": from_selector_id,
-                "position": position,
-                "coordinate_system": selector_coordinate_system,
-            },
+    elif coordinate_system == "c":
+        crossmap = Coding(
+            selector_model["exon"],
+            selector_model["cds"][0],
+            selector_model["inverted"],
+        )
+        return {
+            "crossmap_function": crossmap.coding_to_coordinate,
+            "point_function": to_internal.point_to_x_coding,
         }
-    if include_overlapping:
-        output["other_selectors"] = []
-        for selector in get_selectors_overlap(
-            internal["position"], reference_model["model"]
-        ):
-            crossmap = crossmap_to_hgvs_setup(selector, mol_type, "Reference")
-            hgvs = to_hgvs.point_to_hgvs(internal, **crossmap)
-            if selector["id"] != from_selector_id:
-                output["other_selectors"].append(
-                    {
-                        "id": selector["id"],
-                        "position": location_to_description(hgvs),
-                        "coordinate_system": selector["coordinate_system"],
-                    }
-                )
-    return output
+    elif coordinate_system == "n":
+        crossmap = NonCoding(selector_model["exon"], selector_model["inverted"])
+        return {
+            "crossmap_function": crossmap.noncoding_to_coordinate,
+            "point_function": to_internal.point_to_x_coding,
+        }
 
+
+def crossmap_to_hgvs_setup(coordinate_system, selector_model):
+    if coordinate_system == "g":
+        crossmap = Genomic()
+        return {
+            "crossmap_function": crossmap.coordinate_to_genomic,
+            "point_function": to_hgvs.genomic_to_point,
+        }
+    elif coordinate_system == "c":
+        crossmap = Coding(
+            selector_model["exon"],
+            selector_model["cds"][0],
+            selector_model["inverted"],
+        )
+        return {
+            "crossmap_function": crossmap.coordinate_to_coding,
+            "point_function": to_hgvs.coding_to_point,
+            "degenerate": True,
+        }
+    elif coordinate_system == "n":
+        crossmap = NonCoding(selector_model["exon"], selector_model["inverted"])
+        return {
+            "crossmap_function": crossmap.coordinate_to_noncoding,
+            "point_function": to_hgvs.noncoding_to_point,
+        }
 
 
 class PositionConvert(object):
-    def __init__(self, reference_id, position, from_selector_id=None,
-                 from_coordinate_system=None, to_selector_id=None,
-                 to_coordinate_system=None, include_overlapping=False):
+    def __init__(
+        self,
+        reference_id,
+        position,
+        from_selector_id="",
+        from_coordinate_system="",
+        to_selector_id="",
+        to_coordinate_system="",
+        include_overlapping=False,
+    ):
         self.reference_id = reference_id
         self.position = position
         self.from_selector_id = from_selector_id
         self.from_coordinate_system = from_coordinate_system
         self.to_selector_id = to_selector_id
         self.to_coordinate_system = to_coordinate_system
+        self.include_overlapping = include_overlapping
 
         self.reference_model = {}
         self.from_selector_model = {}
         self.to_selector_model = {}
-        self.mol_type = ''
-        self.reference_coordinate_system = ''
+        self.mol_type = ""
+        self.reference_coordinate_system = ""
+        self.location_model = {}
+
+        self.internal = None
+        self.converted = None
+        self.overlapping = []
 
         self.errors = []
         self.infos = []
-        self.summary = {}
+
+        self.output = {}
 
         self.process_inputs()
-        self.update_status()
 
-    def update_status(self):
-        pass
+        self.convert()
 
-    def ongoing(self):
+        self.add_overlapping()
+
+        self.construct_output()
+
+    def convert(self):
         if self.errors:
-            return False
-        else:
-            return True
+            return
+        crossmap = crossmap_to_x_setup(
+            self.from_coordinate_system, self.from_selector_model
+        )
+        self.internal = to_internal.point_to_coding(self.location_model, **crossmap)
 
-    def status_check(func):
-        def _decorator(self, *args, **kwargs):
-            print(self.errors)
+        if self.internal["position"] < 0:
+            self.errors.append({"code": "EOUTOFBOUNDARY"})
+        if self.internal["position"] > len(self.reference_model["sequence"]["seq"]):
+            self.errors.append({"code": "EOUTOFBOUNDARY"})
 
-            print('self is %s' % self)
-            return func(self, *args, **kwargs)
-
-        return _decorator
+        if self.errors:
+            return
+        crossmap = crossmap_to_hgvs_setup(
+            self.to_coordinate_system, self.to_selector_model
+        )
+        self.converted = location_to_description(
+            to_hgvs.point_to_hgvs(self.internal, **crossmap)
+        )
 
     def process_inputs(self):
         """
@@ -204,11 +139,24 @@ class PositionConvert(object):
         """
         if not (self.reference_id and self.position):
             self.errors.append({"code": "ENOINPUTS"})
+            return
+
+        if not (
+            self.from_selector_id
+            or self.from_coordinate_system
+            or self.to_selector_id
+            or self.to_coordinate_system
+        ):
+            self.errors.append({"code": "ENOINPUTSOTHER"})
+            return
 
         self.process_reference_id()
         self.process_from_selector_id()
         self.process_from_coordinate_system()
         self.process_to_selector_id()
+        self.process_to_coordinate_system()
+        self.identify_inconsistencies()
+        self.process_position()
 
     def process_reference_id(self):
         if self.reference_id:
@@ -218,77 +166,291 @@ class PositionConvert(object):
                 if self.mol_type in ["genomic DNA", "dna"]:
                     self.reference_coordinate_system = "g"
                 else:
-                    self.errors.append({"code": "EMOLTYPE", "details": self.mol_type})
+                    self.errors.append(
+                        {
+                            "code": "EUNSUPPORTEDREF",
+                            "details": "Reference {} mol_type not supported.".format(
+                                self.mol_type
+                            ),
+                        }
+                    )
             else:
                 self.errors.append({"code": "ERETR"})
 
     def process_from_selector_id(self):
         if self.from_selector_id and self.reference_model:
             self.from_selector_model = get_selector_model(
-                self.reference_model["model"],
-                self.from_selector_id)
+                self.reference_model["model"], self.from_selector_id
+            )
             if self.from_selector_model is None:
                 self.errors.append({"code": "ENOFROMSELECTOR"})
 
     def process_from_coordinate_system(self):
-        if self.from_coordinate_system and self.from_selector_id and self.from_selector_model:
-            if self.from_coordinate_system == 'c':
+        if self.from_coordinate_system == "g":
+            if self.from_selector_id:
+                self.errors.append(
+                    {
+                        "code": "EINCONSISTENINPUTS",
+                        "details": "Genomic coordinate system with selector id "
+                        "provided, which one to choose?",
+                    }
+                )
+            elif self.mol_type not in ["genomic DNA", "dna"]:
+                self.errors.append(
+                    {
+                        "code": "EFROMSELECTORCS",
+                        "details": "Coordinate system does not match the reference.",
+                    }
+                )
+        elif self.from_coordinate_system == "c":
+            if self.from_selector_id and self.from_selector_model:
                 if self.from_selector_model["type"] not in ["mRNA"]:
-                    self.errors.append({"code": "EFROMSELECTORCS"})
-            if self.from_coordinate_system == 'n':
+                    self.errors.append(
+                        {
+                            "code": "EFROMSELECTORCS",
+                            "details": "Coordinate system does not match the selector.",
+                        }
+                    )
+            # else:
+            # TODO: We should check if there is only one selector available.
+            # self.errors.append(
+            #     {"code": "EUNIMPLEMENTED",}
+            # )
+        elif self.from_coordinate_system == "n":
+            if self.from_selector_id and self.from_selector_model:
                 if self.from_selector_model["type"] not in ["ncRNA"]:
-                    self.errors.append({"code": "EFROMSELECTORCS"})
-        elif self.from_coordinate_system:
-            if self.from_coordinate_system == 'g':
-                if self.mol_type not in ["genomic DNA", "dna"]:
-                    self.errors.append({"code": "EFROMSELECTORCS"})
-            elif self.from_coordinate_system == 'Reference':
-                if self.mol_type in ["mRNA"]:
-                    self.from_coordinate_system = 'c'
+                    self.errors.append(
+                        {
+                            "code": "EFROMSELECTORCS",
+                            "details": "Coordinate system does not match the selector.",
+                        }
+                    )
+            # TODO: We should check if there is only one selector available.
+            # else:
+            #     self.errors.append(
+            #         {"code": "EUNIMPLEMENTED",}
+            #     )
+        elif self.from_coordinate_system == "Selector" or (
+            self.from_coordinate_system == "" and self.from_selector_id
+        ):
+            if self.from_selector_id is None:
+                self.errors.append(
+                    {
+                        "code": "EFROMSELECTORCS",
+                        "details": "Selector id must be provided in order to "
+                        "identify its coordinate system.",
+                    }
+                )
+            elif self.from_selector_model:
+                self.from_coordinate_system = get_coordinate_system(
+                    self.from_selector_model
+                )
+                if self.from_coordinate_system:
                     self.infos.append(
-                        {"code": "IFROMSELECTOR",
-                         "details": "From coordinate system identified as c "
-                                    "from the reference molecule type."})
-                elif self.mol_type in ["genomic DNA", "dna"]:
-                    self.from_coordinate_system = 'g'
-                    self.infos.append(
-                        {"code": "IFROMSELECTOR",
-                         "details": "from_coordinate_system identified as g "
-                                    "from the reference molecule type."})
-            elif self.from_coordinate_system == 'Selector':
-                if self.from_selector_id is None:
-                    self.errors.append({"code": "EFROMSELECTORCS"})
-                else:
-                    print("yes")
-                    if self.from_selector_model:
-                        if self.from_selector_model["mol_type"] in ["mRNA"]:
-                            self.from_coordinate_system = 'c'
-                            self.infos.append(
-                                {"code": "IFROMSELECTOR",
-                                 "details": "From coordinate system identified as c "
-                                            "from the selector molecule type."})
-
-    def process_position(self):
-        location_model = parse_description_to_model(self.position,
-                                                    start_rule="location")
-        if location_model.get("errors"):
-            return {"errors": [
-                {"code": "ESYNTAX", "details": location_model["errors"][0]}]}
-        if location_model["type"] == "range":
-            return {"errors": [{"code": "ERANGELOCATION"}]}
+                        {
+                            "code": "IFROMSELECTOR",
+                            "details": "From coordinate system identified as {} "
+                            "from the selector molecule type.".format(
+                                self.from_coordinate_system
+                            ),
+                        }
+                    )
+        elif (
+            self.from_coordinate_system in ["Reference", ""]
+            or self.from_coordinate_system is None
+        ):
+            if self.mol_type in ["genomic DNA", "dna"]:
+                self.from_coordinate_system = "g"
+                self.infos.append(
+                    {
+                        "code": "IFROMSELECTOR",
+                        "details": "from_coordinate_system identified as g "
+                        "from the reference molecule type.",
+                    }
+                )
+            # else: we should not reach, since the reference is checked first.
 
     def process_to_selector_id(self):
         if self.to_selector_id and self.reference_model:
             self.to_selector_model = get_selector_model(
-                self.reference_model["model"],
-                self.to_selector_id)
+                self.reference_model["model"], self.to_selector_id
+            )
             if self.to_selector_model is None:
                 self.errors.append({"code": "ENOTOSELECTOR"})
 
+    def process_to_coordinate_system(self):
+        if self.to_coordinate_system == "g":
+            if self.to_selector_id:
+                self.errors.append(
+                    {
+                        "code": "EINCONSISTENINPUTS",
+                        "details": "Genomic coordinate system with selector id "
+                        "provided, which one to choose?",
+                    }
+                )
+            elif self.mol_type not in ["genomic DNA", "dna"]:
+                self.errors.append(
+                    {
+                        "code": "ETOSELECTORCS",
+                        "details": "Coordinate system does not match the reference.",
+                    }
+                )
+        elif self.to_coordinate_system == "c":
+            if self.to_selector_id and self.to_selector_model:
+                if self.to_selector_model["type"] not in ["mRNA"]:
+                    self.errors.append(
+                        {
+                            "code": "ETOSELECTORCS",
+                            "details": "Coordinate system does not match the selector.",
+                        }
+                    )
+            # else:
+            # TODO: We should check if there is only one selector available.
+            # self.errors.append(
+            #     {"code": "EUNIMPLEMENTED",}
+            # )
+        elif self.to_coordinate_system == "n":
+            if self.to_selector_id and self.to_selector_model:
+                if self.to_selector_model["type"] not in ["ncRNA"]:
+                    self.errors.append(
+                        {
+                            "code": "ETOSELECTORCS",
+                            "details": "Coordinate system does not match the selector.",
+                        }
+                    )
+            # else:
+            # TODO: We should check if there is only one selector available.
+            # self.errors.append(
+            #     {"code": "EUNIMPLEMENTED",}
+            # )
+        elif self.to_coordinate_system == "Selector" or (
+            self.to_coordinate_system == "" and self.to_selector_id
+        ):
+            if self.to_selector_id is None:
+                self.errors.append(
+                    {
+                        "code": "ETOSELECTORCS",
+                        "details": "Selector id must be provided in order to "
+                        "identify its coordinate system.",
+                    }
+                )
+            elif self.to_selector_model:
+                self.to_coordinate_system = get_coordinate_system(
+                    self.to_selector_model
+                )
+                if self.to_coordinate_system:
+                    self.infos.append(
+                        {
+                            "code": "ITOSELECTOR",
+                            "details": "To coordinate system identified as {} "
+                            "from the selector molecule type.".format(
+                                self.to_coordinate_system
+                            ),
+                        }
+                    )
+        elif (
+            self.to_coordinate_system in ["Reference", ""]
+            or self.to_coordinate_system is None
+        ):
+            if self.mol_type in ["genomic DNA", "dna"]:
+                self.to_coordinate_system = "g"
+                self.infos.append(
+                    {
+                        "code": "ITOSELECTOR",
+                        "details": "to_coordinate_system identified as g "
+                        "from the reference molecule type.",
+                    }
+                )
+            # else: we should not reach, since the reference is checked first.
+
+    def process_position(self):
+        if not isinstance(self.position, str):
+            self.errors.append(
+                {"code": "EPOSITIONINVALID", "details": "Position must be string"}
+            )
+            return
+        self.location_model = parse_description_to_model(
+            self.position, start_rule="location"
+        )
+        if self.location_model.get("errors"):
+            self.errors.append(
+                {"code": "ESYNTAX", "details": self.location_model["errors"][0]}
+            )
+        if self.location_model["type"] == "range":
+            self.errors.append({"code": "ERANGELOCATION"})
+
+    def identify_inconsistencies(self):
+        if (self.to_selector_id == self.from_selector_id) and (
+            self.to_coordinate_system == self.from_coordinate_system
+        ):
+            self.errors.append(
+                {
+                    "code": "EFROMTOSELECTORSEQUAL",
+                    "details": "Both from and to coordinate systems are "
+                    "the same, no conversion can be implemented.",
+                }
+            )
+
+    def add_overlapping(self):
+        if self.include_overlapping and self.internal:
+            other_selectors = []
+            print(self.internal)
+            for selector in get_selectors_overlap(
+                self.internal["position"], self.reference_model["model"]
+            ):
+                crossmap = crossmap_to_hgvs_setup(
+                    get_coordinate_system(selector), selector
+                )
+                hgvs = to_hgvs.point_to_hgvs(self.internal, **crossmap)
+                if selector["id"] != self.to_selector_id:
+                    other_selectors.append(
+                        {
+                            "selector_id": selector["id"],
+                            "coordinate_system": selector["coordinate_system"],
+                            "position": location_to_description(hgvs),
+                        }
+                    )
+            self.overlapping = other_selectors
+
+    def construct_output(self):
+        if self.errors:
+            self.output["errors"] = self.errors
+        if self.infos:
+            self.output["infos"] = self.infos
+
+        if self.errors:
+            return
+
+        if self.converted and self.internal:
+            input_position = {
+                "coordinate_system": self.from_coordinate_system,
+                "position": self.position,
+            }
+            if self.from_selector_id:
+                input_position["selector_id"] = self.from_selector_id
+            converted_position = {
+                "coordinate_system": self.to_coordinate_system,
+                "position": self.converted,
+            }
+            if self.to_selector_id:
+                converted_position["selector_id"] = self.to_selector_id
+            self.output = {
+                "reference_id": self.reference_id,
+                "input_position": input_position,
+                "converted_position": converted_position,
+            }
+            if self.include_overlapping:
+                self.output["overlapping"] = self.overlapping
+
 
 def position_convert(
-    reference_id, position, from_selector_id=None, from_coordinate_system=None,
-        to_selector_id=None, to_coordinate_system=None, include_overlapping=False
+    reference_id,
+    position,
+    from_selector_id="",
+    from_coordinate_system="",
+    to_selector_id="",
+    to_coordinate_system="",
+    include_overlapping=False,
 ):
     p_c = PositionConvert(
         reference_id=reference_id,
@@ -297,8 +459,6 @@ def position_convert(
         position=position,
         to_selector_id=to_selector_id,
         to_coordinate_system=to_coordinate_system,
-        include_overlapping=include_overlapping)
-
-    return {"errors": p_c.errors,
-            "infos": p_c.infos}
-
+        include_overlapping=include_overlapping,
+    )
+    return p_c.output

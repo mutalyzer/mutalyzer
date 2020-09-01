@@ -28,7 +28,43 @@ def get_tests(tests):
     return output
 
 
-def test_error_no_inputs(monkeypatch):
+def test_error_no_required_inputs_reference_id(monkeypatch):
+    monkeypatch.setattr(
+        "mutalyzer_retriever.retriever.fetch_annotations", fetch_annotation
+    )
+    monkeypatch.setattr("mutalyzer_retriever.retriever.fetch_sequence", fetch_sequence)
+
+    p_c = PositionConvert(
+        reference_id=None,
+        from_selector_id=None,
+        from_coordinate_system=None,
+        position=100,
+        to_coordinate_system=None,
+        to_selector_id=None,
+        include_overlapping=False,
+    )
+    assert p_c.errors[0]["code"] == "ENOINPUTS"
+
+
+def test_error_no_required_inputs_position(monkeypatch):
+    monkeypatch.setattr(
+        "mutalyzer_retriever.retriever.fetch_annotations", fetch_annotation
+    )
+    monkeypatch.setattr("mutalyzer_retriever.retriever.fetch_sequence", fetch_sequence)
+
+    p_c = PositionConvert(
+        reference_id="NG_012337.1",
+        from_selector_id=None,
+        from_coordinate_system=None,
+        position=None,
+        to_coordinate_system=None,
+        to_selector_id=None,
+        include_overlapping=False,
+    )
+    assert p_c.errors[0]["code"] == "ENOINPUTS"
+
+
+def test_error_no_required_inputs_other(monkeypatch):
     monkeypatch.setattr(
         "mutalyzer_retriever.retriever.fetch_annotations", fetch_annotation
     )
@@ -43,7 +79,19 @@ def test_error_no_inputs(monkeypatch):
         to_selector_id=None,
         include_overlapping=False,
     )
-    assert p_c.errors == [{"code": "ENOFROMSELECTOR"}]
+    assert p_c.errors[0]["code"] == "ENOINPUTSOTHER"
+
+
+def test_error_not_supported_reference_moltype(monkeypatch):
+    monkeypatch.setattr(
+        "mutalyzer_retriever.retriever.fetch_annotations", fetch_annotation
+    )
+    monkeypatch.setattr("mutalyzer_retriever.retriever.fetch_sequence", fetch_sequence)
+
+    p_c = PositionConvert(
+        reference_id="NM_003002.4", from_selector_id="NM_", position=100,
+    )
+    assert p_c.errors[0]["code"] == "EUNSUPPORTEDREF"
 
 
 def test_error_no_from_selector(monkeypatch):
@@ -53,15 +101,64 @@ def test_error_no_from_selector(monkeypatch):
     monkeypatch.setattr("mutalyzer_retriever.retriever.fetch_sequence", fetch_sequence)
 
     p_c = PositionConvert(
-        reference_id="NG_012337.1",
-        from_selector_id="NM_",
-        from_coordinate_system=None,
-        position=100,
-        to_coordinate_system=None,
-        to_selector_id=None,
-        include_overlapping=False,
+        reference_id="NG_012337.1", from_selector_id="NM_", position=100,
     )
-    assert p_c.errors == [{"code": "ENOFROMSELECTOR"}]
+    print(p_c.errors)
+    assert p_c.errors[0]["code"] == "ENOFROMSELECTOR"
+
+
+def test_info_from_selector_model_constructed_from_selector_id(monkeypatch):
+    monkeypatch.setattr(
+        "mutalyzer_retriever.retriever.fetch_annotations", fetch_annotation
+    )
+    monkeypatch.setattr("mutalyzer_retriever.retriever.fetch_sequence", fetch_sequence)
+
+    p_c = PositionConvert(
+        reference_id="NG_012337.1", from_selector_id="NM_003002.2", position=100,
+    )
+    assert p_c.infos[0]["code"] == "IFROMSELECTOR"
+
+
+def test_info_from_selector_model_constructed_from_reference(monkeypatch):
+    monkeypatch.setattr(
+        "mutalyzer_retriever.retriever.fetch_annotations", fetch_annotation
+    )
+    monkeypatch.setattr("mutalyzer_retriever.retriever.fetch_sequence", fetch_sequence)
+
+    p_c = PositionConvert(
+        reference_id="NG_012337.1", position=100, to_selector_id="NM_003002.2",
+    )
+    assert p_c.infos[0]["code"] == "IFROMSELECTOR"
+
+
+def test_info_to_selector_model_constructed_from_reference(monkeypatch):
+    monkeypatch.setattr(
+        "mutalyzer_retriever.retriever.fetch_annotations", fetch_annotation
+    )
+    monkeypatch.setattr("mutalyzer_retriever.retriever.fetch_sequence", fetch_sequence)
+
+    p_c = PositionConvert(
+        reference_id="NG_012337.1",
+        from_selector_id="NM_003002.2",
+        from_coordinate_system="c",
+        position=100,
+    )
+    assert p_c.infos[0]["code"] == "ITOSELECTOR"
+
+
+def test_error_from_to_selectors_equal_g(monkeypatch):
+    monkeypatch.setattr(
+        "mutalyzer_retriever.retriever.fetch_annotations", fetch_annotation
+    )
+    monkeypatch.setattr("mutalyzer_retriever.retriever.fetch_sequence", fetch_sequence)
+
+    p_c = PositionConvert(
+        reference_id="NG_012337.1",
+        from_coordinate_system="g",
+        position=100,
+        to_coordinate_system="g",
+    )
+    assert p_c.errors[0]["code"] == "EFROMTOSELECTORSEQUAL"
 
 
 def test_error_no_to_selector(monkeypatch):
@@ -71,12 +168,6 @@ def test_error_no_to_selector(monkeypatch):
     monkeypatch.setattr("mutalyzer_retriever.retriever.fetch_sequence", fetch_sequence)
 
     p_c = PositionConvert(
-        reference_id="NG_012337.1",
-        from_selector_id=None,
-        from_coordinate_system=None,
-        position=100,
-        to_coordinate_system=None,
-        to_selector_id="NM_",
-        include_overlapping=False,
+        reference_id="NG_012337.1", position=100, to_selector_id="NM_",
     )
-    assert p_c.errors == [{"code": "ENOTOSELECTOR"}]
+    assert p_c.errors[0]["code"] == "ENOTOSELECTOR"
