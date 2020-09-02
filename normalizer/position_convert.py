@@ -4,7 +4,12 @@ from mutalyzer_hgvs_parser import parse_description_to_model
 from .converter import to_hgvs, to_internal
 from .description import location_to_description
 from .normalizer import get_reference_model
-from .reference import get_mol_type, get_selector_model, get_selectors_overlap
+from .reference import (
+    get_mol_type,
+    get_only_selector,
+    get_selector_model,
+    get_selectors_overlap,
+)
 
 
 def get_coordinate_system(selector_model):
@@ -182,7 +187,7 @@ class PositionConvert(object):
             self.from_selector_model = get_selector_model(
                 self.reference_model["model"], self.from_selector_id
             )
-            if self.from_selector_model is None:
+            if not self.from_selector_model:
                 self.errors.append({"code": "ENOFROMSELECTOR"})
 
     def process_from_coordinate_system(self):
@@ -211,11 +216,8 @@ class PositionConvert(object):
                             "details": "Coordinate system does not match the selector.",
                         }
                     )
-            # else:
-            # TODO: We should check if there is only one selector available.
-            # self.errors.append(
-            #     {"code": "EUNIMPLEMENTED",}
-            # )
+            else:
+                self.try_only_selector('from')
         elif self.from_coordinate_system == "n":
             if self.from_selector_id and self.from_selector_model:
                 if self.from_selector_model["type"] not in ["ncRNA"]:
@@ -225,22 +227,20 @@ class PositionConvert(object):
                             "details": "Coordinate system does not match the selector.",
                         }
                     )
-            # TODO: We should check if there is only one selector available.
-            # else:
-            #     self.errors.append(
-            #         {"code": "EUNIMPLEMENTED",}
-            #     )
+            else:
+                self.try_only_selector('from')
         elif self.from_coordinate_system == "Selector" or (
             self.from_coordinate_system == "" and self.from_selector_id
         ):
-            if self.from_selector_id is None:
-                self.errors.append(
-                    {
-                        "code": "EFROMSELECTORCS",
-                        "details": "Selector id must be provided in order to "
-                        "identify its coordinate system.",
-                    }
-                )
+            if not self.from_selector_id:
+                self.try_only_selector('from')
+                # self.errors.append(
+                #     {
+                #         "code": "EFROMSELECTORCS",
+                #         "details": "Selector id must be provided in order to "
+                #         "identify its coordinate system.",
+                #     }
+                # )
             elif self.from_selector_model:
                 self.from_coordinate_system = get_coordinate_system(
                     self.from_selector_model
@@ -255,9 +255,8 @@ class PositionConvert(object):
                             ),
                         }
                     )
-        elif (
-            self.from_coordinate_system in ["Reference", ""]
-            or self.from_coordinate_system is None
+        elif self.from_coordinate_system in ["Reference", ""] or not (
+            self.from_coordinate_system
         ):
             if self.mol_type in ["genomic DNA", "dna"]:
                 self.from_coordinate_system = "g"
@@ -275,7 +274,7 @@ class PositionConvert(object):
             self.to_selector_model = get_selector_model(
                 self.reference_model["model"], self.to_selector_id
             )
-            if self.to_selector_model is None:
+            if not self.to_selector_model:
                 self.errors.append({"code": "ENOTOSELECTOR"})
 
     def process_to_coordinate_system(self):
@@ -304,11 +303,8 @@ class PositionConvert(object):
                             "details": "Coordinate system does not match the selector.",
                         }
                     )
-            # else:
-            # TODO: We should check if there is only one selector available.
-            # self.errors.append(
-            #     {"code": "EUNIMPLEMENTED",}
-            # )
+            else:
+                self.try_only_selector('to')
         elif self.to_coordinate_system == "n":
             if self.to_selector_id and self.to_selector_model:
                 if self.to_selector_model["type"] not in ["ncRNA"]:
@@ -318,22 +314,20 @@ class PositionConvert(object):
                             "details": "Coordinate system does not match the selector.",
                         }
                     )
-            # else:
-            # TODO: We should check if there is only one selector available.
-            # self.errors.append(
-            #     {"code": "EUNIMPLEMENTED",}
-            # )
+            else:
+                self.try_only_selector('to')
         elif self.to_coordinate_system == "Selector" or (
             self.to_coordinate_system == "" and self.to_selector_id
         ):
-            if self.to_selector_id is None:
-                self.errors.append(
-                    {
-                        "code": "ETOSELECTORCS",
-                        "details": "Selector id must be provided in order to "
-                        "identify its coordinate system.",
-                    }
-                )
+            if not self.to_selector_id:
+                self.try_only_selector('to')
+                # self.errors.append(
+                #     {
+                #         "code": "ETOSELECTORCS",
+                #         "details": "Selector id must be provided in order to "
+                #         "identify its coordinate system.",
+                #     }
+                # )
             elif self.to_selector_model:
                 self.to_coordinate_system = get_coordinate_system(
                     self.to_selector_model
@@ -350,7 +344,7 @@ class PositionConvert(object):
                     )
         elif (
             self.to_coordinate_system in ["Reference", ""]
-            or self.to_coordinate_system is None
+            or not self.to_coordinate_system
         ):
             if self.mol_type in ["genomic DNA", "dna"]:
                 self.to_coordinate_system = "g"
@@ -362,6 +356,41 @@ class PositionConvert(object):
                     }
                 )
             # else: we should not reach, since the reference is checked first.
+
+    def try_only_selector(self, source):
+        if source == 'from':
+            if self.from_coordinate_system == 'Selector':
+                only_selector = get_only_selector(self.reference_model["model"])
+            else:
+                only_selector = get_only_selector(
+                    self.reference_model["model"], self.from_coordinate_system)
+        elif source == 'to':
+            if self.to_coordinate_system == 'Selector':
+                only_selector = get_only_selector(self.reference_model["model"])
+            else:
+                only_selector = get_only_selector(
+                    self.reference_model["model"], self.to_coordinate_system)
+
+        if only_selector:
+            if source == 'from':
+                self.from_selector_id = only_selector["id"]
+                self.from_selector_model = only_selector
+                self.infos.append({"code": "IFROMONLYSELECTOR"})
+                if self.from_coordinate_system == 'Selector':
+                    self.from_coordinate_system = get_coordinate_system(only_selector)
+                    self.infos.append({"code": "IFROMONLYCOORDINATESYSTEM"})
+            elif source == "to":
+                self.to_selector_id = only_selector["id"]
+                self.to_selector_model = only_selector
+                self.infos.append({"code": "ITOONLYSELECTOR"})
+                if self.to_coordinate_system == 'Selector':
+                    self.to_coordinate_system = get_coordinate_system(only_selector)
+                    self.infos.append({"code": "ITOONLYCOORDINATESYSTEM"})
+        else:
+            if source == 'from':
+                self.errors.append({"code": "ENOFROMSELECTOR"})
+            elif source == 'to':
+                self.errors.append({"code": "ENOTOSELECTOR"})
 
     def process_position(self):
         if not isinstance(self.position, str):
