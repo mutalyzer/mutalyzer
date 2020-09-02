@@ -3,9 +3,9 @@ from flask_restx import Api, Resource, fields, inputs, marshal, reqparse
 from mutalyzer_hgvs_parser import parse_description, parse_description_to_model
 
 from normalizer.description_extractor import description_extractor
-from normalizer.normalizer import get_reference_model, mutalyzer3
+from normalizer.normalizer import mutalyzer3
 from normalizer.position_convert import position_convert
-from normalizer.reference import get_selectors_ids
+from normalizer.reference import get_selectors_ids, get_reference_model
 
 blueprint = Blueprint("api", __name__)
 
@@ -56,37 +56,38 @@ parser.add_argument(
     "reference_id",
     type=str,
     help="Reference ID on which the positions are considered.",
-    # required=True,
-    required=False,
+    required=True,
 )
 parser.add_argument(
     "from_selector_id",
     type=str,
     help="Selector ID from which to convert from.",
+    default="",
     required=False,
 )
 parser.add_argument(
     "from_coordinate_system",
     type=str,
     help="Coordinate system.",
+    default="",
     required=False,
 )
 parser.add_argument(
     "position", type=str, help="Position to be converted.",
-    # required=True,
-    required=False,
+    required=True,
 )
 parser.add_argument(
     "to_selector_id",
     type=str,
     help="Selector ID to which to convert to.",
-    # required=True,
+    default="",
     required=False,
 )
 parser.add_argument(
     "to_coordinate_system",
     type=str,
     help="Coordinate system.",
+    default="",
     required=False,
 )
 parser.add_argument(
@@ -149,13 +150,9 @@ class GetSelectors(Resource):
     @api.doc(get_selectors_model)
     def get(self, reference_id):
         """Retrieve available selectors for the provided reference."""
-        import sys
-
         reference_model = get_reference_model(reference_id)
-        selectors = get_selectors_ids(reference_model["model"])
-        print(len(selectors))
-        print(sys.getsizeof(selectors))
         if reference_model:
+            selectors = get_selectors_ids(reference_model["model"])
             return {"reference": reference_id, "selectors": selectors}
         return {"errors": [{"code": "ERETR"}]}
 
