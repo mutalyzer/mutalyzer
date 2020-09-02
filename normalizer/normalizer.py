@@ -22,6 +22,7 @@ from .reference import (
     get_mol_type,
     get_selector_model,
     get_selectors_ids,
+    get_reference_model
 )
 from .util import get_time_information, string_k_v
 from .visualization import to_be_visualized
@@ -41,20 +42,6 @@ def extract_sequences(references):
     for reference in references:
         sequences[reference] = references[reference]["sequence"]["seq"]
     return sequences
-
-
-@lru_cache(maxsize=32)
-def get_reference_model(reference_id):
-    import os.path
-    print('trie')
-    if os.path.isfile('references/' + reference_id):
-        print("from file")
-        with open('references/' + reference_id) as json_file:
-            return json.load(json_file)
-    else:
-        print("not from file")
-
-    return retriever.retrieve(reference_id, parse=True)
 
 
 class Description(object):
@@ -326,7 +313,6 @@ class Description(object):
         # )
         # if protein_descriptions:
         #     self.status["protein descriptions"] = protein_descriptions
-        print("done")
 
 
 def mutalyzer3(hgvs_description):

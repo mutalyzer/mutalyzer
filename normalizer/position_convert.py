@@ -3,12 +3,12 @@ from mutalyzer_hgvs_parser import parse_description_to_model
 
 from .converter import to_hgvs, to_internal
 from .description import location_to_description
-from .normalizer import get_reference_model
 from .reference import (
     get_mol_type,
     get_only_selector,
     get_selector_model,
     get_selectors_overlap,
+    get_reference_model
 )
 
 

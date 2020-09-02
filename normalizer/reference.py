@@ -1,6 +1,20 @@
 import json
+from functools import lru_cache
+from mutalyzer_retriever import retriever
 
 from .util import get_end, get_start
+
+
+@lru_cache(maxsize=32)
+def get_reference_model(reference_id):
+    import os.path
+    if os.path.isfile('references/' + reference_id):
+        with open('references/' + reference_id) as json_file:
+            return json.load(json_file)
+    else:
+        print("not from file")
+
+    return retriever.retrieve(reference_id, parse=True)
 
 
 def get_mol_type(reference):
