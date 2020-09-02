@@ -8,7 +8,7 @@ from .reference import (
     get_only_selector,
     get_selector_model,
     get_selectors_overlap,
-    get_reference_model
+    get_reference_model,
 )
 
 
@@ -121,21 +121,77 @@ class PositionConvert(object):
         crossmap = crossmap_to_x_setup(
             self.from_coordinate_system, self.from_selector_model
         )
-        self.internal = to_internal.point_to_coding(self.location_model, **crossmap)
+        self.internal = to_internal.location_to_internal(
+            self.location_model, 'del', crossmap)
 
-        if self.internal["position"] < 0:
-            self.errors.append({"code": "EOUTOFBOUNDARY"})
-        if self.internal["position"] > len(self.reference_model["sequence"]["seq"]):
-            self.errors.append({"code": "EOUTOFBOUNDARY"})
+        # self.check_internal()
 
         if self.errors:
             return
+
         crossmap = crossmap_to_hgvs_setup(
-            self.to_coordinate_system, self.to_selector_model
-        )
-        self.converted = location_to_description(
-            to_hgvs.point_to_hgvs(self.internal, **crossmap)
-        )
+            self.to_coordinate_system, self.to_selector_model)
+
+        self.converted = to_hgvs.location_to_hgvs(self.internal, 'del', crossmap)
+
+        self.converted = location_to_description(self.converted)
+
+    def check_internal(self):
+        p = self.internal
+        o = self.location_model
+        seq_len = len(self.reference_model["sequence"]["seq"])
+        greater = []
+        smaller = []
+
+        if p["type"] == "range":
+            if p["start"]["type"] == "range":
+                if p["start"]["start"].get("position"):
+                    if p["start"]["start"]["position"] < 0:
+                        smaller.append(location_to_description(o["start"]["start"]))
+                    elif p["start"]["start"]["position"] > seq_len:
+                        greater.append(location_to_description(o["start"]["start"]))
+                if p["start"]["end"].get("position"):
+                    if p["start"]["end"]["position"] < 0:
+                        smaller.append(location_to_description(o["start"]["end"]["position"]))
+                    if p["start"]["end"]["position"] > seq_len:
+                        greater.append(location_to_description(o["start"]["end"]["position"]))
+            elif p["start"].get("position"):
+                if p["start"]["position"] < 0:
+                    smaller.append(location_to_description(o["start"]["position"]))
+                if p["start"]["position"] > seq_len:
+                    greater.append(
+                        location_to_description(o["start"]["position"]))
+
+            if p["end"]["type"] == "range":
+                if p["end"]["start"].get("position"):
+                    if p["end"]["start"]["position"] < 0:
+                        smaller.append(location_to_description(o["end"]["start"]))
+                    if p["end"]["start"]["position"] > seq_len:
+                        greater.append(location_to_description(o["end"]["start"]))
+                if p["end"]["end"].get("position"):
+                    if p["end"]["end"]["position"] < 0:
+                        smaller.append(location_to_description(o["end"]["end"]["position"]))
+                    if p["end"]["end"]["position"] > seq_len:
+                        greater.append(location_to_description(o["end"]["end"]["position"]))
+            elif p["end"].get("position"):
+                if p["end"]["position"] <0:
+                    smaller.append(location_to_description(o["end"]["position"]))
+                if p["end"]["position"] > seq_len:
+                    greater.append(location_to_description(o["end"]["position"]))
+        elif p["type"] == "point" and p.get("position"):
+            if p["position"] < 0:
+                smaller.append(location_to_description(o["position"]))
+
+            if p["position"] > seq_len:
+                greater.append(location_to_description(o["position"]))
+        smaller = ",".join(smaller)
+        greater = ",".join(greater)
+        if smaller:
+            self.errors.append(
+                {"code": "EOUTOFBOUNDARYS", "details": smaller})
+        if greater:
+            self.errors.append(
+                {"code": "EOUTOFBOUNDARYSG", "details": greater})
 
     def process_inputs(self):
         """
@@ -217,7 +273,7 @@ class PositionConvert(object):
                         }
                     )
             else:
-                self.try_only_selector('from')
+                self.try_only_selector("from")
         elif self.from_coordinate_system == "n":
             if self.from_selector_id and self.from_selector_model:
                 if self.from_selector_model["type"] not in ["ncRNA"]:
@@ -228,12 +284,12 @@ class PositionConvert(object):
                         }
                     )
             else:
-                self.try_only_selector('from')
+                self.try_only_selector("from")
         elif self.from_coordinate_system == "Selector" or (
             self.from_coordinate_system == "" and self.from_selector_id
         ):
             if not self.from_selector_id:
-                self.try_only_selector('from')
+                self.try_only_selector("from")
                 # self.errors.append(
                 #     {
                 #         "code": "EFROMSELECTORCS",
@@ -304,7 +360,7 @@ class PositionConvert(object):
                         }
                     )
             else:
-                self.try_only_selector('to')
+                self.try_only_selector("to")
         elif self.to_coordinate_system == "n":
             if self.to_selector_id and self.to_selector_model:
                 if self.to_selector_model["type"] not in ["ncRNA"]:
@@ -315,12 +371,12 @@ class PositionConvert(object):
                         }
                     )
             else:
-                self.try_only_selector('to')
+                self.try_only_selector("to")
         elif self.to_coordinate_system == "Selector" or (
             self.to_coordinate_system == "" and self.to_selector_id
         ):
             if not self.to_selector_id:
-                self.try_only_selector('to')
+                self.try_only_selector("to")
                 # self.errors.append(
                 #     {
                 #         "code": "ETOSELECTORCS",
@@ -358,38 +414,40 @@ class PositionConvert(object):
             # else: we should not reach, since the reference is checked first.
 
     def try_only_selector(self, source):
-        if source == 'from':
-            if self.from_coordinate_system == 'Selector':
+        if source == "from":
+            if self.from_coordinate_system == "Selector":
                 only_selector = get_only_selector(self.reference_model["model"])
             else:
                 only_selector = get_only_selector(
-                    self.reference_model["model"], self.from_coordinate_system)
-        elif source == 'to':
-            if self.to_coordinate_system == 'Selector':
+                    self.reference_model["model"], self.from_coordinate_system
+                )
+        elif source == "to":
+            if self.to_coordinate_system == "Selector":
                 only_selector = get_only_selector(self.reference_model["model"])
             else:
                 only_selector = get_only_selector(
-                    self.reference_model["model"], self.to_coordinate_system)
+                    self.reference_model["model"], self.to_coordinate_system
+                )
 
         if only_selector:
-            if source == 'from':
+            if source == "from":
                 self.from_selector_id = only_selector["id"]
                 self.from_selector_model = only_selector
                 self.infos.append({"code": "IFROMONLYSELECTOR"})
-                if self.from_coordinate_system == 'Selector':
+                if self.from_coordinate_system == "Selector":
                     self.from_coordinate_system = get_coordinate_system(only_selector)
                     self.infos.append({"code": "IFROMONLYCOORDINATESYSTEM"})
             elif source == "to":
                 self.to_selector_id = only_selector["id"]
                 self.to_selector_model = only_selector
                 self.infos.append({"code": "ITOONLYSELECTOR"})
-                if self.to_coordinate_system == 'Selector':
+                if self.to_coordinate_system == "Selector":
                     self.to_coordinate_system = get_coordinate_system(only_selector)
                     self.infos.append({"code": "ITOONLYCOORDINATESYSTEM"})
         else:
-            if source == 'from':
+            if source == "from":
                 self.errors.append({"code": "ENOFROMSELECTOR"})
-            elif source == 'to':
+            elif source == "to":
                 self.errors.append({"code": "ENOTOSELECTOR"})
 
     def process_position(self):
@@ -405,8 +463,6 @@ class PositionConvert(object):
             self.errors.append(
                 {"code": "ESYNTAX", "details": self.location_model["errors"][0]}
             )
-        if self.location_model["type"] == "range":
-            self.errors.append({"code": "ERANGELOCATION"})
 
     def identify_inconsistencies(self):
         if (self.to_selector_id == self.from_selector_id) and (

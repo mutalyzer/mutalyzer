@@ -22,7 +22,6 @@ def point_to_x_coding(point):
         offset = point["offset"]["value"]
     else:
         offset = 0
-    print(position, offset, section, 0)
     return position, offset, section, 0
 
 
