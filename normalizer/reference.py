@@ -55,11 +55,12 @@ def get_feature(reference_model, feature_id):
     """
     Extract the feature model, if found, otherwise None.
     """
-    for feature in reference_model["features"]:
-        if feature["type"] == "gene" and feature.get("features"):
-            for sub_feature in feature["features"]:
-                if is_id_equal(sub_feature, feature_id):
-                    return sub_feature
+    if reference_model.get("features"):
+        for feature in reference_model["features"]:
+            if feature["type"] == "gene" and feature.get("features"):
+                for sub_feature in feature["features"]:
+                    if is_id_equal(sub_feature, feature_id):
+                        return sub_feature
 
 
 def get_feature_locations(feature):
@@ -91,7 +92,7 @@ def get_selector_model(reference_model, selector_id):
     """
     feature = get_feature(reference_model, selector_id)
     if feature:
-        output = {"type": feature["type"], "inverted": is_feature_inverted(feature)}
+        output = {"id": selector_id, "type": feature["type"], "inverted": is_feature_inverted(feature)}
         output.update(sort_locations(get_feature_locations(feature)))
         return output
 
@@ -153,8 +154,12 @@ def get_sequence_length(references, reference_id):
 
 
 def point_within_feature(point, feature):
-    if feature.get('location'):
-        if feature['location']['start']['position'] <= point <= feature['location']['end']['position']:
+    if feature.get("location"):
+        if (
+            feature["location"]["start"]["position"]
+            <= point
+            <= feature["location"]["end"]["position"]
+        ):
             return True
     return False
 
@@ -163,20 +168,32 @@ def get_selectors_overlap(point, reference_model):
     for feature in reference_model["features"]:
         if feature["type"] == "gene" and feature.get("features"):
             for sub_feature in feature["features"]:
-                if sub_feature.get('type') and sub_feature['type'] in ['mRNA', 'lnc_RNA', 'ncRNA']:
+                if sub_feature.get("type") and sub_feature["type"] in [
+                    "mRNA",
+                    "lnc_RNA",
+                    "ncRNA",
+                ]:
                     if point_within_feature(point, sub_feature):
                         # print("Within", sub_feature["id"],)
-                        output = {"type": sub_feature["type"],
-                                  "id": sub_feature["id"],
-                                  "coordinate_system": 'c' if sub_feature[
-                                                                  'type'] in [
-                                                                  'mRNA'] else 'n',
-                                  "inverted": is_feature_inverted(sub_feature)}
+                        output = {
+                            "type": sub_feature["type"],
+                            "id": sub_feature["id"],
+                            "coordinate_system": "c"
+                            if sub_feature["type"] in ["mRNA"]
+                            else "n",
+                            "inverted": is_feature_inverted(sub_feature),
+                        }
                         output.update(
-                            sort_locations(get_feature_locations(sub_feature)))
+                            sort_locations(get_feature_locations(sub_feature))
+                        )
                         yield output
                     # else:
                     #     print("Outside", sub_feature["id"],)
 
 
-
+def get_only_selector(reference_model, coordinate_system=None):
+    available_selectors = get_selectors_ids(reference_model, coordinate_system)
+    print(available_selectors)
+    print(coordinate_system)
+    if len(available_selectors) == 1:
+        return get_selector_model(reference_model, available_selectors[0])
