@@ -183,3 +183,17 @@ def construct_reference(reference_id, selector_id):
         return {"id": reference_id}
     else:
         return {"id": reference_id, "selector": {"id": selector_id}}
+
+
+def get_errors(model):
+    errors = []
+    if isinstance(model, list):
+        for m in model:
+            errors.extend(get_errors(m))
+    elif isinstance(model, dict):
+        if model.get('errors'):
+            errors.extend(model['errors'])
+        for k in model.keys():
+            if k in ['location', 'deleted', 'inserted']:
+                errors.extend(model[k])
+    return errors

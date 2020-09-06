@@ -207,7 +207,52 @@ def get_selectors_overlap(point, reference_model):
 
 def get_only_selector(reference_model, coordinate_system=None):
     available_selectors = get_selectors_ids(reference_model, coordinate_system)
-    print(available_selectors)
-    print(coordinate_system)
     if len(available_selectors) == 1:
         return get_selector_model(reference_model, available_selectors[0])
+
+
+def coordinate_system_from_mol_type(mol_type):
+    if mol_type in ['dna', 'genomic DNA']:
+        return 'g'
+    elif mol_type in ['mRNA']:
+        return 'c'
+    elif mol_type in ['ncRNA']:
+        return 'n'
+    else:
+        return ''
+
+
+def coordinate_system_from_reference(reference):
+    mol_type = get_mol_type(reference)
+    return coordinate_system_from_mol_type(mol_type)
+
+
+def coordinate_system_from_selector(selector_model):
+    if selector_model["type"] in ["mRNA"]:
+        return "c"
+    elif selector_model["type"] in ["ncRNA"]:
+        return "n"
+    else:
+        return ""
+
+
+class Reference(object):
+    def __init__(self, reference_id):
+        self.id = reference_id
+        self.model = get_reference_model(reference_id)
+
+    def get_selector_model(self, selector_id):
+        if self.model:
+            return get_selector_model(self.model, selector_id)
+
+    def get_mol_type(self):
+        return get_mol_type(self.model)
+
+    def get_only_selector(self, coordinate_system=None):
+        return get_only_selector(self.model["model"], coordinate_system)
+
+    def get_default_coordinate_system(self):
+        return coordinate_system_from_reference(self.model)
+
+    def get_available_selectors(self):
+        return get_selectors_ids(self.model["model"])

@@ -14,7 +14,9 @@ from .converter import (
     to_hgvs_locations,
     to_internal_locations,
 )
-from .description import get_coordinate_system, get_selector_id, model_to_string
+from .converter.to_internal_coordinates import location_to_internal_coordinate
+from .converter.to_internal_indexing import to_internal_indexing
+from .description import get_coordinate_system, get_selector_id, model_to_string, variant_to_description
 from .protein import get_protein_description, get_protein_descriptions
 from .reference import (
     extract_sequences,
@@ -255,9 +257,16 @@ class Description(object):
             return True
 
     def _normalize(self):
+        def print_vars(vars):
+            v_s = []
+            for v in vars:
+                v_s.append(variant_to_description(v))
+            print('; '.join(v_s))
+
         self._time_stamps.append(("initial", time.perf_counter()))
 
         self.syntax_check()
+        print(json.dumps(self._input_description_model, indent=2))
 
         if self.status["errors"]:
             return
@@ -281,6 +290,11 @@ class Description(object):
         if self.status["errors"]:
             return
         self._delins_variants = to_delins(internal_locations_variants)
+
+        internal_coordinate = ''
+
+        print_vars(self._delins_variants)
+
         self._time_stamps.append(("to delins", time.perf_counter()))
 
         self._mutate()
@@ -304,9 +318,9 @@ class Description(object):
 
         self.status["time information (s)"] = get_time_information(self._time_stamps)
 
-        self.status["visualize"] = to_be_visualized(
-            de_variants, self._normalized_description_model["variants"]
-        )
+        # self.status["visualize"] = to_be_visualized(
+        #     de_variants, self._normalized_description_model["variants"]
+        # )
 
         # protein_descriptions = get_protein_descriptions(
         #     de_variants, self._reference_models

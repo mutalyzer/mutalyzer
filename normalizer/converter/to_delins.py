@@ -74,5 +74,22 @@ def to_delins(variants):
     """
     new_variants = []
     for variant in variants:
-        new_variants.append(globals()[variant["type"] + "_to_delins"](variant))
+        if variant['type'] == 'substitution':
+            new_variants.append(substitution_to_delins(variant))
+        elif variant['type'] == "deletion":
+            new_variants.append(deletion_to_delins(variant))
+        elif variant['type'] == "duplication":
+            new_variants.append(duplication_to_delins(variant))
+        elif variant['type'] == "insertion":
+            new_variants.append(insertion_to_delins(variant))
+        elif variant['type'] == "inversion":
+            new_variants.append(inversion_to_delins(variant))
+        elif variant['type'] == "deletion_insertion":
+            new_variants.append(deletion_insertion_to_delins(variant))
+        elif variant['type'] == "equal":
+            new_variants.append(equal_to_delins(variant))
+        else:
+            # TODO: Add error.
+            print("no supported variant type")
+
     return new_variants

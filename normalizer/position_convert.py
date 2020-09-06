@@ -1,7 +1,7 @@
 from mutalyzer_crossmapper import Coding, Genomic, NonCoding
 from mutalyzer_hgvs_parser import parse_description_to_model
 
-from .converter import to_hgvs, to_internal
+from .converter import to_hgvs, to_internal, to_internal_coordinates
 from .description import location_to_description
 from .reference import (
     get_mol_type,
@@ -26,7 +26,7 @@ def crossmap_to_x_setup(coordinate_system, selector_model=None):
         crossmap = Genomic()
         return {
             "crossmap_function": crossmap.genomic_to_coordinate,
-            "point_function": to_internal.get_point_value,
+            "point_function": to_internal_coordinates.get_point_value,
         }
     elif coordinate_system == "c":
         crossmap = Coding(
@@ -36,13 +36,13 @@ def crossmap_to_x_setup(coordinate_system, selector_model=None):
         )
         return {
             "crossmap_function": crossmap.coding_to_coordinate,
-            "point_function": to_internal.point_to_x_coding,
+            "point_function": to_internal_coordinates.point_to_x_coding,
         }
     elif coordinate_system == "n":
         crossmap = NonCoding(selector_model["exon"], selector_model["inverted"])
         return {
             "crossmap_function": crossmap.noncoding_to_coordinate,
-            "point_function": to_internal.point_to_x_coding,
+            "point_function": to_internal_coordinates.point_to_x_coding,
         }
 
 
@@ -121,10 +121,10 @@ class PositionConvert(object):
         crossmap = crossmap_to_x_setup(
             self.from_coordinate_system, self.from_selector_model
         )
-        self.internal = to_internal.location_to_internal(
-            self.location_model, 'del', crossmap)
+        self.internal = to_internal_coordinates.location_to_internal_coordinate(
+            self.location_model, crossmap)
 
-        # self.check_internal()
+        self.check_internal()
 
         if self.errors:
             return
@@ -152,15 +152,15 @@ class PositionConvert(object):
                         greater.append(location_to_description(o["start"]["start"]))
                 if p["start"]["end"].get("position"):
                     if p["start"]["end"]["position"] < 0:
-                        smaller.append(location_to_description(o["start"]["end"]["position"]))
+                        smaller.append(location_to_description(o["start"]["end"]))
                     if p["start"]["end"]["position"] > seq_len:
-                        greater.append(location_to_description(o["start"]["end"]["position"]))
+                        greater.append(location_to_description(o["start"]["end"]))
             elif p["start"].get("position"):
                 if p["start"]["position"] < 0:
-                    smaller.append(location_to_description(o["start"]["position"]))
+                    smaller.append(location_to_description(o["start"]))
                 if p["start"]["position"] > seq_len:
                     greater.append(
-                        location_to_description(o["start"]["position"]))
+                        location_to_description(o["start"]))
 
             if p["end"]["type"] == "range":
                 if p["end"]["start"].get("position"):
@@ -170,22 +170,22 @@ class PositionConvert(object):
                         greater.append(location_to_description(o["end"]["start"]))
                 if p["end"]["end"].get("position"):
                     if p["end"]["end"]["position"] < 0:
-                        smaller.append(location_to_description(o["end"]["end"]["position"]))
+                        smaller.append(location_to_description(o["end"]["end"]))
                     if p["end"]["end"]["position"] > seq_len:
-                        greater.append(location_to_description(o["end"]["end"]["position"]))
+                        greater.append(location_to_description(o["end"]["end"]))
             elif p["end"].get("position"):
                 if p["end"]["position"] <0:
-                    smaller.append(location_to_description(o["end"]["position"]))
+                    smaller.append(location_to_description(o["end"]))
                 if p["end"]["position"] > seq_len:
-                    greater.append(location_to_description(o["end"]["position"]))
+                    greater.append(location_to_description(o["end"]))
         elif p["type"] == "point" and p.get("position"):
             if p["position"] < 0:
-                smaller.append(location_to_description(o["position"]))
+                smaller.append(location_to_description(o))
 
             if p["position"] > seq_len:
                 greater.append(location_to_description(o["position"]))
-        smaller = ",".join(smaller)
-        greater = ",".join(greater)
+        smaller = ", ".join(smaller)
+        greater = ", ".join(greater)
         if smaller:
             self.errors.append(
                 {"code": "EOUTOFBOUNDARYS", "details": smaller})
