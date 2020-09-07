@@ -11,6 +11,11 @@ def get_selector_id(description_model):
         and description_model["reference"]["selector"].get("id")
     ):
         return description_model["reference"]["selector"]["id"]
+    elif (description_model.get("source")
+        and description_model["source"].get("selector")
+        and description_model["source"]["selector"].get("id")
+    ):
+        return description_model["source"]["selector"]["id"]
 
 
 def get_coordinate_system(description_model):
@@ -25,7 +30,10 @@ def model_to_string(model):
     :return: Equivalent reference string representation.
     """
 
-    reference_id = model["reference"]["id"]
+    if model.get('reference'):
+        reference_id = model["reference"]["id"]
+    elif model.get('source'):
+        reference_id = model["source"]["id"]
     selector_id = get_selector_id(model)
     if selector_id:
         reference = "{}({})".format(reference_id, selector_id)
@@ -35,8 +43,16 @@ def model_to_string(model):
         coordinate_system = model.get("coordinate_system") + "."
     else:
         coordinate_system = ""
-    variants = variants_to_description(model.get("variants"))
-    return "{}:{}{}".format(reference, coordinate_system, variants)
+    if model.get('variants'):
+        return "{}:{}{}".format(
+            reference,
+            coordinate_system,
+            variants_to_description(model.get("variants")))
+    if model.get('location'):
+        return "{}:{}{}".format(
+            reference,
+            coordinate_system,
+            location_to_description(model.get("location")))
 
 
 def reference_to_description(reference):
@@ -110,6 +126,8 @@ def variant_to_description(variant, sequences=None):
         variant_type = "inv"
     elif variant_type == "equal":
         variant_type = "="
+    else:
+        variant_type = ''
     return "{}{}{}".format(deleted, variant_type, inserted)
 
 
@@ -123,12 +141,12 @@ def inserted_to_description(inserted, sequences):
     for insert in inserted:
         if insert.get("sequence"):
             descriptions.append(insert["sequence"])
+        elif insert.get("source") and isinstance(insert["source"], dict):
+            descriptions.append(model_to_string(insert))
         elif insert.get("location"):
             descriptions.append(location_to_description(insert["location"]))
             if insert.get("inverted"):
                 descriptions[-1] += "inv"
-        elif insert.get("reference_location"):
-            descriptions.append(model_to_string(insert))
     if len(inserted) > 1:
         return "[{}]".format(";".join(descriptions))
     else:
@@ -194,6 +212,6 @@ def get_errors(model):
         if model.get('errors'):
             errors.extend(model['errors'])
         for k in model.keys():
-            if k in ['location', 'deleted', 'inserted']:
-                errors.extend(model[k])
+            if k in ['location', 'deleted', 'inserted', 'variants', 'reference', 'selector']:
+                errors.extend(get_errors(model[k]))
     return errors

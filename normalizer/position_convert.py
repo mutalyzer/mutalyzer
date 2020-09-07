@@ -98,8 +98,9 @@ class PositionConvert(object):
         self.reference_coordinate_system = ""
         self.location_model = {}
 
-        self.internal = None
+        # self.internal = None
         self.converted = None
+
         self.overlapping = []
 
         self.errors = []
@@ -108,12 +109,35 @@ class PositionConvert(object):
         self.output = {}
 
         self.process_inputs()
+        self.from_model = self.get_model()
+        self.internal = self.get_internal()
+        print(self.from_model)
+        print(self.location_model)
+        self.output = {"input": self.from_model, "internal": self.internal}
 
-        self.convert()
+        #
+        # self.convert()
+        #
+        # self.add_overlapping()
+        #
+        # self.construct_output()
 
-        self.add_overlapping()
+    def get_internal(self):
+        if self.from_model:
+            return to_internal_coordinates.to_internal_coordinates(
+                self.from_model)
 
-        self.construct_output()
+    def get_model(self):
+        model = {}
+        if self.reference_id:
+            model['reference'] = {'id': self.reference_id}
+            if self.from_selector_id:
+                model['reference']['selector'] = {'id': self.from_selector_id}
+        if self.from_coordinate_system:
+            model['coordinate_system'] = self.from_coordinate_system
+        if self.location_model:
+            model['location'] = self.location_model
+        return model
 
     def convert(self):
         if self.errors:
@@ -212,12 +236,15 @@ class PositionConvert(object):
             return
 
         self.process_reference_id()
-        self.process_from_selector_id()
-        self.process_from_coordinate_system()
-        self.process_to_selector_id()
-        self.process_to_coordinate_system()
-        self.identify_inconsistencies()
+        # self.process_from_selector_id()
+        # self.process_from_coordinate_system()
+        # self.process_to_selector_id()
+        # self.process_to_coordinate_system()
+        # self.identify_inconsistencies()
         self.process_position()
+
+    def to_internal(self):
+        pass
 
     def process_reference_id(self):
         if self.reference_id:

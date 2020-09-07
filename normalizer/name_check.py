@@ -14,14 +14,15 @@ from .converter import (
     to_hgvs_locations,
     to_internal_locations,
 )
-from .converter.to_internal_coordinates import location_to_internal_coordinate, to_internal_coordinates
+from .converter.to_internal_coordinates import location_to_internal_coordinate, to_internal_coordinates, to_hgvs
 from .converter.to_internal_indexing import to_internal_indexing
 from .description import (
     get_coordinate_system,
     get_selector_id,
     model_to_string,
     variant_to_description,
-    get_errors
+    get_errors,
+    model_to_string,
 )
 from .protein import get_protein_description, get_protein_descriptions
 from .reference import (
@@ -41,8 +42,13 @@ class NameCheck(object):
     def __init__(self, description):
         self.description = description
         self._description_model = self.to_description_model()
-        self.to_internal_coordinates()
+        self.internal_coordinates = self.to_internal_coordinates()
+        self.hgvs_coordinates = self.to_hgvs_coordinates()
         self.errors = get_errors(self._description_model)
+        print(self.description)
+        print(model_to_string(self._description_model))
+        print(model_to_string(self.internal_coordinates))
+        print(model_to_string(self.hgvs_coordinates))
 
     def to_description_model(self):
         try:
@@ -55,4 +61,20 @@ class NameCheck(object):
         return model
 
     def to_internal_coordinates(self):
-        to_internal_coordinates(self._description_model)
+        internal_coordinates = to_internal_coordinates(self._description_model)
+        # print(self.description)
+        # print('-----')
+        # print(json.dumps(self._description_model, indent=2))
+        # print(model_to_string(self._description_model))
+        # if internal_coordinates:
+            # print('-----')
+            # print(json.dumps(internal_coordinates, indent=2))
+            # print(model_to_string(internal_coordinates))
+        return internal_coordinates
+
+    def to_hgvs_coordinates(self):
+        hgvs_coordinates = to_hgvs(self.internal_coordinates)
+        print(hgvs_coordinates)
+        return hgvs_coordinates
+
+
