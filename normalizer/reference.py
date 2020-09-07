@@ -243,7 +243,7 @@ class Reference(object):
 
     def get_selector_model(self, selector_id):
         if self.model:
-            return get_selector_model(self.model, selector_id)
+            return get_selector_model(self.model["model"], selector_id)
 
     def get_mol_type(self):
         return get_mol_type(self.model)

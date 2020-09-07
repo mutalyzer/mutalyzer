@@ -45,10 +45,6 @@ class NameCheck(object):
         self.internal_coordinates = self.to_internal_coordinates()
         self.hgvs_coordinates = self.to_hgvs_coordinates()
         self.errors = get_errors(self._description_model)
-        print(self.description)
-        print(model_to_string(self._description_model))
-        print(model_to_string(self.internal_coordinates))
-        print(model_to_string(self.hgvs_coordinates))
 
     def to_description_model(self):
         try:
@@ -62,14 +58,6 @@ class NameCheck(object):
 
     def to_internal_coordinates(self):
         internal_coordinates = to_internal_coordinates(self._description_model)
-        # print(self.description)
-        # print('-----')
-        # print(json.dumps(self._description_model, indent=2))
-        # print(model_to_string(self._description_model))
-        # if internal_coordinates:
-            # print('-----')
-            # print(json.dumps(internal_coordinates, indent=2))
-            # print(model_to_string(internal_coordinates))
         return internal_coordinates
 
     def to_hgvs_coordinates(self):

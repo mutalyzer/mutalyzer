@@ -267,6 +267,7 @@ def get_crossmapper_inputs(description_model, reference):
                 )
                 return None, None
         else:
+            print('dsdsd')
             add_msg(
                 description_model["reference"]["selector"],
                 "errors",
@@ -602,7 +603,6 @@ def to_hgvs(description_model, to_coordinate_system=None, to_selector_id=None):
                 return
 
         crossmap = crossmap_to_hgvs_setup(coordinate_system, selector_model)
-        print(crossmap)
 
         if description_model.get("variants"):
             hgvs_model[

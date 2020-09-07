@@ -53,10 +53,16 @@ class NameCheck(Resource):
 
 parser = reqparse.RequestParser()
 parser.add_argument(
+    "description",
+    type=str,
+    help="Description on which the positions are considered.",
+    required=False,
+)
+parser.add_argument(
     "reference_id",
     type=str,
     help="Reference ID on which the positions are considered.",
-    required=True,
+    required=False,
 )
 parser.add_argument(
     "from_selector_id",
@@ -74,7 +80,7 @@ parser.add_argument(
 )
 parser.add_argument(
     "position", type=str, help="Position to be converted.",
-    required=True,
+    required=False,
 )
 parser.add_argument(
     "to_selector_id",
