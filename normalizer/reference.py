@@ -216,7 +216,7 @@ def coordinate_system_from_mol_type(mol_type):
         return 'g'
     elif mol_type in ['mRNA']:
         return 'c'
-    elif mol_type in ['ncRNA']:
+    elif mol_type in ['ncRNA', 'transcribed RNA']:
         return 'n'
     else:
         return ''
@@ -256,3 +256,9 @@ class Reference(object):
 
     def get_available_selectors(self):
         return get_selectors_ids(self.model["model"])
+
+    def get_length(self):
+        return len(self.model["sequence"]["seq"])
+
+    def get_id(self):
+        return self.model['model']['id']

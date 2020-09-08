@@ -10,8 +10,7 @@ from .reference import (
     get_selectors_overlap,
     get_reference_model,
 )
-
-
+from .position_check import check_positions
 
 
 class PositionConvert2(object):
@@ -32,7 +31,7 @@ class PositionConvert2(object):
             self.description = description
             self.description_model = self.description_to_model()
         elif (reference_id or position or from_selector_id or from_coordinate_system):
-            self.get_model_from_segmented_input(
+            self.description_model = self.get_model_from_segmented_input(
                 reference_id, position, from_selector_id, from_coordinate_system)
         elif description_model:
             self.description_model = description_model
@@ -51,6 +50,7 @@ class PositionConvert2(object):
         if not self.errors and not get_errors(description_model):
             self.internal_model = self.get_internal_model()
         if self.internal_model:
+            check_positions(self.description_model, self.internal_model)
             self.converted_model = self.get_converted_model()
 
         self.output = self.get_output()
@@ -70,7 +70,10 @@ class PositionConvert2(object):
             self.description_model)
 
     def get_converted_model(self):
-        return to_internal_coordinates.to_hgvs(self.internal_model)
+        return to_internal_coordinates.to_hgvs(
+            self.internal_model,
+            self.to_coordinate_system,
+            self.to_selector_id)
 
     def get_model_from_segmented_input(
         self,
@@ -81,24 +84,29 @@ class PositionConvert2(object):
     ):
         if not (reference_id and position):
             self.errors.append({"code": "ENOINPUTS"})
-            return
+            return {}
+        description_model = {"reference": {"id": reference_id}}
+
+        if from_selector_id:
+            description_model["reference"]["selector"] = {"id": from_selector_id}
+
+        if from_coordinate_system:
+            description_model['coordinate_system'] = from_coordinate_system
 
         if not isinstance(position, str):
             self.errors.append(
                 {"code": "EPOSITIONINVALID", "details": "Position must be string"}
             )
-            return
+            return description_model
         location_model = parse_description_to_model(position, start_rule="location")
         if location_model.get("errors"):
             self.errors.append(
                 {"code": "EPOSITIONSYNTAX", "details": location_model["errors"][0]})
-            return
-        self.description_model = {"reference": {"id": reference_id},
-                 "location": location_model}
-        if from_coordinate_system:
-            self.description_model['coordinate_system'] = from_coordinate_system
-        if from_selector_id:
-            self.description_model['reference']["selector"] = {"id": from_selector_id}
+            return description_model
+
+        description_model["location"] = location_model
+
+        return description_model
 
     def check_internal(self):
         p = self.internal

@@ -1,3 +1,34 @@
+
+def get_reference_id(description_model):
+    if (
+        description_model.get("reference")
+        and description_model["reference"].get("id")
+    ):
+        return description_model["reference"]["id"]
+    elif (
+        description_model.get("source")
+        and description_model["source"].get("id")
+    ):
+        return description_model["source"]["id"]
+
+
+def set_reference_id(description_model, reference_id):
+    if (
+        description_model.get("reference")
+        and description_model["reference"].get("id")
+    ):
+        description_model["reference"]["id"] = reference_id
+    elif (
+        description_model.get("source")
+        and description_model["source"].get("id")
+    ):
+        description_model["source"]["id"] = reference_id
+    elif description_model.get("reference"):
+        description_model["reference"]["id"] = reference_id
+    else:
+        description_model["reference"] = {"id": reference_id}
+
+
 def get_selector_id(description_model):
     """
     Get the selector ID from the description model. At the moment, no nesting

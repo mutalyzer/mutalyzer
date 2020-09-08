@@ -2,7 +2,13 @@ import copy
 
 from mutalyzer_crossmapper import Coding, Genomic, NonCoding
 
-from ..description import get_coordinate_system, get_errors, get_selector_id
+from ..description import (
+    get_coordinate_system,
+    get_errors,
+    get_selector_id,
+    get_reference_id,
+    set_reference_id
+)
 from ..reference import Reference, coordinate_system_from_selector
 
 
@@ -157,8 +163,8 @@ def get_crossmapper_inputs_from_selector_id(description_model, reference):
                 {
                     "code": "ICOORDINATESYSTEM",
                     "details": "Coordinate system identified as {} "
-                    "from the reference molecule type.".format(
-                        selector_coordinate_system
+                    "from the selector {} type.".format(
+                        selector_coordinate_system, selector_model["type"]
                     ),
                 },
             )
@@ -289,7 +295,7 @@ def get_crossmapper_inputs(description_model, reference):
         if only_selector:
             add_selector_id_to_model(description_model, only_selector["id"])
             add_msg(
-                description_model,
+                description_model["reference"]["selector"],
                 "info",
                 {
                     "code": "IONLYSELECTOR",
@@ -314,37 +320,40 @@ def get_crossmapper_inputs(description_model, reference):
 
 
 def get_reference(description_model):
-    if description_model.get("reference") and description_model["reference"].get("id"):
-        reference = Reference(description_model["reference"]["id"])
-        if not reference.model:
-            add_msg(
-                description_model,
-                "errors",
-                {"code": "ERETR", "details": "Reference not retrieved"},
-            )
-            # Without a reference we cannot proceed further.
-            return
-        else:
-            return reference
-    if description_model.get("source") and description_model["source"].get("id"):
-        reference = Reference(description_model["source"]["id"])
-        if not reference.model:
-            add_msg(
-                description_model,
-                "errors",
-                {"code": "ERETR", "details": "Reference not retrieved"},
-            )
-            # Without a reference we cannot proceed further.
-            return
-        else:
-            return reference
-    else:
+    reference_id = get_reference_id(description_model)
+    if not reference_id:
         add_msg(
             description_model,
             "errors",
             {"code": "ENOREFERENCE", "details": "Reference not in the model."},
         )
         return
+
+    reference = Reference(reference_id)
+    if not reference.model:
+        add_msg(
+            description_model["reference"],
+            "errors",
+            {"code": "ERETR",
+             "details": "Reference {} could not retrieved.".format(
+                 reference_id)},
+        )
+        # Without a reference we cannot proceed further.
+        return
+    else:
+        print(reference.get_id())
+        print(reference_id)
+
+        if reference.get_id() != reference_id:
+            set_reference_id(description_model, reference.get_id())
+            add_msg(
+                description_model["reference"],
+                "info",
+                {"code": "IUPDATEDREFERENCEID",
+                 "details": "Reference {} was retrieved instead of {}.".format(
+                     reference.get_id(), reference_id)},
+            )
+        return reference
 
 
 def initialize_internal_model(description_model):
