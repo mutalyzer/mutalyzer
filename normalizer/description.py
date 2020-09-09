@@ -312,44 +312,6 @@ def description_to_model(description):
     return model
 
 
-class Description(object):
-
-    def __init__(self, description):
-        self.description = description
-        self.input_model = description_to_model(description)
-        self.augmented_model = {}
-        self.internal_coordinate_model = {}
-        self.internal_indexing_model = {}
-        self.delins_model = {}
-        self.de_deling_model = {}
-        self.de_hgvs_indexing_model = {}
-        self.de_hgvs_coordinate_model = {}
-        self.references = {}
-
-    def augment_input_model(self):
-        self.augmented_model = copy.deepcopy(self.input_model)
-        if get_errors(self.augmented_model):
-            return
-        get_references_from_description_model(self.augmented_model, self.references)
-        if get_errors(self.augmented_model):
-            return
-
-    def normalize(self):
-        self.augment_input_model()
-
-    def output(self):
-        output = {
-            "input_model": self.input_model,
-            "augmented_model": self.augmented_model,
-            "reference_ids": list(self.references.keys())
-        }
-        return output
-
-
-def normalize(description_to_normalize):
-    description = Description(description_to_normalize)
-    description.normalize()
-    return description.output()
 
 
 

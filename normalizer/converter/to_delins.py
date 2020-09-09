@@ -67,7 +67,7 @@ def equal_to_delins(variant):
     return new_variant
 
 
-def to_delins(variants):
+def variants_to_delins(variants):
     """
     Convert the variants list to its deletion insertion only
     equivalent. It considers that internal indexing is employed.
@@ -93,3 +93,10 @@ def to_delins(variants):
             print("no supported variant type")
 
     return new_variants
+
+
+def to_delins(model):
+    new_model = copy.deepcopy(model)
+    if new_model.get("variants"):
+        new_model["variants"] = variants_to_delins(model["variants"])
+    return new_model

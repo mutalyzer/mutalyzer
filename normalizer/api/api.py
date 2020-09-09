@@ -6,7 +6,7 @@ from normalizer.description_extractor import description_extractor
 from normalizer.normalizer import mutalyzer3
 from normalizer.position_convert import position_convert
 from normalizer.reference import get_selectors_ids, get_reference_model
-from normalizer.description import normalize
+from normalizer.name_check import normalize
 
 blueprint = Blueprint("api", __name__)
 

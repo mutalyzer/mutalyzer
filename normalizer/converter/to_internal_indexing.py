@@ -72,13 +72,19 @@ def variant_to_internal_indexing(variant):
     return new_variant
 
 
-def to_internal_indexing(variants):
-    """
-    Convert the variants list to its deletion insertion only
-    equivalent. It considers that internal indexing is employed.
-    """
+def variants_to_internal_indexing(variants):
     new_variants = []
     for variant in variants:
         new_variants.append(variant_to_internal_indexing(variant))
 
     return new_variants
+
+
+def to_internal_indexing(model):
+    new_model = copy.deepcopy(model)
+    new_model['coordinate_system'] = 'i'
+
+    if new_model.get('variants'):
+        new_model['variants'] = variants_to_internal_indexing(model["variants"])
+
+    return new_model

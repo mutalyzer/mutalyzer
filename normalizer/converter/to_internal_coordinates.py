@@ -34,7 +34,6 @@ def point_to_x_coding(point):
     else:
         offset = 0
     return position, offset, section, 0
-    return position, offset, section, 0
 
 
 def create_exact_point_model(point):
@@ -99,14 +98,14 @@ def variants_to_internal_coordinate(variants, crossmap):
             )
         if variant.get("deleted"):
             for i, deleted in enumerate(variant["deleted"]):
-                if deleted["location"]:
+                if deleted.get("location"):
                     new_variant["deleted"][i][
                         "location"
                     ] = location_to_internal_coordinate(deleted["location"], crossmap)
         if variant.get("inserted"):
             for i, inserted in enumerate(variant["inserted"]):
                 if inserted["source"] in ["reference", "description"]:
-                    if inserted["location"]:
+                    if inserted.get("location"):
                         new_variant["inserted"][i][
                             "location"
                         ] = location_to_internal_coordinate(
@@ -341,18 +340,8 @@ def get_reference(description_model):
         # Without a reference we cannot proceed further.
         return
     else:
-        print(reference.get_id())
-        print(reference_id)
-
         if reference.get_id() != reference_id:
             set_reference_id(description_model, reference.get_id())
-            add_msg(
-                description_model["reference"],
-                "info",
-                {"code": "IUPDATEDREFERENCEID",
-                 "details": "Reference {} was retrieved instead of {}.".format(
-                     reference.get_id(), reference_id)},
-            )
         return reference
 
 

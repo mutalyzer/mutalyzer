@@ -1,68 +1,106 @@
-import json
-import time
-from functools import lru_cache
+import copy
 
-import extractor
-from mutalyzer_hgvs_parser import parse_description_to_model
-from mutalyzer_mutator.mutator import mutate
-from mutalyzer_retriever import retriever
-
-from .converter import (
-    de_to_hgvs,
-    to_cds_coordinate,
-    to_delins,
-    to_hgvs_locations,
-    to_internal_locations,
-)
-from .converter.to_internal_coordinates import location_to_internal_coordinate, to_internal_coordinates, to_hgvs
-from .converter.to_internal_indexing import to_internal_indexing
 from .description import (
-    get_coordinate_system,
-    get_selector_id,
-    model_to_string,
-    variant_to_description,
+    description_to_model,
     get_errors,
-    model_to_string,
+    get_references_from_description_model,
+    model_to_string
 )
-from .protein import get_protein_description, get_protein_descriptions
-from .reference import (
-    extract_sequences,
-    get_available_selectors,
-    get_mol_type,
-    get_selector_model,
-    get_selectors_ids,
-    get_reference_model
-)
-from .util import get_time_information, string_k_v
-from .visualization import to_be_visualized
-from .checker import run_checks
+from .converter.to_internal_coordinates import to_internal_coordinates
+from .converter.to_internal_indexing import to_internal_indexing
+from .converter.to_internal import to_internal_locations
+from .converter.to_delins import to_delins
+from mutalyzer_mutator import mutate
+from extractor import describe_dna
 
 
-class NameCheck(object):
+class Description(object):
+
     def __init__(self, description):
         self.description = description
-        self._description_model = self.to_description_model()
-        self.internal_coordinates = self.to_internal_coordinates()
-        self.hgvs_coordinates = self.to_hgvs_coordinates()
-        self.errors = get_errors(self._description_model)
+        self.input_model = description_to_model(description)
+        self.augmented_model = {}
+        self.internal_coordinates_model = {}
+        self.internal_indexing_model = {}
+        self.delins_model = {}
+        self.de_variants = []
+        self.de_internal_indexing_model = {}
+        self.de_hgvs_coordinate_model = {}
+        self.references = {}
+        self.observed_sequence = None
 
-    def to_description_model(self):
-        try:
-            model = parse_description_to_model(self.description)
-        except Exception as e:
-            model = {"errors": [{
-                "details": "Some error occured during description parsing.",
-                "raw_message": e
-            }]}
-        return model
+    def augment_input_model(self):
+        self.augmented_model = copy.deepcopy(self.input_model)
+        if get_errors(self.augmented_model):
+            return
+        get_references_from_description_model(self.augmented_model, self.references)
+        if get_errors(self.augmented_model):
+            return
 
-    def to_internal_coordinates(self):
-        internal_coordinates = to_internal_coordinates(self._description_model)
-        return internal_coordinates
+    def get_internal_coordinate_model(self):
+        if self.augmented_model and not get_errors(self.augmented_model):
+            self.internal_coordinates_model = to_internal_coordinates(
+                self.augmented_model)
 
-    def to_hgvs_coordinates(self):
-        hgvs_coordinates = to_hgvs(self.internal_coordinates)
-        print(hgvs_coordinates)
-        return hgvs_coordinates
+    def get_internal_indexing_model(self):
+        if self.internal_coordinates_model and not get_errors(self.internal_coordinates_model):
+            self.internal_indexing_model = to_internal_indexing(
+                self.internal_coordinates_model)
+
+    def get_delins_model(self):
+        if self.internal_indexing_model and not get_errors(self.internal_indexing_model):
+            self.delins_model = to_delins(self.internal_indexing_model)
+
+    def _get_sequences(self):
+        """
+        Retrieves a dictionary from the _reference_models with reference ids
+        as keys and their corresponding sequences as values.
+        """
+        sequences = {k: self.references[k].sequence() for k in self.references}
+        sequences['reference'] = self.references[self.augmented_model['reference']['id']].sequence()
+        return sequences
+
+    def _mutate(self):
+        if self.delins_model and not get_errors(self.delins_model):
+            self.observed_sequence = mutate(
+                self._get_sequences(), self.delins_model['variants'])
+
+    def extract(self):
+        reference_sequence = self.references[self.augmented_model['reference']['id']].sequence()
+        if self.observed_sequence and reference_sequence:
+            self.de_variants = describe_dna(
+                reference_sequence, self.observed_sequence
+            )
+
+    def get_de_internal_model(self):
+        pass
+
+    def normalize(self):
+        self.augment_input_model()
+        self.get_internal_coordinate_model()
+        self.get_internal_indexing_model()
+        self.get_delins_model()
+        print(model_to_string(self.delins_model))
+        self._mutate()
+        self.extract()
+        # print(model_to_string(self.de_variants))
+        # references = {k: self.references[k].model for k in self.references.keys()}
+        # old_internal = to_internal_locations(self.augmented_model, references)
+        # print(model_to_string(self.internal_indexing_model))
+        # print(model_to_string(old_internal))
+
+    def output(self):
+        output = {
+            "input_model": self.input_model,
+            "augmented_model": self.augmented_model,
+            "internal_coordinates_model": self.internal_coordinates_model,
+            "internal_indexing_model": self.internal_indexing_model,
+            "reference_ids": list(self.references.keys())
+        }
+        return output
 
 
+def normalize(description_to_normalize):
+    description = Description(description_to_normalize)
+    description.normalize()
+    return description.output()
