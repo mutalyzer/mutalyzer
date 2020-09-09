@@ -17,6 +17,8 @@ def get_reference_model(reference_id):
     return retriever.retrieve(reference_id, parse=True)
 
 
+
+
 def get_mol_type(reference):
     if reference["model"].get("qualifiers"):
         if reference["model"]["qualifiers"].get("mol_type"):

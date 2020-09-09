@@ -153,3 +153,9 @@ def string_k_v(width, key, value):
 def add_to_dict(d, source_d, k):
     if source_d.get(k):
         d[k] = source_d[k]
+
+
+def add_msg(dictionary, message_type, message):
+    if dictionary.get(message_type) is None:
+        dictionary[message_type] = []
+    dictionary[message_type].append(message)

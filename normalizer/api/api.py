@@ -6,6 +6,7 @@ from normalizer.description_extractor import description_extractor
 from normalizer.normalizer import mutalyzer3
 from normalizer.position_convert import position_convert
 from normalizer.reference import get_selectors_ids, get_reference_model
+from normalizer.description import normalize
 
 blueprint = Blueprint("api", __name__)
 
@@ -48,7 +49,8 @@ class ReferenceModel(Resource):
 class NameCheck(Resource):
     def get(self, hgvs_description):
         """Normalize a variant description."""
-        return mutalyzer3(hgvs_description)
+        return normalize(hgvs_description)
+        # return mutalyzer3(hgvs_description)
 
 
 parser = reqparse.RequestParser()

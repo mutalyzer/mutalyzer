@@ -1,15 +1,53 @@
+import copy
+from mutalyzer_hgvs_parser import parse_description_to_model
+from .util import add_msg
+from .reference import Reference
 
-def get_reference_id(description_model):
+
+def get_reference_from_model(description_model):
+    reference_id = get_reference_id(description_model)
+    if not reference_id:
+        return
+
+    reference = Reference(reference_id)
+    if not reference.model:
+        add_msg(
+            description_model["reference"],
+            "errors",
+            {"code": "ERETR",
+             "details": "Reference {} could not retrieved.".format(
+                 reference_id)},
+        )
+    else:
+        if reference.get_id() != reference_id:
+            set_reference_id(description_model, reference.get_id())
+        return reference
+
+
+def get_references_from_description_model(model, references):
+    if isinstance(model, dict):
+        reference = get_reference_from_model(model)
+        if reference:
+            references[reference.get_id()] = reference
+        for k in model.keys():
+            if k in ['variants', 'inserted']:
+                get_references_from_description_model(model[k], references)
+    elif isinstance(model, list):
+        for sub_model in model:
+            get_references_from_description_model(sub_model, references)
+
+
+def get_reference_id(model):
     if (
-        description_model.get("reference")
-        and description_model["reference"].get("id")
+        model.get("reference")
+        and model["reference"].get("id")
     ):
-        return description_model["reference"]["id"]
+        return model["reference"]["id"]
     elif (
-        description_model.get("source")
-        and description_model["source"].get("id")
+            model.get("source") and isinstance(model["source"], dict)
+            and model["source"].get("id")
     ):
-        return description_model["source"]["id"]
+        return model["source"]["id"]
 
 
 def set_reference_id(description_model, reference_id):
@@ -18,11 +56,25 @@ def set_reference_id(description_model, reference_id):
         and description_model["reference"].get("id")
     ):
         description_model["reference"]["id"] = reference_id
+        add_msg(
+            description_model["reference"],
+            "info",
+            {"code": "IUPDATEDREFERENCEID",
+             "details": "Reference {} was retrieved instead of {}.".format(
+                 reference_id, get_reference_id(description_model))},
+        )
     elif (
         description_model.get("source")
         and description_model["source"].get("id")
     ):
         description_model["source"]["id"] = reference_id
+        add_msg(
+            description_model["source"],
+            "info",
+            {"code": "IUPDATEDREFERENCEID",
+             "details": "Reference {} was retrieved instead of {}.".format(
+                 reference_id, get_reference_id(description_model))},
+        )
     elif description_model.get("reference"):
         description_model["reference"]["id"] = reference_id
     else:
@@ -246,3 +298,59 @@ def get_errors(model):
             if k in ['location', 'deleted', 'inserted', 'variants', 'reference', 'selector']:
                 errors.extend(get_errors(model[k]))
     return errors
+
+
+def description_to_model(description):
+    try:
+        model = parse_description_to_model(description)
+    except Exception as e:
+        # TODO: Make it more explicit.
+        model = {"errors": [{
+            "details": "Some error occured during description parsing.",
+            "raw_message": e
+        }]}
+    return model
+
+
+class Description(object):
+
+    def __init__(self, description):
+        self.description = description
+        self.input_model = description_to_model(description)
+        self.augmented_model = {}
+        self.internal_coordinate_model = {}
+        self.internal_indexing_model = {}
+        self.delins_model = {}
+        self.de_deling_model = {}
+        self.de_hgvs_indexing_model = {}
+        self.de_hgvs_coordinate_model = {}
+        self.references = {}
+
+    def augment_input_model(self):
+        self.augmented_model = copy.deepcopy(self.input_model)
+        if get_errors(self.augmented_model):
+            return
+        get_references_from_description_model(self.augmented_model, self.references)
+        if get_errors(self.augmented_model):
+            return
+
+    def normalize(self):
+        self.augment_input_model()
+
+    def output(self):
+        output = {
+            "input_model": self.input_model,
+            "augmented_model": self.augmented_model,
+            "reference_ids": list(self.references.keys())
+        }
+        return output
+
+
+def normalize(description_to_normalize):
+    description = Description(description_to_normalize)
+    description.normalize()
+    return description.output()
+
+
+
+

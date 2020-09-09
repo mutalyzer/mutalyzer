@@ -47,11 +47,12 @@ class PositionConvert2(object):
         self.internal_model = {}
         self.converted_model = {}
 
-        if not self.errors and not get_errors(description_model):
+        if not self.errors and not get_errors(self.description_model):
             self.internal_model = self.get_internal_model()
         if self.internal_model:
             check_positions(self.description_model, self.internal_model)
-            self.converted_model = self.get_converted_model()
+            if not get_errors(self.description_model):
+                self.converted_model = self.get_converted_model()
 
         self.output = self.get_output()
 
