@@ -19,7 +19,6 @@ def is_deletion(delins_variant):
             return False
     return True
 
-
 def update_inserted_with_sequences(inserted, sequences):
     for insert in inserted:
         if insert["source"] == "observed":
@@ -115,14 +114,14 @@ def de_to_hgvs(variants, sequences=None):
                     new_variant = copy.deepcopy(variant)
                     new_variant["type"] = "substitution"
                     update_inserted_with_sequences(new_variant["inserted"], sequences)
-                    new_variant["deleted"] = {
+                    new_variant["deleted"] = [{
                         "sequence": sequences["reference"][
                             get_start(new_variant["location"]) : get_end(
                                 new_variant["location"]
                             )
                         ],
                         "source": "reference_location",
-                    }
+                    }]
                     new_variants.append(new_variant)
                 else:
                     # delins_to_deletion_insertion

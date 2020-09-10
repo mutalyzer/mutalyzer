@@ -321,7 +321,6 @@ def get_protein_description(variants, references, selector_model):
     cds_sequence = extract_cds_sequence(
         sequences[references["reference"]["model"]["id"]], selector_model
     )
-
     cds_mutated_sequence = mutate({"reference": cds_sequence}, cds_variants)
 
     reference_protein = Seq(cds_sequence, generic_dna).translate()

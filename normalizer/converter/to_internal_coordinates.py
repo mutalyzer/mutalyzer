@@ -104,7 +104,7 @@ def variants_to_internal_coordinate(variants, crossmap):
                     ] = location_to_internal_coordinate(deleted["location"], crossmap)
         if variant.get("inserted"):
             for i, inserted in enumerate(variant["inserted"]):
-                if inserted["source"] in ["reference", "description"]:
+                if inserted["source"] in ["reference", "description", "observed"]:
                     if inserted.get("location"):
                         new_variant["inserted"][i][
                             "location"
@@ -272,7 +272,6 @@ def get_crossmapper_inputs(description_model, reference):
                 )
                 return None, None
         else:
-            print('dsdsd')
             add_msg(
                 description_model["reference"]["selector"],
                 "errors",
@@ -511,8 +510,7 @@ def inserted_to_hgvs(inserted):
         "point_function": genomic_to_point,
     }
     return location_to_hgvs(
-        location=inserted["location"], variant_type=None, crossmap=crossmap
-    )
+        location=inserted["location"], crossmap=crossmap)
 
 
 def point_to_hgvs(point, crossmap_function, point_function, degenerate=False):
@@ -583,6 +581,26 @@ def initialize_hgvs_model(reference_id, coordinate_system=None, selector_id=None
     if selector_id:
         model['reference']['selector'] = {"id": selector_id}
     return model
+
+
+def to_hgvs_no_check(description_model, to_coordinate_system, to_selector_model):
+    hgvs_model = initialize_hgvs_model(
+        description_model["reference"]["id"], to_coordinate_system, to_selector_model["id"])
+
+    crossmap = crossmap_to_hgvs_setup(to_coordinate_system, to_selector_model)
+
+    if description_model.get("variants"):
+        hgvs_model[
+            "variants"] = variants_to_hgvs(
+            description_model["variants"], crossmap
+        )
+    if description_model.get("location"):
+        hgvs_model[
+            "location"] = location_to_hgvs(
+            description_model["location"], crossmap
+        )
+    return hgvs_model
+
 
 
 def to_hgvs(description_model, to_coordinate_system=None, to_selector_id=None):

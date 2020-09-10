@@ -5,7 +5,7 @@ from mutalyzer_mutator import mutate
 
 from .converter.to_delins import to_delins
 from .converter.to_hgvs import to_hgvs_locations
-from .converter.to_internal_coordinates import to_internal_coordinates
+from .converter.to_internal_coordinates import to_internal_coordinates, to_hgvs
 from .converter.to_internal_indexing import to_internal_indexing
 from .converter.variants_de_to_hgvs import de_to_hgvs
 from .description import (
@@ -14,6 +14,7 @@ from .description import (
     get_references_from_description_model,
     model_to_string,
 )
+from .protein import get_protein_description, get_protein_descriptions
 
 
 class Description(object):
@@ -32,6 +33,18 @@ class Description(object):
         self.de_hgvs_model = {}
         self.references = {}
         self.observed_sequence = None
+        self.equivalent_descriptions = None
+        self.protein_descriptions = None
+
+    def reference_id(self):
+        if self.augmented_model:
+            return self.augmented_model['reference']['id']
+        elif (self.input_model
+              and self.input_model.get("reference")
+              and self.input_model["reference"].get("id")):
+            return self.input_model["reference"]["id"]
+        else:
+            return None
 
     def augment_input_model(self):
         self.augmented_model = copy.deepcopy(self.input_model)
@@ -65,8 +78,8 @@ class Description(object):
 
     def _get_sequences(self):
         """
-        Retrieves a dictionary from the _reference_models with reference ids
-        as keys and their corresponding sequences as values.
+        Retrieves a dictionary from the references with reference ids as
+        keys and their corresponding sequences as values.
         """
         sequences = {k: self.references[k].sequence() for k in self.references}
         sequences["reference"] = self.references[
@@ -74,7 +87,7 @@ class Description(object):
         ].sequence()
         return sequences
 
-    def _mutate(self):
+    def mutate(self):
         if self.delins_model and not get_errors(self.delins_model):
             self.observed_sequence = mutate(
                 self._get_sequences(), self.delins_model["variants"]
@@ -113,7 +126,7 @@ class Description(object):
 
     def get_de_hgvs_coordinates_model(self):
         if self.augmented_model["reference"].get("selector"):
-            selector_id = self.augmented_model["reference"]["selector"]
+            selector_id = self.augmented_model["reference"]["selector"]["id"]
         else:
             selector_id = None
         if self.de_hgvs_internal_indexing_model:
@@ -128,16 +141,44 @@ class Description(object):
         if self.de_hgvs_model:
             self.normalized_description = model_to_string(self.de_hgvs_model)
 
+    def get_equivalent_descriptions(self):
+        if not self.de_model:
+            return
+        equivalent_descriptions = []
+
+        transcript_ids = self.references[self.reference_id()].get_available_selectors()
+
+        for transcript_id in transcript_ids:
+            internal_model = to_internal_coordinates(self.de_hgvs_model)
+            converted_model = to_hgvs(
+                description_model=internal_model,
+                to_coordinate_system=None,
+                to_selector_id= transcript_id)
+
+            equivalent_descriptions.append(model_to_string(converted_model))
+        self.equivalent_descriptions = equivalent_descriptions
+
+    def get_protein_descriptions(self):
+        if self.de_model:
+            references = {k: self.references[k].model for k in self.references}
+            references["reference"] = self.references[self.reference_id()].model
+            references["observed"] = {"sequence": {"seq": self.observed_sequence}}
+            self.protein_descriptions = get_protein_descriptions(
+                self.de_model["variants"], references
+            )
+
     def normalize(self):
         self.augment_input_model()
         self.get_internal_coordinate_model()
         self.get_internal_indexing_model()
         self.get_delins_model()
-        self._mutate()
+        self.mutate()
         self.extract()
         self.get_de_hgvs_internal_indexing_model()
         self.get_de_hgvs_coordinates_model()
         self.get_normalized_description()
+        self.get_equivalent_descriptions()
+        self.get_protein_descriptions()
 
     def output(self):
         output = {
@@ -151,6 +192,10 @@ class Description(object):
             output["augmented_description"] = self.augmented_description
         if self.normalized_description:
             output["normalized_description"] = self.normalized_description
+        if self.equivalent_descriptions is not None:
+            output["equivalent_descriptions"] = self.equivalent_descriptions
+        if self.protein_descriptions:
+            output["protein_descriptions"] = self.protein_descriptions
         return output
 
 

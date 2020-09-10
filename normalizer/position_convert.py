@@ -9,6 +9,7 @@ from .reference import (
     get_selector_model,
     get_selectors_overlap,
     get_reference_model,
+    coordinate_system_from_mol_type,
 )
 from .position_check import check_positions
 
@@ -180,23 +181,22 @@ class PositionConvert2(object):
 
     def add_overlapping(self):
         if self.include_overlapping and self.internal:
-            other_selectors = []
+            overlapping = []
             for selector in get_selectors_overlap(
                 self.internal["position"], self.reference_model["model"]
             ):
-                crossmap = crossmap_to_hgvs_setup(
-                    get_coordinate_system(selector), selector
-                )
-                hgvs = to_hgvs.point_to_hgvs(self.internal, **crossmap)
+                coordinate_system = coordinate_system_from_mol_type(selector)
+                if coordinate_system:
+                    hgvs = to_hgvs.point_to_hgvs(self.internal, **crossmap)
                 if selector["id"] != self.to_selector_id:
-                    other_selectors.append(
+                    overlapping.append(
                         {
                             "selector_id": selector["id"],
                             "coordinate_system": selector["coordinate_system"],
                             "position": location_to_description(hgvs),
                         }
                     )
-            self.overlapping = other_selectors
+            self.overlapping = overlapping
 
     def get_output(self):
         output = {}
