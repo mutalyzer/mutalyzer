@@ -20,9 +20,9 @@ from .protein import get_protein_description, get_protein_descriptions
 class Description(object):
     def __init__(self, description):
         self.input_description = description
+        self.input_model = description_to_model(description)
         self.augmented_description = None
         self.normalized_description = None
-        self.input_model = description_to_model(description)
         self.augmented_model = {}
         self.internal_coordinates_model = {}
         self.internal_indexing_model = {}
@@ -47,6 +47,8 @@ class Description(object):
             return None
 
     def augment_input_model(self):
+        if get_errors(self.input_model):
+            return
         self.augmented_model = copy.deepcopy(self.input_model)
         if get_errors(self.augmented_model):
             return
@@ -55,6 +57,14 @@ class Description(object):
             return
         else:
             self.augmented_description = model_to_string(self.augmented_model)
+
+    def model_parser_errors(self):
+        if self.augmented_model.get('errors'):
+            if (self.augmented_model["errors"][0].get("details") ==
+                    "Some error occured during description parsing."):
+                self.augmented_model["errors"][0] = {
+                    "code": "ESYNTAX",
+                    "details": "A syntax error occurred."}
 
     def get_internal_coordinate_model(self):
         if self.augmented_model and not get_errors(self.augmented_model):
@@ -94,10 +104,10 @@ class Description(object):
             )
 
     def extract(self):
-        reference_sequence = self.references[
-            self.augmented_model["reference"]["id"]
-        ].sequence()
-        if self.observed_sequence and reference_sequence:
+        if self.is_extraction_possible():
+            reference_sequence = self.references[
+                self.augmented_model["reference"]["id"]
+            ].sequence()
             de_variants = describe_dna(reference_sequence, self.observed_sequence)
             if de_variants:
                 self.de_model = {
@@ -107,6 +117,11 @@ class Description(object):
                     "coordinate_system": "i",
                     "variants": de_variants,
                 }
+
+    def is_extraction_possible(self):
+        if not get_errors(self.augmented_model) and self.observed_sequence:
+            return True
+        return False
 
     def get_de_hgvs_internal_indexing_model(self):
         if self.de_model:
@@ -174,22 +189,24 @@ class Description(object):
         self.get_delins_model()
         self.mutate()
         self.extract()
-        self.get_de_hgvs_internal_indexing_model()
-        self.get_de_hgvs_coordinates_model()
-        self.get_normalized_description()
-        self.get_equivalent_descriptions()
-        self.get_protein_descriptions()
+        if self.de_model:
+            self.get_de_hgvs_internal_indexing_model()
+            self.get_de_hgvs_coordinates_model()
+            self.get_normalized_description()
+            self.get_equivalent_descriptions()
+            self.get_protein_descriptions()
 
     def output(self):
         output = {
             "input_model": self.input_model,
-            "augmented_model": self.augmented_model,
-            "internal_coordinates_model": self.internal_coordinates_model,
-            "internal_indexing_model": self.internal_indexing_model,
-            "reference_ids": list(self.references.keys()),
         }
         if self.augmented_description:
             output["augmented_description"] = self.augmented_description
+            output["augmented_model"] = self.augmented_model
+        if self.internal_coordinates_model:
+            output["internal_coordinates_model"] = self.internal_coordinates_model
+        if self.internal_indexing_model:
+            output["internal_indexing_model"] = self.internal_indexing_model
         if self.normalized_description:
             output["normalized_description"] = self.normalized_description
         if self.equivalent_descriptions is not None:

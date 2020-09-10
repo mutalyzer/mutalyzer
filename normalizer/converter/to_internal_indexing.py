@@ -53,7 +53,7 @@ def location_to_internal_indexing(location, insertion=False):
 
 def variant_to_internal_indexing(variant):
     new_variant = copy.deepcopy(variant)
-    if variant['type'] == "insertion":
+    if variant.get('type') == "insertion":
         new_variant["location"] = location_to_internal_indexing(
             location=new_variant["location"], insertion=True)
     else:

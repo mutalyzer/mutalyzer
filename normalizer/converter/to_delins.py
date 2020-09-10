@@ -74,19 +74,19 @@ def variants_to_delins(variants):
     """
     new_variants = []
     for variant in variants:
-        if variant['type'] == 'substitution':
+        if variant.get('type') == 'substitution':
             new_variants.append(substitution_to_delins(variant))
-        elif variant['type'] == "deletion":
+        elif variant.get('type') == "deletion":
             new_variants.append(deletion_to_delins(variant))
-        elif variant['type'] == "duplication":
+        elif variant.get('type') == "duplication":
             new_variants.append(duplication_to_delins(variant))
-        elif variant['type'] == "insertion":
+        elif variant.get('type') == "insertion":
             new_variants.append(insertion_to_delins(variant))
-        elif variant['type'] == "inversion":
+        elif variant.get('type') == "inversion":
             new_variants.append(inversion_to_delins(variant))
-        elif variant['type'] == "deletion_insertion":
+        elif variant.get('type') == "deletion_insertion":
             new_variants.append(deletion_insertion_to_delins(variant))
-        elif variant['type'] == "equal":
+        elif variant.get('type') == "equal":
             new_variants.append(equal_to_delins(variant))
         else:
             # TODO: Add error.
