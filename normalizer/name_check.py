@@ -2,6 +2,7 @@ import copy
 
 from extractor import describe_dna
 from mutalyzer_mutator import mutate
+from .position_check import check_points
 
 from .converter.to_delins import to_delins
 from .converter.to_hgvs import to_hgvs_locations
@@ -163,7 +164,7 @@ class Description(object):
 
         transcript_ids = self.references[self.reference_id()].get_available_selectors()
 
-        for transcript_id in transcript_ids:
+        for transcript_id in transcript_ids[:20]:
             internal_model = to_internal_coordinates(self.de_hgvs_model)
             converted_model = to_hgvs(
                 description_model=internal_model,
@@ -182,9 +183,22 @@ class Description(object):
                 self.de_model["variants"], references
             )
 
+    def check_locations(self):
+        if (not self.augmented_model
+            or not self.internal_coordinates_model
+            or get_errors(self.augmented_model)
+            or get_errors(self.internal_coordinates_model)
+        ):
+            return
+        check_points(
+            self.augmented_model,
+            self.internal_coordinates_model,
+            self.references[self.reference_id()])
+
     def normalize(self):
         self.augment_input_model()
         self.get_internal_coordinate_model()
+        self.check_locations()
         self.get_internal_indexing_model()
         self.get_delins_model()
         self.mutate()
@@ -200,14 +214,15 @@ class Description(object):
         output = {
             "input_model": self.input_model,
         }
-        if self.augmented_description:
-            output["augmented_description"] = self.augmented_description
+        # if self.augmented_description:
+        #     output["augmented_description"] = self.augmented_description
+        if self.augmented_model:
             output["augmented_model"] = self.augmented_model
-        if self.internal_coordinates_model:
-            output["internal_coordinates_model"] = self.internal_coordinates_model
-        if self.internal_indexing_model:
-            output["internal_indexing_model"] = self.internal_indexing_model
-        if self.normalized_description:
+        # if self.internal_coordinates_model:
+        #     output["internal_coordinates_model"] = self.internal_coordinates_model
+        # if self.internal_indexing_model:
+        #     output["internal_indexing_model"] = self.internal_indexing_model
+        # if self.normalized_description:
             output["normalized_description"] = self.normalized_description
         if self.equivalent_descriptions is not None:
             output["equivalent_descriptions"] = self.equivalent_descriptions

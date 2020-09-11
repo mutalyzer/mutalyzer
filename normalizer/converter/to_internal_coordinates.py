@@ -329,11 +329,15 @@ def get_reference(description_model):
 
     reference = Reference(reference_id)
     if not reference.model:
+        if description_model.get('reference'):
+            d_r = description_model['reference']
+        elif description_model.get('source'):
+            d_r = description_model['source']
         add_msg(
-            description_model["reference"],
+            d_r,
             "errors",
             {"code": "ERETR",
-             "details": "Reference {} could not retrieved.".format(
+             "details": "Reference {} could not be retrieved.".format(
                  reference_id)},
         )
         # Without a reference we cannot proceed further.
@@ -602,7 +606,6 @@ def to_hgvs_no_check(description_model, to_coordinate_system, to_selector_model)
     return hgvs_model
 
 
-
 def to_hgvs(description_model, to_coordinate_system=None, to_selector_id=None):
     reference = get_reference(description_model)
     if not reference:
@@ -618,7 +621,7 @@ def to_hgvs(description_model, to_coordinate_system=None, to_selector_id=None):
             if get_errors(description_model):
                 return
 
-        crossmap = crossmap_to_hgvs_setup(coordinate_system, selector_model)
+        crossmap = crossmap_to_hgvs_setup(coordinate_system, selector_model, True)
 
         if description_model.get("variants"):
             hgvs_model[

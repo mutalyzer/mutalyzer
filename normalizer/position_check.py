@@ -2,10 +2,12 @@ from .converter.to_internal_coordinates import get_reference
 from .description import point_to_description
 
 
-def check_location(hgvs_location, internal_location, reference):
+def check_location_sequence_boundary(hgvs_location, internal_location, reference):
     if hgvs_location['type'] == 'range':
-        check_location(hgvs_location['start'], internal_location['start'], reference)
-        check_location(hgvs_location['end'], internal_location['end'], reference)
+        check_location_sequence_boundary(
+            hgvs_location['start'], internal_location['start'], reference)
+        check_location_sequence_boundary(
+            hgvs_location['end'], internal_location['end'], reference)
     if hgvs_location ['type'] == 'point':
         if (internal_location['position'] > reference.get_length()
                 or internal_location['position'] < 0):
@@ -21,7 +23,6 @@ def check_location(hgvs_location, internal_location, reference):
             }]
 
 
-
 def check_points(hgvs_model, internal_model, reference):
     for k in hgvs_model.keys():
         if k in ['variants', 'deleted', 'inserted']:
@@ -33,7 +34,7 @@ def check_points(hgvs_model, internal_model, reference):
                 check_points(
                     hgvs_model[k], internal_model[k], reference)
         elif k == 'location':
-            check_location(hgvs_model[k], internal_model[k], reference)
+            check_location_sequence_boundary(hgvs_model[k], internal_model[k], reference)
 
 
 def check_positions(hgvs_model, internal_model):

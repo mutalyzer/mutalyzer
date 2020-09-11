@@ -1,19 +1,18 @@
 import json
 from functools import lru_cache
 from mutalyzer_retriever import retriever
+from pathlib import Path
 
-from .util import get_end, get_start
+
+from .util import get_end, get_start, cache_dir
 
 
 @lru_cache(maxsize=32)
 def get_reference_model(reference_id):
-    import os.path
-    if os.path.isfile('references/' + reference_id):
-        with open('references/' + reference_id) as json_file:
+    cache = cache_dir()
+    if cache and (Path(cache) / reference_id).is_file():
+        with open(Path(cache) / reference_id) as json_file:
             return json.load(json_file)
-    else:
-        print("not from file")
-
     return retriever.retrieve(reference_id, parse=True)
 
 
@@ -121,9 +120,8 @@ def get_protein_selector_models(reference):
     :param reference: Reference annotations model (not the sequence).
     :return:
     """
-    selector_models = {}
     selector_ids = get_selectors_ids(reference, "c")
-    for selector_id in selector_ids:
+    for selector_id in selector_ids[:20]:
         selector_model = get_selector_model(reference, selector_id)
         mrna = get_feature(reference, selector_id)
         protein_ids = []
@@ -134,9 +132,7 @@ def get_protein_selector_models(reference):
         if len(protein_ids) == 1:
             selector_model["protein_id"] = protein_ids[0]
             selector_model["transcript_id"] = selector_id
-            selector_models[selector_id] = selector_model
-
-    return selector_models
+            yield selector_model
 
 
 def extract_reference_id(references):
@@ -188,7 +184,6 @@ def get_selectors_overlap(point, reference_model):
                     "ncRNA",
                 ]:
                     if point_within_feature(point, sub_feature):
-                        # print("Within", sub_feature["id"],)
                         output = {
                             "type": sub_feature["type"],
                             "id": sub_feature["id"],
@@ -201,8 +196,6 @@ def get_selectors_overlap(point, reference_model):
                             sort_locations(get_feature_locations(sub_feature))
                         )
                         yield output
-                    # else:
-                    #     print("Outside", sub_feature["id"],)
 
 
 def get_only_selector(reference_model, coordinate_system=None):

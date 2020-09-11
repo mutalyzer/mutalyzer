@@ -11,11 +11,15 @@ def get_reference_from_model(description_model):
 
     reference = Reference(reference_id)
     if not reference.model:
+        if description_model.get('reference'):
+            d_r = description_model['reference']
+        elif description_model.get('source'):
+            d_r = description_model['source']
         add_msg(
-            description_model["reference"],
+            d_r,
             "errors",
             {"code": "ERETR",
-             "details": "Reference {} could not retrieved.".format(
+             "details": "Reference {} could not be retrieved.".format(
                  reference_id)},
         )
     else:
@@ -55,25 +59,27 @@ def set_reference_id(description_model, reference_id):
         description_model.get("reference")
         and description_model["reference"].get("id")
     ):
+        old_reference_id = description_model["reference"]["id"]
         description_model["reference"]["id"] = reference_id
         add_msg(
             description_model["reference"],
             "info",
             {"code": "IUPDATEDREFERENCEID",
              "details": "Reference {} was retrieved instead of {}.".format(
-                 reference_id, get_reference_id(description_model))},
+                 reference_id, old_reference_id)},
         )
     elif (
         description_model.get("source")
         and description_model["source"].get("id")
     ):
+        old_reference_id = description_model["source"]["id"]
         description_model["source"]["id"] = reference_id
         add_msg(
             description_model["source"],
             "info",
             {"code": "IUPDATEDREFERENCEID",
              "details": "Reference {} was retrieved instead of {}.".format(
-                 reference_id, get_reference_id(description_model))},
+                 reference_id, old_reference_id)},
         )
     elif description_model.get("reference"):
         description_model["reference"]["id"] = reference_id
@@ -295,7 +301,7 @@ def get_errors(model):
         if model.get('errors'):
             errors.extend(model['errors'])
         for k in model.keys():
-            if k in ['location', 'deleted', 'inserted', 'variants', 'reference', 'selector']:
+            if k in ['location', 'deleted', 'inserted', 'variants', 'reference', 'selector', 'source']:
                 errors.extend(get_errors(model[k]))
     return errors
 
