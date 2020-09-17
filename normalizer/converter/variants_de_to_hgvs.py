@@ -19,7 +19,6 @@ def is_deletion(delins_variant):
             return False
     return True
 
-
 def update_inserted_with_sequences(inserted, sequences):
     for insert in inserted:
         if insert["source"] == "observed":
@@ -35,6 +34,8 @@ def de_to_hgvs(variants, sequences=None):
     """
     new_variants = []
     o_index = 0
+    if len(variants) == 1 and variants[0].get("type") == "equal":
+        return [copy.deepcopy(variants[0])]
     for variant in variants:
         if variant.get("type") == "equal":
             o_index += get_location_length(variant["location"])
@@ -113,20 +114,29 @@ def de_to_hgvs(variants, sequences=None):
                     new_variant = copy.deepcopy(variant)
                     new_variant["type"] = "substitution"
                     update_inserted_with_sequences(new_variant["inserted"], sequences)
-                    new_variant["deleted"] = {
+                    new_variant["deleted"] = [{
                         "sequence": sequences["reference"][
                             get_start(new_variant["location"]) : get_end(
                                 new_variant["location"]
                             )
                         ],
                         "source": "reference_location",
-                    }
+                    }]
                     new_variants.append(new_variant)
                 else:
                     # delins_to_deletion_insertion
                     new_variant = copy.deepcopy(variant)
                     update_inserted_with_sequences(new_variant["inserted"], sequences)
                     new_variants.append(new_variant)
+            else:
+                # TODO: Check if this is a deletion insertion and if the
+                # sequence should or not be merged.
+                # TODO: Checkif a shift should be performed also here.
+                new_variant = copy.deepcopy(variant)
+                update_inserted_with_sequences(new_variant["inserted"],
+                                               sequences)
+                new_variants.append(new_variant)
+
             o_index += get_inserted_length(variant["inserted"])
 
         else:

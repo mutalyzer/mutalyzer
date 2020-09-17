@@ -1,4 +1,7 @@
 from _collections import OrderedDict
+import os
+import configparser
+from pathlib import Path
 
 
 def create_exact_point_model(point):
@@ -153,3 +156,40 @@ def string_k_v(width, key, value):
 def add_to_dict(d, source_d, k):
     if source_d.get(k):
         d[k] = source_d[k]
+
+
+def add_msg(dictionary, message_type, message):
+    if dictionary.get(message_type) is None:
+        dictionary[message_type] = []
+    dictionary[message_type].append(message)
+
+
+def configuration():
+    if os.environ.get("MUTALYZER_SETTINGS") and Path(
+            os.environ["MUTALYZER_SETTINGS"]).is_file():
+        with open(os.environ["MUTALYZER_SETTINGS"]) as f:
+            configuration_content = "[config]\n" + f.read()
+
+        loaded_settings = configparser.ConfigParser()
+        loaded_settings.optionxform = str
+        loaded_settings.read_string(configuration_content)
+        loaded_settings = {
+            sect: dict(loaded_settings.items(sect))
+            for sect in loaded_settings.sections()
+        }["config"]
+
+        return loaded_settings
+
+
+def log_dir():
+    settings = configuration()
+    if settings and settings.get("MUTALYZER_LOG_DIR"):
+        return eval(settings["MUTALYZER_LOG_DIR"])
+    else:
+        return '/tmp/mutalyzer.log'
+
+
+def cache_dir():
+    settings = configuration()
+    if settings and settings.get("MUTALYZER_CACHE_DIR"):
+        return eval(settings["MUTALYZER_CACHE_DIR"])

@@ -1,19 +1,18 @@
 import json
 from functools import lru_cache
 from mutalyzer_retriever import retriever
+from pathlib import Path
 
-from .util import get_end, get_start
+
+from .util import get_end, get_start, cache_dir
 
 
 @lru_cache(maxsize=32)
 def get_reference_model(reference_id):
-    import os.path
-    if os.path.isfile('references/' + reference_id):
-        with open('references/' + reference_id) as json_file:
+    cache = cache_dir()
+    if cache and (Path(cache) / reference_id).is_file():
+        with open(Path(cache) / reference_id) as json_file:
             return json.load(json_file)
-    else:
-        print("not from file")
-
     return retriever.retrieve(reference_id, parse=True)
 
 
@@ -121,9 +120,8 @@ def get_protein_selector_models(reference):
     :param reference: Reference annotations model (not the sequence).
     :return:
     """
-    selector_models = {}
     selector_ids = get_selectors_ids(reference, "c")
-    for selector_id in selector_ids:
+    for selector_id in selector_ids[:20]:
         selector_model = get_selector_model(reference, selector_id)
         mrna = get_feature(reference, selector_id)
         protein_ids = []
@@ -134,9 +132,7 @@ def get_protein_selector_models(reference):
         if len(protein_ids) == 1:
             selector_model["protein_id"] = protein_ids[0]
             selector_model["transcript_id"] = selector_id
-            selector_models[selector_id] = selector_model
-
-    return selector_models
+            yield selector_model
 
 
 def extract_reference_id(references):
@@ -188,7 +184,6 @@ def get_selectors_overlap(point, reference_model):
                     "ncRNA",
                 ]:
                     if point_within_feature(point, sub_feature):
-                        # print("Within", sub_feature["id"],)
                         output = {
                             "type": sub_feature["type"],
                             "id": sub_feature["id"],
@@ -201,13 +196,65 @@ def get_selectors_overlap(point, reference_model):
                             sort_locations(get_feature_locations(sub_feature))
                         )
                         yield output
-                    # else:
-                    #     print("Outside", sub_feature["id"],)
 
 
 def get_only_selector(reference_model, coordinate_system=None):
     available_selectors = get_selectors_ids(reference_model, coordinate_system)
-    print(available_selectors)
-    print(coordinate_system)
     if len(available_selectors) == 1:
         return get_selector_model(reference_model, available_selectors[0])
+
+
+def coordinate_system_from_mol_type(mol_type):
+    if mol_type in ['dna', 'genomic DNA']:
+        return 'g'
+    elif mol_type in ['mRNA']:
+        return 'c'
+    elif mol_type in ['ncRNA', 'transcribed RNA']:
+        return 'n'
+    else:
+        return ''
+
+
+def coordinate_system_from_reference(reference):
+    mol_type = get_mol_type(reference)
+    return coordinate_system_from_mol_type(mol_type)
+
+
+def coordinate_system_from_selector(selector_model):
+    if selector_model["type"] in ["mRNA"]:
+        return "c"
+    elif selector_model["type"] in ["ncRNA"]:
+        return "n"
+    else:
+        return ""
+
+
+class Reference(object):
+    def __init__(self, reference_id):
+        self.id = reference_id
+        self.model = get_reference_model(reference_id)
+
+    def get_selector_model(self, selector_id):
+        if self.model:
+            return get_selector_model(self.model["model"], selector_id)
+
+    def get_mol_type(self):
+        return get_mol_type(self.model)
+
+    def get_only_selector(self, coordinate_system=None):
+        return get_only_selector(self.model["model"], coordinate_system)
+
+    def get_default_coordinate_system(self):
+        return coordinate_system_from_reference(self.model)
+
+    def get_available_selectors(self):
+        return get_selectors_ids(self.model["model"])
+
+    def get_length(self):
+        return len(self.model["sequence"]["seq"])
+
+    def get_id(self):
+        return self.model['model']['id']
+
+    def sequence(self):
+        return self.model["sequence"]["seq"]

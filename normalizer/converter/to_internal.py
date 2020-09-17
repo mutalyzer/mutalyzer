@@ -75,8 +75,8 @@ def crossmap_coding_to_coordinate_setup(description, references):
     selector_id = get_selector_id(description)
     if selector_id is None:
         selector_id = fix_selector_id(references, reference_id, "c")
-
     selector = get_selector_model(references[reference_id]["model"], selector_id)
+    # if not selector.get("exon") and
 
     crossmap = Coding(selector["exon"], selector["cds"][0], selector["inverted"])
 

@@ -20,9 +20,9 @@ def _point_to_cds_coordinate(point, selector_model, crossmap):
     coding = crossmap.coordinate_to_coding(point["position"])
     if coding[2] == 0:
         return genomic_to_point(0)
-    elif coding[2] == 1:
+    elif coding[2] == -1:
         return genomic_to_point(genomic_to_coordinate(coding[0]))
-    elif coding[2] == 2:
+    elif coding[2] == 1:
         return _get_last_exon_cds_coding(selector_model, crossmap)
 
 
@@ -60,6 +60,7 @@ def variant_to_cds_coordinate(variant, sequences, selector_model, crossmap):
         new_variant["inserted"] = [
             merge_inserted_to_string(new_variant["inserted"], sequences)
         ]
+    new_variant["location"] = location
     return new_variant
 
 

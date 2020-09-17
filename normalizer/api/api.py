@@ -1,11 +1,16 @@
-from flask import Blueprint, Flask, render_template, request
-from flask_restx import Api, Resource, fields, inputs, marshal, reqparse
+from flask import Blueprint
+from flask_restx import Api, Resource, fields, inputs, reqparse
 from mutalyzer_hgvs_parser import parse_description, parse_description_to_model
 
 from normalizer.description_extractor import description_extractor
-from normalizer.normalizer import mutalyzer3
 from normalizer.position_convert import position_convert
 from normalizer.reference import get_selectors_ids, get_reference_model
+from normalizer.name_check import normalize
+import logging
+from ..util import log_dir
+
+
+logging.basicConfig(level=logging.INFO, filename=log_dir())
 
 blueprint = Blueprint("api", __name__)
 
@@ -32,7 +37,7 @@ class DescriptionToModel(Resource):
         """Convert a variant description to its dictionary model."""
         try:
             model = parse_description_to_model(hgvs_description)
-        except Exception as e:
+        except Exception:
             model = {"errors": "Some unexpected parsing error occured."}
         return model
 
@@ -48,15 +53,21 @@ class ReferenceModel(Resource):
 class NameCheck(Resource):
     def get(self, hgvs_description):
         """Normalize a variant description."""
-        return mutalyzer3(hgvs_description)
+        return normalize(hgvs_description)
 
 
 parser = reqparse.RequestParser()
 parser.add_argument(
+    "description",
+    type=str,
+    help="Description on which the positions are considered.",
+    required=False,
+)
+parser.add_argument(
     "reference_id",
     type=str,
     help="Reference ID on which the positions are considered.",
-    required=True,
+    required=False,
 )
 parser.add_argument(
     "from_selector_id",
@@ -74,7 +85,7 @@ parser.add_argument(
 )
 parser.add_argument(
     "position", type=str, help="Position to be converted.",
-    required=True,
+    required=False,
 )
 parser.add_argument(
     "to_selector_id",

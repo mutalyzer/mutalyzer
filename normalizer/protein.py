@@ -321,7 +321,6 @@ def get_protein_description(variants, references, selector_model):
     cds_sequence = extract_cds_sequence(
         sequences[references["reference"]["model"]["id"]], selector_model
     )
-
     cds_mutated_sequence = mutate({"reference": cds_sequence}, cds_variants)
 
     reference_protein = Seq(cds_sequence, generic_dna).translate()
@@ -363,10 +362,10 @@ def get_protein_descriptions(variants, references):
     """
     if get_mol_type(references["reference"]) not in ["genomic DNA", "mRNA", "dna"]:
         return
-    selector_models = get_protein_selector_models(references["reference"]["model"])
+
     protein_descriptions = []
-    for selector_id in selector_models:
+    for selector_model in get_protein_selector_models(references["reference"]["model"]):
         protein_descriptions.append(
-            get_protein_description(variants, references, selector_models[selector_id])
+            get_protein_description(variants, references, selector_model)
         )
     return protein_descriptions

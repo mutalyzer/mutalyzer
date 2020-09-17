@@ -2,6 +2,7 @@ import argparse
 import json
 
 from normalizer.normalizer import mutalyzer3
+from normalizer.name_check import NameCheck
 
 
 def main():
@@ -13,7 +14,10 @@ def main():
 
     args = parser.parse_args()
 
-    print(json.dumps(mutalyzer3(args.description), indent=2))
+    description = NameCheck(args.description)
+    print(description._description_model)
+    print(description.errors)
+    # print(json.dumps(mutalyzer3(args.description), indent=2))
 
 
 if __name__ == "__main__":
