@@ -214,15 +214,8 @@ class Description(object):
         output = {
             "input_model": self.input_model,
         }
-        # if self.augmented_description:
-        #     output["augmented_description"] = self.augmented_description
         if self.augmented_model:
             output["augmented_model"] = self.augmented_model
-        # if self.internal_coordinates_model:
-        #     output["internal_coordinates_model"] = self.internal_coordinates_model
-        # if self.internal_indexing_model:
-        #     output["internal_indexing_model"] = self.internal_indexing_model
-        # if self.normalized_description:
             output["normalized_description"] = self.normalized_description
         if self.equivalent_descriptions is not None:
             output["equivalent_descriptions"] = self.equivalent_descriptions
