@@ -1,6 +1,6 @@
 import json
 from functools import lru_cache
-from mutalyzer_retriever import retriever
+from mutalyzer_retriever import retrieve_model
 from pathlib import Path
 
 
@@ -13,7 +13,7 @@ def get_reference_model(reference_id):
     if cache and (Path(cache) / reference_id).is_file():
         with open(Path(cache) / reference_id) as json_file:
             return json.load(json_file)
-    return retriever.retrieve(reference_id, parse=True)
+    return retrieve_model(reference_id)
 
 
 def get_mol_type(reference):
@@ -229,10 +229,22 @@ def coordinate_system_from_selector(selector_model):
         return ""
 
 
+def get_reference_id_from_model(model):
+    if model.get('annotations') and model['annotations'].get('id'):
+        return model['annotations']['id']
+    else:
+        raise Exception('No reference ID found in the model.')
+
+
+def is_selector_in_reference(selector_id, model):
+    pass
+
+
+
 class Reference(object):
-    def __init__(self, reference_id):
-        self.id = reference_id
-        self.model = get_reference_model(reference_id)
+    def __init__(self, reference_model):
+        self.model = reference_model
+        self.id = self.get_id()
 
     def get_selector_model(self, selector_id):
         if self.model:

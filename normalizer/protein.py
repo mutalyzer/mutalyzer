@@ -1,4 +1,3 @@
-from Bio.Alphabet import generic_dna
 from Bio.Seq import Seq
 from Bio.SeqUtils import seq3
 from mutalyzer_mutator import mutate
@@ -323,8 +322,8 @@ def get_protein_description(variants, references, selector_model):
     )
     cds_mutated_sequence = mutate({"reference": cds_sequence}, cds_variants)
 
-    reference_protein = Seq(cds_sequence, generic_dna).translate()
-    predicted_protein = Seq(cds_mutated_sequence, generic_dna).translate()
+    reference_protein = Seq(cds_sequence).translate()
+    predicted_protein = Seq(cds_mutated_sequence).translate()
 
     # Up to and including the first '*', or the entire string.
     try:

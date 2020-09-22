@@ -318,7 +318,16 @@ def description_to_model(description):
     return model
 
 
-
-
-
-
+def yield_reference_ids(model, path=[]):
+    for k in model.keys():
+        if k == 'reference':
+            if model[k].get('id'):
+                yield model[k]['id'], tuple(path + [k, 'id'])
+        elif k == 'variants':
+            for i, v in enumerate(model[k]):
+                yield from yield_reference_ids(v, path + [k, i])
+        elif k == 'inserted':
+            path.append(k)
+            for i, v in enumerate(model[k]):
+                if isinstance(v.get('source'), dict) and v['source'].get('id'):
+                    yield v['source']['id'], tuple(path + [i, 'source', 'id'])

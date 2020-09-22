@@ -2,26 +2,61 @@ import copy
 
 from extractor import describe_dna
 from mutalyzer_mutator import mutate
-from .position_check import check_points
+from mutalyzer_retriever.retriever import NoReferenceError, NoReferenceRetrieved
 
+from .checker import is_overlap, sort_variants
 from .converter.to_delins import to_delins
 from .converter.to_hgvs import to_hgvs_locations
-from .converter.to_internal_coordinates import to_internal_coordinates, to_hgvs
+from .converter.to_internal_coordinates import to_hgvs, to_internal_coordinates
 from .converter.to_internal_indexing import to_internal_indexing
 from .converter.variants_de_to_hgvs import de_to_hgvs
 from .description import (
     description_to_model,
     get_errors,
+    get_reference_id,
     get_references_from_description_model,
     model_to_string,
+    variants_to_description,
+    yield_reference_ids,
+)
+from .position_check import (
+    check_locations,
+    contains_uncertain_locations,
+    identify_unsorted_locations,
 )
 from .protein import get_protein_description, get_protein_descriptions
+from .reference import get_reference_id_from_model, get_reference_model
+
+
+def e_reference_not_retrieved(reference_id):
+    return {
+        "code": "ERETR",
+        "details": "Reference {} could not be retrieved.".format(reference_id),
+    }
+
+
+def i_corrected_reference_id(original_id, corrected_id):
+    return {
+        "code": "ICORRECTEDREFERENCEID",
+        "details": "Reference {} was retrieved instead of {}.".format(
+            original_id, corrected_id
+        ),
+    }
+
+
+def set_by_path(dictionary, path, value):
+    nested_dictionary = dictionary
+    for k in path[:-1]:
+        print(k)
+        nested_dictionary = nested_dictionary[k]
+    nested_dictionary[path[-1]] = value
 
 
 class Description(object):
     def __init__(self, description):
         self.input_description = description
         self.input_model = description_to_model(description)
+        self.corrected_model = copy.deepcopy(self.input_model)
         self.augmented_description = None
         self.normalized_description = None
         self.augmented_model = {}
@@ -37,12 +72,60 @@ class Description(object):
         self.equivalent_descriptions = None
         self.protein_descriptions = None
 
+        self.errors = {}
+        self.infos = {}
+
+    def _add_error(self, path, error):
+        path = path
+        if path in self.errors:
+            self.errors[path].append(error)
+        else:
+            self.errors[path] = [error]
+
+    def _add_info(self, path, info):
+        path = path
+        if path in self.infos:
+            self.infos[path].append(info)
+        else:
+            self.infos[path] = [info]
+
+    def _set_main_reference(self):
+        reference_id = get_reference_id(self.corrected_model)
+        if reference_id in self.references:
+            self.references["reference"] = self.references[reference_id]
+
+    def get_references(self):
+        for reference_id, path in yield_reference_ids(self.input_model):
+            try:
+                reference_model = get_reference_model(reference_id)
+            except NoReferenceError:
+                self._add_error(path, e_reference_not_retrieved(reference_id))
+            except NoReferenceRetrieved:
+                self._add_error(path, e_reference_not_retrieved(reference_id))
+            else:
+                reference_id_from_model = get_reference_id_from_model(reference_model)
+                if reference_id_from_model != reference_id:
+                    self._correct_reference_id(path, reference_id_from_model)
+                    self._add_info(
+                        path,
+                        i_corrected_reference_id(reference_id, reference_id_from_model),
+                    )
+                    self.references[reference_id_from_model] = reference_model
+                else:
+                    self.references[reference_id] = reference_model
+                self._set_main_reference()
+
+    def _correct_reference_id(self, path, reference_id):
+        set_by_path(self.corrected_model, path, reference_id)
+
     def reference_id(self):
         if self.augmented_model:
-            return self.augmented_model['reference']['id']
-        elif (self.input_model
-              and self.input_model.get("reference")
-              and self.input_model["reference"].get("id")):
+            return self.augmented_model["reference"]["id"]
+        elif (
+            self.input_model
+            and self.input_model.get("reference")
+            and self.input_model["reference"].get("id")
+        ):
             return self.input_model["reference"]["id"]
         else:
             return None
@@ -60,12 +143,15 @@ class Description(object):
             self.augmented_description = model_to_string(self.augmented_model)
 
     def model_parser_errors(self):
-        if self.augmented_model.get('errors'):
-            if (self.augmented_model["errors"][0].get("details") ==
-                    "Some error occured during description parsing."):
+        if self.augmented_model.get("errors"):
+            if (
+                self.augmented_model["errors"][0].get("details")
+                == "Some error occured during description parsing."
+            ):
                 self.augmented_model["errors"][0] = {
                     "code": "ESYNTAX",
-                    "details": "A syntax error occurred."}
+                    "details": "A syntax error occurred.",
+                }
 
     def get_internal_coordinate_model(self):
         if self.augmented_model and not get_errors(self.augmented_model):
@@ -86,6 +172,11 @@ class Description(object):
             self.internal_indexing_model
         ):
             self.delins_model = to_delins(self.internal_indexing_model)
+            # sorted_delins_variants = sort_variants(self.delins_model["variants"])
+            # print("delins variants", variants_to_description(self.delins_model["variants"]))
+            # print("sorted variants:", variants_to_description(sorted_delins_variants))
+            # print("are variants sorted:", sorted_delins_variants == self.delins_model["variants"])
+            # print("is overlap:", is_overlap(self.delins_model["variants"]))
 
     def _get_sequences(self):
         """
@@ -169,7 +260,8 @@ class Description(object):
             converted_model = to_hgvs(
                 description_model=internal_model,
                 to_coordinate_system=None,
-                to_selector_id= transcript_id)
+                to_selector_id=transcript_id,
+            )
 
             equivalent_descriptions.append(model_to_string(converted_model))
         self.equivalent_descriptions = equivalent_descriptions
@@ -184,31 +276,38 @@ class Description(object):
             )
 
     def check_locations(self):
-        if (not self.augmented_model
+        if (
+            not self.augmented_model
             or not self.internal_coordinates_model
             or get_errors(self.augmented_model)
             or get_errors(self.internal_coordinates_model)
         ):
             return
-        check_points(
+        check_locations(
             self.augmented_model,
             self.internal_coordinates_model,
-            self.references[self.reference_id()])
+            self.references[self.reference_id()],
+        )
 
     def normalize(self):
-        self.augment_input_model()
-        self.get_internal_coordinate_model()
-        self.check_locations()
-        self.get_internal_indexing_model()
-        self.get_delins_model()
-        self.mutate()
-        self.extract()
-        if self.de_model:
-            self.get_de_hgvs_internal_indexing_model()
-            self.get_de_hgvs_coordinates_model()
-            self.get_normalized_description()
-            self.get_equivalent_descriptions()
-            self.get_protein_descriptions()
+        self.get_references()
+        # self.augment_input_model()
+        # self.get_internal_coordinate_model()
+        # self.check_locations()
+        # self.get_internal_indexing_model()
+        # identify_unsorted_locations(self.augmented_model)
+        # self.get_delins_model()
+        # print(identify_unsorted_locations(self.delins_model))
+        # if contains_uncertain_locations(self.delins_model):
+        #     return
+        # self.mutate()
+        # self.extract()
+        # if self.de_model:
+        #     self.get_de_hgvs_internal_indexing_model()
+        #     self.get_de_hgvs_coordinates_model()
+        #     self.get_normalized_description()
+        #     self.get_equivalent_descriptions()
+        #     self.get_protein_descriptions()
 
     def output(self):
         output = {

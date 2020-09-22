@@ -24,7 +24,8 @@ def is_overlap(variants):
 
     current_end_position = 0
     for variant in sorted_variants:
-        if get_start(variant["location"]) < current_end_position:
+        print(get_start(variant["location"]), "<=", current_end_position-1)
+        if get_start(variant["location"]) <= current_end_position-1:
             return True
         else:
             current_end_position = get_end(variant["location"])
@@ -354,3 +355,8 @@ def run_checks(description_model, references):
     check = Checker(description_model, references)
     check.check_variants()
     return check.stop, check.messages
+
+
+def check_selectors(description, references):
+    for reference_id, selector_id in ():
+        pass

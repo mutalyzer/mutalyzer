@@ -11,7 +11,7 @@ from .reference import (
     get_reference_model,
     coordinate_system_from_mol_type,
 )
-from .position_check import check_positions
+from .position_check import check_locations
 
 
 class PositionConvert2(object):
@@ -51,7 +51,7 @@ class PositionConvert2(object):
         if not self.errors and not get_errors(self.description_model):
             self.internal_model = self.get_internal_model()
         if self.internal_model:
-            check_positions(self.description_model, self.internal_model)
+            check_locations(self.description_model, self.internal_model)
             if not get_errors(self.description_model):
                 self.converted_model = self.get_converted_model()
 
