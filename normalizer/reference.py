@@ -1,10 +1,10 @@
 import json
 from functools import lru_cache
-from mutalyzer_retriever import retrieve_model
 from pathlib import Path
 
+from mutalyzer_retriever import retrieve_model
 
-from .util import get_end, get_start, cache_dir
+from .util import cache_dir, get_end, get_start
 
 
 @lru_cache(maxsize=32)
@@ -105,7 +105,11 @@ def get_selector_model(reference_model, selector_id):
     """
     feature = get_feature(reference_model, selector_id)
     if feature:
-        output = {"id": selector_id, "type": feature["type"], "inverted": is_feature_inverted(feature)}
+        output = {
+            "id": selector_id,
+            "type": feature["type"],
+            "inverted": is_feature_inverted(feature),
+        }
         output.update(sort_locations(get_feature_locations(feature)))
         return output
 
@@ -205,14 +209,14 @@ def get_only_selector(reference_model, coordinate_system=None):
 
 
 def coordinate_system_from_mol_type(mol_type):
-    if mol_type in ['dna', 'genomic DNA']:
-        return 'g'
-    elif mol_type in ['mRNA']:
-        return 'c'
-    elif mol_type in ['ncRNA', 'transcribed RNA']:
-        return 'n'
+    if mol_type in ["dna", "genomic DNA"]:
+        return "g"
+    elif mol_type in ["mRNA"]:
+        return "c"
+    elif mol_type in ["ncRNA", "transcribed RNA"]:
+        return "n"
     else:
-        return ''
+        return ""
 
 
 def coordinate_system_from_reference(reference):
@@ -230,15 +234,10 @@ def coordinate_system_from_selector(selector_model):
 
 
 def get_reference_id_from_model(model):
-    if model.get('annotations') and model['annotations'].get('id'):
-        return model['annotations']['id']
+    if model.get("annotations") and model["annotations"].get("id"):
+        return model["annotations"]["id"]
     else:
-        raise Exception('No reference ID found in the model.')
-
-
-def is_selector_in_reference(selector_id, model):
-    pass
-
+        raise Exception("No reference ID found in the model.")
 
 
 class Reference(object):
@@ -266,7 +265,66 @@ class Reference(object):
         return len(self.model["sequence"]["seq"])
 
     def get_id(self):
-        return self.model['model']['id']
+        return self.model["model"]["id"]
 
     def sequence(self):
         return self.model["sequence"]["seq"]
+
+
+# --------------
+
+SELECTOR_TYPES = ["mRNA", "ncRNA"]
+
+
+def is_selector_in_reference(selector_id, model):
+    for reference_selector_id in yield_selector_ids(model):
+        if selector_id == reference_selector_id:
+            return True
+    return False
+
+
+def yield_selector_models(model):
+    for gene in yield_gene_models(model):
+        if gene.get("features"):
+            for selector in gene["features"]:
+                if selector["type"] in SELECTOR_TYPES:
+                    yield selector
+
+
+def yield_gene_models(model):
+    annotations = model["annotations"]
+    if annotations.get("features"):
+        for feature in annotations["features"]:
+            if feature["type"] == "gene":
+                yield feature
+
+
+def yield_selector_ids(model):
+    for selector in yield_selector_models(model):
+        yield selector["id"]
+
+
+def get_gene_selectors(gene_name, model):
+    selectors = []
+    for gene in yield_gene_models(model):
+        if gene.get("id") == gene_name and gene.get("features"):
+            for selector in gene["features"]:
+                if selector["type"] in SELECTOR_TYPES:
+                    selectors.append(selector["id"])
+            break
+    return selectors
+
+
+def get_gene_selectors_hgnc(hgnc_id, model):
+    selectors = []
+    for gene in yield_gene_models(model):
+        if (
+            gene.get("qualifiers")
+            and gene["qualifiers"].get("HGNC") == hgnc_id
+            and gene.get("features")
+        ):
+            for selector in gene["features"]:
+                if selector["type"] in SELECTOR_TYPES:
+                    selectors.append(selector["id"])
+            break
+    return selectors

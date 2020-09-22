@@ -1,7 +1,9 @@
 import copy
+
 from mutalyzer_hgvs_parser import parse_description_to_model
-from .util import add_msg
+
 from .reference import Reference
+from .util import add_msg
 
 
 def get_reference_from_model(description_model):
@@ -11,16 +13,17 @@ def get_reference_from_model(description_model):
 
     reference = Reference(reference_id)
     if not reference.model:
-        if description_model.get('reference'):
-            d_r = description_model['reference']
-        elif description_model.get('source'):
-            d_r = description_model['source']
+        if description_model.get("reference"):
+            d_r = description_model["reference"]
+        elif description_model.get("source"):
+            d_r = description_model["source"]
         add_msg(
             d_r,
             "errors",
-            {"code": "ERETR",
-             "details": "Reference {} could not be retrieved.".format(
-                 reference_id)},
+            {
+                "code": "ERETR",
+                "details": "Reference {} could not be retrieved.".format(reference_id),
+            },
         )
     else:
         if reference.get_id() != reference_id:
@@ -34,7 +37,7 @@ def get_references_from_description_model(model, references):
         if reference:
             references[reference.get_id()] = reference
         for k in model.keys():
-            if k in ['variants', 'inserted']:
+            if k in ["variants", "inserted"]:
                 get_references_from_description_model(model[k], references)
     elif isinstance(model, list):
         for sub_model in model:
@@ -42,44 +45,42 @@ def get_references_from_description_model(model, references):
 
 
 def get_reference_id(model):
-    if (
-        model.get("reference")
-        and model["reference"].get("id")
-    ):
+    if model.get("reference") and model["reference"].get("id"):
         return model["reference"]["id"]
     elif (
-            model.get("source") and isinstance(model["source"], dict)
-            and model["source"].get("id")
+        model.get("source")
+        and isinstance(model["source"], dict)
+        and model["source"].get("id")
     ):
         return model["source"]["id"]
 
 
 def set_reference_id(description_model, reference_id):
-    if (
-        description_model.get("reference")
-        and description_model["reference"].get("id")
-    ):
+    if description_model.get("reference") and description_model["reference"].get("id"):
         old_reference_id = description_model["reference"]["id"]
         description_model["reference"]["id"] = reference_id
         add_msg(
             description_model["reference"],
             "info",
-            {"code": "IUPDATEDREFERENCEID",
-             "details": "Reference {} was retrieved instead of {}.".format(
-                 reference_id, old_reference_id)},
+            {
+                "code": "IUPDATEDREFERENCEID",
+                "details": "Reference {} was retrieved instead of {}.".format(
+                    reference_id, old_reference_id
+                ),
+            },
         )
-    elif (
-        description_model.get("source")
-        and description_model["source"].get("id")
-    ):
+    elif description_model.get("source") and description_model["source"].get("id"):
         old_reference_id = description_model["source"]["id"]
         description_model["source"]["id"] = reference_id
         add_msg(
             description_model["source"],
             "info",
-            {"code": "IUPDATEDREFERENCEID",
-             "details": "Reference {} was retrieved instead of {}.".format(
-                 reference_id, old_reference_id)},
+            {
+                "code": "IUPDATEDREFERENCEID",
+                "details": "Reference {} was retrieved instead of {}.".format(
+                    reference_id, old_reference_id
+                ),
+            },
         )
     elif description_model.get("reference"):
         description_model["reference"]["id"] = reference_id
@@ -100,7 +101,8 @@ def get_selector_id(description_model):
         and description_model["reference"]["selector"].get("id")
     ):
         return description_model["reference"]["selector"]["id"]
-    elif (description_model.get("source")
+    elif (
+        description_model.get("source")
         and description_model["source"].get("selector")
         and description_model["source"]["selector"].get("id")
     ):
@@ -119,9 +121,9 @@ def model_to_string(model):
     :return: Equivalent reference string representation.
     """
 
-    if model.get('reference'):
+    if model.get("reference"):
         reference_id = model["reference"]["id"]
-    elif model.get('source'):
+    elif model.get("source"):
         reference_id = model["source"]["id"]
     selector_id = get_selector_id(model)
     if selector_id:
@@ -132,16 +134,14 @@ def model_to_string(model):
         coordinate_system = model.get("coordinate_system") + "."
     else:
         coordinate_system = ""
-    if model.get('variants'):
+    if model.get("variants"):
         return "{}:{}{}".format(
-            reference,
-            coordinate_system,
-            variants_to_description(model.get("variants")))
-    if model.get('location'):
+            reference, coordinate_system, variants_to_description(model.get("variants"))
+        )
+    if model.get("location"):
         return "{}:{}{}".format(
-            reference,
-            coordinate_system,
-            location_to_description(model.get("location")))
+            reference, coordinate_system, location_to_description(model.get("location"))
+        )
 
 
 def reference_to_description(reference):
@@ -216,7 +216,7 @@ def variant_to_description(variant, sequences=None):
     elif variant_type == "equal":
         variant_type = "="
     else:
-        variant_type = ''
+        variant_type = ""
     return "{}{}{}".format(deleted, variant_type, inserted)
 
 
@@ -298,10 +298,18 @@ def get_errors(model):
         for m in model:
             errors.extend(get_errors(m))
     elif isinstance(model, dict):
-        if model.get('errors'):
-            errors.extend(model['errors'])
+        if model.get("errors"):
+            errors.extend(model["errors"])
         for k in model.keys():
-            if k in ['location', 'deleted', 'inserted', 'variants', 'reference', 'selector', 'source']:
+            if k in [
+                "location",
+                "deleted",
+                "inserted",
+                "variants",
+                "reference",
+                "selector",
+                "source",
+            ]:
                 errors.extend(get_errors(model[k]))
     return errors
 
@@ -311,23 +319,62 @@ def description_to_model(description):
         model = parse_description_to_model(description)
     except Exception as e:
         # TODO: Make it more explicit.
-        model = {"errors": [{
-            "details": "Some error occured during description parsing.",
-            "raw_message": e
-        }]}
+        model = {
+            "errors": [
+                {
+                    "details": "Some error occured during description parsing.",
+                    "raw_message": e,
+                }
+            ]
+        }
     return model
+
+
+# ---------------
 
 
 def yield_reference_ids(model, path=[]):
     for k in model.keys():
-        if k == 'reference':
-            if model[k].get('id'):
-                yield model[k]['id'], tuple(path + [k, 'id'])
-        elif k == 'variants':
-            for i, v in enumerate(model[k]):
-                yield from yield_reference_ids(v, path + [k, i])
-        elif k == 'inserted':
-            path.append(k)
-            for i, v in enumerate(model[k]):
-                if isinstance(v.get('source'), dict) and v['source'].get('id'):
-                    yield v['source']['id'], tuple(path + [i, 'source', 'id'])
+        if k in ["reference", "source"]:
+            if isinstance(model[k], dict) and model[k].get("id"):
+                yield model[k]["id"], tuple(path + [k, "id"])
+        elif k in ["variants", "inserted"]:
+            for i, sub_model in enumerate(model[k]):
+                yield from yield_reference_ids(sub_model, path + [k, i])
+
+
+def yield_inserted_other_reference(model, path=[]):
+    for k in model.keys():
+        if k == "variants":
+            for i, variant in enumerate(model[k]):
+                yield from yield_reference_ids(variant, path + [k, i])
+        elif k == "inserted":
+            for i, inserted in enumerate(model[k]):
+                if isinstance(inserted.get("source"), dict):
+                    yield inserted, tuple(path + [i])
+
+
+def yield_reference_selector_ids(model, path=[]):
+    for k in model.keys():
+        if k in ["reference", "source"]:
+            if isinstance(model[k], dict) and model[k].get("id"):
+                if model[k].get("selector") and model[k]["selector"].get("id"):
+                    yield model[k]["id"], model[k]["selector"]["id"], tuple(
+                        path + [k, "selector", "id"]
+                    )
+        elif k in ["variants", "inserted"]:
+            for i, sub_model in enumerate(model[k]):
+                yield from yield_reference_selector_ids(sub_model, path + [k, i])
+
+
+def yield_reference_selector_ids_coordinate_system(model, path=[]):
+    for k in model.keys():
+        if k in ["reference", "source"]:
+            if isinstance(model[k], dict) and model[k].get("id"):
+                if model[k].get("selector") and model[k]["selector"].get("id"):
+                    yield model[k]["id"], model[k]["selector"]["id"], tuple(
+                        path + [k, "selector", "id"]
+                    )
+        elif k in ["variants", "inserted"]:
+            for i, sub_model in enumerate(model[k]):
+                yield from yield_reference_selector_ids(sub_model, path + [k, i])

@@ -18,6 +18,7 @@ from .description import (
     model_to_string,
     variants_to_description,
     yield_reference_ids,
+    yield_reference_selector_ids,
 )
 from .position_check import (
     check_locations,
@@ -25,13 +26,36 @@ from .position_check import (
     identify_unsorted_locations,
 )
 from .protein import get_protein_description, get_protein_descriptions
-from .reference import get_reference_id_from_model, get_reference_model
+from .reference import (
+    get_gene_selectors,
+    get_gene_selectors_hgnc,
+    get_reference_id_from_model,
+    get_reference_model,
+    is_selector_in_reference,
+)
 
 
 def e_reference_not_retrieved(reference_id):
     return {
         "code": "ERETR",
         "details": "Reference {} could not be retrieved.".format(reference_id),
+    }
+
+
+def e_no_selector_found(reference_id, selector_id):
+    return {
+        "code": "ENOSELECTORFOUND",
+        "details": "No {} selector found in reference {}.".format(
+            selector_id, reference_id
+        ),
+    }
+
+
+def e_selector_options(selector_id, selector_type, options):
+    return {
+        "code": "ESELECTOROPTIONS",
+        "details": "{} selector identified as {}.".format(selector_id, selector_type),
+        "options": options,
     }
 
 
@@ -44,10 +68,18 @@ def i_corrected_reference_id(original_id, corrected_id):
     }
 
 
+def i_corrected_selector_id(original_id, corrected_id, correction_source):
+    return {
+        "code": "ICORRECTEDSELECTORID",
+        "details": "Selector {} was corrected to {} from {}.".format(
+            original_id, corrected_id, correction_source
+        ),
+    }
+
+
 def set_by_path(dictionary, path, value):
     nested_dictionary = dictionary
     for k in path[:-1]:
-        print(k)
         nested_dictionary = nested_dictionary[k]
     nested_dictionary[path[-1]] = value
 
@@ -94,7 +126,13 @@ class Description(object):
         if reference_id in self.references:
             self.references["reference"] = self.references[reference_id]
 
+    def _correct_reference_id(self, path, original_id, corrected_id):
+        set_by_path(self.corrected_model, path, corrected_id)
+        self._add_info(path, i_corrected_reference_id(original_id, corrected_id))
+
     def get_references(self):
+        if not self.corrected_model:
+            return
         for reference_id, path in yield_reference_ids(self.input_model):
             try:
                 reference_model = get_reference_model(reference_id)
@@ -105,18 +143,63 @@ class Description(object):
             else:
                 reference_id_from_model = get_reference_id_from_model(reference_model)
                 if reference_id_from_model != reference_id:
-                    self._correct_reference_id(path, reference_id_from_model)
-                    self._add_info(
-                        path,
-                        i_corrected_reference_id(reference_id, reference_id_from_model),
+                    self._correct_reference_id(
+                        path, reference_id, reference_id_from_model
                     )
                     self.references[reference_id_from_model] = reference_model
                 else:
                     self.references[reference_id] = reference_model
                 self._set_main_reference()
 
-    def _correct_reference_id(self, path, reference_id):
-        set_by_path(self.corrected_model, path, reference_id)
+    def check_selectors_in_references(self):
+        if self.errors:
+            return
+        for reference_id, selector_id, path in yield_reference_selector_ids(
+            self.corrected_model
+        ):
+            if not is_selector_in_reference(selector_id, self.references[reference_id]):
+                self.handle_selector_not_found(reference_id, selector_id, path)
+
+    def _correct_selector_id(self, path, original_id, corrected_id, correction_source):
+        set_by_path(self.corrected_model, path, corrected_id)
+        self._add_info(
+            path, i_corrected_selector_id(original_id, corrected_id, correction_source)
+        )
+
+    def handle_selector_not_found(self, reference_id, selector_id, path):
+        gene_selectors = get_gene_selectors(selector_id, self.references[reference_id])
+        if len(gene_selectors) == 1:
+            self._correct_selector_id(path, selector_id, gene_selectors[0], "gene name")
+            return
+        elif len(gene_selectors) > 1:
+            self._add_error(
+                path, e_selector_options(selector_id, "gene", gene_selectors)
+            )
+            return
+        gene_selectors = get_gene_selectors_hgnc(
+            selector_id, self.references[reference_id]
+        )
+        if len(gene_selectors) == 1:
+            self._correct_selector_id(path, selector_id, gene_selectors[0], "gene HGNC")
+            return
+        elif len(gene_selectors) > 1:
+            self._add_error(
+                path, e_selector_options(selector_id, "gene HGNC", gene_selectors)
+            )
+            return
+        self._add_error(path, e_no_selector_found(reference_id, selector_id))
+
+    def check_coordinate_systems(self):
+        if not self.corrected_model.get("coordinate_system"):
+            self.handle_no_coordinate_system()
+        if self.corrected_model.get("coordinate_system"):
+            self.check_coordinate_system_consistency()
+
+    def check_coordinate_system_consistency(self):
+        pass
+
+    def handle_no_coordinate_system(self):
+        pass
 
     def reference_id(self):
         if self.augmented_model:
@@ -291,6 +374,12 @@ class Description(object):
 
     def normalize(self):
         self.get_references()
+        self.check_selectors_in_references()
+
+        print(model_to_string(self.input_model))
+        print(model_to_string(self.corrected_model))
+        print(self.infos)
+
         # self.augment_input_model()
         # self.get_internal_coordinate_model()
         # self.check_locations()

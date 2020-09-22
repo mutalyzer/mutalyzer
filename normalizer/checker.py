@@ -1,4 +1,10 @@
-from .reference import get_mol_type, get_sequence_length
+from .description import yield_inserted_other_reference, yield_reference_selector_ids
+from .reference import (
+    get_mol_type,
+    get_sequence_length,
+    is_selector_in_reference,
+    yield_selector_ids,
+)
 from .util import get_end, get_start, sort_variants, update_position
 
 
@@ -24,8 +30,8 @@ def is_overlap(variants):
 
     current_end_position = 0
     for variant in sorted_variants:
-        print(get_start(variant["location"]), "<=", current_end_position-1)
-        if get_start(variant["location"]) <= current_end_position-1:
+        print(get_start(variant["location"]), "<=", current_end_position - 1)
+        if get_start(variant["location"]) <= current_end_position - 1:
             return True
         else:
             current_end_position = get_end(variant["location"])
@@ -334,14 +340,19 @@ class Checker(object):
             else:
                 if self._checked_variant["type"] != "insertion":
                     if location["start"]["position"] >= location["end"]["position"]:
-                        self.add_info("ERANGE", "Start location greater than end location.")
+                        self.add_info(
+                            "ERANGE", "Start location greater than end location."
+                        )
                 else:
                     if location["start"]["position"] != location["end"]["position"]:
-                        self.add_info("EINSRANGE", "No consecutive positions in insertion.")
+                        self.add_info(
+                            "EINSRANGE", "No consecutive positions in insertion."
+                        )
 
     def _check_location(self, variant):
         self._check_location_in_sequence(
-            variant["location"], get_sequence_length(self._references, "reference"))
+            variant["location"], get_sequence_length(self._references, "reference")
+        )
         self._check_location_range(variant["location"])
 
     def check_variants(self):
@@ -358,5 +369,7 @@ def run_checks(description_model, references):
 
 
 def check_selectors(description, references):
-    for reference_id, selector_id in ():
-        pass
+
+    for reference_id, selector_id, path in yield_reference_selector_ids(description):
+        if not is_selector_in_reference(selector_id, references[reference_id]):
+            pass
