@@ -37,7 +37,9 @@ from .reference import (
     get_reference_model,
     is_only_one_selector,
     is_selector_in_reference,
+    yield_selector_ids,
 )
+from .util import set_by_path
 
 
 def e_reference_not_retrieved(reference_id):
@@ -110,13 +112,6 @@ def i_corrected_coordinate_system(coordinate_system, correction_source):
     }
 
 
-def set_by_path(dictionary, path, value):
-    nested_dictionary = dictionary
-    for k in path[:-1]:
-        nested_dictionary = nested_dictionary[k]
-    nested_dictionary[path[-1]] = value
-
-
 class Description(object):
     def __init__(self, description):
         self.input_description = description
@@ -163,7 +158,7 @@ class Description(object):
         set_by_path(self.corrected_model, path, corrected_id)
         self._add_info(path, i_corrected_reference_id(original_id, corrected_id))
 
-    def get_references(self):
+    def retrieve_references(self):
         if not self.corrected_model:
             return
         for reference_id, path in yield_reference_ids(self.input_model):
@@ -237,10 +232,6 @@ class Description(object):
         ):
             if c_s is None:
                 self.handle_no_coordinate_system(c_s_path, r_id, s_id)
-            if self.corrected_model.get("coordinate_system"):
-                self._check_coordinate_system_consistency(
-                    c_s, c_s_path, r_id, r_path, s_id
-                )
 
     def _correct_coordinate_system(self, coordinate_system, path, correction_source):
         set_by_path(self.corrected_model, path, coordinate_system)
@@ -260,30 +251,50 @@ class Description(object):
             return
         self._add_error(c_s_path, e_no_coordinate_system())
 
-    def _correct_selector_id_from_coordinate_system(
-        self, r_id_path, selector_id, coordinate_system
-    ):
+    def _correct_selector_id_from_coordinate_system(self, r_id_path, selector_id):
         path = tuple(list(r_id_path[:-1]) + ["selector"])
         set_by_path(self.corrected_model, path, {"id": selector_id})
         self._add_info(
             path, i_corrected_selector_id("", selector_id, "coordinate system")
         )
 
-    def _check_coordinate_system_consistency(self, c_s, c_s_path, r_id, r_path, s_id):
-        if s_id:
-            s_c_s = get_coordinate_system_from_selector_id(self.references[r_id], s_id)
-            if s_c_s != c_s:
-                self._add_error(
-                    c_s_path, e_coordinate_system_mismatch(c_s, s_id, s_c_s)
+    def check_coordinate_system_consistency(self):
+        if self.errors:
+            return
+        for (
+            c_s,
+            c_s_path,
+            r_id,
+            r_path,
+            s_id,
+            s_path,
+        ) in yield_reference_selector_ids_coordinate_system(
+            copy.deepcopy(self.corrected_model)
+        ):
+            if s_id:
+                s_c_s = get_coordinate_system_from_selector_id(
+                    self.references[r_id], s_id
                 )
-        r_c_s = get_coordinate_system_from_reference(self.references[r_id])
-        if r_c_s != c_s:
-            if is_only_one_selector(self.references[r_id], c_s):
-                self._correct_selector_id_from_coordinate_system(
-                    r_path, get_only_selector_id(self.references[r_id], c_s), c_s
-                )
+                if s_c_s == c_s:
+                    return
+                else:
+                    self._add_error(
+                        c_s_path, e_coordinate_system_mismatch(c_s, s_id, s_c_s)
+                    )
+                    return
+            r_c_s = get_coordinate_system_from_reference(self.references[r_id])
+            if r_c_s == c_s:
                 return
-        self._add_error(c_s_path, e_coordinate_system_mismatch(c_s, r_id, r_c_s))
+            else:
+                if is_only_one_selector(self.references[r_id], c_s):
+                    self._correct_selector_id_from_coordinate_system(
+                        r_path, get_only_selector_id(self.references[r_id], c_s)
+                    )
+                    return
+                else:
+                    self._add_error(
+                        c_s_path, e_coordinate_system_mismatch(c_s, r_id, r_c_s)
+                    )
 
     def reference_id(self):
         if self.augmented_model:
@@ -320,21 +331,21 @@ class Description(object):
                     "details": "A syntax error occurred.",
                 }
 
-    def get_internal_coordinate_model(self):
-        if self.augmented_model and not get_errors(self.augmented_model):
+    def construct_internal_coordinate_model(self):
+        if not self.errors:
             self.internal_coordinates_model = to_internal_coordinates(
-                self.augmented_model
+                self.corrected_model, self.references
             )
+            print(model_to_string(self.internal_coordinates_model))
 
-    def get_internal_indexing_model(self):
-        if self.internal_coordinates_model and not get_errors(
-            self.internal_coordinates_model
-        ):
+    def construct_internal_indexing_model(self):
+        if not self.errors:
             self.internal_indexing_model = to_internal_indexing(
                 self.internal_coordinates_model
             )
+            print(model_to_string(self.internal_indexing_model))
 
-    def get_delins_model(self):
+    def construct_delins_model(self):
         if self.internal_indexing_model and not get_errors(
             self.internal_indexing_model
         ):
@@ -350,10 +361,7 @@ class Description(object):
         Retrieves a dictionary from the references with reference ids as
         keys and their corresponding sequences as values.
         """
-        sequences = {k: self.references[k].sequence() for k in self.references}
-        sequences["reference"] = self.references[
-            self.augmented_model["reference"]["id"]
-        ].sequence()
+        sequences = {k: self.references[k]["sequence"]["seq"] for k in self.references}
         return sequences
 
     def mutate(self):
@@ -364,9 +372,7 @@ class Description(object):
 
     def extract(self):
         if self.is_extraction_possible():
-            reference_sequence = self.references[
-                self.augmented_model["reference"]["id"]
-            ].sequence()
+            reference_sequence = self.references["reference"]["sequence"]["seq"]
             de_variants = describe_dna(reference_sequence, self.observed_sequence)
             if de_variants:
                 self.de_model = {
@@ -390,56 +396,65 @@ class Description(object):
                 "variants": de_to_hgvs(
                     self.de_model["variants"],
                     {
-                        "reference": self.references[
-                            self.augmented_model["reference"]["id"]
-                        ].sequence(),
+                        "reference": self.references["reference"]["sequence"]["seq"],
                         "observed": self.observed_sequence,
                     },
                 ),
             }
 
     def get_de_hgvs_coordinates_model(self):
-        if self.augmented_model["reference"].get("selector"):
-            selector_id = self.augmented_model["reference"]["selector"]["id"]
+        if self.corrected_model["reference"].get("selector"):
+            selector_id = self.corrected_model["reference"]["selector"]["id"]
         else:
             selector_id = None
         if self.de_hgvs_internal_indexing_model:
             self.de_hgvs_model = to_hgvs_locations(
                 self.de_hgvs_internal_indexing_model["variants"],
-                self.references[self.augmented_model["reference"]["id"]].model,
+                self.references["reference"],
                 selector_id,
                 True,
+            )
+            print(self.de_hgvs_model)
+            print(
+                to_hgvs(
+                    self.de_hgvs_internal_indexing_model,
+                    self.references,
+                    self.corrected_model["coordinate_system"],
+                    selector_id,
+                )
             )
 
     def get_normalized_description(self):
         if self.de_hgvs_model:
             self.normalized_description = model_to_string(self.de_hgvs_model)
+            print(self.normalized_description)
 
     def get_equivalent_descriptions(self):
         if not self.de_model:
             return
         equivalent_descriptions = []
 
-        transcript_ids = self.references[self.reference_id()].get_available_selectors()
-
-        for transcript_id in transcript_ids[:20]:
-            internal_model = to_internal_coordinates(self.de_hgvs_model)
+        for selector_id in yield_selector_ids(self.references["reference"]):
+            internal_model = to_internal_coordinates(
+                self.de_hgvs_model, self.references
+            )
             converted_model = to_hgvs(
-                description_model=internal_model,
+                internal_model=internal_model,
+                references=self.references,
                 to_coordinate_system=None,
-                to_selector_id=transcript_id,
+                to_selector_id=selector_id,
             )
 
             equivalent_descriptions.append(model_to_string(converted_model))
+            if len(equivalent_descriptions) == 20:
+                break
         self.equivalent_descriptions = equivalent_descriptions
 
     def get_protein_descriptions(self):
         if self.de_model:
-            references = {k: self.references[k].model for k in self.references}
-            references["reference"] = self.references[self.reference_id()].model
-            references["observed"] = {"sequence": {"seq": self.observed_sequence}}
+            self.references["observed"] = {"sequence": {"seq": self.observed_sequence}}
             self.protein_descriptions = get_protein_descriptions(
-                self.de_model["variants"], references
+                self.de_model["variants"], self.references
             )
 
     def check_locations(self):
@@ -457,31 +472,31 @@ class Description(object):
         )
 
     def normalize(self):
-        self.get_references()
+        self.retrieve_references()
         self.check_selectors_in_references()
         self.check_coordinate_systems()
+        self.check_coordinate_system_consistency()
 
-        print(model_to_string(self.input_model))
-        print(model_to_string(self.corrected_model))
-        print(self.infos)
+        self.construct_internal_coordinate_model()
 
         # self.augment_input_model()
-        # self.get_internal_coordinate_model()
         # self.check_locations()
-        # self.get_internal_indexing_model()
+        self.construct_internal_indexing_model()
         # identify_unsorted_locations(self.augmented_model)
-        # self.get_delins_model()
+        self.construct_delins_model()
         # print(identify_unsorted_locations(self.delins_model))
-        # if contains_uncertain_locations(self.delins_model):
-        #     return
-        # self.mutate()
-        # self.extract()
-        # if self.de_model:
-        #     self.get_de_hgvs_internal_indexing_model()
-        #     self.get_de_hgvs_coordinates_model()
-        #     self.get_normalized_description()
-        #     self.get_equivalent_descriptions()
-        #     self.get_protein_descriptions()
+        if contains_uncertain_locations(self.delins_model):
+            return
+        self.mutate()
+        self.extract()
+        if self.de_model:
+            self.get_de_hgvs_internal_indexing_model()
+            self.get_de_hgvs_coordinates_model()
+            self.get_normalized_description()
+            self.get_equivalent_descriptions()
+            self.get_protein_descriptions()
+        print(self.infos)
+        print(self.errors)
 
     def output(self):
         output = {

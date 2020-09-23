@@ -14,7 +14,7 @@ from .reference import (
 )
 
 
-class PositionConvert2(object):
+class PositionConvert(object):
     def __init__(
         self,
         description="",
@@ -220,7 +220,7 @@ def position_convert(
     to_coordinate_system="",
     include_overlapping=False,
 ):
-    p_c = PositionConvert2(
+    p_c = PositionConvert(
         description=description,
         reference_id=reference_id,
         from_selector_id=from_selector_id,

@@ -306,8 +306,6 @@ def get_only_selector_id(model, coordinate_system):
 
 def is_only_one_selector(model, coordinate_system):
     i = 0
-    print(list(yield_selector_ids(model)))
-    print(list(yield_selector_ids_coordinate_system(model, coordinate_system)))
     for selector_id in yield_selector_ids_coordinate_system(model, coordinate_system):
         if i > 1:
             break
@@ -345,7 +343,6 @@ def get_gene_selectors_hgnc(hgnc_id, model):
 
 
 def coordinate_system_from_mol_type(mol_type):
-    print(mol_type)
     if mol_type in COORDINATE_G_MOL_TYPES_TYPES:
         return "g"
     elif mol_type in COORDINATE_C_MOL_TYPES_TYPES:

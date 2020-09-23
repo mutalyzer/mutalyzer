@@ -347,11 +347,11 @@ def yield_inserted_other_reference(model, path=[]):
     for k in model.keys():
         if k == "variants":
             for i, variant in enumerate(model[k]):
-                yield from yield_reference_ids(variant, path + [k, i])
+                yield from yield_inserted_other_reference(variant, path + [k, i])
         elif k == "inserted":
             for i, inserted in enumerate(model[k]):
                 if isinstance(inserted.get("source"), dict):
-                    yield inserted, tuple(path + [i])
+                    yield inserted, tuple(path + [k, i])
 
 
 def yield_reference_selector_ids(model, path=[]):
@@ -391,3 +391,20 @@ def yield_reference_selector_ids_coordinate_system(model, path=[]):
                 yield from yield_reference_selector_ids_coordinate_system(
                     sub_model, path + [k, i]
                 )
+
+
+def yield_point_locations_for_main_reference(model, path=[]):
+    for k in model.keys():
+        if k in ["location", "start", "end"]:
+            if model[k]["type"] == "point":
+                yield model[k], path + [k]
+            else:
+                yield from yield_point_locations_for_main_reference(
+                    model[k], path + [k]
+                )
+        elif k in ["variants", "inserted"]:
+            for i, sub_model in enumerate(model[k]):
+                if not isinstance(sub_model.get("source"), dict):
+                    yield from yield_point_locations_for_main_reference(
+                        sub_model, path + [k, i]
+                    )

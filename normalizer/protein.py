@@ -322,7 +322,7 @@ def get_protein_description(variants, references, selector_model):
     sequences = extract_sequences(references)
     cds_variants = to_cds_coordinate(variants, sequences, selector_model)
     cds_sequence = extract_cds_sequence(
-        sequences[references["reference"]["model"]["id"]], selector_model
+        sequences[references["reference"]["annotations"]["id"]], selector_model
     )
     cds_mutated_sequence = mutate({"reference": cds_sequence}, cds_variants)
 
@@ -341,7 +341,7 @@ def get_protein_description(variants, references, selector_model):
     )
 
     return "{}({}):{}".format(
-        references["reference"]["model"]["id"],
+        references["reference"]["annotations"]["id"],
         selector_model["protein_id"],
         description[0],
     )
@@ -371,7 +371,9 @@ def get_protein_descriptions(variants, references):
         return
 
     protein_descriptions = []
-    for selector_model in get_protein_selector_models(references["reference"]["model"]):
+    for selector_model in get_protein_selector_models(
+        references["reference"]["annotations"]
+    ):
         protein_descriptions.append(
             get_protein_description(variants, references, selector_model)
         )

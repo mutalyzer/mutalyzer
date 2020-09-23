@@ -203,7 +203,7 @@ def to_hgvs_locations(variants, reference_model, selector_id=None, degenerate=Fa
     if selector_id is None and get_reference_mol_type(reference_model):
         coordinate_system = "g"
     else:
-        selector_model = get_selector_model(reference_model["model"], selector_id)
+        selector_model = get_selector_model(reference_model["annotations"], selector_id)
         coordinate_system = identify_coordinate_system(selector_model)
 
     if coordinate_system is None:
@@ -212,10 +212,10 @@ def to_hgvs_locations(variants, reference_model, selector_id=None, degenerate=Fa
     crossmap = crossmap_to_hgvs_setup(coordinate_system, selector_model, degenerate)
 
     if selector_id is None:
-        reference = {"id": reference_model["model"]["id"]}
+        reference = {"id": reference_model["annotations"]["id"]}
     else:
         reference = {
-            "id": reference_model["model"]["id"],
+            "id": reference_model["annotations"]["id"],
             "selector": {"id": selector_id},
         }
     return {
