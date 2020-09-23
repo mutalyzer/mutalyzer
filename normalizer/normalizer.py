@@ -7,6 +7,7 @@ from mutalyzer_hgvs_parser import parse_description_to_model
 from mutalyzer_mutator.mutator import mutate
 from mutalyzer_retriever import retriever
 
+from .checker import run_checks
 from .converter import (
     de_to_hgvs,
     to_cds_coordinate,
@@ -16,19 +17,23 @@ from .converter import (
 )
 from .converter.to_internal_coordinates import location_to_internal_coordinate
 from .converter.to_internal_indexing import to_internal_indexing
-from .description import get_coordinate_system, get_selector_id, model_to_string, variant_to_description
+from .description import (
+    get_coordinate_system,
+    get_selector_id,
+    model_to_string,
+    variant_to_description,
+)
 from .protein import get_protein_description, get_protein_descriptions
 from .reference import (
     extract_sequences,
     get_available_selectors,
-    get_mol_type,
+    get_reference_model,
+    get_reference_mol_type,
     get_selector_model,
     get_selectors_ids,
-    get_reference_model
 )
 from .util import get_time_information, string_k_v
 from .visualization import to_be_visualized
-from .checker import run_checks
 
 
 def extract_sequences(references):
@@ -140,7 +145,9 @@ class Description(object):
                 self._reference_models[self._reference_id]["model"], self._selector_id
             )
         self._coordinate_system = get_coordinate_system(self._input_description_model)
-        self._mol_type = get_mol_type(self._reference_models[self._reference_id])
+        self._mol_type = get_reference_mol_type(
+            self._reference_models[self._reference_id]
+        )
 
     def _handle_no_description_selector(self):
         available_selectors = get_available_selectors(
@@ -245,7 +252,7 @@ class Description(object):
             self._de_hgvs_variants,
             self._reference_models[self._reference_id],
             self._selector_id,
-            degenerate=True
+            degenerate=True,
         )
 
         self.normalized_description = model_to_string(
@@ -261,7 +268,7 @@ class Description(object):
             v_s = []
             for v in vars:
                 v_s.append(variant_to_description(v))
-            print('; '.join(v_s))
+            print("; ".join(v_s))
 
         self._time_stamps.append(("initial", time.perf_counter()))
 
@@ -280,7 +287,8 @@ class Description(object):
         self._time_stamps.append(("retriever", time.perf_counter()))
 
         internal_locations_variants = to_internal_locations(
-            self._input_description_model, self._reference_models)["variants"]
+            self._input_description_model, self._reference_models
+        )["variants"]
 
         stop, messages = run_checks(internal_locations_variants, self._reference_models)
         self.status["messages"] = messages
@@ -291,7 +299,7 @@ class Description(object):
             return
         self._delins_variants = to_delins(internal_locations_variants)
 
-        internal_coordinate = ''
+        internal_coordinate = ""
 
         print_vars(self._delins_variants)
 

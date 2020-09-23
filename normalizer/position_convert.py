@@ -2,16 +2,16 @@ from mutalyzer_crossmapper import Coding, Genomic, NonCoding
 from mutalyzer_hgvs_parser import parse_description_to_model
 
 from .converter import to_hgvs, to_internal, to_internal_coordinates
-from .description import location_to_description, get_errors
+from .description import get_errors, location_to_description
+from .position_check import check_locations
 from .reference import (
-    get_mol_type,
-    get_only_selector,
+    coordinate_system_from_mol_type,
+    get_only_selector_id,
+    get_reference_model,
+    get_reference_mol_type,
     get_selector_model,
     get_selectors_overlap,
-    get_reference_model,
-    coordinate_system_from_mol_type,
 )
-from .position_check import check_locations
 
 
 class PositionConvert2(object):
@@ -25,21 +25,20 @@ class PositionConvert2(object):
         description_model={},
         to_selector_id="",
         to_coordinate_system="",
-        include_overlapping=False
+        include_overlapping=False,
     ):
         self.errors = []
         if description:
             self.description = description
             self.description_model = self.description_to_model()
-        elif (reference_id or position or from_selector_id or from_coordinate_system):
+        elif reference_id or position or from_selector_id or from_coordinate_system:
             self.description_model = self.get_model_from_segmented_input(
-                reference_id, position, from_selector_id, from_coordinate_system)
+                reference_id, position, from_selector_id, from_coordinate_system
+            )
         elif description_model:
             self.description_model = description_model
         else:
-            self.errors.append({
-                "code": "EINIT",
-                "details": "Initialization error."})
+            self.errors.append({"code": "EINIT", "details": "Initialization error."})
 
         self.to_selector_id = to_selector_id
         self.to_coordinate_system = to_coordinate_system
@@ -61,21 +60,23 @@ class PositionConvert2(object):
         try:
             model = parse_description_to_model(self.description)
         except Exception as e:
-            model = {"errors": [{
-                "details": "Some error occured during description parsing.",
-                "raw_message": e
-            }]}
+            model = {
+                "errors": [
+                    {
+                        "details": "Some error occured during description parsing.",
+                        "raw_message": e,
+                    }
+                ]
+            }
         return model
 
     def get_internal_model(self):
-        return to_internal_coordinates.to_internal_coordinates(
-            self.description_model)
+        return to_internal_coordinates.to_internal_coordinates(self.description_model)
 
     def get_converted_model(self):
         return to_internal_coordinates.to_hgvs(
-            self.internal_model,
-            self.to_coordinate_system,
-            self.to_selector_id)
+            self.internal_model, self.to_coordinate_system, self.to_selector_id
+        )
 
     def get_model_from_segmented_input(
         self,
@@ -93,7 +94,7 @@ class PositionConvert2(object):
             description_model["reference"]["selector"] = {"id": from_selector_id}
 
         if from_coordinate_system:
-            description_model['coordinate_system'] = from_coordinate_system
+            description_model["coordinate_system"] = from_coordinate_system
 
         if not isinstance(position, str):
             self.errors.append(
@@ -103,7 +104,8 @@ class PositionConvert2(object):
         location_model = parse_description_to_model(position, start_rule="location")
         if location_model.get("errors"):
             self.errors.append(
-                {"code": "EPOSITIONSYNTAX", "details": location_model["errors"][0]})
+                {"code": "EPOSITIONSYNTAX", "details": location_model["errors"][0]}
+            )
             return description_model
 
         description_model["location"] = location_model
@@ -133,8 +135,7 @@ class PositionConvert2(object):
                 if p["start"]["position"] < 0:
                     smaller.append(location_to_description(o["start"]))
                 if p["start"]["position"] > seq_len:
-                    greater.append(
-                        location_to_description(o["start"]))
+                    greater.append(location_to_description(o["start"]))
 
             if p["end"]["type"] == "range":
                 if p["end"]["start"].get("position"):
@@ -148,7 +149,7 @@ class PositionConvert2(object):
                     if p["end"]["end"]["position"] > seq_len:
                         greater.append(location_to_description(o["end"]["end"]))
             elif p["end"].get("position"):
-                if p["end"]["position"] <0:
+                if p["end"]["position"] < 0:
                     smaller.append(location_to_description(o["end"]))
                 if p["end"]["position"] > seq_len:
                     greater.append(location_to_description(o["end"]))
@@ -161,11 +162,9 @@ class PositionConvert2(object):
         smaller = ", ".join(smaller)
         greater = ", ".join(greater)
         if smaller:
-            self.errors.append(
-                {"code": "EOUTOFBOUNDARYS", "details": smaller})
+            self.errors.append({"code": "EOUTOFBOUNDARYS", "details": smaller})
         if greater:
-            self.errors.append(
-                {"code": "EOUTOFBOUNDARYSG", "details": greater})
+            self.errors.append({"code": "EOUTOFBOUNDARYSG", "details": greater})
 
     def identify_inconsistencies(self):
         if (self.to_selector_id == self.from_selector_id) and (
@@ -201,13 +200,13 @@ class PositionConvert2(object):
     def get_output(self):
         output = {}
         if self.description_model:
-            output['input_model'] = self.description_model
+            output["input_model"] = self.description_model
         if self.internal_model:
-            output['internal_model'] = self.internal_model
+            output["internal_model"] = self.internal_model
         if self.converted_model:
-            output['converted_model'] = self.converted_model
+            output["converted_model"] = self.converted_model
         if self.errors:
-            output['errors'] = self.errors
+            output["errors"] = self.errors
         return output
 
 
@@ -232,5 +231,3 @@ def position_convert(
         include_overlapping=include_overlapping,
     )
     return p_c.output
-
-

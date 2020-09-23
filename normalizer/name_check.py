@@ -19,6 +19,7 @@ from .description import (
     variants_to_description,
     yield_reference_ids,
     yield_reference_selector_ids,
+    yield_reference_selector_ids_coordinate_system,
 )
 from .position_check import (
     check_locations,
@@ -27,10 +28,14 @@ from .position_check import (
 )
 from .protein import get_protein_description, get_protein_descriptions
 from .reference import (
+    get_coordinate_system_from_reference,
+    get_coordinate_system_from_selector_id,
     get_gene_selectors,
     get_gene_selectors_hgnc,
+    get_only_selector_id,
     get_reference_id_from_model,
     get_reference_model,
+    is_only_one_selector,
     is_selector_in_reference,
 )
 
@@ -59,6 +64,25 @@ def e_selector_options(selector_id, selector_type, options):
     }
 
 
+def e_no_coordinate_system():
+    return {
+        "code": "ENOCOORDINATESYSTEM",
+        "details": "A coordinate system is required.",
+    }
+
+
+def e_coordinate_system_mismatch(
+    coordinate_system, mismatch_id, mismatch_coordinate_system
+):
+    return {
+        "code": "ECOORDINATESYSTEMMISMATCH",
+        "details": "Coordinate system {} does not match with {} "
+        "{} coordinate system. ".format(
+            coordinate_system, mismatch_id, mismatch_coordinate_system
+        ),
+    }
+
+
 def i_corrected_reference_id(original_id, corrected_id):
     return {
         "code": "ICORRECTEDREFERENCEID",
@@ -73,6 +97,15 @@ def i_corrected_selector_id(original_id, corrected_id, correction_source):
         "code": "ICORRECTEDSELECTORID",
         "details": "Selector {} was corrected to {} from {}.".format(
             original_id, corrected_id, correction_source
+        ),
+    }
+
+
+def i_corrected_coordinate_system(coordinate_system, correction_source):
+    return {
+        "code": "ICORRECTEDCOORDINATESYSTEM",
+        "details": "Coordinate system corrected to {} from {}.".format(
+            coordinate_system, correction_source
         ),
     }
 
@@ -190,16 +223,67 @@ class Description(object):
         self._add_error(path, e_no_selector_found(reference_id, selector_id))
 
     def check_coordinate_systems(self):
-        if not self.corrected_model.get("coordinate_system"):
-            self.handle_no_coordinate_system()
-        if self.corrected_model.get("coordinate_system"):
-            self.check_coordinate_system_consistency()
+        if self.errors:
+            return
+        for (
+            c_s,
+            c_s_path,
+            r_id,
+            r_path,
+            s_id,
+            s_path,
+        ) in yield_reference_selector_ids_coordinate_system(
+            copy.deepcopy(self.corrected_model)
+        ):
+            if c_s is None:
+                self.handle_no_coordinate_system(c_s_path, r_id, s_id)
+            if self.corrected_model.get("coordinate_system"):
+                self._check_coordinate_system_consistency(
+                    c_s, c_s_path, r_id, r_path, s_id
+                )
 
-    def check_coordinate_system_consistency(self):
-        pass
+    def _correct_coordinate_system(self, coordinate_system, path, correction_source):
+        set_by_path(self.corrected_model, path, coordinate_system)
+        self._add_info(
+            path, i_corrected_coordinate_system(coordinate_system, correction_source)
+        )
 
-    def handle_no_coordinate_system(self):
-        pass
+    def handle_no_coordinate_system(self, c_s_path, r_id, s_id):
+        if s_id:
+            c_s = get_coordinate_system_from_selector_id(self.references[r_id], s_id)
+            if c_s:
+                self._correct_coordinate_system(c_s, c_s_path, s_id + " selector")
+                return
+        c_s = get_coordinate_system_from_reference(self.references[r_id])
+        if c_s:
+            self._correct_coordinate_system(c_s, c_s_path, r_id + " reference")
+            return
+        self._add_error(c_s_path, e_no_coordinate_system())
+
+    def _correct_selector_id_from_coordinate_system(
+        self, r_id_path, selector_id, coordinate_system
+    ):
+        path = tuple(list(r_id_path[:-1]) + ["selector"])
+        set_by_path(self.corrected_model, path, {"id": selector_id})
+        self._add_info(
+            path, i_corrected_selector_id("", selector_id, "coordinate system")
+        )
+
+    def _check_coordinate_system_consistency(self, c_s, c_s_path, r_id, r_path, s_id):
+        if s_id:
+            s_c_s = get_coordinate_system_from_selector_id(self.references[r_id], s_id)
+            if s_c_s != c_s:
+                self._add_error(
+                    c_s_path, e_coordinate_system_mismatch(c_s, s_id, s_c_s)
+                )
+        r_c_s = get_coordinate_system_from_reference(self.references[r_id])
+        if r_c_s != c_s:
+            if is_only_one_selector(self.references[r_id], c_s):
+                self._correct_selector_id_from_coordinate_system(
+                    r_path, get_only_selector_id(self.references[r_id], c_s), c_s
+                )
+                return
+        self._add_error(c_s_path, e_coordinate_system_mismatch(c_s, r_id, r_c_s))
 
     def reference_id(self):
         if self.augmented_model:
@@ -375,6 +459,7 @@ class Description(object):
     def normalize(self):
         self.get_references()
         self.check_selectors_in_references()
+        self.check_coordinate_systems()
 
         print(model_to_string(self.input_model))
         print(model_to_string(self.corrected_model))

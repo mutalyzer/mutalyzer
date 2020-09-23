@@ -16,12 +16,6 @@ def get_reference_model(reference_id):
     return retrieve_model(reference_id)
 
 
-def get_mol_type(reference):
-    if reference["model"].get("qualifiers"):
-        if reference["model"]["qualifiers"].get("mol_type"):
-            return reference["model"]["qualifiers"]["mol_type"]
-
-
 def is_feature_inverted(feature):
     if feature.get("location") and feature["location"].get("strand"):
         if feature["location"]["strand"] == -1:
@@ -64,12 +58,12 @@ def is_id_equal(feature, feature_id):
     return False
 
 
-def get_feature(reference_model, feature_id):
+def get_feature(reference_annotations, feature_id):
     """
     Extract the feature model, if found, otherwise None.
     """
-    if reference_model.get("features"):
-        for feature in reference_model["features"]:
+    if reference_annotations.get("features"):
+        for feature in reference_annotations["features"]:
             if feature["type"] == "gene" and feature.get("features"):
                 for sub_feature in feature["features"]:
                     if is_id_equal(sub_feature, feature_id):
@@ -95,7 +89,7 @@ def sort_locations(locations):
     return sorted_locations
 
 
-def get_selector_model(reference_model, selector_id):
+def get_selector_model(reference_annotations, selector_id):
     """
     Searches for the appropriate selector model:
     - exons and cds for coding selectors;
@@ -103,7 +97,7 @@ def get_selector_model(reference_model, selector_id):
     The model includes the selector type.
     :return: Dictionary.
     """
-    feature = get_feature(reference_model, selector_id)
+    feature = get_feature(reference_annotations, selector_id)
     if feature:
         output = {
             "id": selector_id,
@@ -208,19 +202,8 @@ def get_only_selector(reference_model, coordinate_system=None):
         return get_selector_model(reference_model, available_selectors[0])
 
 
-def coordinate_system_from_mol_type(mol_type):
-    if mol_type in ["dna", "genomic DNA"]:
-        return "g"
-    elif mol_type in ["mRNA"]:
-        return "c"
-    elif mol_type in ["ncRNA", "transcribed RNA"]:
-        return "n"
-    else:
-        return ""
-
-
 def coordinate_system_from_reference(reference):
-    mol_type = get_mol_type(reference)
+    mol_type = get_reference_mol_type(reference)
     return coordinate_system_from_mol_type(mol_type)
 
 
@@ -250,13 +233,13 @@ class Reference(object):
             return get_selector_model(self.model["model"], selector_id)
 
     def get_mol_type(self):
-        return get_mol_type(self.model)
+        return get_reference_mol_type(self.model)
 
     def get_only_selector(self, coordinate_system=None):
-        return get_only_selector(self.model["model"], coordinate_system)
+        return get_only_selector_id(self.model["model"], coordinate_system)
 
     def get_default_coordinate_system(self):
-        return coordinate_system_from_reference(self.model)
+        return get_coordinate_system_from_reference(self.model)
 
     def get_available_selectors(self):
         return get_selectors_ids(self.model["model"])
@@ -273,7 +256,13 @@ class Reference(object):
 
 # --------------
 
-SELECTOR_TYPES = ["mRNA", "ncRNA"]
+SELECTOR_MOL_TYPES_TYPES = ["mRNA", "ncRNA"]
+
+COORDINATE_C_MOL_TYPES_TYPES = ["mRNA"]
+
+COORDINATE_N_MOL_TYPES_TYPES = ["ncRNA", "transcribed RNA"]
+
+COORDINATE_G_MOL_TYPES_TYPES = ["dna", "genomic DNA", "DNA"]
 
 
 def is_selector_in_reference(selector_id, model):
@@ -283,11 +272,11 @@ def is_selector_in_reference(selector_id, model):
     return False
 
 
-def yield_selector_models(model):
+def yield_selectors(model):
     for gene in yield_gene_models(model):
         if gene.get("features"):
             for selector in gene["features"]:
-                if selector["type"] in SELECTOR_TYPES:
+                if selector["type"] in SELECTOR_MOL_TYPES_TYPES:
                     yield selector
 
 
@@ -300,8 +289,33 @@ def yield_gene_models(model):
 
 
 def yield_selector_ids(model):
-    for selector in yield_selector_models(model):
+    for selector in yield_selectors(model):
         yield selector["id"]
+
+
+def yield_selector_ids_coordinate_system(model, coordinate_system):
+    for selector in yield_selectors(model):
+        if coordinate_system_from_mol_type(selector.get("type")) == coordinate_system:
+            yield selector["id"]
+
+
+def get_only_selector_id(model, coordinate_system):
+    for selector_id in yield_selector_ids_coordinate_system(model, coordinate_system):
+        return selector_id
+
+
+def is_only_one_selector(model, coordinate_system):
+    i = 0
+    print(list(yield_selector_ids(model)))
+    print(list(yield_selector_ids_coordinate_system(model, coordinate_system)))
+    for selector_id in yield_selector_ids_coordinate_system(model, coordinate_system):
+        if i > 1:
+            break
+        i += 1
+    if i == 1:
+        return True
+    else:
+        return False
 
 
 def get_gene_selectors(gene_name, model):
@@ -309,7 +323,7 @@ def get_gene_selectors(gene_name, model):
     for gene in yield_gene_models(model):
         if gene.get("id") == gene_name and gene.get("features"):
             for selector in gene["features"]:
-                if selector["type"] in SELECTOR_TYPES:
+                if selector["type"] in SELECTOR_MOL_TYPES_TYPES:
                     selectors.append(selector["id"])
             break
     return selectors
@@ -324,7 +338,34 @@ def get_gene_selectors_hgnc(hgnc_id, model):
             and gene.get("features")
         ):
             for selector in gene["features"]:
-                if selector["type"] in SELECTOR_TYPES:
+                if selector["type"] in SELECTOR_MOL_TYPES_TYPES:
                     selectors.append(selector["id"])
             break
     return selectors
+
+
+def coordinate_system_from_mol_type(mol_type):
+    print(mol_type)
+    if mol_type in COORDINATE_G_MOL_TYPES_TYPES:
+        return "g"
+    elif mol_type in COORDINATE_C_MOL_TYPES_TYPES:
+        return "c"
+    elif mol_type in COORDINATE_N_MOL_TYPES_TYPES:
+        return "n"
+    return None
+
+
+def get_coordinate_system_from_selector_id(model, selector_id):
+    selector = get_feature(model["annotations"], selector_id)
+    return coordinate_system_from_mol_type(selector.get("type"))
+
+
+def get_reference_mol_type(model):
+    if model["annotations"].get("qualifiers"):
+        if model["annotations"]["qualifiers"].get("mol_type"):
+            return model["annotations"]["qualifiers"]["mol_type"]
+
+
+def get_coordinate_system_from_reference(reference):
+    mol_type = get_reference_mol_type(reference)
+    return coordinate_system_from_mol_type(mol_type)

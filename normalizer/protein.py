@@ -3,7 +3,11 @@ from Bio.SeqUtils import seq3
 from mutalyzer_mutator import mutate
 
 from .converter import to_cds_coordinate
-from .reference import extract_sequences, get_mol_type, get_protein_selector_models
+from .reference import (
+    extract_sequences,
+    get_protein_selector_models,
+    get_reference_mol_type,
+)
 
 
 def longest_common_prefix(s1, s2):
@@ -359,7 +363,11 @@ def get_protein_descriptions(variants, references):
     :param references: References models. Required to be able to retrieve the
                        inserted sequences.
     """
-    if get_mol_type(references["reference"]) not in ["genomic DNA", "mRNA", "dna"]:
+    if get_reference_mol_type(references["reference"]) not in [
+        "genomic DNA",
+        "mRNA",
+        "dna",
+    ]:
         return
 
     protein_descriptions = []

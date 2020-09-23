@@ -1,6 +1,6 @@
 from .description import yield_inserted_other_reference, yield_reference_selector_ids
 from .reference import (
-    get_mol_type,
+    get_reference_mol_type,
     get_sequence_length,
     is_selector_in_reference,
     yield_selector_ids,
@@ -232,7 +232,7 @@ def check_coordinate_system(description_model, references):
     """
     reference = references[description_model["reference"]["id"]]
     if description_model.get("coordinate_system") == "c":
-        if get_mol_type(reference) == "genomic DNA" and (
+        if get_reference_mol_type(reference) == "genomic DNA" and (
             description_model["reference"].get("selector") is None
         ):
             raise Exception("No selector mentioned for c. with a genomic " "reference.")

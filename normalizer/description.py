@@ -357,11 +357,17 @@ def yield_inserted_other_reference(model, path=[]):
 def yield_reference_selector_ids(model, path=[]):
     for k in model.keys():
         if k in ["reference", "source"]:
-            if isinstance(model[k], dict) and model[k].get("id"):
-                if model[k].get("selector") and model[k]["selector"].get("id"):
-                    yield model[k]["id"], model[k]["selector"]["id"], tuple(
-                        path + [k, "selector", "id"]
-                    )
+            if (
+                isinstance(model[k], dict)
+                and model[k].get("id")
+                and model[k].get("selector")
+                and model[k]["selector"].get("id")
+            ):
+                yield (
+                    model[k]["id"],
+                    model[k]["selector"]["id"],
+                    tuple(path + [k, "selector", "id"]),
+                )
         elif k in ["variants", "inserted"]:
             for i, sub_model in enumerate(model[k]):
                 yield from yield_reference_selector_ids(sub_model, path + [k, i])
@@ -369,12 +375,19 @@ def yield_reference_selector_ids(model, path=[]):
 
 def yield_reference_selector_ids_coordinate_system(model, path=[]):
     for k in model.keys():
-        if k in ["reference", "source"]:
-            if isinstance(model[k], dict) and model[k].get("id"):
-                if model[k].get("selector") and model[k]["selector"].get("id"):
-                    yield model[k]["id"], model[k]["selector"]["id"], tuple(
-                        path + [k, "selector", "id"]
-                    )
+        if k in ["reference", "source"] and isinstance(model[k], dict):
+            c_s = model.get("coordinate_system")
+            c_s_path = tuple(path + ["coordinate_system"])
+            r_id = model[k].get("id")
+            r_path = tuple(path + [k, "id"])
+            s_id = None
+            s_path = tuple(path + [k])
+            if model[k].get("selector") and model[k]["selector"].get("id"):
+                s_id = model[k]["selector"]["id"]
+                s_path = tuple(path + [k, "selector", "id"])
+            yield c_s, c_s_path, r_id, r_path, s_id, s_path
         elif k in ["variants", "inserted"]:
             for i, sub_model in enumerate(model[k]):
-                yield from yield_reference_selector_ids(sub_model, path + [k, i])
+                yield from yield_reference_selector_ids_coordinate_system(
+                    sub_model, path + [k, i]
+                )

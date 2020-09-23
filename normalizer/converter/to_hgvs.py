@@ -1,8 +1,9 @@
 import copy
-from mutalyzer_crossmapper import Genomic, NonCoding, Coding
 
-from normalizer.util import get_start, get_end, create_exact_point_model
-from normalizer.reference import get_mol_type, get_selector_model
+from mutalyzer_crossmapper import Coding, Genomic, NonCoding
+
+from normalizer.reference import get_reference_mol_type, get_selector_model
+from normalizer.util import create_exact_point_model, get_end, get_start
 
 
 def range_to_point(range_location):
@@ -12,7 +13,11 @@ def range_to_point(range_location):
     :param range_location: A point location model complying object.
     :return: A point location model complying object.
     """
-    if range_location.get("uncertain") or range_location["start"].get("uncertain") or range_location["end"].get("uncertain"):
+    if (
+        range_location.get("uncertain")
+        or range_location["start"].get("uncertain")
+        or range_location["end"].get("uncertain")
+    ):
         return range_location
     elif range_location["start"] == range_location["end"]:
         return range_location["start"]
@@ -68,7 +73,7 @@ def crossmap_coordinate_to_coding_setup(selector, degenerate=False):
     return {
         "crossmap_function": crossmap.coordinate_to_coding,
         "point_function": coding_to_point,
-        "degenerate": degenerate
+        "degenerate": degenerate,
     }
 
 
@@ -77,7 +82,7 @@ def crossmap_coordinate_to_noncoding_setup(selector, degenerate=False):
     return {
         "crossmap_function": crossmap.coordinate_to_noncoding,
         "point_function": noncoding_to_point,
-        "degenerate": degenerate
+        "degenerate": degenerate,
     }
 
 
@@ -151,11 +156,15 @@ def location_to_hgvs(location, variant_type, crossmap):
     else:
         update_interval(new_location, variant_type)
         if location["start"]["type"] == "range":
-            new_location["start"] = range_to_hgvs(new_location["start"], variant_type, crossmap)
+            new_location["start"] = range_to_hgvs(
+                new_location["start"], variant_type, crossmap
+            )
         else:
             new_location["start"] = point_to_hgvs(new_location["start"], **crossmap)
         if location["end"]["type"] == "range":
-            new_location["end"] = range_to_hgvs(new_location["end"], variant_type, crossmap)
+            new_location["end"] = range_to_hgvs(
+                new_location["end"], variant_type, crossmap
+            )
         else:
             new_location["end"] = point_to_hgvs(new_location["end"], **crossmap)
     new_location = range_to_point(new_location)
@@ -168,7 +177,7 @@ def variants_to_hgvs(variants, crossmap):
     for variant in variants:
         new_variant = copy.deepcopy(variant)
         new_variant["location"] = location_to_hgvs(
-            variant["location"], variant['type'], crossmap
+            variant["location"], variant["type"], crossmap
         )
         if new_variant.get("inserted"):
             for ins in new_variant["inserted"]:
@@ -191,7 +200,7 @@ def to_hgvs_locations(variants, reference_model, selector_id=None, degenerate=Fa
     :return: Variants with locations in selector's HGVS coordinate system.
     """
     selector_model = None
-    if selector_id is None and get_mol_type(reference_model):
+    if selector_id is None and get_reference_mol_type(reference_model):
         coordinate_system = "g"
     else:
         selector_model = get_selector_model(reference_model["model"], selector_id)
