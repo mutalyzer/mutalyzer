@@ -114,9 +114,21 @@ def i_corrected_coordinate_system(coordinate_system, correction_source):
     }
 
 
+def check_errors(fn):
+    def wrapper(self):
+        if not self.errors:
+            fn(self)
+        if self.errors and self.stop_on_errors:
+            raise Exception(str(self.errors))
+
+    return wrapper
+
+
 class Description(object):
-    def __init__(self, description):
+    def __init__(self, description, stop_on_error=False):
         self.input_description = description
+        self.stop_on_errors = stop_on_error
+
         self.input_model = description_to_model(description)
         self.corrected_model = copy.deepcopy(self.input_model)
         self.augmented_description = None
@@ -160,7 +172,12 @@ class Description(object):
         set_by_path(self.corrected_model, path, corrected_id)
         self._add_info(path, i_corrected_reference_id(original_id, corrected_id))
 
+    @check_errors
     def retrieve_references(self):
+        """
+        Populate the references
+        :return:
+        """
         if not self.corrected_model:
             return
         for reference_id, path in yield_reference_ids(self.input_model):
@@ -171,19 +188,18 @@ class Description(object):
             except NoReferenceRetrieved:
                 self._add_error(path, e_reference_not_retrieved(reference_id))
             else:
-                reference_id_from_model = get_reference_id_from_model(reference_model)
-                if reference_id_from_model != reference_id:
+                reference_id_in_model = get_reference_id_from_model(reference_model)
+                if reference_id_in_model != reference_id:
                     self._correct_reference_id(
-                        path, reference_id, reference_id_from_model
+                        path, reference_id, reference_id_in_model
                     )
-                    self.references[reference_id_from_model] = reference_model
+                    self.references[reference_id_in_model] = reference_model
                 else:
                     self.references[reference_id] = reference_model
                 self._set_main_reference()
 
+    @check_errors
     def check_selectors_in_references(self):
-        if self.errors:
-            return
         for reference_id, selector_id, path in yield_reference_selector_ids(
             self.corrected_model
         ):
@@ -219,9 +235,8 @@ class Description(object):
             return
         self._add_error(path, e_no_selector_found(reference_id, selector_id))
 
+    @check_errors
     def check_coordinate_systems(self):
-        if self.errors:
-            return
         for (
             c_s,
             c_s_path,
@@ -477,20 +492,18 @@ class Description(object):
 
     def normalize(self):
         self.retrieve_references()
+
         self.check_selectors_in_references()
         self.check_coordinate_systems()
         self.check_coordinate_system_consistency()
 
         self.construct_internal_coordinate_model()
-
-        # self.augment_input_model()
-        # self.check_locations()
         self.construct_internal_indexing_model()
-        # identify_unsorted_locations(self.augmented_model)
         self.construct_delins_model()
-        # print(identify_unsorted_locations(self.delins_model))
+
         if contains_uncertain_locations(self.delins_model):
             return
+
         self.mutate()
         self.extract()
         if self.de_model:
@@ -499,9 +512,12 @@ class Description(object):
             self.get_normalized_description()
             self.get_equivalent_descriptions()
             self.get_protein_descriptions()
-        self.augment_model()
-        print(self.infos)
-        print(self.errors)
+        # self.augment_model()
+
+        # self.augment_input_model()
+        # self.check_locations()
+        # identify_unsorted_locations(self.augmented_model)
+        # print(identify_unsorted_locations(self.delins_model))
 
     def output(self):
         output = {
