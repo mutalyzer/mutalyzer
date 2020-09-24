@@ -3,8 +3,6 @@ import copy
 from mutalyzer_crossmapper import Coding, Genomic, NonCoding
 
 from ..description import (
-    get_coordinate_system,
-    get_errors,
     get_reference_id,
     get_selector_id,
     yield_inserted_other_reference,
@@ -121,7 +119,7 @@ def initialize_internal_model(description_model):
 
 def points_to_internal_coordinates(description, references):
     reference_id = get_reference_id(description)
-    coordinate_system = get_coordinate_system(description)
+    coordinate_system = description.get("coordinate_system")
     selector_id = get_selector_id(description)
     selector_model = (
         get_selector_model(references[reference_id]["annotations"], selector_id)

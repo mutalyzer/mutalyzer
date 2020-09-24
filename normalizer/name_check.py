@@ -1,6 +1,8 @@
 import copy
 
 from extractor import describe_dna
+from mutalyzer_hgvs_parser import parse_description_to_model
+from mutalyzer_hgvs_parser.exceptions import UnexpectedCharacter, UnexpectedEnd
 from mutalyzer_mutator import mutate
 from mutalyzer_retriever.retriever import NoReferenceError, NoReferenceRetrieved
 
@@ -12,8 +14,6 @@ from .converter.to_internal_coordinates import to_internal_coordinates
 from .converter.to_internal_indexing import to_internal_indexing
 from .converter.variants_de_to_hgvs import de_to_hgvs
 from .description import (
-    description_to_model,
-    get_errors,
     get_reference_id,
     model_to_string,
     variants_to_description,
@@ -40,14 +40,13 @@ from .reference import (
     yield_selector_ids,
 )
 from .util import set_by_path, updated_by_path
-from mutalyzer_hgvs_parser import parse_description_to_model
-from mutalyzer_hgvs_parser.exceptions import UnexpectedCharacter, UnexpectedEnd
+
 
 def e_reference_not_retrieved(reference_id, path):
     return {
         "code": "ERETR",
         "details": "Reference {} could not be retrieved.".format(reference_id),
-        "paths": [path]
+        "paths": [path],
     }
 
 
@@ -57,7 +56,7 @@ def e_no_selector_found(reference_id, selector_id, path):
         "details": "No {} selector found in reference {}.".format(
             selector_id, reference_id
         ),
-        "paths": [path]
+        "paths": [path],
     }
 
 
@@ -66,7 +65,7 @@ def e_selector_options(selector_id, selector_type, options, path):
         "code": "ESELECTOROPTIONS",
         "details": "{} selector identified as {}.".format(selector_id, selector_type),
         "options": options,
-        "paths": [path]
+        "paths": [path],
     }
 
 
@@ -74,7 +73,7 @@ def e_no_coordinate_system(path):
     return {
         "code": "ENOCOORDINATESYSTEM",
         "details": "A coordinate system is required.",
-        "paths": [path]
+        "paths": [path],
     }
 
 
@@ -87,7 +86,7 @@ def e_coordinate_system_mismatch(
         "{} coordinate system. ".format(
             coordinate_system, mismatch_id, mismatch_coordinate_system
         ),
-        "paths": [path]
+        "paths": [path],
     }
 
 
@@ -97,7 +96,7 @@ def i_corrected_reference_id(original_id, corrected_id, path):
         "details": "Reference {} was retrieved instead of {}.".format(
             original_id, corrected_id
         ),
-        "paths": [path]
+        "paths": [path],
     }
 
 
@@ -107,7 +106,7 @@ def i_corrected_selector_id(original_id, corrected_id, correction_source, path):
         "details": "Selector {} was corrected to {} from {}.".format(
             original_id, corrected_id, correction_source
         ),
-        "paths": [path]
+        "paths": [path],
     }
 
 
@@ -117,7 +116,7 @@ def i_corrected_coordinate_system(coordinate_system, correction_source, path):
         "details": "Coordinate system corrected to {} from {}.".format(
             coordinate_system, correction_source
         ),
-        "paths": [path]
+        "paths": [path],
     }
 
 
@@ -179,8 +178,7 @@ class Description(object):
         except UnexpectedEnd as e:
             self._add_error(
                 dict(
-                    {"code": "ESYNTAXUEOF",
-                     "details": "Unexpected end of input."},
+                    {"code": "ESYNTAXUEOF", "details": "Unexpected end of input."},
                     **e.serialize()
                 )
             )
@@ -367,8 +365,7 @@ class Description(object):
 
     @check_errors
     def mutate(self):
-        print(self.errors)
-        if self.delins_model and not get_errors(self.delins_model):
+        if self.delins_model:
             self.observed_sequence = mutate(
                 self._get_sequences(), self.delins_model["variants"]
             )

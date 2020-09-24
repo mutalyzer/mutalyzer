@@ -1,7 +1,7 @@
 from mutalyzer_hgvs_parser import parse_description_to_model
 
 from .converter import to_hgvs_coordinates, to_internal_coordinates
-from .description import get_errors, location_to_description
+from .description import location_to_description
 from .position_check import check_locations
 
 
@@ -38,12 +38,10 @@ class PositionConvert(object):
         self.internal_model = {}
         self.converted_model = {}
 
-        if not self.errors and not get_errors(self.description_model):
-            self.internal_model = self.get_internal_model()
+        self.internal_model = self.get_internal_model()
         if self.internal_model:
             check_locations(self.description_model, self.internal_model)
-            if not get_errors(self.description_model):
-                self.converted_model = self.get_converted_model()
+            self.converted_model = self.get_converted_model()
 
         self.output = self.get_output()
 
