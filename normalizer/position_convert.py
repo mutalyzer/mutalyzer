@@ -1,17 +1,8 @@
-from mutalyzer_crossmapper import Coding, Genomic, NonCoding
 from mutalyzer_hgvs_parser import parse_description_to_model
 
-from .converter import to_hgvs, to_internal, to_internal_coordinates
+from .converter import to_hgvs_coordinates, to_internal_coordinates
 from .description import get_errors, location_to_description
 from .position_check import check_locations
-from .reference import (
-    coordinate_system_from_mol_type,
-    get_only_selector_id,
-    get_reference_model,
-    get_reference_mol_type,
-    get_selector_model,
-    get_selectors_overlap,
-)
 
 
 class PositionConvert(object):
@@ -32,7 +23,7 @@ class PositionConvert(object):
             self.description = description
             self.description_model = self.description_to_model()
         elif reference_id or position or from_selector_id or from_coordinate_system:
-            self.description_model = self.get_model_from_segmented_input(
+            self.description_model = self._get_model_from_segmented_input(
                 reference_id, position, from_selector_id, from_coordinate_system
             )
         elif description_model:
@@ -74,11 +65,11 @@ class PositionConvert(object):
         return to_internal_coordinates.to_internal_coordinates(self.description_model)
 
     def get_converted_model(self):
-        return to_internal_coordinates.to_hgvs(
+        return to_hgvs_coordinates(
             self.internal_model, self.to_coordinate_system, self.to_selector_id
         )
 
-    def get_model_from_segmented_input(
+    def _get_model_from_segmented_input(
         self,
         reference_id="",
         position="",
@@ -112,90 +103,25 @@ class PositionConvert(object):
 
         return description_model
 
-    def check_internal(self):
-        p = self.internal
-        o = self.location_model
-        seq_len = len(self.reference_model["sequence"]["seq"])
-        greater = []
-        smaller = []
-
-        if p["type"] == "range":
-            if p["start"]["type"] == "range":
-                if p["start"]["start"].get("position"):
-                    if p["start"]["start"]["position"] < 0:
-                        smaller.append(location_to_description(o["start"]["start"]))
-                    elif p["start"]["start"]["position"] > seq_len:
-                        greater.append(location_to_description(o["start"]["start"]))
-                if p["start"]["end"].get("position"):
-                    if p["start"]["end"]["position"] < 0:
-                        smaller.append(location_to_description(o["start"]["end"]))
-                    if p["start"]["end"]["position"] > seq_len:
-                        greater.append(location_to_description(o["start"]["end"]))
-            elif p["start"].get("position"):
-                if p["start"]["position"] < 0:
-                    smaller.append(location_to_description(o["start"]))
-                if p["start"]["position"] > seq_len:
-                    greater.append(location_to_description(o["start"]))
-
-            if p["end"]["type"] == "range":
-                if p["end"]["start"].get("position"):
-                    if p["end"]["start"]["position"] < 0:
-                        smaller.append(location_to_description(o["end"]["start"]))
-                    if p["end"]["start"]["position"] > seq_len:
-                        greater.append(location_to_description(o["end"]["start"]))
-                if p["end"]["end"].get("position"):
-                    if p["end"]["end"]["position"] < 0:
-                        smaller.append(location_to_description(o["end"]["end"]))
-                    if p["end"]["end"]["position"] > seq_len:
-                        greater.append(location_to_description(o["end"]["end"]))
-            elif p["end"].get("position"):
-                if p["end"]["position"] < 0:
-                    smaller.append(location_to_description(o["end"]))
-                if p["end"]["position"] > seq_len:
-                    greater.append(location_to_description(o["end"]))
-        elif p["type"] == "point" and p.get("position"):
-            if p["position"] < 0:
-                smaller.append(location_to_description(o))
-
-            if p["position"] > seq_len:
-                greater.append(location_to_description(o["position"]))
-        smaller = ", ".join(smaller)
-        greater = ", ".join(greater)
-        if smaller:
-            self.errors.append({"code": "EOUTOFBOUNDARYS", "details": smaller})
-        if greater:
-            self.errors.append({"code": "EOUTOFBOUNDARYSG", "details": greater})
-
-    def identify_inconsistencies(self):
-        if (self.to_selector_id == self.from_selector_id) and (
-            self.to_coordinate_system == self.from_coordinate_system
-        ):
-            self.errors.append(
-                {
-                    "code": "EFROMTOSELECTORSEQUAL",
-                    "details": "Both from and to coordinate systems are "
-                    "the same, no conversion can be implemented.",
-                }
-            )
-
     def add_overlapping(self):
-        if self.include_overlapping and self.internal:
-            overlapping = []
-            for selector in get_selectors_overlap(
-                self.internal["position"], self.reference_model["model"]
-            ):
-                coordinate_system = coordinate_system_from_mol_type(selector)
-                if coordinate_system:
-                    hgvs = to_hgvs.point_to_hgvs(self.internal, **crossmap)
-                if selector["id"] != self.to_selector_id:
-                    overlapping.append(
-                        {
-                            "selector_id": selector["id"],
-                            "coordinate_system": selector["coordinate_system"],
-                            "position": location_to_description(hgvs),
-                        }
-                    )
-            self.overlapping = overlapping
+        pass
+        # if self.include_overlapping and self.internal:
+        #     overlapping = []
+        #     for selector in get_selectors_overlap(
+        #         self.internal["position"], self.reference_model["model"]
+        #     ):
+        #         coordinate_system = coordinate_system_from_mol_type(selector)
+        #         if coordinate_system:
+        #             hgvs = to_hgvs.point_to_hgvs(self.internal, **crossmap)
+        #         if selector["id"] != self.to_selector_id:
+        #             overlapping.append(
+        #                 {
+        #                     "selector_id": selector["id"],
+        #                     "coordinate_system": selector["coordinate_system"],
+        #                     "position": location_to_description(hgvs),
+        #                 }
+        #             )
+        #     self.overlapping = overlapping
 
     def get_output(self):
         output = {}

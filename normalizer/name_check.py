@@ -6,8 +6,9 @@ from mutalyzer_retriever.retriever import NoReferenceError, NoReferenceRetrieved
 
 from .checker import is_overlap, sort_variants
 from .converter.to_delins import to_delins
-from .converter.to_hgvs import to_hgvs_locations
-from .converter.to_internal_coordinates import to_hgvs, to_internal_coordinates
+from .converter.to_hgvs_coordinates import to_hgvs_locations
+from .converter.to_hgvs_indexing import to_hgvs_indexing
+from .converter.to_internal_coordinates import to_internal_coordinates
 from .converter.to_internal_indexing import to_internal_indexing
 from .converter.variants_de_to_hgvs import de_to_hgvs
 from .description import (
@@ -15,6 +16,7 @@ from .description import (
     get_errors,
     get_reference_id,
     get_references_from_description_model,
+    get_view_model,
     model_to_string,
     variants_to_description,
     yield_reference_ids,
@@ -39,7 +41,7 @@ from .reference import (
     is_selector_in_reference,
     yield_selector_ids,
 )
-from .util import set_by_path
+from .util import set_by_path, updated_by_path
 
 
 def e_reference_not_retrieved(reference_id):
@@ -336,14 +338,12 @@ class Description(object):
             self.internal_coordinates_model = to_internal_coordinates(
                 self.corrected_model, self.references
             )
-            print(model_to_string(self.internal_coordinates_model))
 
     def construct_internal_indexing_model(self):
         if not self.errors:
             self.internal_indexing_model = to_internal_indexing(
                 self.internal_coordinates_model
             )
-            print(model_to_string(self.internal_indexing_model))
 
     def construct_delins_model(self):
         if self.internal_indexing_model and not get_errors(
@@ -408,26 +408,19 @@ class Description(object):
         else:
             selector_id = None
         if self.de_hgvs_internal_indexing_model:
+            hgvs_indexing = to_hgvs_indexing(self.de_hgvs_internal_indexing_model)
             self.de_hgvs_model = to_hgvs_locations(
-                self.de_hgvs_internal_indexing_model["variants"],
-                self.references["reference"],
+                hgvs_indexing,
+                self.references,
+                self.corrected_model["coordinate_system"],
                 selector_id,
                 True,
-            )
-            print(self.de_hgvs_model)
-            print(
-                to_hgvs(
-                    self.de_hgvs_internal_indexing_model,
-                    self.references,
-                    self.corrected_model["coordinate_system"],
-                    selector_id,
-                )
             )
 
     def get_normalized_description(self):
         if self.de_hgvs_model:
             self.normalized_description = model_to_string(self.de_hgvs_model)
-            print(self.normalized_description)
+            print("normalized description:\n", self.normalized_description)
 
     def get_equivalent_descriptions(self):
         if not self.de_model:
@@ -438,11 +431,12 @@ class Description(object):
             internal_model = to_internal_coordinates(
                 self.de_hgvs_model, self.references
             )
-            converted_model = to_hgvs(
+            converted_model = to_hgvs_locations(
                 internal_model=internal_model,
                 references=self.references,
                 to_coordinate_system=None,
                 to_selector_id=selector_id,
+                degenerate=True,
             )
 
             equivalent_descriptions.append(model_to_string(converted_model))
@@ -471,6 +465,16 @@ class Description(object):
             self.references[self.reference_id()],
         )
 
+    def augment_model(self):
+        self.augmented_model = get_view_model(self.corrected_model)
+        for error in self.errors:
+            updated_by_path(self.augmented_model, error, {"errors": self.errors[error]})
+        for info in self.infos:
+            updated_by_path(self.augmented_model, info, {"infos": self.infos[info]})
+        import json
+
+        print(json.dumps(self.augmented_model, indent=2))
+
     def normalize(self):
         self.retrieve_references()
         self.check_selectors_in_references()
@@ -495,6 +499,7 @@ class Description(object):
             self.get_normalized_description()
             self.get_equivalent_descriptions()
             self.get_protein_descriptions()
+        self.augment_model()
         print(self.infos)
         print(self.errors)
 

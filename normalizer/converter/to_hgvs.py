@@ -188,7 +188,7 @@ def variants_to_hgvs(variants, crossmap):
     return new_variants
 
 
-def to_hgvs_locations(variants, reference_model, selector_id=None, degenerate=False):
+def to_hgvs(variants, reference_model, selector_id=None, degenerate=False):
     """
     Converts the variant locations present from the internal coordinate system
     to the hgvs locations, according the the selector_id type.

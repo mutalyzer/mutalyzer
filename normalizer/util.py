@@ -194,3 +194,10 @@ def set_by_path(dictionary, path, value):
     for k in path[:-1]:
         nested_dictionary = nested_dictionary[k]
     nested_dictionary[path[-1]] = value
+
+
+def updated_by_path(dictionary, path, value):
+    nested_dictionary = dictionary
+    for k in path[:-1]:
+        nested_dictionary = nested_dictionary[k]
+    nested_dictionary[path[-1]].update(value)

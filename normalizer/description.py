@@ -3,7 +3,7 @@ import copy
 from mutalyzer_hgvs_parser import parse_description_to_model
 
 from .reference import Reference
-from .util import add_msg
+from .util import add_msg, set_by_path
 
 
 def get_reference_from_model(description_model):
@@ -408,3 +408,24 @@ def yield_point_locations_for_main_reference(model, path=[]):
                     yield from yield_point_locations_for_main_reference(
                         sub_model, path + [k, i]
                     )
+
+
+def yield_view_nodes(model, path=[]):
+    for k in model.keys():
+        if k in ["reference", "location", "start", "end", "selector"]:
+            yield from yield_view_nodes(model[k], path + [k])
+        elif k in ["variants", "inserted", "deleted"]:
+            for i, sub_model in enumerate(model[k]):
+                yield from yield_view_nodes(sub_model, path + [k, i])
+        elif k == "source" and isinstance(model[k], dict):
+            yield from yield_view_nodes(model[k], path + [k])
+        if k in ["position", "id", "coordinate_system"]:
+            yield model[k], path + [k]
+
+
+def get_view_model(model):
+    view_model = copy.deepcopy(model)
+    for view_value, path in yield_view_nodes(model):
+        set_by_path(view_model, path, {"view": view_value})
+
+    return view_model
