@@ -2,46 +2,7 @@ import copy
 
 from mutalyzer_hgvs_parser import parse_description_to_model
 
-from .reference import Reference
-from .util import add_msg, set_by_path
-
-
-def get_reference_from_model(description_model):
-    reference_id = get_reference_id(description_model)
-    if not reference_id:
-        return
-
-    reference = Reference(reference_id)
-    if not reference.model:
-        if description_model.get("reference"):
-            d_r = description_model["reference"]
-        elif description_model.get("source"):
-            d_r = description_model["source"]
-        add_msg(
-            d_r,
-            "errors",
-            {
-                "code": "ERETR",
-                "details": "Reference {} could not be retrieved.".format(reference_id),
-            },
-        )
-    else:
-        if reference.get_id() != reference_id:
-            set_reference_id(description_model, reference.get_id())
-        return reference
-
-
-def get_references_from_description_model(model, references):
-    if isinstance(model, dict):
-        reference = get_reference_from_model(model)
-        if reference:
-            references[reference.get_id()] = reference
-        for k in model.keys():
-            if k in ["variants", "inserted"]:
-                get_references_from_description_model(model[k], references)
-    elif isinstance(model, list):
-        for sub_model in model:
-            get_references_from_description_model(sub_model, references)
+from .util import set_by_path
 
 
 def get_reference_id(model):
@@ -53,39 +14,6 @@ def get_reference_id(model):
         and model["source"].get("id")
     ):
         return model["source"]["id"]
-
-
-def set_reference_id(description_model, reference_id):
-    if description_model.get("reference") and description_model["reference"].get("id"):
-        old_reference_id = description_model["reference"]["id"]
-        description_model["reference"]["id"] = reference_id
-        add_msg(
-            description_model["reference"],
-            "info",
-            {
-                "code": "IUPDATEDREFERENCEID",
-                "details": "Reference {} was retrieved instead of {}.".format(
-                    reference_id, old_reference_id
-                ),
-            },
-        )
-    elif description_model.get("source") and description_model["source"].get("id"):
-        old_reference_id = description_model["source"]["id"]
-        description_model["source"]["id"] = reference_id
-        add_msg(
-            description_model["source"],
-            "info",
-            {
-                "code": "IUPDATEDREFERENCEID",
-                "details": "Reference {} was retrieved instead of {}.".format(
-                    reference_id, old_reference_id
-                ),
-            },
-        )
-    elif description_model.get("reference"):
-        description_model["reference"]["id"] = reference_id
-    else:
-        description_model["reference"] = {"id": reference_id}
 
 
 def get_selector_id(description_model):

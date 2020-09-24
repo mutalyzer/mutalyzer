@@ -15,8 +15,6 @@ from .description import (
     description_to_model,
     get_errors,
     get_reference_id,
-    get_references_from_description_model,
-    get_view_model,
     model_to_string,
     variants_to_description,
     yield_reference_ids,
@@ -42,7 +40,8 @@ from .reference import (
     yield_selector_ids,
 )
 from .util import set_by_path, updated_by_path
-
+from mutalyzer_hgvs_parser import parse_description_to_model
+from mutalyzer_hgvs_parser.exceptions import UnexpectedCharacter, UnexpectedEnd
 
 def e_reference_not_retrieved(reference_id, path):
     return {
@@ -137,10 +136,8 @@ class Description(object):
         self.input_description = description
         self.stop_on_errors = stop_on_error
 
-        self.input_model = description_to_model(description)
-        self.corrected_model = copy.deepcopy(self.input_model)
-
-        self.normalized_description = None
+        self.input_model = {}
+        self.corrected_model = {}
         self.internal_coordinates_model = {}
         self.internal_indexing_model = {}
         self.delins_model = {}
@@ -148,19 +145,47 @@ class Description(object):
         self.de_hgvs_internal_indexing_model = {}
         self.de_hgvs_coordinate_model = {}
         self.de_hgvs_model = {}
+        self.normalized_description = None
+
         self.references = {}
+
         self.observed_sequence = None
+
         self.equivalent_descriptions = None
         self.protein_descriptions = None
 
         self.errors = []
         self.infos = []
 
+        self._convert_description_to_model()
+
     def _add_error(self, error):
         self.errors.append(error)
 
     def _add_info(self, info):
         self.infos.append(info)
+
+    @check_errors
+    def _convert_description_to_model(self):
+        try:
+            self.input_model = parse_description_to_model(self.input_description)
+        except UnexpectedCharacter as e:
+            self._add_error(
+                dict(
+                    {"code": "ESYNTAXUC", "details": "Unexpected character."},
+                    **e.serialize()
+                )
+            )
+        except UnexpectedEnd as e:
+            self._add_error(
+                dict(
+                    {"code": "ESYNTAXUEOF",
+                     "details": "Unexpected end of input."},
+                    **e.serialize()
+                )
+            )
+        else:
+            self.corrected_model = copy.deepcopy(self.input_model)
 
     def _set_main_reference(self):
         reference_id = get_reference_id(self.corrected_model)
@@ -247,7 +272,7 @@ class Description(object):
             copy.deepcopy(self.corrected_model)
         ):
             if c_s is None:
-                self.handle_no_coordinate_system(c_s_path, r_id, s_id)
+                self._handle_no_coordinate_system(c_s_path, r_id, s_id)
 
     def _correct_coordinate_system(self, coordinate_system, path, correction_source):
         set_by_path(self.corrected_model, path, coordinate_system)
@@ -255,7 +280,7 @@ class Description(object):
             i_corrected_coordinate_system(coordinate_system, correction_source, path)
         )
 
-    def handle_no_coordinate_system(self, c_s_path, r_id, s_id):
+    def _handle_no_coordinate_system(self, c_s_path, r_id, s_id):
         if s_id:
             c_s = get_coordinate_system_from_selector_id(self.references[r_id], s_id)
             if c_s:
@@ -275,7 +300,7 @@ class Description(object):
         )
 
     @check_errors
-    def check_coordinate_system_consistency(self):
+    def _check_coordinate_system_consistency(self):
         for (
             c_s,
             c_s_path,
@@ -340,12 +365,15 @@ class Description(object):
         sequences = {k: self.references[k]["sequence"]["seq"] for k in self.references}
         return sequences
 
+    @check_errors
     def mutate(self):
+        print(self.errors)
         if self.delins_model and not get_errors(self.delins_model):
             self.observed_sequence = mutate(
                 self._get_sequences(), self.delins_model["variants"]
             )
 
+    @check_errors
     def extract(self):
         if self.is_extraction_possible():
             reference_sequence = self.references["reference"]["sequence"]["seq"]
@@ -365,6 +393,7 @@ class Description(object):
             return True
         return False
 
+    @check_errors
     def get_de_hgvs_internal_indexing_model(self):
         if self.de_model:
             self.de_hgvs_internal_indexing_model = {
@@ -379,6 +408,7 @@ class Description(object):
                 ),
             }
 
+    @check_errors
     def get_de_hgvs_coordinates_model(self):
         if self.corrected_model["reference"].get("selector"):
             selector_id = self.corrected_model["reference"]["selector"]["id"]
@@ -436,7 +466,7 @@ class Description(object):
 
         self.check_selectors_in_references()
         self.check_coordinate_systems()
-        self.check_coordinate_system_consistency()
+        self._check_coordinate_system_consistency()
 
         self.construct_internal_coordinate_model()
         self.construct_internal_indexing_model()
