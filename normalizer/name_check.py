@@ -28,7 +28,7 @@ from .position_check import (
     contains_uncertain_locations,
     identify_unsorted_locations,
 )
-from .protein import get_protein_description, get_protein_descriptions
+from .protein import get_protein_descriptions
 from .reference import (
     get_coordinate_system_from_reference,
     get_coordinate_system_from_selector_id,
@@ -44,39 +44,43 @@ from .reference import (
 from .util import set_by_path, updated_by_path
 
 
-def e_reference_not_retrieved(reference_id):
+def e_reference_not_retrieved(reference_id, path):
     return {
         "code": "ERETR",
         "details": "Reference {} could not be retrieved.".format(reference_id),
+        "paths": [path]
     }
 
 
-def e_no_selector_found(reference_id, selector_id):
+def e_no_selector_found(reference_id, selector_id, path):
     return {
         "code": "ENOSELECTORFOUND",
         "details": "No {} selector found in reference {}.".format(
             selector_id, reference_id
         ),
+        "paths": [path]
     }
 
 
-def e_selector_options(selector_id, selector_type, options):
+def e_selector_options(selector_id, selector_type, options, path):
     return {
         "code": "ESELECTOROPTIONS",
         "details": "{} selector identified as {}.".format(selector_id, selector_type),
         "options": options,
+        "paths": [path]
     }
 
 
-def e_no_coordinate_system():
+def e_no_coordinate_system(path):
     return {
         "code": "ENOCOORDINATESYSTEM",
         "details": "A coordinate system is required.",
+        "paths": [path]
     }
 
 
 def e_coordinate_system_mismatch(
-    coordinate_system, mismatch_id, mismatch_coordinate_system
+    coordinate_system, mismatch_id, mismatch_coordinate_system, path
 ):
     return {
         "code": "ECOORDINATESYSTEMMISMATCH",
@@ -84,33 +88,37 @@ def e_coordinate_system_mismatch(
         "{} coordinate system. ".format(
             coordinate_system, mismatch_id, mismatch_coordinate_system
         ),
+        "paths": [path]
     }
 
 
-def i_corrected_reference_id(original_id, corrected_id):
+def i_corrected_reference_id(original_id, corrected_id, path):
     return {
         "code": "ICORRECTEDREFERENCEID",
         "details": "Reference {} was retrieved instead of {}.".format(
             original_id, corrected_id
         ),
+        "paths": [path]
     }
 
 
-def i_corrected_selector_id(original_id, corrected_id, correction_source):
+def i_corrected_selector_id(original_id, corrected_id, correction_source, path):
     return {
         "code": "ICORRECTEDSELECTORID",
         "details": "Selector {} was corrected to {} from {}.".format(
             original_id, corrected_id, correction_source
         ),
+        "paths": [path]
     }
 
 
-def i_corrected_coordinate_system(coordinate_system, correction_source):
+def i_corrected_coordinate_system(coordinate_system, correction_source, path):
     return {
         "code": "ICORRECTEDCOORDINATESYSTEM",
         "details": "Coordinate system corrected to {} from {}.".format(
             coordinate_system, correction_source
         ),
+        "paths": [path]
     }
 
 
@@ -131,9 +139,8 @@ class Description(object):
 
         self.input_model = description_to_model(description)
         self.corrected_model = copy.deepcopy(self.input_model)
-        self.augmented_description = None
+
         self.normalized_description = None
-        self.augmented_model = {}
         self.internal_coordinates_model = {}
         self.internal_indexing_model = {}
         self.delins_model = {}
@@ -146,22 +153,14 @@ class Description(object):
         self.equivalent_descriptions = None
         self.protein_descriptions = None
 
-        self.errors = {}
-        self.infos = {}
+        self.errors = []
+        self.infos = []
 
-    def _add_error(self, path, error):
-        path = path
-        if path in self.errors:
-            self.errors[path].append(error)
-        else:
-            self.errors[path] = [error]
+    def _add_error(self, error):
+        self.errors.append(error)
 
-    def _add_info(self, path, info):
-        path = path
-        if path in self.infos:
-            self.infos[path].append(info)
-        else:
-            self.infos[path] = [info]
+    def _add_info(self, info):
+        self.infos.append(info)
 
     def _set_main_reference(self):
         reference_id = get_reference_id(self.corrected_model)
@@ -170,7 +169,7 @@ class Description(object):
 
     def _correct_reference_id(self, path, original_id, corrected_id):
         set_by_path(self.corrected_model, path, corrected_id)
-        self._add_info(path, i_corrected_reference_id(original_id, corrected_id))
+        self._add_info(i_corrected_reference_id(original_id, corrected_id, path))
 
     @check_errors
     def retrieve_references(self):
@@ -184,9 +183,9 @@ class Description(object):
             try:
                 reference_model = get_reference_model(reference_id)
             except NoReferenceError:
-                self._add_error(path, e_reference_not_retrieved(reference_id))
+                self._add_error(e_reference_not_retrieved(reference_id, [path]))
             except NoReferenceRetrieved:
-                self._add_error(path, e_reference_not_retrieved(reference_id))
+                self._add_error(e_reference_not_retrieved(reference_id, [path]))
             else:
                 reference_id_in_model = get_reference_id_from_model(reference_model)
                 if reference_id_in_model != reference_id:
@@ -209,7 +208,7 @@ class Description(object):
     def _correct_selector_id(self, path, original_id, corrected_id, correction_source):
         set_by_path(self.corrected_model, path, corrected_id)
         self._add_info(
-            path, i_corrected_selector_id(original_id, corrected_id, correction_source)
+            i_corrected_selector_id(original_id, corrected_id, correction_source, path)
         )
 
     def handle_selector_not_found(self, reference_id, selector_id, path):
@@ -219,7 +218,7 @@ class Description(object):
             return
         elif len(gene_selectors) > 1:
             self._add_error(
-                path, e_selector_options(selector_id, "gene", gene_selectors)
+                e_selector_options(selector_id, "gene", gene_selectors, path)
             )
             return
         gene_selectors = get_gene_selectors_hgnc(
@@ -230,10 +229,10 @@ class Description(object):
             return
         elif len(gene_selectors) > 1:
             self._add_error(
-                path, e_selector_options(selector_id, "gene HGNC", gene_selectors)
+                e_selector_options(selector_id, "gene HGNC", gene_selectors, path)
             )
             return
-        self._add_error(path, e_no_selector_found(reference_id, selector_id))
+        self._add_error(e_no_selector_found(reference_id, selector_id, path))
 
     @check_errors
     def check_coordinate_systems(self):
@@ -253,7 +252,7 @@ class Description(object):
     def _correct_coordinate_system(self, coordinate_system, path, correction_source):
         set_by_path(self.corrected_model, path, coordinate_system)
         self._add_info(
-            path, i_corrected_coordinate_system(coordinate_system, correction_source)
+            i_corrected_coordinate_system(coordinate_system, correction_source, path)
         )
 
     def handle_no_coordinate_system(self, c_s_path, r_id, s_id):
@@ -266,18 +265,17 @@ class Description(object):
         if c_s:
             self._correct_coordinate_system(c_s, c_s_path, r_id + " reference")
             return
-        self._add_error(c_s_path, e_no_coordinate_system())
+        self._add_error(e_no_coordinate_system(c_s_path))
 
     def _correct_selector_id_from_coordinate_system(self, r_id_path, selector_id):
         path = tuple(list(r_id_path[:-1]) + ["selector"])
         set_by_path(self.corrected_model, path, {"id": selector_id})
         self._add_info(
-            path, i_corrected_selector_id("", selector_id, "coordinate system")
+            i_corrected_selector_id("", selector_id, "coordinate system", path)
         )
 
+    @check_errors
     def check_coordinate_system_consistency(self):
-        if self.errors:
-            return
         for (
             c_s,
             c_s_path,
@@ -296,7 +294,7 @@ class Description(object):
                     return
                 else:
                     self._add_error(
-                        c_s_path, e_coordinate_system_mismatch(c_s, s_id, s_c_s)
+                        e_coordinate_system_mismatch(c_s, s_id, s_c_s, c_s_path)
                     )
                     return
             r_c_s = get_coordinate_system_from_reference(self.references[r_id])
@@ -310,66 +308,29 @@ class Description(object):
                     return
                 else:
                     self._add_error(
-                        c_s_path, e_coordinate_system_mismatch(c_s, r_id, r_c_s)
+                        e_coordinate_system_mismatch(c_s, r_id, r_c_s, c_s_path)
                     )
 
-    def reference_id(self):
-        if self.augmented_model:
-            return self.augmented_model["reference"]["id"]
-        elif (
-            self.input_model
-            and self.input_model.get("reference")
-            and self.input_model["reference"].get("id")
-        ):
-            return self.input_model["reference"]["id"]
-        else:
-            return None
-
-    def augment_input_model(self):
-        if get_errors(self.input_model):
-            return
-        self.augmented_model = copy.deepcopy(self.input_model)
-        if get_errors(self.augmented_model):
-            return
-        get_references_from_description_model(self.augmented_model, self.references)
-        if get_errors(self.augmented_model):
-            return
-        else:
-            self.augmented_description = model_to_string(self.augmented_model)
-
-    def model_parser_errors(self):
-        if self.augmented_model.get("errors"):
-            if (
-                self.augmented_model["errors"][0].get("details")
-                == "Some error occured during description parsing."
-            ):
-                self.augmented_model["errors"][0] = {
-                    "code": "ESYNTAX",
-                    "details": "A syntax error occurred.",
-                }
-
+    @check_errors
     def construct_internal_coordinate_model(self):
-        if not self.errors:
-            self.internal_coordinates_model = to_internal_coordinates(
-                self.corrected_model, self.references
-            )
+        self.internal_coordinates_model = to_internal_coordinates(
+            self.corrected_model, self.references
+        )
 
+    @check_errors
     def construct_internal_indexing_model(self):
-        if not self.errors:
-            self.internal_indexing_model = to_internal_indexing(
-                self.internal_coordinates_model
-            )
+        self.internal_indexing_model = to_internal_indexing(
+            self.internal_coordinates_model
+        )
 
+    @check_errors
     def construct_delins_model(self):
-        if self.internal_indexing_model and not get_errors(
-            self.internal_indexing_model
-        ):
-            self.delins_model = to_delins(self.internal_indexing_model)
-            # sorted_delins_variants = sort_variants(self.delins_model["variants"])
-            # print("delins variants", variants_to_description(self.delins_model["variants"]))
-            # print("sorted variants:", variants_to_description(sorted_delins_variants))
-            # print("are variants sorted:", sorted_delins_variants == self.delins_model["variants"])
-            # print("is overlap:", is_overlap(self.delins_model["variants"]))
+        self.delins_model = to_delins(self.internal_indexing_model)
+        # sorted_delins_variants = sort_variants(self.delins_model["variants"])
+        # print("delins variants", variants_to_description(self.delins_model["variants"]))
+        # print("sorted variants:", variants_to_description(sorted_delins_variants))
+        # print("are variants sorted:", sorted_delins_variants == self.delins_model["variants"])
+        # print("is overlap:", is_overlap(self.delins_model["variants"]))
 
     def _get_sequences(self):
         """
@@ -398,8 +359,9 @@ class Description(object):
                     "variants": de_variants,
                 }
 
+    @check_errors
     def is_extraction_possible(self):
-        if not get_errors(self.augmented_model) and self.observed_sequence:
+        if self.observed_sequence:
             return True
         return False
 
@@ -467,28 +429,7 @@ class Description(object):
             )
 
     def check_locations(self):
-        if (
-            not self.augmented_model
-            or not self.internal_coordinates_model
-            or get_errors(self.augmented_model)
-            or get_errors(self.internal_coordinates_model)
-        ):
-            return
-        check_locations(
-            self.augmented_model,
-            self.internal_coordinates_model,
-            self.references[self.reference_id()],
-        )
-
-    def augment_model(self):
-        self.augmented_model = get_view_model(self.corrected_model)
-        for error in self.errors:
-            updated_by_path(self.augmented_model, error, {"errors": self.errors[error]})
-        for info in self.infos:
-            updated_by_path(self.augmented_model, info, {"infos": self.infos[info]})
-        import json
-
-        print(json.dumps(self.augmented_model, indent=2))
+        pass
 
     def normalize(self):
         self.retrieve_references()
@@ -512,9 +453,7 @@ class Description(object):
             self.get_normalized_description()
             self.get_equivalent_descriptions()
             self.get_protein_descriptions()
-        # self.augment_model()
 
-        # self.augment_input_model()
         # self.check_locations()
         # identify_unsorted_locations(self.augmented_model)
         # print(identify_unsorted_locations(self.delins_model))
@@ -523,13 +462,16 @@ class Description(object):
         output = {
             "input_model": self.input_model,
         }
-        if self.augmented_model:
-            output["augmented_model"] = self.augmented_model
+        if self.corrected_model:
+            output["corrected_model"] = self.corrected_model
+            output["augmented_model"] = self.corrected_model
             output["normalized_description"] = self.normalized_description
         if self.equivalent_descriptions is not None:
             output["equivalent_descriptions"] = self.equivalent_descriptions
         if self.protein_descriptions:
             output["protein_descriptions"] = self.protein_descriptions
+        if self.errors:
+            output["errors"] = self.errors
         return output
 
 
