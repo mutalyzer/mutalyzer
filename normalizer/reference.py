@@ -6,6 +6,11 @@ from mutalyzer_retriever import retrieve_model
 
 from .util import cache_dir, get_end, get_start
 
+SELECTOR_MOL_TYPES_TYPES = ["mRNA", "ncRNA"]
+COORDINATE_C_MOL_TYPES_TYPES = ["mRNA"]
+COORDINATE_N_MOL_TYPES_TYPES = ["ncRNA", "transcribed RNA"]
+COORDINATE_G_MOL_TYPES_TYPES = ["dna", "genomic DNA", "DNA"]
+
 
 @lru_cache(maxsize=32)
 def get_reference_model(reference_id):
@@ -196,24 +201,9 @@ def get_selectors_overlap(point, reference_model):
                         yield output
 
 
-def get_only_selector(reference_model, coordinate_system=None):
-    available_selectors = get_selectors_ids(reference_model, coordinate_system)
-    if len(available_selectors) == 1:
-        return get_selector_model(reference_model, available_selectors[0])
-
-
 def coordinate_system_from_reference(reference):
     mol_type = get_reference_mol_type(reference)
     return coordinate_system_from_mol_type(mol_type)
-
-
-def coordinate_system_from_selector(selector_model):
-    if selector_model["type"] in ["mRNA"]:
-        return "c"
-    elif selector_model["type"] in ["ncRNA"]:
-        return "n"
-    else:
-        return ""
 
 
 def get_reference_id_from_model(model):
@@ -221,48 +211,6 @@ def get_reference_id_from_model(model):
         return model["annotations"]["id"]
     else:
         raise Exception("No reference ID found in the model.")
-
-
-class Reference(object):
-    def __init__(self, reference_model):
-        self.model = reference_model
-        self.id = self.get_id()
-
-    def get_selector_model(self, selector_id):
-        if self.model:
-            return get_selector_model(self.model["model"], selector_id)
-
-    def get_mol_type(self):
-        return get_reference_mol_type(self.model)
-
-    def get_only_selector(self, coordinate_system=None):
-        return get_only_selector_id(self.model["model"], coordinate_system)
-
-    def get_default_coordinate_system(self):
-        return get_coordinate_system_from_reference(self.model)
-
-    def get_available_selectors(self):
-        return get_selectors_ids(self.model["model"])
-
-    def get_length(self):
-        return len(self.model["sequence"]["seq"])
-
-    def get_id(self):
-        return self.model["model"]["id"]
-
-    def sequence(self):
-        return self.model["sequence"]["seq"]
-
-
-# --------------
-
-SELECTOR_MOL_TYPES_TYPES = ["mRNA", "ncRNA"]
-
-COORDINATE_C_MOL_TYPES_TYPES = ["mRNA"]
-
-COORDINATE_N_MOL_TYPES_TYPES = ["ncRNA", "transcribed RNA"]
-
-COORDINATE_G_MOL_TYPES_TYPES = ["dna", "genomic DNA", "DNA"]
 
 
 def is_selector_in_reference(selector_id, model):

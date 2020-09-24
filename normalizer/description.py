@@ -14,25 +14,26 @@ def get_reference_id(model):
         return model["source"]["id"]
 
 
-def get_selector_id(description_model):
+def get_selector_id(model):
     """
-    Get the selector ID from the description model. At the moment, no nesting
-    is supported.
-    :param description_model: Provided by the HGVS description parser.
+    Get the main selector ID from the description model. At the moment, no
+    nesting is supported.
+
+    :param model: Description model.
     :return: The ID of the selector, if provided, otherwise None.
     """
     if (
-        description_model.get("reference")
-        and description_model["reference"].get("selector")
-        and description_model["reference"]["selector"].get("id")
+        model.get("reference")
+        and model["reference"].get("selector")
+        and model["reference"]["selector"].get("id")
     ):
-        return description_model["reference"]["selector"]["id"]
+        return model["reference"]["selector"]["id"]
     elif (
-        description_model.get("source")
-        and description_model["source"].get("selector")
-        and description_model["source"]["selector"].get("id")
+        model.get("source")
+        and model["source"].get("selector")
+        and model["source"]["selector"].get("id")
     ):
-        return description_model["source"]["selector"]["id"]
+        return model["source"]["selector"]["id"]
 
 
 def yield_reference_ids(model, path=[]):
@@ -178,18 +179,6 @@ def reference_to_description(reference):
         elif reference.get("type") == "lrg":
             accession = reference.get("id")
     return "{}{}".format(accession, version)
-
-
-def specific_locus_to_description(specific_locus):
-    """
-    Convert the specific locus dictionary model to string.
-    :param specific_locus: Dictionary holding the specific locus model.
-    :return: Equivalent specific locus string representation.
-    """
-    if isinstance(specific_locus, dict):
-        if specific_locus.get("id"):
-            return "({})".format(specific_locus.get("id"))
-    return ""
 
 
 def variants_to_description(variants, sequences=None):

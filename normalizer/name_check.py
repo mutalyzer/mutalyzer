@@ -384,7 +384,6 @@ class Description(object):
                     "variants": de_variants,
                 }
 
-    @check_errors
     def is_extraction_possible(self):
         if self.observed_sequence:
             return True
@@ -424,7 +423,6 @@ class Description(object):
     def get_normalized_description(self):
         if self.de_hgvs_model:
             self.normalized_description = model_to_string(self.de_hgvs_model)
-            print("normalized description:\n", self.normalized_description)
 
     def get_equivalent_descriptions(self):
         if not self.de_model:
@@ -481,9 +479,7 @@ class Description(object):
             self.get_equivalent_descriptions()
             self.get_protein_descriptions()
 
-        # self.check_locations()
-        # identify_unsorted_locations(self.augmented_model)
-        # print(identify_unsorted_locations(self.delins_model))
+        self.print_models_summary()
 
     def output(self):
         output = {
@@ -500,6 +496,52 @@ class Description(object):
         if self.errors:
             output["errors"] = self.errors
         return output
+
+    def print_models_summary(self):
+        print("------")
+        if self.input_description:
+            print(self.input_description)
+
+        if self.corrected_model:
+            print(model_to_string(self.corrected_model))
+        else:
+            print("- No corrected model")
+
+        if self.internal_coordinates_model:
+            print(model_to_string(self.internal_coordinates_model))
+        else:
+            print("- No internal_coordinates_model")
+
+        if self.internal_indexing_model:
+            print(model_to_string(self.internal_indexing_model))
+        else:
+            print("- No internal_indexing_model")
+
+        if self.delins_model:
+            print(model_to_string(self.delins_model))
+        else:
+            print("- No delins_model")
+
+        if self.de_model:
+            print(model_to_string(self.de_model))
+        else:
+            print("- No de_model")
+
+        if self.de_hgvs_internal_indexing_model:
+            print(model_to_string(self.de_hgvs_internal_indexing_model))
+        else:
+            print("- No de_hgvs_internal_indexing_model")
+
+        if self.de_hgvs_coordinate_model:
+            print(model_to_string(self.de_hgvs_coordinate_model))
+        else:
+            print("- No de_hgvs_coordinate_model")
+
+        if self.de_hgvs_model:
+            print(model_to_string(self.de_hgvs_model))
+        else:
+            print("- No de_hgvs_model")
+        print("------")
 
 
 def normalize(description_to_normalize):
