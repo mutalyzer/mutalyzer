@@ -326,6 +326,13 @@ def get_protein_description(variants, references, selector_model):
     )
     cds_mutated_sequence = mutate({"reference": cds_sequence}, cds_variants)
 
+    if len(cds_sequence) % 3:
+        cds_sequence = cds_sequence + "N" * (3 - len(cds_sequence) % 3)
+    if len(cds_mutated_sequence) % 3:
+        cds_mutated_sequence = cds_mutated_sequence + "N" * (
+            3 - len(cds_mutated_sequence) % 3
+        )
+
     reference_protein = Seq(cds_sequence).translate()
     predicted_protein = Seq(cds_mutated_sequence).translate()
 
