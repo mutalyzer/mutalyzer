@@ -1,14 +1,15 @@
+import logging
+
 from flask import Blueprint
 from flask_restx import Api, Resource, fields, inputs, reqparse
 from mutalyzer_hgvs_parser import parse_description, parse_description_to_model
 
 from normalizer.description_extractor import description_extractor
-from normalizer.position_convert import position_convert
-from normalizer.reference import get_selectors_ids, get_reference_model
-from normalizer.name_check import normalize
-import logging
-from ..util import log_dir
+from normalizer.name_checker import name_check
+from normalizer.position_converter import position_convert
+from normalizer.reference import get_reference_model, get_selectors_ids
 
+from ..util import log_dir
 
 logging.basicConfig(level=logging.INFO, filename=log_dir())
 
@@ -53,7 +54,7 @@ class ReferenceModel(Resource):
 class NameCheck(Resource):
     def get(self, hgvs_description):
         """Normalize a variant description."""
-        return normalize(hgvs_description)
+        return name_check(hgvs_description)
 
 
 parser = reqparse.RequestParser()
@@ -84,8 +85,7 @@ parser.add_argument(
     required=False,
 )
 parser.add_argument(
-    "position", type=str, help="Position to be converted.",
-    required=False,
+    "position", type=str, help="Position to be converted.", required=False,
 )
 parser.add_argument(
     "to_selector_id",
@@ -166,5 +166,3 @@ class GetSelectors(Resource):
             selectors = get_selectors_ids(reference_model["model"])
             return {"reference": reference_id, "selectors": selectors}
         return {"errors": [{"code": "ERETR"}]}
-
-

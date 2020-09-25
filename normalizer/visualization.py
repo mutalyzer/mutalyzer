@@ -1,7 +1,7 @@
 import json
 
+from .description_model import variant_to_description
 from .util import get_location_as_list
-from .description import variant_to_description
 
 
 def to_be_visualized(de_variants, hgvs_variants):

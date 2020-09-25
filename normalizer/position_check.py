@@ -1,4 +1,4 @@
-from .description import point_to_description
+from .description_model import point_to_description
 from .util import add_msg, sort_variants
 
 

@@ -1,4 +1,4 @@
-from .description import yield_reference_selector_ids
+from .description_model import yield_reference_selector_ids
 from .reference import (
     get_reference_mol_type,
     get_sequence_length,

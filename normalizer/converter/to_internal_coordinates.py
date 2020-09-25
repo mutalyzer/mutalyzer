@@ -2,7 +2,7 @@ import copy
 
 from mutalyzer_crossmapper import Coding, Genomic, NonCoding
 
-from ..description import (
+from ..description_model import (
     get_reference_id,
     get_selector_id,
     yield_inserted_other_reference,

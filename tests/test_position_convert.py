@@ -1,8 +1,11 @@
-import pytest
-from .test_set import TESTS_ALL
-from normalizer.position_convert import PositionConvert
-from pathlib import Path
 import json
+from pathlib import Path
+
+import pytest
+
+from normalizer.position_converter import PositionConvert
+
+from .test_set import TESTS_ALL
 
 
 def _get_content(relative_location):

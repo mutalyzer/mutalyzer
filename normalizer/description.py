@@ -1,293 +1,550 @@
 import copy
 
+from extractor import describe_dna
+from mutalyzer_hgvs_parser import parse_description_to_model
+from mutalyzer_hgvs_parser.exceptions import UnexpectedCharacter, UnexpectedEnd
+from mutalyzer_mutator import mutate
+from mutalyzer_retriever.retriever import NoReferenceError, NoReferenceRetrieved
+
+from .checker import is_overlap, sort_variants
+from .converter.to_delins import to_delins
+from .converter.to_hgvs_coordinates import to_hgvs_locations
+from .converter.to_hgvs_indexing import to_hgvs_indexing
+from .converter.to_internal_coordinates import to_internal_coordinates
+from .converter.to_internal_indexing import to_internal_indexing
+from .converter.variants_de_to_hgvs import de_to_hgvs
+from .description_model import (
+    get_reference_id,
+    model_to_string,
+    variants_to_description,
+    yield_reference_ids,
+    yield_reference_selector_ids,
+    yield_reference_selector_ids_coordinate_system,
+)
+from .position_check import (
+    check_locations,
+    contains_uncertain_locations,
+    identify_unsorted_locations,
+)
+from .protein import get_protein_descriptions
+from .reference import (
+    get_coordinate_system_from_reference,
+    get_coordinate_system_from_selector_id,
+    get_gene_selectors,
+    get_gene_selectors_hgnc,
+    get_only_selector_id,
+    get_reference_id_from_model,
+    get_reference_model,
+    is_only_one_selector,
+    is_selector_in_reference,
+    yield_selector_ids,
+)
 from .util import set_by_path
 
 
-def get_reference_id(model):
-    if model.get("reference") and model["reference"].get("id"):
-        return model["reference"]["id"]
-    elif (
-        model.get("source")
-        and isinstance(model["source"], dict)
-        and model["source"].get("id")
-    ):
-        return model["source"]["id"]
+def e_reference_not_retrieved(reference_id, path):
+    return {
+        "code": "ERETR",
+        "details": "Reference {} could not be retrieved.".format(reference_id),
+        "paths": [path],
+    }
 
 
-def get_selector_id(model):
-    """
-    Get the main selector ID from the description model. At the moment, no
-    nesting is supported.
-
-    :param model: Description model.
-    :return: The ID of the selector, if provided, otherwise None.
-    """
-    if (
-        model.get("reference")
-        and model["reference"].get("selector")
-        and model["reference"]["selector"].get("id")
-    ):
-        return model["reference"]["selector"]["id"]
-    elif (
-        model.get("source")
-        and model["source"].get("selector")
-        and model["source"]["selector"].get("id")
-    ):
-        return model["source"]["selector"]["id"]
+def e_no_selector_found(reference_id, selector_id, path):
+    return {
+        "code": "ENOSELECTORFOUND",
+        "details": "No {} selector found in reference {}.".format(
+            selector_id, reference_id
+        ),
+        "paths": [path],
+    }
 
 
-def yield_reference_ids(model, path=[]):
-    for k in model.keys():
-        if k in ["reference", "source"]:
-            if isinstance(model[k], dict) and model[k].get("id"):
-                yield model[k]["id"], tuple(path + [k, "id"])
-        elif k in ["variants", "inserted"]:
-            for i, sub_model in enumerate(model[k]):
-                yield from yield_reference_ids(sub_model, path + [k, i])
+def e_selector_options(selector_id, selector_type, options, path):
+    return {
+        "code": "ESELECTOROPTIONS",
+        "details": "{} selector identified as {}.".format(selector_id, selector_type),
+        "options": options,
+        "paths": [path],
+    }
 
 
-def yield_inserted_other_reference(model, path=[]):
-    for k in model.keys():
-        if k == "variants":
-            for i, variant in enumerate(model[k]):
-                yield from yield_inserted_other_reference(variant, path + [k, i])
-        elif k == "inserted":
-            for i, inserted in enumerate(model[k]):
-                if isinstance(inserted.get("source"), dict):
-                    yield inserted, tuple(path + [k, i])
+def e_no_coordinate_system(path):
+    return {
+        "code": "ENOCOORDINATESYSTEM",
+        "details": "A coordinate system is required.",
+        "paths": [path],
+    }
 
 
-def yield_reference_selector_ids(model, path=[]):
-    for k in model.keys():
-        if k in ["reference", "source"]:
-            if (
-                isinstance(model[k], dict)
-                and model[k].get("id")
-                and model[k].get("selector")
-                and model[k]["selector"].get("id")
-            ):
-                yield (
-                    model[k]["id"],
-                    model[k]["selector"]["id"],
-                    tuple(path + [k, "selector", "id"]),
+def e_coordinate_system_mismatch(
+    coordinate_system, mismatch_id, mismatch_coordinate_system, path
+):
+    return {
+        "code": "ECOORDINATESYSTEMMISMATCH",
+        "details": "Coordinate system {} does not match with {} "
+        "{} coordinate system. ".format(
+            coordinate_system, mismatch_id, mismatch_coordinate_system
+        ),
+        "paths": [path],
+    }
+
+
+def i_corrected_reference_id(original_id, corrected_id, path):
+    return {
+        "code": "ICORRECTEDREFERENCEID",
+        "details": "Reference {} was retrieved instead of {}.".format(
+            original_id, corrected_id
+        ),
+        "paths": [path],
+    }
+
+
+def i_corrected_selector_id(original_id, corrected_id, correction_source, path):
+    return {
+        "code": "ICORRECTEDSELECTORID",
+        "details": "Selector {} was corrected to {} from {}.".format(
+            original_id, corrected_id, correction_source
+        ),
+        "paths": [path],
+    }
+
+
+def i_corrected_coordinate_system(coordinate_system, correction_source, path):
+    return {
+        "code": "ICORRECTEDCOORDINATESYSTEM",
+        "details": "Coordinate system corrected to {} from {}.".format(
+            coordinate_system, correction_source
+        ),
+        "paths": [path],
+    }
+
+
+def check_errors(fn):
+    def wrapper(self):
+        if not self.errors:
+            fn(self)
+        if self.errors and self.stop_on_errors:
+            raise Exception(str(self.errors))
+
+    return wrapper
+
+
+class Description(object):
+    def __init__(self, description, stop_on_error=False):
+        self.input_description = description
+        self.stop_on_errors = stop_on_error
+
+        self.input_model = {}
+        self.corrected_model = {}
+        self.internal_coordinates_model = {}
+        self.internal_indexing_model = {}
+        self.delins_model = {}
+        self.de_model = {}
+        self.de_hgvs_internal_indexing_model = {}
+        self.de_hgvs_coordinate_model = {}
+        self.de_hgvs_model = {}
+        self.normalized_description = None
+
+        self.references = {}
+
+        self.observed_sequence = None
+
+        self.equivalent_descriptions = None
+        self.protein_descriptions = None
+
+        self.errors = []
+        self.infos = []
+
+        self._convert_description_to_model()
+
+    def _add_error(self, error):
+        self.errors.append(error)
+
+    def _add_info(self, info):
+        self.infos.append(info)
+
+    @check_errors
+    def _convert_description_to_model(self):
+        try:
+            self.input_model = parse_description_to_model(self.input_description)
+        except UnexpectedCharacter as e:
+            self._add_error(
+                dict(
+                    {"code": "ESYNTAXUC", "details": "Unexpected character."},
+                    **e.serialize()
                 )
-        elif k in ["variants", "inserted"]:
-            for i, sub_model in enumerate(model[k]):
-                yield from yield_reference_selector_ids(sub_model, path + [k, i])
-
-
-def yield_reference_selector_ids_coordinate_system(model, path=[]):
-    for k in model.keys():
-        if k in ["reference", "source"] and isinstance(model[k], dict):
-            c_s = model.get("coordinate_system")
-            c_s_path = tuple(path + ["coordinate_system"])
-            r_id = model[k].get("id")
-            r_path = tuple(path + [k, "id"])
-            s_id = None
-            s_path = tuple(path + [k])
-            if model[k].get("selector") and model[k]["selector"].get("id"):
-                s_id = model[k]["selector"]["id"]
-                s_path = tuple(path + [k, "selector", "id"])
-            yield c_s, c_s_path, r_id, r_path, s_id, s_path
-        elif k in ["variants", "inserted"]:
-            for i, sub_model in enumerate(model[k]):
-                yield from yield_reference_selector_ids_coordinate_system(
-                    sub_model, path + [k, i]
+            )
+        except UnexpectedEnd as e:
+            self._add_error(
+                dict(
+                    {"code": "ESYNTAXUEOF", "details": "Unexpected end of input."},
+                    **e.serialize()
                 )
-
-
-def yield_point_locations_for_main_reference(model, path=[]):
-    for k in model.keys():
-        if k in ["location", "start", "end"]:
-            if model[k]["type"] == "point":
-                yield model[k], path + [k]
-            else:
-                yield from yield_point_locations_for_main_reference(
-                    model[k], path + [k]
-                )
-        elif k in ["variants", "inserted"]:
-            for i, sub_model in enumerate(model[k]):
-                if not isinstance(sub_model.get("source"), dict):
-                    yield from yield_point_locations_for_main_reference(
-                        sub_model, path + [k, i]
-                    )
-
-
-def yield_view_nodes(model, path=[]):
-    for k in model.keys():
-        if k in ["reference", "location", "start", "end", "selector"]:
-            yield from yield_view_nodes(model[k], path + [k])
-        elif k in ["variants", "inserted", "deleted"]:
-            for i, sub_model in enumerate(model[k]):
-                yield from yield_view_nodes(sub_model, path + [k, i])
-        elif k == "source" and isinstance(model[k], dict):
-            yield from yield_view_nodes(model[k], path + [k])
-        if k in ["position", "id", "coordinate_system"]:
-            yield model[k], path + [k]
-
-
-def get_view_model(model):
-    view_model = copy.deepcopy(model)
-    for view_value, path in yield_view_nodes(model):
-        set_by_path(view_model, path, {"view": view_value})
-
-    return view_model
-
-
-def model_to_string(model):
-    """
-    Convert the variant description model to string.
-    :param model: Dictionary holding the variant description model.
-    :return: Equivalent reference string representation.
-    """
-
-    if model.get("reference"):
-        reference_id = model["reference"]["id"]
-    elif model.get("source"):
-        reference_id = model["source"]["id"]
-    selector_id = get_selector_id(model)
-    if selector_id:
-        reference = "{}({})".format(reference_id, selector_id)
-    else:
-        reference = "{}".format(reference_id)
-    if model.get("coordinate_system"):
-        coordinate_system = model.get("coordinate_system") + "."
-    else:
-        coordinate_system = ""
-    if model.get("variants"):
-        return "{}:{}{}".format(
-            reference, coordinate_system, variants_to_description(model.get("variants"))
-        )
-    if model.get("location"):
-        return "{}:{}{}".format(
-            reference, coordinate_system, location_to_description(model.get("location"))
-        )
-
-
-def reference_to_description(reference):
-    """
-    Convert the reference dictionary model to string.
-    :param reference: Dictionary holding the reference model.
-    :return: Equivalent reference string representation.
-    """
-    version = ""
-    if isinstance(reference, dict):
-        if reference.get("type") == "genbank":
-            accession = reference.get("accession")
-            if reference.get("version"):
-                version = ".{}".format(reference["version"])
-        elif reference.get("type") == "lrg":
-            accession = reference.get("id")
-    return "{}{}".format(accession, version)
-
-
-def variants_to_description(variants, sequences=None):
-    if isinstance(variants, list):
-        variants_list = []
-        for variant in variants:
-            variants_list.append(variant_to_description(variant, sequences))
-        if len(variants_list) > 1:
-            return "[{}]".format(";".join(variants_list))
-        elif len(variants_list) == 1:
-            return variants_list[0]
-
-
-def variant_to_description(variant, sequences=None):
-    """
-    Convert the variant dictionary model to string.
-    :return: Equivalent variant string representation.
-    """
-    deleted = inserted = ""
-    if variant.get("location"):
-        deleted = location_to_description(variant.get("location"))
-    if variant.get("inserted"):
-        inserted = inserted_to_description(variant["inserted"], sequences)
-    variant_type = variant.get("type")
-    if variant_type == "substitution":
-        if variant.get("deleted"):
-            if isinstance(variant["deleted"], dict):
-                deleted += variant["deleted"]["sequence"]
-            elif isinstance(variant["deleted"], list):
-                deleted += variant["deleted"][0]["sequence"]
-        variant_type = ">"
-    elif variant_type == "deletion":
-        variant_type = "del"
-    elif variant_type == "deletion_insertion":
-        variant_type = "delins"
-    elif variant_type == "insertion":
-        variant_type = "ins"
-    elif variant_type == "duplication":
-        variant_type = "dup"
-        inserted = ""
-    elif variant_type == "inversion":
-        variant_type = "inv"
-    elif variant_type == "equal":
-        variant_type = "="
-    else:
-        variant_type = ""
-    return "{}{}{}".format(deleted, variant_type, inserted)
-
-
-def inserted_to_description(inserted, sequences):
-    """
-    Convert the insertions dictionary model to string.
-    :param inserted: Insertions dictionary.
-    :return: Equivalent insertions string representation.
-    """
-    descriptions = []
-    for insert in inserted:
-        if insert.get("sequence"):
-            descriptions.append(insert["sequence"])
-        elif insert.get("source") and isinstance(insert["source"], dict):
-            descriptions.append(model_to_string(insert))
-        elif insert.get("location"):
-            descriptions.append(location_to_description(insert["location"]))
-            if insert.get("inverted"):
-                descriptions[-1] += "inv"
-    if len(inserted) > 1:
-        return "[{}]".format(";".join(descriptions))
-    else:
-        return descriptions[0]
-
-
-def location_to_description(location):
-    """
-    Convert the location dictionary model to string.
-    :param location: Location dictionary.
-    :return: Equivalent location string representation.
-    """
-    if location["type"] == "point":
-        return point_to_description(location)
-    if location["type"] == "range":
-        if location.get("uncertain"):
-            return "({}_{})".format(
-                point_to_description(location.get("start")),
-                point_to_description(location.get("end")),
             )
         else:
-            start = location_to_description(location.get("start"))
-            end = location_to_description(location.get("end"))
-            return "{}_{}".format(start, end)
+            self.corrected_model = copy.deepcopy(self.input_model)
+
+    def _set_main_reference(self):
+        reference_id = get_reference_id(self.corrected_model)
+        if reference_id in self.references:
+            self.references["reference"] = self.references[reference_id]
+
+    def _correct_reference_id(self, path, original_id, corrected_id):
+        set_by_path(self.corrected_model, path, corrected_id)
+        self._add_info(i_corrected_reference_id(original_id, corrected_id, path))
+
+    @check_errors
+    def retrieve_references(self):
+        """
+        Populate the references
+        :return:
+        """
+        if not self.corrected_model:
+            return
+        for reference_id, path in yield_reference_ids(self.input_model):
+            try:
+                reference_model = get_reference_model(reference_id)
+            except NoReferenceError:
+                self._add_error(e_reference_not_retrieved(reference_id, [path]))
+            except NoReferenceRetrieved:
+                self._add_error(e_reference_not_retrieved(reference_id, [path]))
+            else:
+                reference_id_in_model = get_reference_id_from_model(reference_model)
+                if reference_id_in_model != reference_id:
+                    self._correct_reference_id(
+                        path, reference_id, reference_id_in_model
+                    )
+                    self.references[reference_id_in_model] = reference_model
+                else:
+                    self.references[reference_id] = reference_model
+                self._set_main_reference()
+
+    @check_errors
+    def _check_selectors_in_references(self):
+        for reference_id, selector_id, path in yield_reference_selector_ids(
+            self.corrected_model
+        ):
+            if not is_selector_in_reference(selector_id, self.references[reference_id]):
+                self.handle_selector_not_found(reference_id, selector_id, path)
+
+    def _correct_selector_id(self, path, original_id, corrected_id, correction_source):
+        set_by_path(self.corrected_model, path, corrected_id)
+        self._add_info(
+            i_corrected_selector_id(original_id, corrected_id, correction_source, path)
+        )
+
+    def handle_selector_not_found(self, reference_id, selector_id, path):
+        gene_selectors = get_gene_selectors(selector_id, self.references[reference_id])
+        if len(gene_selectors) == 1:
+            self._correct_selector_id(path, selector_id, gene_selectors[0], "gene name")
+            return
+        elif len(gene_selectors) > 1:
+            self._add_error(
+                e_selector_options(selector_id, "gene", gene_selectors, path)
+            )
+            return
+        gene_selectors = get_gene_selectors_hgnc(
+            selector_id, self.references[reference_id]
+        )
+        if len(gene_selectors) == 1:
+            self._correct_selector_id(path, selector_id, gene_selectors[0], "gene HGNC")
+            return
+        elif len(gene_selectors) > 1:
+            self._add_error(
+                e_selector_options(selector_id, "gene HGNC", gene_selectors, path)
+            )
+            return
+        self._add_error(e_no_selector_found(reference_id, selector_id, path))
+
+    @check_errors
+    def _check_coordinate_systems(self):
+        for (
+            c_s,
+            c_s_path,
+            r_id,
+            r_path,
+            s_id,
+            s_path,
+        ) in yield_reference_selector_ids_coordinate_system(
+            copy.deepcopy(self.corrected_model)
+        ):
+            if c_s is None:
+                self._handle_no_coordinate_system(c_s_path, r_id, s_id)
+
+    def _correct_coordinate_system(self, coordinate_system, path, correction_source):
+        set_by_path(self.corrected_model, path, coordinate_system)
+        self._add_info(
+            i_corrected_coordinate_system(coordinate_system, correction_source, path)
+        )
+
+    def _handle_no_coordinate_system(self, c_s_path, r_id, s_id):
+        if s_id:
+            c_s = get_coordinate_system_from_selector_id(self.references[r_id], s_id)
+            if c_s:
+                self._correct_coordinate_system(c_s, c_s_path, s_id + " selector")
+                return
+        c_s = get_coordinate_system_from_reference(self.references[r_id])
+        if c_s:
+            self._correct_coordinate_system(c_s, c_s_path, r_id + " reference")
+            return
+        self._add_error(e_no_coordinate_system(c_s_path))
+
+    def _correct_selector_id_from_coordinate_system(self, r_id_path, selector_id):
+        path = tuple(list(r_id_path[:-1]) + ["selector"])
+        set_by_path(self.corrected_model, path, {"id": selector_id})
+        self._add_info(
+            i_corrected_selector_id("", selector_id, "coordinate system", path)
+        )
+
+    @check_errors
+    def _check_coordinate_system_consistency(self):
+        for (
+            c_s,
+            c_s_path,
+            r_id,
+            r_path,
+            s_id,
+            s_path,
+        ) in yield_reference_selector_ids_coordinate_system(
+            copy.deepcopy(self.corrected_model)
+        ):
+            if s_id:
+                s_c_s = get_coordinate_system_from_selector_id(
+                    self.references[r_id], s_id
+                )
+                if s_c_s == c_s:
+                    return
+                else:
+                    self._add_error(
+                        e_coordinate_system_mismatch(c_s, s_id, s_c_s, c_s_path)
+                    )
+                    return
+            r_c_s = get_coordinate_system_from_reference(self.references[r_id])
+            if r_c_s == c_s:
+                return
+            else:
+                if is_only_one_selector(self.references[r_id], c_s):
+                    self._correct_selector_id_from_coordinate_system(
+                        r_path, get_only_selector_id(self.references[r_id], c_s)
+                    )
+                    return
+                else:
+                    self._add_error(
+                        e_coordinate_system_mismatch(c_s, r_id, r_c_s, c_s_path)
+                    )
+
+    @check_errors
+    def _construct_internal_coordinate_model(self):
+        self.internal_coordinates_model = to_internal_coordinates(
+            self.corrected_model, self.references
+        )
+
+    @check_errors
+    def _construct_internal_indexing_model(self):
+        self.internal_indexing_model = to_internal_indexing(
+            self.internal_coordinates_model
+        )
+
+    @check_errors
+    def _construct_delins_model(self):
+        self.delins_model = to_delins(self.internal_indexing_model)
+        # sorted_delins_variants = sort_variants(self.delins_model["variants"])
+        # print("delins variants", variants_to_description(self.delins_model["variants"]))
+        # print("sorted variants:", variants_to_description(sorted_delins_variants))
+        # print("are variants sorted:", sorted_delins_variants == self.delins_model["variants"])
+        # print("is overlap:", is_overlap(self.delins_model["variants"]))
+
+    def _get_sequences(self):
+        """
+        Retrieves a dictionary from the references with reference ids as
+        keys and their corresponding sequences as values.
+        """
+        sequences = {k: self.references[k]["sequence"]["seq"] for k in self.references}
+        return sequences
+
+    @check_errors
+    def _mutate(self):
+        if self.delins_model:
+            self.observed_sequence = mutate(
+                self._get_sequences(), self.delins_model["variants"]
+            )
+
+    @check_errors
+    def _extract(self):
+        if self.is_extraction_possible():
+            reference_sequence = self.references["reference"]["sequence"]["seq"]
+            de_variants = describe_dna(reference_sequence, self.observed_sequence)
+            if de_variants:
+                self.de_model = {
+                    "reference": copy.deepcopy(
+                        self.internal_indexing_model["reference"]
+                    ),
+                    "coordinate_system": "i",
+                    "variants": de_variants,
+                }
+
+    def is_extraction_possible(self):
+        if self.observed_sequence:
+            return True
+        return False
+
+    @check_errors
+    def _construct_de_hgvs_internal_indexing_model(self):
+        if self.de_model:
+            self.de_hgvs_internal_indexing_model = {
+                "reference": copy.deepcopy(self.internal_indexing_model["reference"]),
+                "coordinate_system": "i",
+                "variants": de_to_hgvs(
+                    self.de_model["variants"],
+                    {
+                        "reference": self.references["reference"]["sequence"]["seq"],
+                        "observed": self.observed_sequence,
+                    },
+                ),
+            }
+
+    @check_errors
+    def _construct_de_hgvs_coordinates_model(self):
+        if self.corrected_model["reference"].get("selector"):
+            selector_id = self.corrected_model["reference"]["selector"]["id"]
+        else:
+            selector_id = None
+        if self.de_hgvs_internal_indexing_model:
+            hgvs_indexing = to_hgvs_indexing(self.de_hgvs_internal_indexing_model)
+            self.de_hgvs_model = to_hgvs_locations(
+                hgvs_indexing,
+                self.references,
+                self.corrected_model["coordinate_system"],
+                selector_id,
+                True,
+            )
+
+    def _construct_normalized_description(self):
+        if self.de_hgvs_model:
+            self.normalized_description = model_to_string(self.de_hgvs_model)
+
+    def _construct_equivalent_descriptions(self):
+        if not self.de_model:
+            return
+        equivalent_descriptions = []
+
+        for selector_id in yield_selector_ids(self.references["reference"]):
+            internal_model = to_internal_coordinates(
+                self.de_hgvs_model, self.references
+            )
+            converted_model = to_hgvs_locations(
+                internal_model=internal_model,
+                references=self.references,
+                to_coordinate_system=None,
+                to_selector_id=selector_id,
+                degenerate=True,
+            )
+
+            equivalent_descriptions.append(model_to_string(converted_model))
+            if len(equivalent_descriptions) == 20:
+                break
+        self.equivalent_descriptions = equivalent_descriptions
+
+    def _construct_protein_descriptions(self):
+        if self.de_model:
+            self.references["observed"] = {"sequence": {"seq": self.observed_sequence}}
+            self.protein_descriptions = get_protein_descriptions(
+                self.de_model["variants"], self.references
+            )
+
+    def check_locations(self):
+        pass
+
+    def normalize(self):
+        self.retrieve_references()
+
+        self._check_selectors_in_references()
+        self._check_coordinate_systems()
+        self._check_coordinate_system_consistency()
+
+        self._construct_internal_coordinate_model()
+        self._construct_internal_indexing_model()
+        self._construct_delins_model()
+
+        if contains_uncertain_locations(self.delins_model):
+            return
+
+        self._mutate()
+        self._extract()
+        if self.de_model:
+            self._construct_de_hgvs_internal_indexing_model()
+            self._construct_de_hgvs_coordinates_model()
+            self._construct_normalized_description()
+            self._construct_equivalent_descriptions()
+            self._construct_protein_descriptions()
+
+        self.print_models_summary()
+
+    def output(self):
+        output = {
+            "input_model": self.input_model,
+        }
+        if self.corrected_model:
+            output["corrected_model"] = self.corrected_model
+            output["augmented_model"] = self.corrected_model
+            output["normalized_description"] = self.normalized_description
+        if self.equivalent_descriptions is not None:
+            output["equivalent_descriptions"] = self.equivalent_descriptions
+        if self.protein_descriptions:
+            output["protein_descriptions"] = self.protein_descriptions
+        if self.errors:
+            output["errors"] = self.errors
+        return output
+
+    def print_models_summary(self):
+        print("------")
+        if self.input_description:
+            print(self.input_description)
+
+        if self.corrected_model:
+            print(model_to_string(self.corrected_model))
+        else:
+            print("- No corrected model")
+
+        if self.internal_coordinates_model:
+            print(model_to_string(self.internal_coordinates_model))
+        else:
+            print("- No internal_coordinates_model")
+
+        if self.internal_indexing_model:
+            print(model_to_string(self.internal_indexing_model))
+        else:
+            print("- No internal_indexing_model")
+
+        if self.delins_model:
+            print(model_to_string(self.delins_model))
+        else:
+            print("- No delins_model")
+
+        if self.de_model:
+            print(model_to_string(self.de_model))
+        else:
+            print("- No de_model")
+
+        if self.de_hgvs_internal_indexing_model:
+            print(model_to_string(self.de_hgvs_internal_indexing_model))
+        else:
+            print("- No de_hgvs_internal_indexing_model")
+
+        if self.de_hgvs_coordinate_model:
+            print(model_to_string(self.de_hgvs_coordinate_model))
+        else:
+            print("- No de_hgvs_coordinate_model")
+
+        if self.de_hgvs_model:
+            print(model_to_string(self.de_hgvs_model))
+        else:
+            print("- No de_hgvs_model")
+        print("------")
 
 
-def point_to_description(point):
-    """
-    Convert the position dictionary model to string.
-    :param point: Position dictionary.
-    :return: Equivalent position string representation.
-    """
-    outside_cds = offset = ""
-    if point.get("outside_cds"):
-        if point["outside_cds"] == "downstream":
-            outside_cds = "*"
-        elif point["outside_cds"] == "upstream":
-            outside_cds = "-"
-    if point.get("uncertain"):
-        position = "?"
-    else:
-        position = str(point.get("position"))
-    if point.get("offset"):
-        offset = "%+d" % point["offset"]["value"]
-    if point.get("uncertain_offset"):
-        offset = point.get("uncertain_offset")
-    return "{}{}{}".format(outside_cds, position, offset)
+def normalize(description_to_normalize):
+    description = Description(description_to_normalize)
+    description.normalize()
+    return description.output()

@@ -2,7 +2,10 @@ import copy
 
 from mutalyzer_crossmapper import Coding, Genomic, NonCoding
 
-from ..description import get_reference_id, yield_point_locations_for_main_reference
+from ..description_model import (
+    get_reference_id,
+    yield_point_locations_for_main_reference,
+)
 from ..reference import get_coordinate_system_from_selector_id, get_selector_model
 from ..util import set_by_path
 

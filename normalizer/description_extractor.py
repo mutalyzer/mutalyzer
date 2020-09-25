@@ -6,7 +6,7 @@ from .converter.to_hgvs_coordinates import (
     locations_to_hgvs_locations,
 )
 from .converter.to_hgvs_indexing import variants_to_internal_indexing
-from .description import variants_to_description
+from .description_model import variants_to_description
 
 
 def description_extractor(reference, observed):

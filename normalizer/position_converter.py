@@ -1,7 +1,7 @@
 from mutalyzer_hgvs_parser import parse_description_to_model
 
 from .converter import to_hgvs_coordinates, to_internal_coordinates
-from .description import location_to_description
+from .description_model import location_to_description
 from .position_check import check_locations
 
 

@@ -1,15 +1,15 @@
 import pytest
-from mutalyzer_crossmapper import Genomic, NonCoding, Coding
+from mutalyzer_crossmapper import Coding, Genomic, NonCoding
 from mutalyzer_hgvs_parser import parse_description_to_model
 
+from normalizer.converter.to_hgvs import location_to_hgvs, to_hgvs_locations
 from normalizer.converter.to_internal import (
     get_point_value,
     location_to_internal,
     point_to_x_coding,
     to_internal_locations,
 )
-from normalizer.converter.to_hgvs import to_hgvs_locations, location_to_hgvs
-from normalizer.description import location_to_description, model_to_string
+from normalizer.description_model import location_to_description, model_to_string
 
 from .generator import append_transcript, generate_references
 
@@ -381,14 +381,13 @@ def generate_to_internal_location_test(t, loc, d, refs):
                 )
             )
     if loc["n"].get("hgvs"):
-            tests.append(
-                (
-                    d.format("({})".format(t["n"]["id"]), "n",
-                             loc["n"]["hgvs"]),
-                    d.format("", "x", loc["x"]),
-                    refs,
-                ),
-            )
+        tests.append(
+            (
+                d.format("({})".format(t["n"]["id"]), "n", loc["n"]["hgvs"]),
+                d.format("", "x", loc["x"]),
+                refs,
+            ),
+        )
     if loc["n"].get("other"):
         for other in loc["n"]["other"]:
             tests.append(
@@ -563,12 +562,15 @@ def test_to_hgvs_locations_simple(hgvs, hgvs_internal_indexing):
             "cds": (10, 19),
         }
     )
-    append_transcript(r_model, {
+    append_transcript(
+        r_model,
+        {
             "id": "t2",
             "type": "ncRNA",
             "inverted": False,
             "exon": [(3, 6), (8, 13), (16, 21), (24, 26)],
-        })
+        },
+    )
 
     if "c." in hgvs:
         selector_id = "t1"
@@ -597,11 +599,13 @@ def generate_to_hgvs_location_test(t, loc, d, refs):
         ),
     ]
     if loc["n"].get("hgvs"):
-        tests.append((
-            d.format("", "x", loc["x"]),
-            d.format("({})".format(t["n"]["id"]), "n", loc["n"]["hgvs"]),
-            refs,
-        ))
+        tests.append(
+            (
+                d.format("", "x", loc["x"]),
+                d.format("({})".format(t["n"]["id"]), "n", loc["n"]["hgvs"]),
+                refs,
+            )
+        )
 
     return tests
 
