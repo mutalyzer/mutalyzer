@@ -221,7 +221,7 @@ class Description(object):
                 self._set_main_reference()
 
     @check_errors
-    def check_selectors_in_references(self):
+    def _check_selectors_in_references(self):
         for reference_id, selector_id, path in yield_reference_selector_ids(
             self.corrected_model
         ):
@@ -258,7 +258,7 @@ class Description(object):
         self._add_error(e_no_selector_found(reference_id, selector_id, path))
 
     @check_errors
-    def check_coordinate_systems(self):
+    def _check_coordinate_systems(self):
         for (
             c_s,
             c_s_path,
@@ -335,19 +335,19 @@ class Description(object):
                     )
 
     @check_errors
-    def construct_internal_coordinate_model(self):
+    def _construct_internal_coordinate_model(self):
         self.internal_coordinates_model = to_internal_coordinates(
             self.corrected_model, self.references
         )
 
     @check_errors
-    def construct_internal_indexing_model(self):
+    def _construct_internal_indexing_model(self):
         self.internal_indexing_model = to_internal_indexing(
             self.internal_coordinates_model
         )
 
     @check_errors
-    def construct_delins_model(self):
+    def _construct_delins_model(self):
         self.delins_model = to_delins(self.internal_indexing_model)
         # sorted_delins_variants = sort_variants(self.delins_model["variants"])
         # print("delins variants", variants_to_description(self.delins_model["variants"]))
@@ -364,14 +364,14 @@ class Description(object):
         return sequences
 
     @check_errors
-    def mutate(self):
+    def _mutate(self):
         if self.delins_model:
             self.observed_sequence = mutate(
                 self._get_sequences(), self.delins_model["variants"]
             )
 
     @check_errors
-    def extract(self):
+    def _extract(self):
         if self.is_extraction_possible():
             reference_sequence = self.references["reference"]["sequence"]["seq"]
             de_variants = describe_dna(reference_sequence, self.observed_sequence)
@@ -390,7 +390,7 @@ class Description(object):
         return False
 
     @check_errors
-    def get_de_hgvs_internal_indexing_model(self):
+    def _construct_de_hgvs_internal_indexing_model(self):
         if self.de_model:
             self.de_hgvs_internal_indexing_model = {
                 "reference": copy.deepcopy(self.internal_indexing_model["reference"]),
@@ -405,7 +405,7 @@ class Description(object):
             }
 
     @check_errors
-    def get_de_hgvs_coordinates_model(self):
+    def _construct_de_hgvs_coordinates_model(self):
         if self.corrected_model["reference"].get("selector"):
             selector_id = self.corrected_model["reference"]["selector"]["id"]
         else:
@@ -420,11 +420,11 @@ class Description(object):
                 True,
             )
 
-    def get_normalized_description(self):
+    def _construct_normalized_description(self):
         if self.de_hgvs_model:
             self.normalized_description = model_to_string(self.de_hgvs_model)
 
-    def get_equivalent_descriptions(self):
+    def _construct_equivalent_descriptions(self):
         if not self.de_model:
             return
         equivalent_descriptions = []
@@ -446,7 +446,7 @@ class Description(object):
                 break
         self.equivalent_descriptions = equivalent_descriptions
 
-    def get_protein_descriptions(self):
+    def _construct_protein_descriptions(self):
         if self.de_model:
             self.references["observed"] = {"sequence": {"seq": self.observed_sequence}}
             self.protein_descriptions = get_protein_descriptions(
@@ -459,25 +459,25 @@ class Description(object):
     def normalize(self):
         self.retrieve_references()
 
-        self.check_selectors_in_references()
-        self.check_coordinate_systems()
+        self._check_selectors_in_references()
+        self._check_coordinate_systems()
         self._check_coordinate_system_consistency()
 
-        self.construct_internal_coordinate_model()
-        self.construct_internal_indexing_model()
-        self.construct_delins_model()
+        self._construct_internal_coordinate_model()
+        self._construct_internal_indexing_model()
+        self._construct_delins_model()
 
         if contains_uncertain_locations(self.delins_model):
             return
 
-        self.mutate()
-        self.extract()
+        self._mutate()
+        self._extract()
         if self.de_model:
-            self.get_de_hgvs_internal_indexing_model()
-            self.get_de_hgvs_coordinates_model()
-            self.get_normalized_description()
-            self.get_equivalent_descriptions()
-            self.get_protein_descriptions()
+            self._construct_de_hgvs_internal_indexing_model()
+            self._construct_de_hgvs_coordinates_model()
+            self._construct_normalized_description()
+            self._construct_equivalent_descriptions()
+            self._construct_protein_descriptions()
 
         self.print_models_summary()
 
