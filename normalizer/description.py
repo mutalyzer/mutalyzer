@@ -148,8 +148,6 @@ class Description(object):
 
         self.references = {}
 
-        self.observed_sequence = None
-
         self.equivalent_descriptions = None
         self.protein_descriptions = None
 
@@ -366,28 +364,23 @@ class Description(object):
     @check_errors
     def _mutate(self):
         if self.delins_model:
-            self.observed_sequence = mutate(
+            observed_sequence = mutate(
                 self._get_sequences(), self.delins_model["variants"]
             )
+            self.references['observed'] = {"sequence": {"seq": observed_sequence}}
 
     @check_errors
     def _extract(self):
-        if self.is_extraction_possible():
-            reference_sequence = self.references["reference"]["sequence"]["seq"]
-            de_variants = describe_dna(reference_sequence, self.observed_sequence)
-            if de_variants:
-                self.de_model = {
-                    "reference": copy.deepcopy(
-                        self.internal_indexing_model["reference"]
-                    ),
-                    "coordinate_system": "i",
-                    "variants": de_variants,
-                }
-
-    def is_extraction_possible(self):
-        if self.observed_sequence:
-            return True
-        return False
+        de_variants = describe_dna(self.references["reference"]["sequence"]["seq"],
+                                   self.references["observed"]["sequence"]["seq"])
+        if de_variants:
+            self.de_model = {
+                "reference": copy.deepcopy(
+                    self.internal_indexing_model["reference"]
+                ),
+                "coordinate_system": "i",
+                "variants": de_variants,
+            }
 
     @check_errors
     def _construct_de_hgvs_internal_indexing_model(self):
@@ -397,10 +390,7 @@ class Description(object):
                 "coordinate_system": "i",
                 "variants": de_to_hgvs(
                     self.de_model["variants"],
-                    {
-                        "reference": self.references["reference"]["sequence"]["seq"],
-                        "observed": self.observed_sequence,
-                    },
+                    self._get_sequences(),
                 ),
             }
 
@@ -448,7 +438,6 @@ class Description(object):
 
     def _construct_protein_descriptions(self):
         if self.de_model:
-            self.references["observed"] = {"sequence": {"seq": self.observed_sequence}}
             self.protein_descriptions = get_protein_descriptions(
                 self.de_model["variants"], self.references
             )
@@ -487,14 +476,17 @@ class Description(object):
         }
         if self.corrected_model:
             output["corrected_model"] = self.corrected_model
-            output["augmented_model"] = self.corrected_model
-            output["normalized_description"] = self.normalized_description
+            output["corrected_description"] = model_to_string(self.corrected_model)
+        output["normalized_description"] = self.normalized_description
+
         if self.equivalent_descriptions is not None:
             output["equivalent_descriptions"] = self.equivalent_descriptions
         if self.protein_descriptions:
             output["protein_descriptions"] = self.protein_descriptions
         if self.errors:
             output["errors"] = self.errors
+        if self.infos:
+            output["infos"] = self.infos
         return output
 
     def print_models_summary(self):
