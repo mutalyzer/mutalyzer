@@ -319,7 +319,7 @@ class Description(object):
                     )
                     return
             r_c_s = get_coordinate_system_from_reference(self.references[r_id])
-            if r_c_s == c_s:
+            if (r_c_s == c_s) and (c_s in ['g', 'm']):
                 return
             else:
                 if is_only_one_selector(self.references[r_id], c_s):
