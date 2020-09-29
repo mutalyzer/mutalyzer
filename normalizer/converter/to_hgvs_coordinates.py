@@ -74,7 +74,6 @@ def crossmap_to_hgvs_setup(coordinate_system, selector_model=None, degenerate=Fa
         return {
             "crossmap_function": crossmap.coordinate_to_noncoding,
             "point_function": noncoding_to_point,
-            "degenerate": degenerate,
         }
     else:
         raise Exception("Unsupported coordinate system: {}.".format(coordinate_system))
