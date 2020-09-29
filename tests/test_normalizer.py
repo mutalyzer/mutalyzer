@@ -40,31 +40,15 @@ def get_tests(tests):
 @pytest.mark.parametrize("input_description, normalized", get_tests(TESTS_ALL))
 def test_normalizer(input_description, normalized, monkeypatch):
     monkeypatch.setattr("mutalyzer_retriever.retriever.retrieve_raw", retrieve_raw)
+    monkeypatch.setattr("normalizer.util.configuration", lambda: None)
     assert normalize(input_description) == normalized
 
 
-# def test_normalizer(
-#         monkeypatch,
-#         i_d='LRG_303:g.[105_106del;6681G>C;6883_6884insTTTCGCCCCTTTCGCCCC]',
-#         n_d='LRG_303:g.[108_109del;6681G>C;6868_6869ins[6869_6883;TTT]]',
-# ):
-#     monkeypatch.setattr("mutalyzer_retriever.retriever.retrieve_raw", retrieve_raw)
-#     assert normalize(i_d) == n_d
-
-
-def test_normalizer2(
-    monkeypatch,
-    i_d="NG_017013.2:g.[16985A>T;17011_17012del]",
-    n_d="NG_017013.2:g.[16985A>T;17013_17014del]",
+def test_normalizer_other(
+        monkeypatch,
+        i_d='LRG_303:g.[105_106del;6681G>C;6883_6884insTTTCGCCCCTTTCGCCCC]',
+        n_d='LRG_303:g.[108_109del;6681G>C;6868_6869ins[6869_6883;TTT]]',
 ):
     monkeypatch.setattr("mutalyzer_retriever.retriever.retrieve_raw", retrieve_raw)
-    assert normalize(i_d) == n_d
-
-
-def test_normalizer3(
-    monkeypatch,
-    i_d="NG_017013.2:g.17415_17417delinsGCG",
-    n_d="NG_017013.2:g.[17415C>G;17417A>G]",
-):
-    monkeypatch.setattr("mutalyzer_retriever.retriever.retrieve_raw", retrieve_raw)
+    monkeypatch.setattr("normalizer.util.configuration", lambda: None)
     assert normalize(i_d) == n_d
