@@ -45,9 +45,9 @@ def test_normalizer(input_description, normalized, monkeypatch):
 
 
 def test_normalizer_other(
-        monkeypatch,
-        i_d='LRG_303:g.[105_106del;6681G>C;6883_6884insTTTCGCCCCTTTCGCCCC]',
-        n_d='LRG_303:g.[108_109del;6681G>C;6868_6869ins[6869_6883;TTT]]',
+    monkeypatch,
+    i_d="LRG_303:g.[105_106del;6681G>C;6883_6884insTTTCGCCCCTTTCGCCCC]",
+    n_d="LRG_303:g.[108_109del;6681G>C;6883_6884insTTTCGCCCCTTTCGCCCC]",
 ):
     monkeypatch.setattr("mutalyzer_retriever.retriever.retrieve_raw", retrieve_raw)
     monkeypatch.setattr("normalizer.util.configuration", lambda: None)

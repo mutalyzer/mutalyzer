@@ -187,8 +187,8 @@ TESTS_ALL = [
     {
         "keywords": [],
         "input": "NG_012337.1:g.4delins7_50",
-        "normalized": "NG_012337.1:g.[3_4insGGTT;5_6ins12_50]",
-        "genomic": "NG_012337.1:g.[3_4insGGTT;5_6ins12_50]",
+        "normalized": "NG_012337.1:g.[3_4insGGTT;5_6insACCATATCTCTACTTTGTGTTTATGTTTGTGTATGCATT]",
+        "genomic": "NG_012337.1:g.[3_4insGGTT;5_6insACCATATCTCTACTTTGTGTTTATGTTTGTGTATGCATT]",
         "to_test": True,
     },
     {
