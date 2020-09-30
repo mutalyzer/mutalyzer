@@ -9,7 +9,7 @@ from ..description_model import (
     yield_point_locations_for_main_reference,
 )
 from ..reference import get_coordinate_system_from_selector_id, get_selector_model
-from ..util import set_by_path
+from ..util import get_end, get_start, set_by_path
 
 
 def add_msg(dictionary, message_type, message):
@@ -122,7 +122,7 @@ def points_to_internal_coordinates(description, references):
     coordinate_system = description.get("coordinate_system")
     selector_id = get_selector_id(description)
     selector_model = (
-        get_selector_model(references[reference_id]["annotations"], selector_id)
+        get_selector_model(references[reference_id]["annotations"], selector_id, True)
         if selector_id
         else None
     )

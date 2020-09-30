@@ -94,7 +94,7 @@ def sort_locations(locations):
     return sorted_locations
 
 
-def get_selector_model(reference_annotations, selector_id):
+def get_selector_model(reference_annotations, selector_id, fix_exon=False):
     """
     Searches for the appropriate selector model:
     - exons and cds for coding selectors;
@@ -108,8 +108,11 @@ def get_selector_model(reference_annotations, selector_id):
             "id": selector_id,
             "type": feature["type"],
             "inverted": is_feature_inverted(feature),
+            "location": feature["location"],
         }
         output.update(sort_locations(get_feature_locations(feature)))
+        if fix_exon and output.get("exon") is None:
+            output["exon"] = [(get_start(output), get_end(output))]
         return output
 
 
@@ -125,7 +128,7 @@ def get_protein_selector_models(reference):
     """
     selector_ids = get_selectors_ids(reference, "c")
     for selector_id in selector_ids[:20]:
-        selector_model = get_selector_model(reference, selector_id)
+        selector_model = get_selector_model(reference, selector_id, True)
         mrna = get_feature(reference, selector_id)
         protein_ids = []
         if mrna.get("features"):

@@ -7,7 +7,7 @@ from ..description_model import (
     yield_point_locations_for_main_reference,
 )
 from ..reference import get_coordinate_system_from_selector_id, get_selector_model
-from ..util import set_by_path
+from ..util import get_end, get_start, set_by_path
 
 
 def genomic_to_point(genomic):
@@ -109,7 +109,9 @@ def to_hgvs_locations(
     reference_id = get_reference_id(internal_model)
 
     selector_model = (
-        get_selector_model(references[reference_id]["annotations"], to_selector_id)
+        get_selector_model(
+            references[reference_id]["annotations"], to_selector_id, True
+        )
         if to_selector_id
         else None
     )
