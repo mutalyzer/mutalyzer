@@ -29,8 +29,13 @@ def update_inserted_with_sequences(inserted, sequences):
 def get_inserted_sequence(variant, sequences):
     seq = ""
     if variant.get("inserted"):
-        for insert in variant["inserted"]:
-            seq += slice_sequence(insert["location"], sequences[insert["source"]])
+        for inserted in variant["inserted"]:
+            if inserted.get("sequence"):
+                seq += inserted["sequence"]
+            else:
+                seq += slice_sequence(
+                    inserted["location"], sequences[inserted["source"]]
+                )
         return seq
     return seq
 
@@ -56,13 +61,26 @@ def de_variants_clean(variants, sequences=None):
                     variant["location"]["end"]["position"],
                 )
             elif not get_location_length(variant["location"]) and inserted_sequence:
-                shift5, shift3 = roll(
+                rolled_sequence = (
                     sequences["reference"][: get_start(variant)]
                     + inserted_sequence
-                    + sequences["reference"][get_end(variant) :],
+                    + sequences["reference"][get_end(variant) :]
+                )
+                shift5, shift3 = roll(
+                    rolled_sequence,
                     get_start(variant) + 1,
                     get_end(variant) + len(inserted_sequence),
                 )
+                if shift3:
+                    inserted_rolled_sequence = rolled_sequence[
+                        get_start(variant)
+                        + shift3 : get_end(variant)
+                        + shift3
+                        + len(inserted_sequence)
+                    ]
+                    new_variant["inserted"] = [
+                        {"sequence": inserted_rolled_sequence, "source": "description"}
+                    ]
             new_variant["location"]["start"]["position"] += shift3
             new_variant["location"]["end"]["position"] += shift3
             new_variants.append(new_variant)
