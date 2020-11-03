@@ -1,8 +1,8 @@
 import argparse
 import json
 
-from normalizer.name_checker import NameCheck
-from normalizer.normalizer import mutalyzer3
+from normalizer.name_checker import name_check
+from normalizer.normalizer import normalize
 
 
 def main():
@@ -14,9 +14,10 @@ def main():
 
     args = parser.parse_args()
 
-    description = NameCheck(args.description)
-    print(description._description_model)
-    print(description.errors)
+    print(normalize(args.description))
+
+    # print(description._description_model)
+    # print(description.errors)
     # print(json.dumps(mutalyzer3(args.description), indent=2))
 
 
