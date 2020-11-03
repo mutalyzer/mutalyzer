@@ -94,7 +94,7 @@ def i_corrected_reference_id(original_id, corrected_id, path):
     return {
         "code": "ICORRECTEDREFERENCEID",
         "details": "Reference {} was retrieved instead of {}.".format(
-            original_id, corrected_id
+            corrected_id, original_id
         ),
         "paths": [path],
     }
