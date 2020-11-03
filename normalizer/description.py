@@ -468,7 +468,7 @@ class Description(object):
             self._construct_equivalent_descriptions()
             self._construct_protein_descriptions()
 
-        self.print_models_summary()
+        # self.print_models_summary()
 
     def output(self):
         output = {
