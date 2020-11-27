@@ -3,6 +3,24 @@ import copy
 from normalizer.util import get_end, get_location_length, get_start, roll
 
 
+def seq2repeats(long_sequence):
+    for i in range(1, len(long_sequence) + 1):
+        for j in range(1, len(long_sequence) + 1):
+            if i * j == len(long_sequence):
+                if long_sequence[:j] * i == long_sequence:
+                    yield long_sequence[:j], i
+                break
+
+
+def seq_present_before(observed, ins_seq, start, end):
+    for repeat, i in seq2repeats(ins_seq):
+        if observed[start - len(repeat): end] == repeat:
+            print(f"found repeat: {repeat}")
+            return repeat, i + 1
+
+    return "", 0
+
+
 def is_deletion(delins_variant):
     if (delins_variant.get("inserted") is None) or (
         len(delins_variant.get("inserted")) == 0
@@ -105,6 +123,21 @@ def is_duplication(variant, sequences):
     return False
 
 
+def is_repeat(variant, sequences):
+    """
+    Note that it works only in the context of the `de_to_hgvs` function flow.
+    """
+    inserted_sequence = get_inserted_sequence(variant, sequences)
+    repeat_seq, repeat_number = seq_present_before(
+        sequences["observed"],
+        inserted_sequence,
+        get_start(variant["location"]),
+        get_end(variant["location"]))
+    if len(repeat_seq) > 0:
+        return True
+    return False
+
+
 def delins_to_del(variant):
     return {
         "type": "deletion",
@@ -120,6 +153,26 @@ def delins_to_duplication(variant, sequences):
         new_variant["location"]
     ) - len(inserted_sequence)
     new_variant["type"] = "duplication"
+    return new_variant
+
+
+def delins_to_repeat(variant, sequences):
+    new_variant = copy.deepcopy(variant)
+    inserted_sequence = get_inserted_sequence(variant, sequences)
+    repeat_seq, repeat_number = seq_present_before(
+        sequences["observed"],
+        inserted_sequence,
+        get_start(variant["location"]),
+        get_end(variant["location"]))
+    new_variant["type"] = "repeat"
+    new_variant["inserted"][0]["sequence"] = repeat_seq
+    new_variant["inserted"][0]["repeat_number"] = {"value": repeat_number}
+    new_variant["inserted"][0]["location"]["end"]["position"] = \
+        get_start(new_variant["location"]) + len(repeat_seq)
+    variant["inserted"][0]["source"] = "description"
+    new_variant["location"]["start"]["position"] = (
+            get_start(new_variant["location"]) - len(repeat_seq)
+    )
     return new_variant
 
 
@@ -164,6 +217,8 @@ def de_to_hgvs(variants, sequences=None):
                 new_variants.append(delins_to_substitution(variant, sequences))
             elif is_duplication(variant, sequences):
                 new_variants.append(delins_to_duplication(variant, sequences))
+            elif is_repeat(variant, sequences):
+                new_variants.append(delins_to_repeat(variant, sequences))
             elif get_start(variant["location"]) == get_end(variant["location"]):
                 new_variants.append(delins_to_insertion(variant))
             else:

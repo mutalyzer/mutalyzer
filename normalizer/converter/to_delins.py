@@ -1,6 +1,6 @@
 import copy
 
-from normalizer.util import get_end, set_start
+from normalizer.util import set_start, get_end, get_location_length
 
 
 def substitution_to_delins(variant):
@@ -23,6 +23,25 @@ def duplication_to_delins(variant):
         {"source": "reference", "location": copy.deepcopy(new_variant["location"])}
     ]
     set_start(new_variant["location"], get_end(new_variant["location"]))
+    return new_variant
+
+
+def repeat_to_delins(variant):
+    new_variant = copy.deepcopy(variant)
+    new_variant["type"] = "deletion_insertion"
+
+    # TODO: can this ever be > 1?
+    assert len(new_variant["inserted"]) == 1
+
+    ll = get_location_length(new_variant["location"])
+    il = len(new_variant["inserted"][0]["sequence"])
+    if ll != il:
+        raise Exception("Range length and sequence don't match")
+
+    # TODO: it would be nice to match the repeated sequence with the reference,
+    #       but I'm not sure if and where that can be done
+
+    new_variant["inserted"][0]["duplication"] = new_variant["inserted"][0]["repeat_number"]["value"]
     return new_variant
 
 
@@ -88,6 +107,8 @@ def variants_to_delins(variants):
             new_variants.append(deletion_insertion_to_delins(variant))
         elif variant.get('type') == "equal":
             new_variants.append(equal_to_delins(variant))
+        elif variant.get('type') == "repeat":
+            new_variants.append(repeat_to_delins(variant))
         else:
             # TODO: Add error.
             print("no supported variant type")

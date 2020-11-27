@@ -245,6 +245,8 @@ def inserted_to_description(inserted, sequences):
             descriptions.append(location_to_description(insert["location"]))
             if insert.get("inverted"):
                 descriptions[-1] += "inv"
+        if insert.get("repeat_number"):
+            descriptions[-1] += "[{}]".format(insert["repeat_number"]["value"])
     if len(inserted) > 1:
         return "[{}]".format(";".join(descriptions))
     else:
