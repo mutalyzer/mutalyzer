@@ -14,9 +14,8 @@ def seq2repeats(long_sequence):
 
 def seq_present_before(observed, ins_seq, start, end):
     for repeat, i in seq2repeats(ins_seq):
-        if observed[start - len(repeat): end] == repeat:
-            print(f"found repeat: {repeat}")
-            return repeat, i + 1
+        if observed[start - len(repeat) : end] == repeat:
+            return repeat, i
 
     return "", 0
 
@@ -132,7 +131,8 @@ def is_repeat(variant, sequences):
         sequences["observed"],
         inserted_sequence,
         get_start(variant["location"]),
-        get_end(variant["location"]))
+        get_end(variant["location"]),
+    )
     if len(repeat_seq) > 0:
         return True
     return False
@@ -163,16 +163,30 @@ def delins_to_repeat(variant, sequences):
         sequences["observed"],
         inserted_sequence,
         get_start(variant["location"]),
-        get_end(variant["location"]))
+        get_end(variant["location"]),
+    )
+    shift_left = len(repeat_seq)
+    while True:
+        if (
+            get_start(variant) - len(repeat_seq) > 0
+            and sequences["reference"][
+                get_start(variant)
+                - shift_left
+                - len(repeat_seq) : get_start(variant)
+                - shift_left
+            ]
+            == repeat_seq
+        ):
+            shift_left += len(repeat_seq)
+        else:
+            break
+    repeat_number += shift_left // len(repeat_seq)
+    new_variant["location"]["start"]["position"] -= shift_left
+    new_variant["location"]["end"]["position"] -= shift_left - len(repeat_seq)
     new_variant["type"] = "repeat"
     new_variant["inserted"][0]["sequence"] = repeat_seq
     new_variant["inserted"][0]["repeat_number"] = {"value": repeat_number}
-    new_variant["inserted"][0]["location"]["end"]["position"] = \
-        get_start(new_variant["location"]) + len(repeat_seq)
     variant["inserted"][0]["source"] = "description"
-    new_variant["location"]["start"]["position"] = (
-            get_start(new_variant["location"]) - len(repeat_seq)
-    )
     return new_variant
 
 
