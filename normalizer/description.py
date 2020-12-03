@@ -15,36 +15,37 @@ from .converter.to_internal_indexing import to_internal_indexing
 from .converter.variants_de_to_hgvs import de_to_hgvs
 from .description_model import (
     get_reference_id,
+    location_to_description,
     model_to_string,
+    point_to_description,
+    variant_to_description,
     variants_to_description,
+    yield_point_locations_for_main_reference,
     yield_reference_ids,
     yield_reference_selector_ids,
     yield_reference_selector_ids_coordinate_system,
-    yield_point_locations_for_main_reference,
-    point_to_description,
-    location_to_description,
-    variant_to_description,
 )
 from .position_check import (
     check_locations,
     contains_uncertain_locations,
     identify_unsorted_locations,
 )
-from .protein import get_protein_descriptions
+from .protein import get_protein_description, get_protein_descriptions
 from .reference import (
     get_coordinate_system_from_reference,
     get_coordinate_system_from_selector_id,
     get_gene_selectors,
     get_gene_selectors_hgnc,
     get_only_selector_id,
+    get_protein_selector_model,
     get_reference_id_from_model,
     get_reference_model,
+    get_sequence_length,
     is_only_one_selector,
     is_selector_in_reference,
     yield_selector_ids,
-    get_sequence_length,
 )
-from .util import set_by_path, get_start, get_end
+from .util import get_end, get_start, set_by_path
 
 
 def e_reference_not_retrieved(reference_id, path):
@@ -490,7 +491,7 @@ class Description(object):
     def _construct_equivalent_descriptions(self):
         if not self.de_model:
             return
-        equivalent_descriptions = []
+        equivalent_descriptions = {}
 
         for selector_id in yield_selector_ids(self.references["reference"]):
             internal_model = to_internal_coordinates(
@@ -503,8 +504,32 @@ class Description(object):
                 to_selector_id=selector_id,
                 degenerate=True,
             )
+            c_s = converted_model["coordinate_system"]
+            if not equivalent_descriptions.get(c_s):
+                equivalent_descriptions[c_s] = []
 
-            equivalent_descriptions.append(model_to_string(converted_model))
+            if converted_model["coordinate_system"] == "c":
+                protein_selector_model = get_protein_selector_model(
+                    self.references["reference"]["annotations"], selector_id
+                )
+                if protein_selector_model:
+                    equivalent_descriptions[c_s].append(
+                        (
+                            model_to_string(converted_model),
+                            get_protein_description(
+                                self.de_model["variants"],
+                                self.references,
+                                protein_selector_model,
+                            ),
+                        )
+                    )
+                else:
+                    equivalent_descriptions[c_s].append(
+                        model_to_string(converted_model)
+                    )
+            else:
+                equivalent_descriptions[c_s].append(model_to_string(converted_model))
+
             if len(equivalent_descriptions) == 20:
                 break
         self.equivalent_descriptions = equivalent_descriptions
@@ -629,7 +654,6 @@ class Description(object):
             self._construct_de_hgvs_coordinates_model()
             self._construct_normalized_description()
             self._construct_equivalent_descriptions()
-            self._construct_protein_descriptions()
 
         # self.print_models_summary()
 
@@ -644,8 +668,6 @@ class Description(object):
 
         if self.equivalent_descriptions is not None:
             output["equivalent_descriptions"] = self.equivalent_descriptions
-        if self.protein_descriptions:
-            output["protein_descriptions"] = self.protein_descriptions
         if self.errors:
             output["errors"] = self.errors
         if self.infos:

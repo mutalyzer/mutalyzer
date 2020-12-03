@@ -120,6 +120,20 @@ def get_available_selectors(reference_annotations, coordinate_system):
     return get_selectors_ids(reference_annotations, coordinate_system)
 
 
+def get_protein_selector_model(reference, selector_id):
+    selector_model = get_selector_model(reference, selector_id, True)
+    mrna = get_feature(reference, selector_id)
+    protein_ids = []
+    if mrna.get("features"):
+        for feature in mrna["features"]:
+            if feature["type"] == "CDS":
+                protein_ids.append(feature["id"])
+    if len(protein_ids) == 1:
+        selector_model["protein_id"] = protein_ids[0]
+        selector_model["transcript_id"] = selector_id
+        return selector_model
+
+
 def get_protein_selector_models(reference):
     """
 
