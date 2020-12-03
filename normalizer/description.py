@@ -20,6 +20,9 @@ from .description_model import (
     yield_reference_ids,
     yield_reference_selector_ids,
     yield_reference_selector_ids_coordinate_system,
+    yield_point_locations_for_main_reference,
+    point_to_description,
+    location_to_description,
 )
 from .position_check import (
     check_locations,
@@ -38,8 +41,9 @@ from .reference import (
     is_only_one_selector,
     is_selector_in_reference,
     yield_selector_ids,
+    get_sequence_length,
 )
-from .util import set_by_path
+from .util import set_by_path, get_start, get_end
 
 
 def e_reference_not_retrieved(reference_id, path):
@@ -86,6 +90,62 @@ def e_coordinate_system_mismatch(
         "{} coordinate system. ".format(
             coordinate_system, mismatch_id, mismatch_coordinate_system
         ),
+        "paths": [path],
+    }
+
+
+def e_out_of_boundary_lesser(position, path):
+    return {
+        "code": "EOUTOFBOUNDARY",
+        "details": "Position {} is lesser than 1.".format(
+            point_to_description(position)
+        ),
+        "paths": [path],
+    }
+
+
+def e_out_of_boundary_greater(point, sequence_length, path):
+    return {
+        "code": "EOUTOFBOUNDARY",
+        "details": "Position {} is greater than the sequence {} length.".format(
+            point_to_description(point), sequence_length
+        ),
+        "paths": [path],
+    }
+
+
+def e_insertion_range_not_consecutive(location, path):
+    return {
+        "code": "EINSERTIONRANGE",
+        "details": "Range positions {} not consecutive in insertion location.".format(
+            location_to_description(location)
+        ),
+        "paths": [path],
+    }
+
+
+def e_insertion_location_not_range(point, path):
+    return {
+        "code": "EINSERTIONLOCATION",
+        "details": "Insertion location {} is not range.".format(
+            point_to_description(point)
+        ),
+        "paths": [path],
+    }
+
+
+def e_repeat_reference_sequence_length(path):
+    return {
+        "code": "EREPEATREFERENCELENGTH",
+        "details": "Reference sequence length not a multiple of the inserted sequence length.",
+        "paths": [path],
+    }
+
+
+def e_repeat_sequences_mismatch(path):
+    return {
+        "code": "EREPEATMISMATCH",
+        "details": "Reference sequence does not contain the repeat sequence.",
         "paths": [path],
     }
 
@@ -319,7 +379,7 @@ class Description(object):
                     )
                     return
             r_c_s = get_coordinate_system_from_reference(self.references[r_id])
-            if (r_c_s == c_s) and (c_s in ['g', 'm']):
+            if (r_c_s == c_s) and (c_s in ["g", "m"]):
                 return
             else:
                 if is_only_one_selector(self.references[r_id], c_s):
@@ -367,17 +427,17 @@ class Description(object):
             observed_sequence = mutate(
                 self._get_sequences(), self.delins_model["variants"]
             )
-            self.references['observed'] = {"sequence": {"seq": observed_sequence}}
+            self.references["observed"] = {"sequence": {"seq": observed_sequence}}
 
     @check_errors
     def _extract(self):
-        de_variants = describe_dna(self.references["reference"]["sequence"]["seq"],
-                                   self.references["observed"]["sequence"]["seq"])
+        de_variants = describe_dna(
+            self.references["reference"]["sequence"]["seq"],
+            self.references["observed"]["sequence"]["seq"],
+        )
         if de_variants:
             self.de_model = {
-                "reference": copy.deepcopy(
-                    self.internal_indexing_model["reference"]
-                ),
+                "reference": copy.deepcopy(self.internal_indexing_model["reference"]),
                 "coordinate_system": "i",
                 "variants": de_variants,
             }
@@ -445,6 +505,91 @@ class Description(object):
     def check_locations(self):
         pass
 
+    def _check_location_boundaries(self, path):
+        v = self.internal_coordinates_model["variants"][path[1]]
+        v_r = self.input_model["variants"][path[1]]
+        if v["location"]["type"] == "point" and not v.get("uncertain"):
+            if (
+                get_sequence_length(self.references, "reference")
+                < v["location"]["position"]
+            ):
+                self._add_error(
+                    e_out_of_boundary_greater(
+                        v_r["location"],
+                        get_sequence_length(self.references, "reference"),
+                        path,
+                    )
+                )
+            elif v["location"]["position"] < 0:
+                self._add_error(e_out_of_boundary_lesser(v_r["location"], path))
+
+    def _check_location_range(self, path):
+        v = self.internal_coordinates_model["variants"][path[1]]
+        v_r = self.input_model["variants"][path[1]]
+        if v["location"]["type"] == "point" and not v.get("uncertain"):
+            if (
+                get_sequence_length(self.references, "reference")
+                < v["location"]["position"]
+            ):
+                self._add_error(
+                    e_out_of_boundary_greater(
+                        v_r["location"],
+                        get_sequence_length(self.references, "reference"),
+                        path,
+                    )
+                )
+            elif v["location"]["position"] < 0:
+                self._add_error(e_out_of_boundary_lesser(v_r["location"], path))
+
+    def _check_insertion_location(self, path):
+        v = self.internal_coordinates_model["variants"][path[1]]
+        v_r = self.input_model["variants"][path[1]]
+        if v["location"]["type"] == "point" and not v["location"].get("uncertain"):
+            self._add_error(e_insertion_location_not_range(v_r["location"], path))
+
+        if v["location"]["type"] == "range" and not v["location"].get("uncertain"):
+            if (
+                v["location"]["start"]["position"] + 1
+                != v["location"]["end"]["position"]
+            ):
+                self._add_error(
+                    e_insertion_range_not_consecutive(v_r["location"], path)
+                )
+
+    def _check_repeat(self, path):
+        v = self.internal_coordinates_model["variants"][path[1]]
+        v_i = self.internal_indexing_model["variants"][path[1]]
+        if (
+            v.get("inserted")
+            and len(v.get("inserted")) == 1
+            and v["inserted"][0].get("sequence")
+            and v["inserted"][0].get("source") == "description"
+            and v["inserted"][0].get("repeat_number")
+        ):
+            reference_sequence = self.references["reference"]["sequence"]["seq"][
+                get_start(v_i) : get_end(v_i)
+            ]
+            repeat_number = v["inserted"][0]["repeat_number"]["value"]
+            repeat_sequence = v["inserted"][0]["sequence"]
+            if len(reference_sequence) % len(repeat_sequence) != 0:
+                self._add_error(e_repeat_reference_sequence_length(path))
+            elif (
+                len(reference_sequence) // repeat_number
+            ) * repeat_sequence != reference_sequence:
+                self._add_error(e_repeat_sequences_mismatch(path))
+
+    def check(self):
+        for i, variant in enumerate(self.internal_coordinates_model["variants"]):
+            if variant.get("location"):
+                path = ["variants", i, "location"]
+                self._check_location_boundaries(path)
+
+            if variant["type"] == "insertion":
+                self._check_insertion_location(["variants", i])
+
+            if variant["type"] == "repeat":
+                self._check_repeat(["variants", i])
+
     def normalize(self):
         self.retrieve_references()
 
@@ -458,6 +603,8 @@ class Description(object):
 
         if contains_uncertain_locations(self.delins_model):
             return
+
+        self.check()
 
         self._mutate()
         self._extract()
