@@ -23,6 +23,7 @@ from .description_model import (
     yield_point_locations_for_main_reference,
     point_to_description,
     location_to_description,
+    variant_to_description,
 )
 from .position_check import (
     check_locations,
@@ -142,10 +143,22 @@ def e_repeat_reference_sequence_length(path):
     }
 
 
-def e_repeat_sequences_mismatch(path):
+def e_repeat_sequences_mismatch(reference_sequence, repeat_sequence, path):
     return {
         "code": "EREPEATMISMATCH",
-        "details": "Reference sequence does not contain the repeat sequence.",
+        "details": "Reference sequence {} does not contain the repeat sequence {}.".format(
+            reference_sequence, repeat_sequence
+        ),
+        "paths": [path],
+    }
+
+
+def e_repeat_not_supported(variant, path):
+    return {
+        "code": "EREPEATUNSUPPORTED",
+        "details": "Repeat variant {} not supported.".format(
+            variant_to_description(variant)
+        ),
         "paths": [path],
     }
 
@@ -557,27 +570,30 @@ class Description(object):
                 )
 
     def _check_repeat(self, path):
-        v = self.internal_coordinates_model["variants"][path[1]]
+        v = self.input_model["variants"][path[1]]
         v_i = self.internal_indexing_model["variants"][path[1]]
-        if (
-            v.get("inserted")
-            and len(v.get("inserted")) == 1
-            and v["inserted"][0].get("sequence")
-            and v["inserted"][0].get("source") == "description"
-            and v["inserted"][0].get("repeat_number")
-        ):
-            reference_sequence = self.references["reference"]["sequence"]["seq"][
+        if v.get("inserted") and len(v.get("inserted")) == 1:
+            inserted = v["inserted"][0]
+            if inserted.get("sequence") and inserted.get("source") == "description":
+                repeat_seq = inserted["sequence"]
+            # TODO: get the sequence from a reference slice
+            else:
+                self._add_error(e_repeat_not_supported(v, path))
+                return
+
+            ref_seq = self.references["reference"]["sequence"]["seq"][
                 get_start(v_i) : get_end(v_i)
             ]
-            repeat_number = v["inserted"][0]["repeat_number"]["value"]
-            repeat_sequence = v["inserted"][0]["sequence"]
-            if len(reference_sequence) % len(repeat_sequence) != 0:
-                self._add_error(e_repeat_reference_sequence_length(path))
-            elif (
-                len(reference_sequence) // repeat_number
-            ) * repeat_sequence != reference_sequence:
-                self._add_error(e_repeat_sequences_mismatch(path))
 
+            if len(ref_seq) % len(repeat_seq) != 0:
+                self._add_error(e_repeat_reference_sequence_length(path))
+            elif (len(ref_seq) // len(repeat_seq)) * repeat_seq != ref_seq:
+                self._add_error(e_repeat_sequences_mismatch(ref_seq, repeat_seq, path))
+        else:
+            # TODO: Convert to delins and switch to warning?
+            self._add_error(e_repeat_not_supported(v, path))
+
+    @check_errors
     def check(self):
         for i, variant in enumerate(self.internal_coordinates_model["variants"]):
             if variant.get("location"):

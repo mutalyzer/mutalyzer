@@ -203,6 +203,13 @@ def variant_to_description(variant, sequences=None):
         deleted = location_to_description(variant.get("location"))
     if variant.get("inserted"):
         inserted = inserted_to_description(variant["inserted"], sequences)
+        if (
+            variant["type"] == "repeat"
+            and len(variant.get("inserted")) == 1
+            and variant["inserted"][0].get("location")
+            and not variant["inserted"][0].get("sequence")
+        ):
+            inserted = "[{}]".format(inserted)
     variant_type = variant.get("type")
     if variant_type == "substitution":
         if variant.get("deleted"):
