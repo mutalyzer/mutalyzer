@@ -16,7 +16,6 @@ def seq_present_before(observed, ins_seq, start, end):
     for repeat, i in seq2repeats(ins_seq):
         if observed[start - len(repeat) : end] == repeat:
             return repeat, i
-
     return "", 0
 
 
