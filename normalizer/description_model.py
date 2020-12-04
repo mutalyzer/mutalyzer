@@ -206,8 +206,16 @@ def variant_to_description(variant, sequences=None):
         if (
             variant["type"] == "repeat"
             and len(variant.get("inserted")) == 1
-            and variant["inserted"][0].get("location")
-            and not variant["inserted"][0].get("sequence")
+            and (
+                (
+                    variant["inserted"][0].get("location")
+                    and not variant["inserted"][0].get("sequence")
+                )
+                or (
+                    variant["inserted"][0].get("length")
+                    and variant["inserted"][0]["length"].get("value")
+                )
+            )
         ):
             inserted = "[{}]".format(inserted)
     variant_type = variant.get("type")
@@ -250,10 +258,12 @@ def inserted_to_description(inserted, sequences):
             descriptions.append(model_to_string(insert))
         elif insert.get("location"):
             descriptions.append(location_to_description(insert["location"]))
-            if insert.get("inverted"):
-                descriptions[-1] += "inv"
+        elif insert.get("length"):
+            descriptions.append(length_to_description(insert["length"]))
         if insert.get("repeat_number"):
             descriptions[-1] += "[{}]".format(insert["repeat_number"]["value"])
+        if insert.get("inverted"):
+            descriptions[-1] += "inv"
     if len(inserted) > 1:
         return "[{}]".format(";".join(descriptions))
     else:
@@ -301,3 +311,20 @@ def point_to_description(point):
     if point.get("uncertain_offset"):
         offset = point.get("uncertain_offset")
     return "{}{}{}".format(outside_cds, position, offset)
+
+
+def length_to_description(length):
+    if length["type"] == "point":
+        if length.get("value"):
+            return length["value"]
+        elif length.get("uncertain"):
+            return "?"
+    if length["type"] == "range":
+        output = "{}_{}".format(
+            length_to_description(length.get("start")),
+            length_to_description(length.get("end")),
+        )
+        if length.get("uncertain"):
+            return "({})".format(output)
+        else:
+            return output
