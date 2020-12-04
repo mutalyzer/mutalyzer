@@ -18,7 +18,7 @@ def get_reference_model(reference_id):
     if cache and (Path(cache) / reference_id).is_file():
         with open(Path(cache) / reference_id) as json_file:
             return json.load(json_file)
-    return retrieve_model(reference_id)
+    return retrieve_model(reference_id, timeout=10)
 
 
 def is_feature_inverted(feature):
