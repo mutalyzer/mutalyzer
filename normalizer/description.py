@@ -560,6 +560,37 @@ class Description(object):
                 )
             elif v["location"]["position"] < 0:
                 self._add_error(e_out_of_boundary_lesser(v_r["location"], path))
+        if v["location"]["type"] == "range":
+            if v["location"]["start"]["type"] == "point" and not v.get("uncertain"):
+                if (
+                        get_sequence_length(self.references, "reference")
+                        < v["location"]["start"]["position"]
+                ):
+                    self._add_error(
+                        e_out_of_boundary_greater(
+                            v_r["location"]["start"],
+                            get_sequence_length(self.references, "reference"),
+                            path + ["start"],
+                        )
+                    )
+                elif v["location"]["start"]["position"] < 0:
+                    self._add_error(
+                        e_out_of_boundary_lesser(v_r["location"]["start"], path + ["start"]))
+            if v["location"]["end"]["type"] == "point" and not v.get("uncertain"):
+                if (
+                        get_sequence_length(self.references, "reference")
+                        < v["location"]["end"]["position"]
+                ):
+                    self._add_error(
+                        e_out_of_boundary_greater(
+                            v_r["location"]["end"],
+                            get_sequence_length(self.references, "reference"),
+                            path + ["end"],
+                        )
+                    )
+                elif v["location"]["end"]["position"] < 0:
+                    self._add_error(
+                        e_out_of_boundary_lesser(v_r["location"]["end"], path + ["end"]))
 
     def _check_location_range(self, path):
         v = self.internal_coordinates_model["variants"][path[1]]
@@ -587,8 +618,11 @@ class Description(object):
 
         if v["location"]["type"] == "range" and not v["location"].get("uncertain"):
             if (
-                v["location"]["start"]["position"] + 1
-                != v["location"]["end"]["position"]
+                abs(
+                    v["location"]["start"]["position"]
+                    - v["location"]["end"]["position"]
+                )
+                != 1
             ):
                 self._add_error(
                     e_insertion_range_not_consecutive(v_r["location"], path)
@@ -665,6 +699,7 @@ class Description(object):
             output["corrected_model"] = self.corrected_model
             output["corrected_description"] = model_to_string(self.corrected_model)
         output["normalized_description"] = self.normalized_description
+        output["input_description"] = self.input_description
 
         if self.equivalent_descriptions is not None:
             output["equivalent_descriptions"] = self.equivalent_descriptions
