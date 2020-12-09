@@ -7,8 +7,8 @@ def seq2repeats(long_sequence):
     for i in range(1, len(long_sequence) + 1):
         for j in range(1, len(long_sequence) + 1):
             if i * j == len(long_sequence):
-                if long_sequence[:j] * i == long_sequence:
-                    yield long_sequence[:j], i
+                if long_sequence[:i] * j == long_sequence:
+                    yield long_sequence[:i], j
                 break
 
 
@@ -181,11 +181,14 @@ def delins_to_repeat(variant, sequences):
             break
     repeat_number += shift_left // len(repeat_seq)
     new_variant["location"]["start"]["position"] -= shift_left
-    new_variant["location"]["end"]["position"] -= shift_left - len(repeat_seq)
     new_variant["type"] = "repeat"
-    new_variant["inserted"][0]["sequence"] = repeat_seq
-    new_variant["inserted"][0]["repeat_number"] = {"value": repeat_number}
-    variant["inserted"][0]["source"] = "description"
+    new_variant["inserted"] = [
+        {
+            "sequence": repeat_seq,
+            "source": "description",
+            "repeat_number": {"value": repeat_number},
+        }
+    ]
     return new_variant
 
 
