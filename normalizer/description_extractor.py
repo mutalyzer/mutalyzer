@@ -16,6 +16,6 @@ def description_extractor(reference, observed):
     )
     hgvs_indexing_variants = variants_to_internal_indexing(de_hgvs_variants)
     crossmap = crossmap_to_hgvs_setup("g")
-    hgvs_variants = locations_to_hgvs_locations(hgvs_indexing_variants, crossmap)
-    normalized_description = variants_to_description(hgvs_variants)
+    hgvs_variants = locations_to_hgvs_locations({"variants": hgvs_indexing_variants}, crossmap)
+    normalized_description = variants_to_description(hgvs_variants["variants"])
     return normalized_description

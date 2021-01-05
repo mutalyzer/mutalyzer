@@ -141,7 +141,8 @@ de_parser.add_argument(
 class DescriptionExtract(Resource):
     @api.expect(de_parser)
     def get(self):
-        """Convert a position."""
+        """Generates the HGVS variant description from a reference sequence
+        and an observed sequence."""
         args = de_parser.parse_args()
         return description_extractor(**args)
 
