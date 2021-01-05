@@ -1,6 +1,6 @@
 import copy
 
-from .util import set_by_path
+from .util import get_end, get_start, set_by_path
 
 
 def get_reference_id(model):
@@ -110,6 +110,23 @@ def yield_point_locations_for_main_reference(model, path=[]):
             for i, sub_model in enumerate(model[k]):
                 if not isinstance(sub_model.get("source"), dict):
                     yield from yield_point_locations_for_main_reference(
+                        sub_model, path + [k, i]
+                    )
+
+
+def yield_point_locations_for_main_reference_variants(model, path=[]):
+    for k in model.keys():
+        if k in ["location", "start", "end"]:
+            if model[k]["type"] == "point":
+                yield model[k], path + [k]
+            else:
+                yield from yield_point_locations_for_main_reference(
+                    model[k], path + [k]
+                )
+        elif k in ["variants"]:
+            for i, sub_model in enumerate(model[k]):
+                if not isinstance(sub_model.get("source"), dict):
+                    yield from yield_point_locations_for_main_reference_variants(
                         sub_model, path + [k, i]
                     )
 
@@ -328,3 +345,12 @@ def length_to_description(length):
             return "({})".format(output)
         else:
             return output
+
+
+def get_locations_start_end(model):
+    locations = [
+        x[0]["position"]
+        for x in yield_point_locations_for_main_reference_variants(model)
+        if x[0].get("position")
+    ]
+    return min(locations), max(locations)

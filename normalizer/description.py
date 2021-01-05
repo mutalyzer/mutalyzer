@@ -14,6 +14,7 @@ from .converter.to_internal_coordinates import to_internal_coordinates
 from .converter.to_internal_indexing import to_internal_indexing
 from .converter.variants_de_to_hgvs import de_to_hgvs
 from .description_model import (
+    get_locations_start_end,
     get_reference_id,
     location_to_description,
     model_to_string,
@@ -40,9 +41,12 @@ from .reference import (
     get_protein_selector_model,
     get_reference_id_from_model,
     get_reference_model,
+    get_selectors_ids,
     get_sequence_length,
     is_only_one_selector,
     is_selector_in_reference,
+    update_start_end,
+    yield_overlap_ids,
     yield_selector_ids,
 )
 from .util import get_end, get_start, set_by_path
@@ -277,6 +281,7 @@ class Description(object):
         for reference_id, path in yield_reference_ids(self.input_model):
             try:
                 reference_model = get_reference_model(reference_id)
+                # print(get_reference_model.cache_info())
             except NoReferenceError:
                 self._add_error(e_reference_not_retrieved(reference_id, [path]))
             except NoReferenceRetrieved:
@@ -492,8 +497,17 @@ class Description(object):
         if not self.de_model:
             return
         equivalent_descriptions = {}
+        get_locations_start_end(self.de_hgvs_internal_indexing_model)
 
-        for selector_id in yield_selector_ids(self.references["reference"]):
+        start_limit, end_limit = update_start_end(
+            self.references["reference"],
+            *get_locations_start_end(self.de_hgvs_internal_indexing_model)
+        )
+
+        for selector in yield_overlap_ids(
+            self.references["reference"], start_limit, end_limit
+        ):
+
             internal_model = to_internal_coordinates(
                 self.de_hgvs_model, self.references
             )
@@ -501,7 +515,7 @@ class Description(object):
                 internal_model=internal_model,
                 references=self.references,
                 to_coordinate_system=None,
-                to_selector_id=selector_id,
+                to_selector_id=selector["id"],
                 degenerate=True,
             )
             c_s = converted_model["coordinate_system"]
@@ -510,7 +524,7 @@ class Description(object):
 
             if converted_model["coordinate_system"] == "c":
                 protein_selector_model = get_protein_selector_model(
-                    self.references["reference"]["annotations"], selector_id
+                    self.references["reference"]["annotations"], selector["id"]
                 )
                 if protein_selector_model:
                     equivalent_descriptions[c_s].append(
@@ -530,8 +544,6 @@ class Description(object):
             else:
                 equivalent_descriptions[c_s].append(model_to_string(converted_model))
 
-            if len(equivalent_descriptions) == 20:
-                break
         self.equivalent_descriptions = equivalent_descriptions
 
     def _construct_protein_descriptions(self):
@@ -563,8 +575,8 @@ class Description(object):
         if v["location"]["type"] == "range":
             if v["location"]["start"]["type"] == "point" and not v.get("uncertain"):
                 if (
-                        get_sequence_length(self.references, "reference")
-                        < v["location"]["start"]["position"]
+                    get_sequence_length(self.references, "reference")
+                    < v["location"]["start"]["position"]
                 ):
                     self._add_error(
                         e_out_of_boundary_greater(
@@ -575,11 +587,14 @@ class Description(object):
                     )
                 elif v["location"]["start"]["position"] < 0:
                     self._add_error(
-                        e_out_of_boundary_lesser(v_r["location"]["start"], path + ["start"]))
+                        e_out_of_boundary_lesser(
+                            v_r["location"]["start"], path + ["start"]
+                        )
+                    )
             if v["location"]["end"]["type"] == "point" and not v.get("uncertain"):
                 if (
-                        get_sequence_length(self.references, "reference")
-                        < v["location"]["end"]["position"]
+                    get_sequence_length(self.references, "reference")
+                    < v["location"]["end"]["position"]
                 ):
                     self._add_error(
                         e_out_of_boundary_greater(
@@ -590,7 +605,8 @@ class Description(object):
                     )
                 elif v["location"]["end"]["position"] < 0:
                     self._add_error(
-                        e_out_of_boundary_lesser(v_r["location"]["end"], path + ["end"]))
+                        e_out_of_boundary_lesser(v_r["location"]["end"], path + ["end"])
+                    )
 
     def _check_location_range(self, path):
         v = self.internal_coordinates_model["variants"][path[1]]
@@ -754,6 +770,14 @@ class Description(object):
         else:
             print("- No de_hgvs_model")
         print("------")
+
+    def get_reference_summary(self):
+        return {
+            "sequence_length": get_sequence_length(self.references, "reference"),
+            "selector_ids": len(
+                get_selectors_ids(self.references["reference"]["annotations"])
+            ),
+        }
 
 
 def normalize(description_to_normalize):

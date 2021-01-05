@@ -264,6 +264,42 @@ def yield_selector_ids_coordinate_system(model, coordinate_system):
             yield selector["id"]
 
 
+def is_overlap(selector, start, end):
+    sel_s = get_start(selector["location"])
+    sel_e = get_end(selector["location"])
+    if (
+        sel_s <= start <= sel_e
+        or sel_s <= end <= sel_e
+        or start <= sel_s <= sel_e <= end
+    ):
+        return True
+    return False
+
+
+def update_start_end(model, start, end):
+    new_start = start
+    new_end = end
+    for gene in yield_gene_models(model):
+        if gene.get("features"):
+            for selector in gene["features"]:
+                if selector["type"] in SELECTOR_MOL_TYPES_TYPES:
+                    if is_overlap(selector, new_start, new_end):
+                        if get_start(selector["location"]) < start:
+                            new_start = get_start(selector["location"])
+                        if end < get_end(selector["location"]):
+                            new_end = get_end(selector["location"])
+    return new_start, new_end
+
+
+def yield_overlap_ids(model, start, end):
+    for gene in yield_gene_models(model):
+        if gene.get("features"):
+            for selector in gene["features"]:
+                if selector["type"] in SELECTOR_MOL_TYPES_TYPES:
+                    if is_overlap(selector, start, end):
+                        yield selector
+
+
 def get_only_selector_id(model, coordinate_system):
     for selector_id in yield_selector_ids_coordinate_system(model, coordinate_system):
         return selector_id
