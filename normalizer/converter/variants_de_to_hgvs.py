@@ -137,6 +137,18 @@ def is_repeat(variant, sequences):
     return False
 
 
+def inserted_to_hgvs(inserted):
+    new_inserted = []
+    for insert in inserted:
+        if insert["source"] in ["reference"]:
+            new_inserted.append({"source": "reference", "location": insert["location"]})
+        else:
+            new_inserted.append(
+                {"source": "description", "sequence": insert["sequence"]}
+            )
+    return new_inserted
+
+
 def delins_to_del(variant):
     return {
         "type": "deletion",
@@ -204,9 +216,16 @@ def delins_to_substitution(variant, sequences):
     new_variant["deleted"] = [
         {
             "sequence": slice_sequence(variant["location"], sequences["reference"]),
-            "source": "reference_location",
+            "source": "description",
         }
     ]
+    new_variant["inserted"] = inserted_to_hgvs(variant["inserted"])
+    return new_variant
+
+
+def delins_to_delins(variant):
+    new_variant = copy.deepcopy(variant)
+    new_variant["inserted"] = inserted_to_hgvs(variant["inserted"])
     return new_variant
 
 
@@ -238,6 +257,6 @@ def de_to_hgvs(variants, sequences=None):
             elif get_start(variant["location"]) == get_end(variant["location"]):
                 new_variants.append(delins_to_insertion(variant))
             else:
-                new_variants.append(copy.deepcopy(variant))
+                new_variants.append(delins_to_delins(variant))
 
     return new_variants
