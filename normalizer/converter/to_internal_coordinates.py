@@ -8,42 +8,8 @@ from ..description_model import (
     yield_inserted_other_reference,
     yield_point_locations_for_main_reference,
 )
-from ..reference import get_coordinate_system_from_selector_id, get_selector_model
-from ..util import get_end, get_start, set_by_path
-
-
-def add_msg(dictionary, message_type, message):
-    if dictionary.get(message_type) is None:
-        dictionary[message_type] = []
-    dictionary[message_type].append(message)
-
-
-def check_selector_model(description_model, selector_model):
-    if description_model["coordinate_system"] in ["c", "n"]:
-        if not selector_model.get("exon"):
-            message = {
-                "code": "ESELECTORMODELNOEXONS",
-                "detail": "No exons found in the reference for {} selector.".format(
-                    selector_model["id"]
-                ),
-            }
-            if description_model.get("reference"):
-                add_msg(description_model["reference"]["selector"], "errors", message)
-            elif description_model.get("source"):
-                add_msg(description_model["source"]["selector"], "errors", message)
-
-    if description_model["coordinate_system"] in ["c"]:
-        if not selector_model.get("cds"):
-            message = {
-                "code": "ESELECTORMODELNOCDS",
-                "detail": "No CDS found in the reference for {} selector.".format(
-                    selector_model["id"]
-                ),
-            }
-            if description_model.get("reference"):
-                add_msg(description_model["reference"]["selector"], "errors", message)
-            elif description_model.get("source"):
-                add_msg(description_model["source"]["selector"], "errors", message)
+from ..reference import get_selector_model
+from ..util import set_by_path
 
 
 def get_point_value(point):

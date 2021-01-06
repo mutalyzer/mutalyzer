@@ -7,7 +7,7 @@ from ..description_model import (
     yield_point_locations_for_main_reference,
 )
 from ..reference import get_coordinate_system_from_selector_id, get_selector_model
-from ..util import get_end, get_start, set_by_path
+from ..util import set_by_path
 
 
 def genomic_to_point(genomic):
