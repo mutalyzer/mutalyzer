@@ -324,9 +324,13 @@ def point_to_description(point):
     else:
         position = str(point.get("position"))
     if point.get("offset"):
-        offset = "%+d" % point["offset"]["value"]
-    if point.get("uncertain_offset"):
-        offset = point.get("uncertain_offset")
+        if point["offset"].get("value"):
+            offset = "%+d" % point["offset"]["value"]
+        elif point["offset"].get("uncertain"):
+            if point["offset"].get("upstream"):
+                offset = "-?"
+            elif point["offset"].get("downstream"):
+                offset = "+?"
     return "{}{}{}".format(outside_cds, position, offset)
 
 

@@ -16,6 +16,8 @@ def get_point_value(point):
     value = point["position"]
     if point.get("outside_cds") and point["outside_cds"] == "upstream":
         value *= -1
+    if point.get("offset") and point["offset"].get("value"):
+        value += point["offset"]["value"]
     return value
 
 
