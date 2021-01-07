@@ -115,8 +115,7 @@ def to_hgvs_locations(
         if to_selector_id
         else None
     )
-
-    if to_coordinate_system is None and selector_model:
+    if not to_coordinate_system and selector_model:
         to_coordinate_system = get_coordinate_system_from_selector_id(
             references[reference_id], to_selector_id
         )

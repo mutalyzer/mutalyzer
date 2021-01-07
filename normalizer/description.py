@@ -52,6 +52,14 @@ from .reference import (
 from .util import get_end, get_start, set_by_path
 
 
+def e_mismatch(input_description, model_description):
+    return {
+        "code": "EMISMATCH",
+        "details": "Model description {} different than the input description {}.".format(
+            model_description, input_description),
+    }
+
+
 def e_reference_not_retrieved(reference_id, path):
     return {
         "code": "ERETR",
@@ -209,12 +217,18 @@ def check_errors(fn):
 
 
 class Description(object):
-    def __init__(self, description, stop_on_error=False):
-        self.input_description = description
+    def __init__(self, description=None, description_model=None, stop_on_error=False):
+
+        self.errors = []
+        self.infos = []
+
+        self.input_description = description if description else None
+        self.input_model = description_model if description_model else {}
+        self._check_input()
+
         self.stop_on_errors = stop_on_error
 
-        self.input_model = {}
-        self.corrected_model = {}
+        self.corrected_model = copy.deepcopy(self.input_model)
         self.internal_coordinates_model = {}
         self.internal_indexing_model = {}
         self.delins_model = {}
@@ -229,10 +243,17 @@ class Description(object):
         self.equivalent_descriptions = None
         self.protein_descriptions = None
 
-        self.errors = []
-        self.infos = []
-
-        self._convert_description_to_model()
+    def _check_input(self):
+        if self.input_description and not self.input_model:
+            self._convert_description_to_model()
+        elif self.input_description is None and self.input_model:
+            # TODO: check the input_model
+            self.input_description = model_to_string(self.input_model)
+        elif self.input_description and self.input_model:
+            # TODO: check the input_model
+            model_description = model_to_string(self.input_model)
+            if self.input_description != model_description:
+                e_mismatch(model_description, self.input_description)
 
     def _add_error(self, error):
         self.errors.append(error)
@@ -258,8 +279,6 @@ class Description(object):
                     **e.serialize()
                 )
             )
-        else:
-            self.corrected_model = copy.deepcopy(self.input_model)
 
     def _set_main_reference(self):
         reference_id = get_reference_id(self.corrected_model)
@@ -675,11 +694,20 @@ class Description(object):
                 path = ["variants", i, "location"]
                 self._check_location_boundaries(path)
 
-            if variant["type"] == "insertion":
+            if variant.get("type") == "insertion":
                 self._check_insertion_location(["variants", i])
 
-            if variant["type"] == "repeat":
+            if variant.get("type") == "repeat":
                 self._check_repeat(["variants", i])
+
+    def to_internal_coordinate_model(self):
+        self.retrieve_references()
+
+        self._check_selectors_in_references()
+        self._check_coordinate_systems()
+        self._check_coordinate_system_consistency()
+
+        self._construct_internal_coordinate_model()
 
     def normalize(self):
         self.retrieve_references()

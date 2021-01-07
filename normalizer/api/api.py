@@ -164,6 +164,6 @@ class GetSelectors(Resource):
         """Retrieve available selectors for the provided reference."""
         reference_model = get_reference_model(reference_id)
         if reference_model:
-            selectors = get_selectors_ids(reference_model["model"])
+            selectors = get_selectors_ids(reference_model["annotations"])
             return {"reference": reference_id, "selectors": selectors}
         return {"errors": [{"code": "ERETR"}]}
