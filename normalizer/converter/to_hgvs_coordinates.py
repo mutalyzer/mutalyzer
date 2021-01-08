@@ -87,6 +87,8 @@ def initialize_hgvs_model(internal_model, coordinate_system=None, selector_id=No
         model["coordinate_system"] = coordinate_system
     if selector_id:
         model["reference"]["selector"] = {"id": selector_id}
+    else:
+        model["reference"] = {"id": model["reference"]["id"]}
     return model
 
 

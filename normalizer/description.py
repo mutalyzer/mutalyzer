@@ -56,7 +56,8 @@ def e_mismatch(input_description, model_description):
     return {
         "code": "EMISMATCH",
         "details": "Model description {} different than the input description {}.".format(
-            model_description, input_description),
+            model_description, input_description
+        ),
     }
 
 
@@ -523,13 +524,28 @@ class Description(object):
             *get_locations_start_end(self.de_hgvs_internal_indexing_model)
         )
 
+        internal_model = to_internal_coordinates(self.de_hgvs_model, self.references)
+
+        if (
+            get_coordinate_system_from_reference(self.references["reference"])
+            == "g"
+            != self.corrected_model["coordinate_system"]
+        ):
+            equivalent_descriptions["g"] = [
+                model_to_string(
+                    to_hgvs_locations(
+                        internal_model=internal_model,
+                        references=self.references,
+                        to_coordinate_system="g",
+                        to_selector_id=None,
+                        degenerate=True,
+                    )
+                )
+            ]
+
         for selector in yield_overlap_ids(
             self.references["reference"], start_limit, end_limit
         ):
-
-            internal_model = to_internal_coordinates(
-                self.de_hgvs_model, self.references
-            )
             converted_model = to_hgvs_locations(
                 internal_model=internal_model,
                 references=self.references,
