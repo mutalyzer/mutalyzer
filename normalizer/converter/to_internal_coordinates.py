@@ -7,6 +7,7 @@ from ..description_model import (
     get_selector_id,
     yield_inserted_other_reference,
     yield_point_locations_for_main_reference,
+    yield_range_locations_for_main_reference,
 )
 from ..reference import get_selector_model
 from ..util import set_by_path
@@ -42,11 +43,16 @@ def create_exact_point_model(point):
     return {"type": "point", "position": point}
 
 
-def point_to_coding(point, crossmap_function, point_function):
+def point_to_coding(point, crossmap_function, point_function, inverted=False):
     if point.get("uncertain"):
         return {"type": "point", "uncertain": True}
     else:
-        return create_exact_point_model(crossmap_function(point_function(point)))
+        internal_point = crossmap_function(point_function(point))
+        if inverted and point.get("shift"):
+            internal_point += point["shift"]
+        point_model = {"shift": point["shift"]} if point.get("shift") else {}
+        point_model.update(create_exact_point_model(internal_point))
+        return point_model
 
 
 def point_to_internal(point, crossmap):
@@ -70,12 +76,14 @@ def crossmap_to_internal_setup(coordinate_system, selector_model=None):
         return {
             "crossmap_function": crossmap.coding_to_coordinate,
             "point_function": point_to_x_coding,
+            "inverted": selector_model["inverted"],
         }
     elif coordinate_system == "n":
         crossmap = NonCoding(selector_model["exon"], selector_model["inverted"])
         return {
             "crossmap_function": crossmap.noncoding_to_coordinate,
             "point_function": point_to_x_coding,
+            "inverted": selector_model["inverted"],
         }
 
 
@@ -102,6 +110,14 @@ def points_to_internal_coordinates(description, references):
         set_by_path(
             internal_description_model, path, point_to_internal(point, crossmap)
         )
+    if selector_model and selector_model.get("inverted"):
+        for range_location, path in yield_range_locations_for_main_reference(
+            internal_description_model
+        ):
+            range_location["start"], range_location["end"] = (
+                range_location["end"],
+                range_location["start"],
+            )
 
     return internal_description_model
 

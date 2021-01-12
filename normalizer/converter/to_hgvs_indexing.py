@@ -2,13 +2,14 @@ import copy
 
 
 def location_to_hgvs_indexing(location, insertion=False):
-    """
-    """
+    """"""
     if insertion:
         new_location = copy.deepcopy(location)
         new_location["start"]["position"] -= 1
     elif location["start"]["position"] + 1 == location["end"]["position"]:
         new_location = copy.deepcopy(location["start"])
+        if location.get("shift"):
+            new_location["shift"] = location["shift"]
     else:
         new_location = copy.deepcopy(location)
         new_location["end"]["position"] -= 1

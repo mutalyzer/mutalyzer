@@ -70,6 +70,7 @@ def de_variants_clean(variants, sequences=None):
             inserted_sequence = get_inserted_sequence(variant, sequences)
             new_variant = copy.deepcopy(variant)
             shift3 = 0
+            shift5 = 0
             if get_location_length(variant["location"]) and not inserted_sequence:
                 shift5, shift3 = roll(
                     sequences["reference"],
@@ -97,8 +98,11 @@ def de_variants_clean(variants, sequences=None):
                     new_variant["inserted"] = [
                         {"sequence": inserted_rolled_sequence, "source": "description"}
                     ]
+            shift = shift3 + shift5
             new_variant["location"]["start"]["position"] += shift3
+            new_variant["location"]["start"]["shift"] = shift
             new_variant["location"]["end"]["position"] += shift3
+            new_variant["location"]["end"]["shift"] = shift
             new_variants.append(new_variant)
 
     return new_variants

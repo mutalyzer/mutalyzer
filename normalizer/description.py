@@ -776,44 +776,52 @@ class Description(object):
             print(self.input_description)
 
         if self.corrected_model:
+            print("- Corrected model")
             print(model_to_string(self.corrected_model))
         else:
             print("- No corrected model")
 
         if self.internal_coordinates_model:
+            print("- Internal coordinates model")
             print(model_to_string(self.internal_coordinates_model))
         else:
-            print("- No internal_coordinates_model")
+            print("- No internal coordinates model")
 
         if self.internal_indexing_model:
+            print("- Internal indexing model")
             print(model_to_string(self.internal_indexing_model))
         else:
             print("- No internal_indexing_model")
 
         if self.delins_model:
+            print("- Delins model")
             print(model_to_string(self.delins_model))
         else:
-            print("- No delins_model")
+            print("- No delins model")
 
         if self.de_model:
+            print("- De model")
             print(model_to_string(self.de_model))
         else:
             print("- No de_model")
 
         if self.de_hgvs_internal_indexing_model:
+            print("- De hgvs internal indexing model")
             print(model_to_string(self.de_hgvs_internal_indexing_model))
         else:
-            print("- No de_hgvs_internal_indexing_model")
+            print("- De hgvs internal indexing model")
 
         if self.de_hgvs_coordinate_model:
+            print("- De hgvs coordinate model")
             print(model_to_string(self.de_hgvs_coordinate_model))
         else:
             print("- No de_hgvs_coordinate_model")
 
         if self.de_hgvs_model:
+            print("- De hgvs model")
             print(model_to_string(self.de_hgvs_model))
         else:
-            print("- No de_hgvs_model")
+            print("- No de hgvs model")
         print("------")
 
     def get_reference_summary(self):

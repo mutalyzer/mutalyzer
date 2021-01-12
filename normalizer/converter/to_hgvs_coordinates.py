@@ -5,6 +5,7 @@ from mutalyzer_crossmapper import Coding, Genomic, NonCoding
 from ..description_model import (
     get_reference_id,
     yield_point_locations_for_main_reference,
+    yield_range_locations_for_main_reference,
 )
 from ..reference import get_coordinate_system_from_selector_id, get_selector_model
 from ..util import set_by_path
@@ -39,14 +40,22 @@ def noncoding_to_point(noncoding):
     return point
 
 
-def point_to_hgvs(point, crossmap_function, point_function, degenerate=False):
+def point_to_hgvs(
+    point, crossmap_function, point_function, degenerate=False, inverted=False
+):
     if point.get("uncertain"):
         return {"type": "point", "uncertain": True}
     else:
+        point_position = point["position"]
+        if inverted and point.get("shift"):
+            point_position -= point["shift"]
         if degenerate:
-            return point_function(crossmap_function(point["position"], degenerate))
+            new_point = point_function(crossmap_function(point_position, degenerate))
         else:
-            return point_function(crossmap_function(point["position"]))
+            new_point = point_function(crossmap_function(point_position))
+    if point.get("shift"):
+        new_point["shift"] = point["shift"]
+    return new_point
 
 
 def crossmap_to_hgvs_setup(coordinate_system, selector_model=None, degenerate=False):
@@ -68,12 +77,14 @@ def crossmap_to_hgvs_setup(coordinate_system, selector_model=None, degenerate=Fa
             "crossmap_function": crossmap.coordinate_to_coding,
             "point_function": coding_to_point,
             "degenerate": degenerate,
+            "inverted": selector_model["inverted"],
         }
     elif coordinate_system == "n":
         crossmap = NonCoding(selector_model["exon"], selector_model["inverted"])
         return {
             "crossmap_function": crossmap.coordinate_to_noncoding,
             "point_function": noncoding_to_point,
+            "inverted": selector_model["inverted"],
         }
     else:
         raise Exception("Unsupported coordinate system: {}.".format(coordinate_system))
@@ -130,5 +141,14 @@ def to_hgvs_locations(
 
     for point, path in yield_point_locations_for_main_reference(internal_model):
         set_by_path(hgvs_model, path, point_to_hgvs(point, **crossmap))
+
+    if selector_model and selector_model.get("inverted"):
+        for range_location, path in yield_range_locations_for_main_reference(
+            hgvs_model
+        ):
+            range_location["start"], range_location["end"] = (
+                range_location["end"],
+                range_location["start"],
+            )
 
     return hgvs_model

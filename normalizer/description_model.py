@@ -131,6 +131,23 @@ def yield_point_locations_for_main_reference_variants(model, path=[]):
                     )
 
 
+def yield_range_locations_for_main_reference(model, path=[]):
+    for k in model.keys():
+        if k in ["location", "start", "end"]:
+            if model[k]["type"] == "range":
+                yield model[k], path + [k]
+            else:
+                yield from yield_range_locations_for_main_reference(
+                    model[k], path + [k]
+                )
+        elif k in ["variants", "inserted"]:
+            for i, sub_model in enumerate(model[k]):
+                if not isinstance(sub_model.get("source"), dict):
+                    yield from yield_range_locations_for_main_reference(
+                        sub_model, path + [k, i]
+                    )
+
+
 def yield_view_nodes(model, path=[]):
     for k in model.keys():
         if k in ["reference", "location", "start", "end", "selector"]:
