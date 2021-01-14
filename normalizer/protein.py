@@ -1,3 +1,5 @@
+import json
+
 from Bio.Seq import Seq
 from Bio.SeqUtils import seq3
 from mutalyzer_mutator import mutate
@@ -298,14 +300,36 @@ def extract_cds_sequence(sequence, selector_model):
     for exon in selector_model["exon"]:
         if cds_start < exon[0] < cds_end and cds_start < exon[1] < cds_end:
             slices.append(exon)
-        elif exon[0] < cds_start < exon[1]:
+        elif exon[0] < cds_start < exon[1] < cds_end:
             slices.append((cds_start, exon[1]))
-        elif exon[0] < cds_end < exon[1]:
+        elif cds_start < exon[0] < cds_end < exon[1]:
             slices.append((exon[0], cds_end))
+        elif exon[0] <= cds_start <= cds_end <= exon[1]:
+            slices.append((cds_start, cds_end))
     output = ""
     for s in slices:
         output += sequence[s[0] : s[1]]
     return output
+
+
+def new_index(value, slices):
+    output = 0
+    for s in slices:
+        if s[0] <= value <= s[1]:
+            output += value - s[0]
+            break
+        else:
+            output += s[1] - s[0]
+    return output
+
+
+def slice_seq(seq, slices, start=None, end=None):
+    output = ""
+    for s in slices:
+        output += seq[s[0] : s[1]]
+    start = new_index(start, slices) if start else 0
+    end = new_index(end, slices) if end else -1
+    return output[start:end]
 
 
 def get_protein_description(variants, references, selector_model):
@@ -318,23 +342,47 @@ def get_protein_description(variants, references, selector_model):
                        inserted sequences.
     :param selector_model:
     """
-
     sequences = extract_sequences(references)
     cds_variants = to_cds_coordinate(variants, sequences, selector_model)
     cds_sequence = extract_cds_sequence(
         sequences[references["reference"]["annotations"]["id"]], selector_model
     )
-    cds_mutated_sequence = mutate({"reference": cds_sequence}, cds_variants)
+    # cds_mutated_sequence = mutate({"reference": cds_sequence}, cds_variants)
+    cds_mutated_sequence = mutate(
+        {
+            "reference": slice_seq(
+                sequences[references["reference"]["annotations"]["id"]],
+                selector_model["exon"],
+                selector_model["cds"][0][0],
+            )
+        },
+        cds_variants,
+    )
 
-    if len(cds_sequence) % 3:
-        cds_sequence = cds_sequence + "N" * (3 - len(cds_sequence) % 3)
-    if len(cds_mutated_sequence) % 3:
-        cds_mutated_sequence = cds_mutated_sequence + "N" * (
-            3 - len(cds_mutated_sequence) % 3
-        )
+    # print(selector_model)
+    #
+    # print('-----')
+    # print(cds_sequence)
+    # print(len(cds_sequence))
+    # print(slice_seq(sequences[references["reference"]["annotations"]["id"]],
+    #                 selector_model["exon"], *selector_model["cds"][0]))
+    # print('-----')
+    # print(cds_mutated_sequence)
+    # print(len(cds_mutated_sequence))
 
+    # if len(cds_sequence) % 3:
+    #     cds_sequence = cds_sequence + "N" * (3 - len(cds_sequence) % 3)
+    # if len(cds_mutated_sequence) % 3:
+    #     cds_mutated_sequence = cds_mutated_sequence + "N" * (
+    #         3 - len(cds_mutated_sequence) % 3
+    #     )
     reference_protein = Seq(cds_sequence).translate()
     predicted_protein = Seq(cds_mutated_sequence).translate()
+
+    # print("reference_protein")
+    # print(reference_protein)
+    # print("predicted_protein")
+    # print(predicted_protein)
 
     # Up to and including the first '*', or the entire string.
     try:
