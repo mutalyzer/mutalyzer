@@ -1,0 +1,11 @@
+##sequence-region NM_024426.4 1 3037
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=9606
+NM_024426.4	RefSeq	region	1	3037	.	+	.	ID=NM_024426.4:1..3037;Dbxref=taxon:9606;Name=11;chromosome=11;gbkey=Src;genome=genomic;map=11p13;mol_type=mRNA
+NM_024426.4	RefSeq	gene	1	3037	.	+	.	ID=gene-WT1;Dbxref=GeneID:7490,HGNC:HGNC:12796,MIM:607102;Name=WT1;description=Wilms tumor 1;gbkey=Gene;gene=WT1;gene_synonym=AWT1,EWS-WT1,GUD,NPHS4,WAGR,WIT-2,WT33
+NM_024426.4	RefSeq	CDS	191	1744	.	+	0	ID=cds-NP_077744.3;Parent=gene-WT1;Dbxref=CCDS:CCDS7878.2,Genbank:NP_077744.3,GeneID:7490,HGNC:HGNC:12796,MIM:607102;Name=NP_077744.3;Note=isoform D is encoded by transcript variant D%3B non-AUG (CUG) translation initiation codon;gbkey=CDS;gene=WT1;product=Wilms tumor protein isoform D;protein_id=NP_077744.3
+NM_024426.4	RefSeq	sequence_feature	395	397	.	+	.	ID=id-WT1;Dbxref=GeneID:7490,HGNC:HGNC:12796,MIM:607102;Note=Region: alternative AUG translation initiation site;gbkey=misc_feature;gene=WT1
+NM_024426.4	RefSeq	polyA_site	3027	3027	.	+	.	ID=id-WT1-2;Parent=gene-WT1;Dbxref=GeneID:7490,HGNC:HGNC:12796,MIM:607102;gbkey=polyA_site;gene=WT1
+NM_024426.4	RefSeq	region	1236	1236	.	+	.	ID=id-WT1-3;Dbxref=GeneID:7490,HGNC:HGNC:12796,MIM:607102;Note='U' is modified by RNA editing to a 'C'%2C resulting in Leu349Pro;gbkey=Comment;gene=WT1
+NM_024426.4	RefSeq	polyA_signal_sequence	3005	3010	.	+	.	ID=id-WT1-4;Parent=gene-WT1;Dbxref=GeneID:7490,HGNC:HGNC:12796,MIM:607102;gbkey=regulatory;gene=WT1;regulatory_class=polyA_signal_sequence
+
+

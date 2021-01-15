@@ -163,7 +163,6 @@ TEST_SET = [
             "Extension yielding no stop codon should be described with "
             "uncertainty of the stop codon."
             "http://www.hgvs.org/mutnomen/FAQ.html#nostop",
-            "To be implemented.",
         ],
         "input": "NM_000193.2:c.1388G>C",
         "coding_protein_descriptions": {
@@ -176,18 +175,199 @@ TEST_SET = [
     },
     {
         "keywords": [
-            "M2: ",
-            "",
+            "M2: fs_ext_no_stop",
+            "Extension yielding no stop codon should be described with "
+            "uncertainty of the stop codon."
+            "http://www.hgvs.org/mutnomen/FAQ.html#nostop",
             "To be implemented.",
         ],
-        "input": "",
+        "input": "NM_000193.2:c.1388_1389insC",
         "coding_protein_descriptions": {
             (
-                "",
-                "",
+                "NM_000193.2(NM_000193.2):c.1388_1389insC",
+                "NM_000193.2(NP_000184.1):p.(*463Cysext*?)",
+            )
+        },
+        "to_test": True,
+    },
+    {
+        "keywords": [
+            "M2: synonymous_p_is",
+            "Synonymous mutation should yield a p.(=) description.",
+            "To be adapted: switch from AL449423.14 to the appropriate NG.",
+        ],
+        "input": "AB026906.1:c.276C>T",
+        "coding_protein_descriptions": {
+            (
+                "AB026906.1(SDHD_v001):c.276C>T",
+                "AB026906.1(SDHD_i001):p.(=)",
             )
         },
         "to_test": False,
+    },
+    {
+        "keywords": [
+            "M2: synonymous_p_is_alt_start",
+            "Synonymous mutation should yield a p.(=) description, also with an "
+            "alternative start codon.",
+        ],
+        "input": "NM_024426.4:c.1107A>G",
+        "coding_protein_descriptions": {
+            (
+                "NM_024426.4(NM_024426.4):c.1107A>G",
+                "NM_024426.4(NP_077744.3):p.(=)",
+            )
+        },
+        "to_test": True,
+    },
+    {
+        "keywords": [
+            "M2: start_codon",
+            "Mutation of start codon should yield a p.? description.",
+            "Used NG_012337.1 instead of AB026906.1."
+            "To be implemented."
+        ],
+        # "input": "AB026906.1:c.1A>G",
+        "input": "NG_012337.1(NM_003002.2):c.1A>G",
+        "coding_protein_descriptions": {
+            (
+                "NG_012337.1(NM_003002.2):c.1A>G",
+                "NG_012337.1(NP_002993.1):p.?",
+            )
+        },
+        "to_test": False,
+    },
+    {
+        "keywords": [
+            "M2: start_codon_alt_start",
+            "Mutation of start codon should yield a p.? description, also with "
+            "an alternative start codon.",
+            "To be implemented."
+        ],
+        "input": "NM_024426.4:c.1C>G",
+        "coding_protein_descriptions": {
+            (
+                "NM_024426.4(NM_024426.4):c.1C>G",
+                "NM_024426.4(NP_077744.3):p.?",
+            )
+        },
+        "to_test": False,
+    },
+    {
+        "keywords": [
+            "M2: start_codon_yield_start_p_is",
+            "Silent mutation creating new start codon should yield a p.? "
+            "description. The visualisation should also render the case for "
+            "the new start codon.",
+            "Used NG_012337.1 instead of AB026906.1."
+            "To be implemented."
+        ],
+        # "input": "AB026906.1:c.1A>T", # yields TTG start codon
+        "input": "NG_012337.1(NM_003002.2):c.1A>T", # yields TTG start codon
+        "coding_protein_descriptions": {
+            (
+                "NG_012337.1(NM_003002.2):c.1A>T",
+                "NG_012337.1(NP_002993.1):p.?",
+            )
+        },
+        "to_test": False,
+    },
+    {
+        "keywords": [
+            "M2: start_codon_alt_start_yield_start_p_is",
+            "Silent mutation creating new start codon should yield a p.? "
+            "description, also with an alternative start codon. The "
+            "visualisation should also render the case for the new start codon.",
+            "To be implemented."
+        ],
+        "input": "NM_024426.4:c.1C>A", # yields ATG start codon
+        "coding_protein_descriptions": {
+            (
+                "NM_024426.4(NM_024426.4):c.1C>A",
+                "NM_024426.4(NP_077744.3):p.?",
+            )
+        },
+        "to_test": False,
+    },
+    {
+        "keywords": [
+            "M2: start_codon_yield_start",
+            "Mutation creating new start codon should yield a p.? description. "
+            "The visualisation should also render the case for the new start "
+            "codon.",
+            "Used NG_012337.1 instead of AB026906.1."
+            "To be implemented."
+        ],
+        # "input": "AB026906.1:c.1_4delinsTTGA", # yields TTG start codon
+        "input": "NG_012337.1(NM_003002.2):c.1_4delinsTTGA", # yields TTG start codon
+        "coding_protein_descriptions": {
+            (
+                "NG_012337.1(NM_003002.2):c.[1A>T;4G>A]",
+                "NG_012337.1(NP_002993.1):p.?",
+            )
+        },
+        "to_test": False,
+    },
+    {
+        "keywords": [
+            "M2: start_codon_alt_start_yield_start",
+            "Mutation creating new start codon should yield a p.? description, "
+            "also with an alternative start codon. The visualisation should "
+            "also render the new start codon.",
+            "To be implemented."
+        ],
+        "input": "NM_024426.4:c.1_4delinsATGA",  # yields ATG start codon
+        "coding_protein_descriptions": {
+            (
+                "NM_024426.4(NM_024426.4):c.[1C>A;4C>A]",
+                "NM_024426.4(NP_077744.3):p.?",
+            )
+        },
+        "to_test": False,
+    },
+    {
+        "keywords": [
+            "M2: protein_ext_stop",
+            "Variant in stop codon where an alternative stop codon is found "
+            "downstream in the RNA should yield `ext*P` where P is a position.",
+        ],
+        "input": "NM_000143.3:c.1531T>G",
+        "coding_protein_descriptions": {
+            (
+                "NM_000143.3(NM_000143.3):c.1531T>G",
+                "NM_000143.3(NP_000134.2):p.(*511Glyext*3)",
+            )
+        },
+        "to_test": True,
+    },
+
+    {
+        "keywords": [
+        ],
+        "input": "NG_012337.1:g.7125G>T",
+        "coding_protein_descriptions": {
+            (
+                "NG_012337.1(NM_003002.2):c.274G>T",
+                "NG_012337.1(NP_002993.1):p.(Asp92Tyr)",
+            ),
+        },
+        "to_test": True,
+    },
+    {
+        "keywords": [
+        ],
+        "input": "LRG_24:g.5526_5533del",
+        "coding_protein_descriptions": {
+            (
+                "LRG_24(t1):c.127_134del",
+                "LRG_24(p1):p.(Gly43Argfs*65)",
+            ),
+            (
+                "LRG_24(t2):c.127_134del",
+                "LRG_24(p2):p.(Gly43Argfs*65)",
+            )
+        },
+        "to_test": True,
     },
 ]
 

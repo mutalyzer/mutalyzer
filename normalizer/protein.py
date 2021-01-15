@@ -359,17 +359,6 @@ def get_protein_description(variants, references, selector_model):
         cds_variants,
     )
 
-    # print(selector_model)
-    #
-    # print('-----')
-    # print(cds_sequence)
-    # print(len(cds_sequence))
-    # print(slice_seq(sequences[references["reference"]["annotations"]["id"]],
-    #                 selector_model["exon"], *selector_model["cds"][0]))
-    # print('-----')
-    # print(cds_mutated_sequence)
-    # print(len(cds_mutated_sequence))
-
     # if len(cds_sequence) % 3:
     #     cds_sequence = cds_sequence + "N" * (3 - len(cds_sequence) % 3)
     # if len(cds_mutated_sequence) % 3:
@@ -379,11 +368,6 @@ def get_protein_description(variants, references, selector_model):
     reference_protein = Seq(cds_sequence).translate()
     predicted_protein = Seq(cds_mutated_sequence).translate()
 
-    # print("reference_protein")
-    # print(reference_protein)
-    # print("predicted_protein")
-    # print(predicted_protein)
-
     # Up to and including the first '*', or the entire string.
     try:
         stop = str(predicted_protein).index("*")
@@ -391,8 +375,9 @@ def get_protein_description(variants, references, selector_model):
     except ValueError:
         pass
 
+    cds_stop = len(mutate({"reference": cds_sequence}, cds_variants))
     description = protein_description(
-        len(cds_mutated_sequence), str(reference_protein), str(predicted_protein)
+        cds_stop, str(reference_protein), str(predicted_protein)
     )
 
     return "{}({}):{}".format(

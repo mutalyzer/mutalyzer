@@ -1,0 +1,26 @@
+##sequence-region NM_001199.3 1 2747
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=9606
+NM_001199.3	RefSeq	region	1	2747	.	+	.	ID=NM_001199.3:1..2747;Dbxref=taxon:9606;Name=8;chromosome=8;gbkey=Src;genome=genomic;map=8p21.3;mol_type=mRNA
+NM_001199.3	RefSeq	gene	1	2747	.	+	.	ID=gene-BMP1;Dbxref=GeneID:649,HGNC:HGNC:1067,MIM:112264;Name=BMP1;description=bone morphogenetic protein 1;gbkey=Gene;gene=BMP1;gene_synonym=OI13,PCOLC,PCP,PCP2,TLD
+NM_001199.3	RefSeq	CDS	267	2459	.	+	0	ID=cds-NP_001190.1;Parent=gene-BMP1;Dbxref=CCDS:CCDS34856.1,Genbank:NP_001190.1,GeneID:649,HGNC:HGNC:1067,MIM:112264;Name=NP_001190.1;Note=isoform 1 precursor is encoded by transcript variant 1;gbkey=CDS;gene=BMP1;product=bone morphogenetic protein 1 isoform 1 precursor;protein_id=NP_001190.1
+NM_001199.3	RefSeq	signal_peptide_region_of_CDS	267	332	.	+	.	ID=id-NP_001190.1:1..22;Parent=cds-NP_001190.1;gbkey=Prot;inference=COORDINATES: ab initio prediction:SignalP:4.0
+NM_001199.3	RefSeq	mature_protein_region_of_CDS	333	2456	.	+	.	ID=id-NP_001190.1:23..730;Parent=cds-NP_001190.1;gbkey=Prot;product=bone morphogenetic protein 1 isoform 1
+NM_001199.3	RefSeq	exon	1	414	.	+	.	ID=id-BMP1;Parent=gene-BMP1;Dbxref=GeneID:649,HGNC:HGNC:1067,MIM:112264;gbkey=exon;gene=BMP1;inference=alignment:Splign:2.1.0
+NM_001199.3	RefSeq	exon	415	528	.	+	.	ID=id-BMP1-2;Parent=gene-BMP1;Dbxref=GeneID:649,HGNC:HGNC:1067,MIM:112264;gbkey=exon;gene=BMP1;inference=alignment:Splign:2.1.0
+NM_001199.3	RefSeq	exon	529	699	.	+	.	ID=id-BMP1-3;Parent=gene-BMP1;Dbxref=GeneID:649,HGNC:HGNC:1067,MIM:112264;gbkey=exon;gene=BMP1;inference=alignment:Splign:2.1.0
+NM_001199.3	RefSeq	exon	700	817	.	+	.	ID=id-BMP1-4;Parent=gene-BMP1;Dbxref=GeneID:649,HGNC:HGNC:1067,MIM:112264;gbkey=exon;gene=BMP1;inference=alignment:Splign:2.1.0
+NM_001199.3	RefSeq	exon	818	996	.	+	.	ID=id-BMP1-5;Parent=gene-BMP1;Dbxref=GeneID:649,HGNC:HGNC:1067,MIM:112264;gbkey=exon;gene=BMP1;inference=alignment:Splign:2.1.0
+NM_001199.3	RefSeq	exon	997	1102	.	+	.	ID=id-BMP1-6;Parent=gene-BMP1;Dbxref=GeneID:649,HGNC:HGNC:1067,MIM:112264;gbkey=exon;gene=BMP1;inference=alignment:Splign:2.1.0
+NM_001199.3	RefSeq	exon	1103	1227	.	+	.	ID=id-BMP1-7;Parent=gene-BMP1;Dbxref=GeneID:649,HGNC:HGNC:1067,MIM:112264;gbkey=exon;gene=BMP1;inference=alignment:Splign:2.1.0
+NM_001199.3	RefSeq	exon	1228	1343	.	+	.	ID=id-BMP1-8;Parent=gene-BMP1;Dbxref=GeneID:649,HGNC:HGNC:1067,MIM:112264;gbkey=exon;gene=BMP1;inference=alignment:Splign:2.1.0
+NM_001199.3	RefSeq	exon	1344	1446	.	+	.	ID=id-BMP1-9;Parent=gene-BMP1;Dbxref=GeneID:649,HGNC:HGNC:1067,MIM:112264;gbkey=exon;gene=BMP1;inference=alignment:Splign:2.1.0
+NM_001199.3	RefSeq	exon	1447	1563	.	+	.	ID=id-BMP1-10;Parent=gene-BMP1;Dbxref=GeneID:649,HGNC:HGNC:1067,MIM:112264;gbkey=exon;gene=BMP1;inference=alignment:Splign:2.1.0
+NM_001199.3	RefSeq	exon	1564	1709	.	+	.	ID=id-BMP1-11;Parent=gene-BMP1;Dbxref=GeneID:649,HGNC:HGNC:1067,MIM:112264;gbkey=exon;gene=BMP1;inference=alignment:Splign:2.1.0
+NM_001199.3	RefSeq	exon	1710	1905	.	+	.	ID=id-BMP1-12;Parent=gene-BMP1;Dbxref=GeneID:649,HGNC:HGNC:1067,MIM:112264;gbkey=exon;gene=BMP1;inference=alignment:Splign:2.1.0
+NM_001199.3	RefSeq	exon	1906	2031	.	+	.	ID=id-BMP1-13;Parent=gene-BMP1;Dbxref=GeneID:649,HGNC:HGNC:1067,MIM:112264;gbkey=exon;gene=BMP1;inference=alignment:Splign:2.1.0
+NM_001199.3	RefSeq	exon	2032	2192	.	+	.	ID=id-BMP1-14;Parent=gene-BMP1;Dbxref=GeneID:649,HGNC:HGNC:1067,MIM:112264;gbkey=exon;gene=BMP1;inference=alignment:Splign:2.1.0
+NM_001199.3	RefSeq	exon	2193	2373	.	+	.	ID=id-BMP1-15;Parent=gene-BMP1;Dbxref=GeneID:649,HGNC:HGNC:1067,MIM:112264;gbkey=exon;gene=BMP1;inference=alignment:Splign:2.1.0
+NM_001199.3	RefSeq	exon	2374	2739	.	+	.	ID=id-BMP1-16;Parent=gene-BMP1;Dbxref=GeneID:649,HGNC:HGNC:1067,MIM:112264;gbkey=exon;gene=BMP1;inference=alignment:Splign:2.1.0
+NM_001199.3	RefSeq	polyA_site	2739	2739	.	+	.	ID=id-BMP1-17;Parent=gene-BMP1;Dbxref=GeneID:649,HGNC:HGNC:1067,MIM:112264;gbkey=polyA_site;gene=BMP1
+
+
