@@ -1,6 +1,7 @@
 import copy
 
 from mutalyzer_crossmapper import Coding, Genomic, NonCoding
+from mutalyzer_mutator.util import reverse_complement
 
 from ..description_model import (
     get_reference_id,
@@ -8,7 +9,8 @@ from ..description_model import (
     yield_range_locations_for_main_reference,
 )
 from ..reference import get_coordinate_system_from_selector_id, get_selector_model
-from ..util import set_by_path
+from ..util import get_start, set_by_path
+from .to_hgvs_indexing import to_hgvs_indexing
 
 
 def genomic_to_point(genomic):
@@ -112,14 +114,36 @@ def locations_to_hgvs_locations(internal_model, crossmap):
     return hgvs_model
 
 
+def reverse_strand_shift(variants, seq):
+    for variant in variants:
+        if variant.get("inserted"):
+            if (
+                len(variant["inserted"]) == 1
+                and variant["inserted"][0].get("sequence")
+                and variant["location"]["start"].get("shift")
+            ):
+                # TODO: Check what to do when there is a compound insertion with locations included.
+                start = get_start(variant)
+                shift = variant["location"]["start"]["shift"]
+                ins_seq = variant["inserted"][0]["sequence"]
+                new_ins_seq = reverse_complement(
+                    (seq[start - shift : start] + ins_seq)[: len(ins_seq)]
+                )
+                variant["inserted"][0]["sequence"] = new_ins_seq
+            else:
+                for inserted in variant["inserted"]:
+                    if inserted.get("sequence"):
+                        inserted["sequence"] = reverse_complement(inserted["sequence"])
+
+
 def to_hgvs_locations(
-    internal_model,
+    model,
     references,
     to_coordinate_system=None,
     to_selector_id=None,
     degenerate=False,
 ):
-    reference_id = get_reference_id(internal_model)
+    reference_id = get_reference_id(model)
 
     selector_model = (
         get_selector_model(
@@ -133,13 +157,18 @@ def to_hgvs_locations(
             references[reference_id], to_selector_id
         )
 
-    hgvs_model = initialize_hgvs_model(
-        internal_model, to_coordinate_system, to_selector_id
-    )
+    hgvs_model = initialize_hgvs_model(model, to_coordinate_system, to_selector_id)
 
     crossmap = crossmap_to_hgvs_setup(to_coordinate_system, selector_model, degenerate)
 
-    for point, path in yield_point_locations_for_main_reference(internal_model):
+    if selector_model and selector_model.get("inverted"):
+        reverse_strand_shift(
+            hgvs_model["variants"], references["reference"]["sequence"]["seq"]
+        )
+
+    model_internal = to_hgvs_indexing(hgvs_model)
+
+    for point, path in yield_point_locations_for_main_reference(model_internal):
         set_by_path(hgvs_model, path, point_to_hgvs(point, **crossmap))
 
     if selector_model and selector_model.get("inverted"):
@@ -150,5 +179,4 @@ def to_hgvs_locations(
                 range_location["end"],
                 range_location["start"],
             )
-
     return hgvs_model

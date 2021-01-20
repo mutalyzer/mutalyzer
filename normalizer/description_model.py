@@ -175,7 +175,6 @@ def model_to_string(model):
     :param model: Dictionary holding the variant description model.
     :return: Equivalent reference string representation.
     """
-
     if model.get("reference"):
         reference_id = model["reference"]["id"]
     elif model.get("source"):

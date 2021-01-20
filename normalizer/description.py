@@ -9,7 +9,6 @@ from mutalyzer_retriever.retriever import NoReferenceError, NoReferenceRetrieved
 from .checker import is_overlap, sort_variants
 from .converter.to_delins import to_delins
 from .converter.to_hgvs_coordinates import to_hgvs_locations
-from .converter.to_hgvs_indexing import to_hgvs_indexing
 from .converter.to_internal_coordinates import to_internal_coordinates
 from .converter.to_internal_indexing import to_internal_indexing
 from .converter.variants_de_to_hgvs import de_to_hgvs
@@ -500,9 +499,8 @@ class Description(object):
         else:
             selector_id = None
         if self.de_hgvs_internal_indexing_model:
-            hgvs_indexing = to_hgvs_indexing(self.de_hgvs_internal_indexing_model)
             self.de_hgvs_model = to_hgvs_locations(
-                hgvs_indexing,
+                self.de_hgvs_internal_indexing_model,
                 self.references,
                 self.corrected_model["coordinate_system"],
                 selector_id,
@@ -524,8 +522,6 @@ class Description(object):
             *get_locations_start_end(self.de_hgvs_internal_indexing_model)
         )
 
-        internal_model = to_internal_coordinates(self.de_hgvs_model, self.references)
-
         if (
             get_coordinate_system_from_reference(self.references["reference"])
             == "g"
@@ -534,7 +530,7 @@ class Description(object):
             equivalent_descriptions["g"] = [
                 model_to_string(
                     to_hgvs_locations(
-                        internal_model=internal_model,
+                        model=self.de_hgvs_internal_indexing_model,
                         references=self.references,
                         to_coordinate_system="g",
                         to_selector_id=None,
@@ -547,7 +543,7 @@ class Description(object):
             self.references["reference"], start_limit, end_limit
         ):
             converted_model = to_hgvs_locations(
-                internal_model=internal_model,
+                model=self.de_hgvs_internal_indexing_model,
                 references=self.references,
                 to_coordinate_system=None,
                 to_selector_id=selector["id"],

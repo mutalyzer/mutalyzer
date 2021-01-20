@@ -87,50 +87,63 @@ def crossmap_to_internal_setup(coordinate_system, selector_model=None):
         }
 
 
-def initialize_internal_model(description_model):
-    internal_description_model = copy.deepcopy(description_model)
-    internal_description_model["coordinate_system"] = "x"
-    return internal_description_model
+def initialize_internal_model(model):
+    internal_model = copy.deepcopy(model)
+    internal_model["reference"] = {"id": model["reference"]["id"]}
+    internal_model["coordinate_system"] = "x"
+    return internal_model
 
 
-def points_to_internal_coordinates(description, references):
-    reference_id = get_reference_id(description)
-    coordinate_system = description.get("coordinate_system")
-    selector_id = get_selector_id(description)
+def reverse_strand(internal_model):
+    for variant in internal_model["variants"]:
+        if variant.get("deleted"):
+            for deleted in variant.get("deleted"):
+                if deleted.get("sequence"):
+                    deleted["inverted"] = True
+        if variant.get("inserted"):
+            for inserted in variant.get("inserted"):
+                if inserted.get("sequence"):
+                    inserted["inverted"] = True
+
+    for range_location, path in yield_range_locations_for_main_reference(
+        internal_model
+    ):
+        range_location["start"], range_location["end"] = (
+            range_location["end"],
+            range_location["start"],
+        )
+
+
+def points_to_internal_coordinates(model, references):
+    reference_id = get_reference_id(model)
+    coordinate_system = model.get("coordinate_system")
+    selector_id = get_selector_id(model)
     selector_model = (
         get_selector_model(references[reference_id]["annotations"], selector_id, True)
         if selector_id
         else None
     )
 
-    internal_description_model = initialize_internal_model(description)
+    internal_model = initialize_internal_model(model)
     crossmap = crossmap_to_internal_setup(coordinate_system, selector_model)
 
-    for point, path in yield_point_locations_for_main_reference(description):
-        set_by_path(
-            internal_description_model, path, point_to_internal(point, crossmap)
-        )
+    for point, path in yield_point_locations_for_main_reference(model):
+        set_by_path(internal_model, path, point_to_internal(point, crossmap))
     if selector_model and selector_model.get("inverted"):
-        for range_location, path in yield_range_locations_for_main_reference(
-            internal_description_model
-        ):
-            range_location["start"], range_location["end"] = (
-                range_location["end"],
-                range_location["start"],
-            )
+        reverse_strand(internal_model)
 
-    return internal_description_model
+    return internal_model
 
 
-def to_internal_coordinates(description, references):
+def to_internal_coordinates(model, references):
     """
 
-    :param description: Description model.
+    :param model: Description model.
     :param references: Dictionary with reference models with their ids as keys.
     :return: Converted description model with locations in the internal coordinate system.
     """
-    internal_model = points_to_internal_coordinates(description, references)
-    for inserted, path in yield_inserted_other_reference(description):
+    internal_model = points_to_internal_coordinates(model, references)
+    for inserted, path in yield_inserted_other_reference(model):
         set_by_path(
             internal_model, path, points_to_internal_coordinates(inserted, references)
         )
