@@ -94,16 +94,20 @@ def initialize_internal_model(model):
     return internal_model
 
 
+def invert_sequences(variant, element_type):
+    if variant.get(element_type):
+        for element in variant.get(element_type):
+            if element.get("sequence"):
+                if element.get("inverted"):
+                    element.pop("inverted")
+                else:
+                    element["inverted"] = True
+
+
 def reverse_strand(internal_model):
     for variant in internal_model["variants"]:
-        if variant.get("deleted"):
-            for deleted in variant.get("deleted"):
-                if deleted.get("sequence"):
-                    deleted["inverted"] = True
-        if variant.get("inserted"):
-            for inserted in variant.get("inserted"):
-                if inserted.get("sequence"):
-                    inserted["inverted"] = True
+        invert_sequences(variant, "deleted")
+        invert_sequences(variant, "inserted")
 
     for range_location, path in yield_range_locations_for_main_reference(
         internal_model
