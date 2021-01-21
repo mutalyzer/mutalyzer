@@ -5,93 +5,111 @@ import pytest
 
 from normalizer.name_checker import name_check
 
-from .test_set import TESTS_ALL
-
 TEST_SET = [
     {
         "keywords": [
             "M2: deletion_in_frame",
             "Simple in-frame deletion should give a simple description on protein level.",
-            "To be adapted: switch from AL449423.14 to NG_007485.1 and from CDKN2A_v001 to NM_058195.3",
+            "Switched from AL449423.14 to NG_007485.1 and from CDKN2A_v001 to NM_000077.4",
         ],
         # "input": "AL449423.14(CDKN2A_v001):c.161_163del",
-        "input": "NG_007485.1(NM_058195.3):c.?",
+        "input": "NG_007485.1(NM_000077.4):c.161_163del",
         "coding_protein_descriptions": {
             (
-                "NG_007485.1(NM_058195.3):c.?",
+                "NG_007485.1(NM_000077.4):c.161_163del",
                 # "AL449423.14(CDKN2A_i001):p.(Met54_Gly55delinsSer)",
-                "NG_007485.1(NP_478102.2):p.?",
+                "NG_007485.1(NP_000068.1):p.(Met54_Gly55delinsSer)",
+            ),
+            (
+                "NG_007485.1(NM_058195.3):c.204_206del",
+                "NG_007485.1(NP_478102.2):p.(Asp68_Gly69delinsGlu)",
             ),
         },
-        "to_test": False,
+        "to_test": True,
     },
     {
         "keywords": [
             "M2: insertion_in_frame",
             "Simple in-frame insertion should give a simple description on protein level.",
-            "To be adapted.",
+            "Switched from AL449423.14 to NG_007485.1 and from CDKN2A_v001 to NM_000077.4",
         ],
         # "input": "AL449423.14(CDKN2A_v001):c.161_162insATC",
-        "input": "NG_007485.1(NM_058195.3):c.?",
+        "input": "NG_007485.1(NM_000077.4):c.161_162insATC",
         "coding_protein_descriptions": {
             (
-                "NG_007485.1(NM_058195.3):c.?",
+                "NG_007485.1(NM_000077.4):c.161_162insATC",
                 # "AL449423.14(CDKN2A_i001):p.(Met54delinsIleSer)"
-                "NG_007485.1(NP_478102.2):p.?",
-            )
+                "NG_007485.1(NP_000068.1):p.(Met54delinsIleSer)",
+            ),
+            (
+                "NG_007485.1(NM_058195.3):c.204_205insATC",
+                "NG_007485.1(NP_478102.2):p.(Asp68_Gly69insIle)",
+            ),
         },
-        "to_test": False,
+        "to_test": True,
     },
     {
         "keywords": [
             "M2: deletion_insertion_in_frame",
             "Simple in-frame deletion/insertion should give a simple description on protein level.",
-            "To be adapted.",
+            "Switched from AL449423.14 to NG_007485.1 and from CDKN2A_v001 to NM_000077.4",
         ],
         # "input": "AL449423.14(CDKN2A_v001):c.161_162delinsATCCC",
-        "input": "NG_007485.1(NM_058195.3):c.?",
+        "input": "NG_007485.1(NM_000077.4):c.161_162delinsATCCC",
         "coding_protein_descriptions": {
             (
-                "NG_007485.1(NM_058195.3):c.?",
+                "NG_007485.1(NM_000077.4):c.161_162delinsATCCC",
                 # "AL449423.14(CDKN2A_i001):p.(Met54delinsAsnPro)"
-                "NG_007485.1(NP_478102.2):p.?",
-            )
+                "NG_007485.1(NP_000068.1):p.(Met54delinsAsnPro)",
+            ),
+            (
+                "NG_007485.1(NM_058195.3):c.204_205delinsATCCC",
+                "NG_007485.1(NP_478102.2):p.(Asp68_Gly69delinsGluSerArg)",
+            ),
         },
-        "to_test": False,
+        "to_test": True,
     },
     {
         "keywords": [
             "M2: deletion_insertion_list_in_frame",
             "Simple in-frame deletion-insertion of a list should give a simple description on protein level.",
-            "To be adapted.",
+            "Switched from AL449423.14 to NG_007485.1 and from CDKN2A_v001 to NM_000077.4",
         ],
         # "input": "AL449423.14(CDKN2A_v001):c.161_162delins[ATCCC]",
-        "input": "NG_007485.1(NM_058195.3):c.?",
+        "input": "NG_007485.1(NM_000077.4):c.161_162delins[ATCCC]",
         "coding_protein_descriptions": {
             (
-                "NG_007485.1(NM_058195.3):c.?",
+                "NG_007485.1(NM_000077.4):c.161_162delinsATCCC",
                 # "AL449423.14(CDKN2A_i001):p.(Met54delinsAsnPro)"
-                "NG_007485.1(NP_478102.2):p.?",
-            )
+                "NG_007485.1(NP_000068.1):p.(Met54delinsAsnPro)",
+            ),
+            (
+                "NG_007485.1(NM_058195.3):c.204_205delinsATCCC",
+                "NG_007485.1(NP_478102.2):p.(Asp68_Gly69delinsGluSerArg)",
+            ),
         },
-        "to_test": False,
+        "to_test": True,
     },
     {
         "keywords": [
             "M2: deletion_insertion_in_frame_complete",
             "Simple in-frame deletion-insertion of a list should give a simple description on protein level.",
-            "To be adapted.",
+            "Switched from AL449423.14 to NG_007485.1 and from CDKN2A_v001 to NM_000077.4",
         ],
         # "input": "AL449423.14(CDKN2A_v001):c.161_162delTGinsATCCC",
-        "input": "NG_007485.1(NM_058195.3):c.?",
+        "input": "NG_007485.1(NM_000077.4):c.161_162delTGinsATCCC",
         "coding_protein_descriptions": {
             (
-                "NG_007485.1(NM_058195.3):c.?",
+                "NG_007485.1(NM_000077.4):c.161_162delinsATCCC",
                 # "AL449423.14(CDKN2A_i001):p.(Met54delinsAsnPro)"
-                "NG_007485.1(NP_478102.2):p.?",
-            )
+                "NG_007485.1(NP_000068.1):p.(Met54delinsAsnPro)",
+            ),
+            (
+                "NG_007485.1(NM_058195.3):c.204_205delinsATCCC",
+                "NG_007485.1(NP_478102.2):p.(Asp68_Gly69delinsGluSerArg)",
+            ),
         },
-        "to_test": False,
+        "to_test": True,
     },
     {
         "keywords": [
@@ -99,18 +117,22 @@ TEST_SET = [
             "Simple in-frame deletion-insertion of a list should give a simple "
             "description on protein level, also with the optional deleted "
             "sequence argument.",
-            "To be adapted.",
+            "Switched from AL449423.14 to NG_007485.1 and from CDKN2A_v001 to NM_000077.4",
         ],
         # "input": "AL449423.14(CDKN2A_v001):c.161_162delTGins[ATCCC]",
-        "input": "NG_007485.1(NM_058195.3):c.?",
+        "input": "NG_007485.1(NM_000077.4):c.161_162delTGins[ATCCC]",
         "coding_protein_descriptions": {
             (
-                "NG_007485.1(NM_058195.3):c.?",
+                "NG_007485.1(NM_000077.4):c.161_162delinsATCCC",
                 # "AL449423.14(CDKN2A_i001):p.(Met54delinsAsnPro)"
-                "NG_007485.1(NP_478102.2):p.?",
-            )
+                "NG_007485.1(NP_000068.1):p.(Met54delinsAsnPro)",
+            ),
+            (
+                "NG_007485.1(NM_058195.3):c.204_205delinsATCCC",
+                "NG_007485.1(NP_478102.2):p.(Asp68_Gly69delinsGluSerArg)",
+            ),
         },
-        "to_test": False,
+        "to_test": True,
     },
     {
         "keywords": [
@@ -194,16 +216,17 @@ TEST_SET = [
         "keywords": [
             "M2: synonymous_p_is",
             "Synonymous mutation should yield a p.(=) description.",
-            "To be adapted: switch from AL449423.14 to the appropriate NG.",
+            "Switched from AB026906.1 to NG_012337.1 and from SDHD_v001 to NM_003002.2",
         ],
-        "input": "AB026906.1:c.276C>T",
+        "input": "NG_012337.1(NM_003002.2):c.276C>T",
         "coding_protein_descriptions": {
             (
-                "AB026906.1(SDHD_v001):c.276C>T",
-                "AB026906.1(SDHD_i001):p.(=)",
+                # "AB026906.1(SDHD_v001):c.276C>T",
+                "NG_012337.1(NM_003002.2):c.276C>T",
+                "NG_012337.1(NP_002993.1):p.(=)",
             )
         },
-        "to_test": False,
+        "to_test": True,
     },
     {
         "keywords": [
@@ -224,8 +247,7 @@ TEST_SET = [
         "keywords": [
             "M2: start_codon",
             "Mutation of start codon should yield a p.? description.",
-            "Used NG_012337.1 instead of AB026906.1."
-            "To be implemented."
+            "Used NG_012337.1 instead of AB026906.1." "To be implemented.",
         ],
         # "input": "AB026906.1:c.1A>G",
         "input": "NG_012337.1(NM_003002.2):c.1A>G",
@@ -235,14 +257,14 @@ TEST_SET = [
                 "NG_012337.1(NP_002993.1):p.?",
             )
         },
-        "to_test": False,
+        "to_test": True,
     },
     {
         "keywords": [
             "M2: start_codon_alt_start",
             "Mutation of start codon should yield a p.? description, also with "
             "an alternative start codon.",
-            "To be implemented."
+            "To be implemented.",
         ],
         "input": "NM_024426.4:c.1C>G",
         "coding_protein_descriptions": {
@@ -251,7 +273,7 @@ TEST_SET = [
                 "NM_024426.4(NP_077744.3):p.?",
             )
         },
-        "to_test": False,
+        "to_test": True,
     },
     {
         "keywords": [
@@ -259,18 +281,17 @@ TEST_SET = [
             "Silent mutation creating new start codon should yield a p.? "
             "description. The visualisation should also render the case for "
             "the new start codon.",
-            "Used NG_012337.1 instead of AB026906.1."
-            "To be implemented."
+            "Used NG_012337.1 instead of AB026906.1." "To be implemented.",
         ],
         # "input": "AB026906.1:c.1A>T", # yields TTG start codon
-        "input": "NG_012337.1(NM_003002.2):c.1A>T", # yields TTG start codon
+        "input": "NG_012337.1(NM_003002.2):c.1A>T",  # yields TTG start codon
         "coding_protein_descriptions": {
             (
                 "NG_012337.1(NM_003002.2):c.1A>T",
                 "NG_012337.1(NP_002993.1):p.?",
             )
         },
-        "to_test": False,
+        "to_test": True,
     },
     {
         "keywords": [
@@ -278,16 +299,16 @@ TEST_SET = [
             "Silent mutation creating new start codon should yield a p.? "
             "description, also with an alternative start codon. The "
             "visualisation should also render the case for the new start codon.",
-            "To be implemented."
+            "To be implemented.",
         ],
-        "input": "NM_024426.4:c.1C>A", # yields ATG start codon
+        "input": "NM_024426.4:c.1C>A",  # yields ATG start codon
         "coding_protein_descriptions": {
             (
                 "NM_024426.4(NM_024426.4):c.1C>A",
                 "NM_024426.4(NP_077744.3):p.?",
             )
         },
-        "to_test": False,
+        "to_test": True,
     },
     {
         "keywords": [
@@ -295,18 +316,17 @@ TEST_SET = [
             "Mutation creating new start codon should yield a p.? description. "
             "The visualisation should also render the case for the new start "
             "codon.",
-            "Used NG_012337.1 instead of AB026906.1."
-            "To be implemented."
+            "Used NG_012337.1 instead of AB026906.1." "To be implemented.",
         ],
         # "input": "AB026906.1:c.1_4delinsTTGA", # yields TTG start codon
-        "input": "NG_012337.1(NM_003002.2):c.1_4delinsTTGA", # yields TTG start codon
+        "input": "NG_012337.1(NM_003002.2):c.1_4delinsTTGA",  # yields TTG start codon
         "coding_protein_descriptions": {
             (
                 "NG_012337.1(NM_003002.2):c.[1A>T;4G>A]",
                 "NG_012337.1(NP_002993.1):p.?",
             )
         },
-        "to_test": False,
+        "to_test": True,
     },
     {
         "keywords": [
@@ -314,7 +334,7 @@ TEST_SET = [
             "Mutation creating new start codon should yield a p.? description, "
             "also with an alternative start codon. The visualisation should "
             "also render the new start codon.",
-            "To be implemented."
+            "To be implemented.",
         ],
         "input": "NM_024426.4:c.1_4delinsATGA",  # yields ATG start codon
         "coding_protein_descriptions": {
@@ -323,7 +343,7 @@ TEST_SET = [
                 "NM_024426.4(NP_077744.3):p.?",
             )
         },
-        "to_test": False,
+        "to_test": True,
     },
     {
         "keywords": [
@@ -340,10 +360,8 @@ TEST_SET = [
         },
         "to_test": True,
     },
-
     {
-        "keywords": [
-        ],
+        "keywords": [],
         "input": "NG_012337.1:g.7125G>T",
         "coding_protein_descriptions": {
             (
@@ -354,8 +372,7 @@ TEST_SET = [
         "to_test": True,
     },
     {
-        "keywords": [
-        ],
+        "keywords": [],
         "input": "LRG_24:g.5526_5533del",
         "coding_protein_descriptions": {
             (
@@ -365,7 +382,40 @@ TEST_SET = [
             (
                 "LRG_24(t2):c.127_134del",
                 "LRG_24(p2):p.(Gly43Argfs*65)",
-            )
+            ),
+        },
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NG_012337.1(NM_012459.2):c.4_5insGTA",
+        "coding_protein_descriptions": {
+            (
+                "NG_012337.1(NM_012459.2):c.5_6insTAG",
+                "NG_012337.1(NP_036591.2):p.(Arg2_Lys3insSer)",
+            ),
+        },
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NG_012337.1(NM_012459.2):c.5_6delinsTAG",
+        "coding_protein_descriptions": {
+            (
+                "NG_012337.1(NM_012459.2):c.5_6delinsTAG",
+                "NG_012337.1(NP_036591.2):p.(Arg2Leufs*23)",
+            ),
+        },
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NG_012337.1(NM_012459.2):c.4_6delinsGTA",
+        "coding_protein_descriptions": {
+            (
+                "NG_012337.1(NM_012459.2):c.4_6delinsGTA",
+                "NG_012337.1(NP_036591.2):p.(Arg2Val)",
+            ),
         },
         "to_test": True,
     },

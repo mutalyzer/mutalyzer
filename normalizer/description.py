@@ -7,7 +7,7 @@ from mutalyzer_mutator import mutate
 from mutalyzer_retriever.retriever import NoReferenceError, NoReferenceRetrieved
 
 from .checker import is_overlap, sort_variants
-from .converter.to_delins import to_delins
+from .converter.to_delins import to_delins, variants_to_delins
 from .converter.to_hgvs_coordinates import to_hgvs_locations
 from .converter.to_internal_coordinates import to_internal_coordinates
 from .converter.to_internal_indexing import to_internal_indexing
@@ -562,7 +562,9 @@ class Description(object):
                         (
                             model_to_string(converted_model),
                             get_protein_description(
-                                self.de_model["variants"],
+                                variants_to_delins(
+                                    self.de_hgvs_internal_indexing_model["variants"]
+                                ),
                                 self.references,
                                 protein_selector_model,
                             ),

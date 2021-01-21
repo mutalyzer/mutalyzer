@@ -3,6 +3,7 @@ import json
 from Bio.Seq import Seq
 from Bio.SeqUtils import seq3
 from mutalyzer_mutator import mutate
+from mutalyzer_mutator.util import reverse_complement
 
 from .converter import to_cds_coordinate
 from .reference import (
@@ -293,25 +294,6 @@ def protein_description(cds_stop, s1, s2):
     return description
 
 
-def extract_cds_sequence(sequence, selector_model):
-    cds_start = selector_model["cds"][0][0]
-    cds_end = selector_model["cds"][0][1]
-    slices = []
-    for exon in selector_model["exon"]:
-        if cds_start < exon[0] < cds_end and cds_start < exon[1] < cds_end:
-            slices.append(exon)
-        elif exon[0] < cds_start < exon[1] < cds_end:
-            slices.append((cds_start, exon[1]))
-        elif cds_start < exon[0] < cds_end < exon[1]:
-            slices.append((exon[0], cds_end))
-        elif exon[0] <= cds_start <= cds_end <= exon[1]:
-            slices.append((cds_start, cds_end))
-    output = ""
-    for s in slices:
-        output += sequence[s[0] : s[1]]
-    return output
-
-
 def new_index(value, slices):
     output = 0
     for s in slices:
@@ -343,30 +325,44 @@ def get_protein_description(variants, references, selector_model):
     :param selector_model:
     """
     sequences = extract_sequences(references)
+
     cds_variants = to_cds_coordinate(variants, sequences, selector_model)
-    cds_sequence = extract_cds_sequence(
-        sequences[references["reference"]["annotations"]["id"]], selector_model
-    )
-    # cds_mutated_sequence = mutate({"reference": cds_sequence}, cds_variants)
-    cds_mutated_sequence = mutate(
-        {
-            "reference": slice_seq(
-                sequences[references["reference"]["annotations"]["id"]],
-                selector_model["exon"],
-                selector_model["cds"][0][0],
-            )
-        },
-        cds_variants,
+
+    cds_sequence = slice_seq(
+        sequences[references["reference"]["annotations"]["id"]],
+        selector_model["exon"],
+        selector_model["cds"][0][0],
+        selector_model["cds"][0][1],
     )
 
-    # if len(cds_sequence) % 3:
-    #     cds_sequence = cds_sequence + "N" * (3 - len(cds_sequence) % 3)
-    # if len(cds_mutated_sequence) % 3:
-    #     cds_mutated_sequence = cds_mutated_sequence + "N" * (
-    #         3 - len(cds_mutated_sequence) % 3
-    #     )
+    if selector_model["inverted"]:
+        cds_sequence = reverse_complement(cds_sequence)
+        cds_sequence_extended = reverse_complement(
+            slice_seq(
+                sequences[references["reference"]["annotations"]["id"]],
+                selector_model["exon"],
+                0,
+                selector_model["cds"][0][1],
+            )
+        )
+    else:
+        cds_sequence_extended = slice_seq(
+            sequences[references["reference"]["annotations"]["id"]],
+            selector_model["exon"],
+            selector_model["cds"][0][0],
+        )
+
+    cds_sequence_mutated = mutate({"reference": cds_sequence_extended}, cds_variants)
+
     reference_protein = Seq(cds_sequence).translate()
-    predicted_protein = Seq(cds_mutated_sequence).translate()
+    predicted_protein = Seq(cds_sequence_mutated).translate()
+
+    if cds_sequence[:3] != cds_sequence_mutated[:3]:
+        return "{}({}):{}".format(
+            references["reference"]["annotations"]["id"],
+            selector_model["protein_id"],
+            "p.?",
+        )
 
     # Up to and including the first '*', or the entire string.
     try:
