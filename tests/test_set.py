@@ -403,8 +403,8 @@ TESTS_ALL = [
     },
     {
         "keywords": [],
-        "input": "NG_009113.2(NR2E3_v001):c.948delC",
-        "normalized": "",
+        "input": "NG_009113.2(NM_014249.4):c.948delC",
+        "normalized": "NG_009113.2(NM_014249.4):c.951del",
         "genomic": "NG_009113.2:g.8038del",
         "to_test": True,
     },
