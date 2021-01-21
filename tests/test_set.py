@@ -553,6 +553,13 @@ TESTS_ALL = [
         "to_test": False,
     },
     {
+        "keywords": ["issue #25"],
+        "input": "NG_012337.1:g.[7109T>A;7110del]",
+        "normalized": "NG_012337.1:g.7109_7110delinsA",
+        "genomic": "NG_012337.1:g.7109_7110delinsA",
+        "to_test": True,
+    },
+    {
         "keywords": [],
         "input": "",
         "normalized": "",

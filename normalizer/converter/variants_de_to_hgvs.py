@@ -113,7 +113,7 @@ def is_duplication(variant, sequences):
     Note that it works only in the context of the `de_to_hgvs` function flow.
     """
     inserted_sequence = get_inserted_sequence(variant, sequences)
-    if len(inserted_sequence) > get_start(variant):
+    if len(inserted_sequence) < get_location_length(variant):
         return False
     elif (
         sequences["reference"][
