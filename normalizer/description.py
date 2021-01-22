@@ -331,6 +331,15 @@ class Description(object):
         )
 
     def handle_selector_not_found(self, reference_id, selector_id, path):
+        """
+        Checks if the `selector_id` is either a gene name, HGNC gene id, or
+        uses the legacy format (e.g., `SDHD_v1`) and updates the description
+        model correspondingly, based on the provided tree path.
+
+        :param reference_id: The reference id.
+        :param selector_id: The selector id.
+        :param path: Path in the description model tree.
+        """
         gene_selectors = get_gene_selectors(selector_id, self.references[reference_id])
         if len(gene_selectors) == 1:
             self._correct_selector_id(path, selector_id, gene_selectors[0], "gene name")
@@ -340,6 +349,21 @@ class Description(object):
                 e_selector_options(selector_id, "gene", gene_selectors, path)
             )
             return
+        if "_v" in selector_id:
+            gene_name = selector_id.split("_v")[0]
+            gene_selectors = get_gene_selectors(
+                gene_name, self.references[reference_id]
+            )
+            if len(gene_selectors) == 1:
+                self._correct_selector_id(
+                    path, selector_id, gene_selectors[0], "gene name"
+                )
+                return
+            elif len(gene_selectors) > 1:
+                self._add_error(
+                    e_selector_options(gene_name, "gene", gene_selectors, path)
+                )
+                return
         gene_selectors = get_gene_selectors_hgnc(
             selector_id, self.references[reference_id]
         )

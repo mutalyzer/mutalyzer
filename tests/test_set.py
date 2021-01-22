@@ -560,6 +560,27 @@ TESTS_ALL = [
         "to_test": True,
     },
     {
+        "keywords": ["issue #10"],
+        "input": "NG_012337.1(SDHD_v001):c.274G>T",
+        "normalized": "NG_012337.1(NM_003002.2):c.274G>T",
+        "genomic": "NG_012337.1:g.7125G>T",
+        "to_test": True,
+    },
+    {
+        "keywords": ["issue #10"],
+        "input": "NG_012337.1(SDHD):c.274G>T",
+        "normalized": "NG_012337.1(NM_003002.2):c.274G>T",
+        "genomic": "NG_012337.1:g.7125G>T",
+        "to_test": True,
+    },
+    {
+        "keywords": ["issue #10"],
+        "input": "NG_012337.1(10683):c.274G>T",
+        "normalized": "NG_012337.1(NM_003002.2):c.274G>T",
+        "genomic": "NG_012337.1:g.7125G>T",
+        "to_test": True,
+    },
+    {
         "keywords": [],
         "input": "",
         "normalized": "",
