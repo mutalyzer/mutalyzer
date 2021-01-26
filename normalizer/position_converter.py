@@ -1,11 +1,9 @@
 from mutalyzer_hgvs_parser import parse_description_to_model
 
-from .converter import to_internal_coordinates
 from .converter.to_hgvs_coordinates import to_hgvs_locations
-from .description_model import location_to_description
-from .position_check import check_locations
-from .reference import get_reference_model
 from .description import Description
+from .reference import get_coordinate_system_from_reference, is_selector_in_reference
+from .util import check_errors
 
 
 class PositionConvert(object):
@@ -21,116 +19,156 @@ class PositionConvert(object):
         to_coordinate_system="",
         include_overlapping=False,
     ):
-        self.errors = []
-        if description:
-            self.description = Description(description=description)
-            self.description_model = self.description_to_model()
-        elif reference_id or position or from_selector_id or from_coordinate_system:
-            self.description = Description(description_model=self._get_model_from_segmented_input(
-                reference_id, position, from_selector_id, from_coordinate_system
-            ))
-        elif description_model:
-            self.description = Description(description_model=description_model)
-
-        else:
-            self.errors.append({"code": "EINIT", "details": "Initialization error."})
-
+        print("-----")
+        self.input_description = description
+        self.reference_id = reference_id
+        self.position = position
+        self.from_selector_id = from_selector_id
+        self.from_coordinate_system = from_coordinate_system
+        self.input_model = description_model
         self.to_selector_id = to_selector_id
         self.to_coordinate_system = to_coordinate_system
         self.include_overlapping = include_overlapping
 
+        self.stop_on_errors = False
+
+        self.errors = []
+        self.infos = []
+
+        self.description = None
+
         self.internal_model = {}
         self.converted_model = {}
 
-        self.description.to_internal_coordinate_model()
+        self._check_input_requirements()
 
-        self.internal_model = self.description.internal_coordinates_model
+        self._get_description()
 
-        if self.internal_model and self.to_selector_id:
-            # check_locations(self.description_model, self.internal_model)
-            self.converted_model = self.get_converted_model()
+        self._check_to_parameters()
+
+        self._convert()
 
         self.output = self.get_output()
 
-    def description_to_model(self):
-        try:
-            model = parse_description_to_model(self.description)
-        except Exception as e:
-            model = {
-                "errors": [
-                    {
-                        "details": "Some error occured during description parsing.",
-                        "raw_message": e,
-                    }
-                ]
-            }
-        return model
-
-    def get_internal_model(self):
-        return to_internal_coordinates.to_internal_coordinates(self.description_model, self.reference_model)
-
-    def get_converted_model(self):
-        return to_hgvs_locations(
-            self.internal_model, self.description.references,
-            self.to_coordinate_system, self.to_selector_id
-        )
-
-    def _get_model_from_segmented_input(
-        self,
-        reference_id="",
-        position="",
-        from_selector_id="",
-        from_coordinate_system="",
-    ):
-        if not (reference_id and position):
+    def _check_input_requirements(self):
+        """
+        Checks if the provided inputs can be used for conversion.
+        """
+        if not (
+            self.input_description
+            or self.input_model
+            or (self.reference_id and self.position)
+        ):
             self.errors.append({"code": "ENOINPUTS"})
-            return {}
-        description_model = {"reference": {"id": reference_id}}
 
-        if from_selector_id:
-            description_model["reference"]["selector"] = {"id": from_selector_id}
+        if not (
+            self.from_selector_id
+            or self.from_coordinate_system
+            or self.to_selector_id
+            or self.to_coordinate_system
+        ):
+            self.errors.append({"code": "ENOINPUTSOTHER"})
 
-        if from_coordinate_system:
-            description_model["coordinate_system"] = from_coordinate_system
+    @check_errors
+    def _get_description(self):
+        if self.input_description:
+            self.description = Description(description=self.input_description)
+        elif self.input_model:
+            self.description = Description(description_model=self.input_model)
+        elif (
+            self.reference_id
+            or self.position
+            or self.from_selector_id
+            or self.from_coordinate_system
+        ):
+            self._get_model_from_segmented_input()
+            # TODO: Check the schema.
+            self.description = Description(description_model=self.input_model)
 
-        if not isinstance(position, str):
+        if self.description:
+            self.description.to_internal_indexing_model()
+            self.errors += self.description.errors
+            self.infos += self.description.infos
+
+    @check_errors
+    def _get_model_from_segmented_input(self):
+        description_model = {"reference": {"id": self.reference_id}}
+
+        if self.from_selector_id:
+            description_model["reference"]["selector"] = {"id": self.from_selector_id}
+
+        if (
+            self.from_coordinate_system
+            and self.from_coordinate_system.strip().lower() not in ["selector"]
+        ):
+            description_model["coordinate_system"] = self.from_coordinate_system
+
+        if not isinstance(self.position, str):
             self.errors.append(
                 {"code": "EPOSITIONINVALID", "details": "Position must be string"}
             )
-            return description_model
-        location_model = parse_description_to_model(position, start_rule="location")
+            return
+        location_model = parse_description_to_model(
+            self.position, start_rule="location"
+        )
         if location_model.get("errors"):
             self.errors.append(
                 {"code": "EPOSITIONSYNTAX", "details": location_model["errors"][0]}
             )
-            return description_model
+            return
 
-        description_model["variants"] = [{"location":  location_model}]
+        description_model["variants"] = [{"location": location_model}]
 
-        return description_model
+        self.input_model = description_model
+
+    @check_errors
+    def _check_to_parameters(self):
+        if not (self.to_selector_id or self.to_coordinate_system):
+            self.to_coordinate_system = get_coordinate_system_from_reference(
+                self.description["references"]["reference"]
+            )
+        elif self.to_selector_id:
+            if not is_selector_in_reference(
+                self.to_selector_id, self.description.references["reference"]
+            ):
+                # TODO: update the error.
+                self.errors.append({"code": "ENOTOSELECTOR"})
+
+    @check_errors
+    def _convert(self):
+        self.converted_model = to_hgvs_locations(
+            model=self.description.internal_indexing_model,
+            references=self.description.references,
+            to_coordinate_system=self.to_coordinate_system,
+            to_selector_id=self.to_selector_id,
+            degenerate=True,
+        )
 
     def add_overlapping(self):
         pass
 
     def get_output(self):
         output = {}
-        if self.description.input_model:
-            output["input_model"] = self.description.input_model
+        if self.input_model:
+            output["input_model"] = self.input_model
         if self.internal_model:
             output["internal_model"] = self.internal_model
         if self.converted_model:
             output["converted_model"] = self.converted_model
         if self.errors:
             output["errors"] = self.errors
+        if self.infos:
+            output["infos"] = self.infos
         return output
 
 
 def position_convert(
-    description,
-    reference_id,
-    position,
+    description="",
+    reference_id="",
+    position="",
     from_selector_id="",
     from_coordinate_system="",
+    description_model=None,
     to_selector_id="",
     to_coordinate_system="",
     include_overlapping=False,
@@ -138,9 +176,10 @@ def position_convert(
     p_c = PositionConvert(
         description=description,
         reference_id=reference_id,
+        position=position,
         from_selector_id=from_selector_id,
         from_coordinate_system=from_coordinate_system,
-        position=position,
+        description_model=description_model,
         to_selector_id=to_selector_id,
         to_coordinate_system=to_coordinate_system,
         include_overlapping=include_overlapping,

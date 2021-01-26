@@ -48,7 +48,7 @@ from .reference import (
     yield_overlap_ids,
     yield_selector_ids,
 )
-from .util import get_end, get_start, set_by_path
+from .util import get_end, get_start, set_by_path, check_errors
 
 
 def e_mismatch(input_description, model_description):
@@ -204,16 +204,6 @@ def i_corrected_coordinate_system(coordinate_system, correction_source, path):
         ),
         "paths": [path],
     }
-
-
-def check_errors(fn):
-    def wrapper(self):
-        if not self.errors:
-            fn(self)
-        if self.errors and self.stop_on_errors:
-            raise Exception(str(self.errors))
-
-    return wrapper
 
 
 class Description(object):
@@ -738,7 +728,7 @@ class Description(object):
             if variant.get("type") == "repeat":
                 self._check_repeat(["variants", i])
 
-    def to_internal_coordinate_model(self):
+    def to_internal_indexing_model(self):
         self.retrieve_references()
 
         self._check_selectors_in_references()
@@ -746,6 +736,7 @@ class Description(object):
         self._check_coordinate_system_consistency()
 
         self._construct_internal_coordinate_model()
+        self._construct_internal_indexing_model()
 
     def normalize(self):
         self.retrieve_references()
@@ -853,6 +844,10 @@ class Description(object):
                 get_selectors_ids(self.references["reference"]["annotations"])
             ),
         }
+
+    def __str__(self):
+        print(self.input_model)
+        return self.input_description
 
 
 def normalize(description_to_normalize):
