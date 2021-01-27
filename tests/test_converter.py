@@ -2,13 +2,13 @@ import pytest
 from mutalyzer_crossmapper import Coding, Genomic, NonCoding
 from mutalyzer_hgvs_parser import parse_description_to_model
 
-from normalizer.converter.to_hgvs import location_to_hgvs, to_hgvs_locations
-from normalizer.converter.to_internal import (
+from normalizer.converter.to_hgvs_coordinates import to_hgvs_locations
+from normalizer.converter.to_internal_coordinates import (
     get_point_value,
-    location_to_internal,
     point_to_x_coding,
-    to_internal_locations,
+    to_internal_coordinates,
 )
+from normalizer.converter.to_internal_indexing import to_internal_indexing
 from normalizer.description_model import location_to_description, model_to_string
 
 from .generator import append_transcript, generate_references
@@ -313,7 +313,9 @@ def generate_tests_location_to_internal_raw(t_s, c_s):
     elif c_s == "n":
         cds = (t_s["n"]["exon"][0][0], t_s["n"]["exon"][-1][-1])
         crossmap = Coding(
-            t_s["c"]["exon"], cds, t_s["c"]["inverted"],
+            t_s["c"]["exon"],
+            cds,
+            t_s["c"]["inverted"],
         ).coding_to_coordinate
         point_function = point_to_x_coding
     else:
@@ -357,14 +359,18 @@ def generate_tests_location_to_internal(test_set):
 def test_location_to_internal(location_in, location_expected, variant_type, crossmap):
     location_model = parse_description_to_model(location_in, start_rule="location")
     location_out = location_to_description(
-        location_to_internal(location_model, variant_type, crossmap)
+        to_internal_coordinates(location_model, variant_type, crossmap)
     )
     assert location_out == location_expected
 
 
 def generate_to_internal_location_test(t, loc, d, refs):
     tests = [
-        (d.format("", "g", loc["g"]["hgvs"]), d.format("", "x", loc["x"]), refs,),
+        (
+            d.format("", "g", loc["g"]["hgvs"]),
+            d.format("", "x", loc["x"]),
+            refs,
+        ),
         (
             d.format("({})".format(t["c"]["id"]), "c", loc["c"]["hgvs"]),
             d.format("", "x", loc["x"]),
@@ -437,161 +443,18 @@ def generate_to_internal_locations_tests(tests_set):
 def test_to_internal_locations(description_in, description_expected, references):
     description_model = parse_description_to_model(description_in)
     description_out = model_to_string(
-        to_internal_locations(description_model, references)
+        to_internal_coordinates(description_model, references)
     )
     assert description_out == description_expected
 
 
-@pytest.mark.parametrize(
-    "hgvs, hgvs_internal_indexing",
-    [
-        # Substitution
-        ("R1:g.4A>T", "R1:x.3_4A>T"),
-        ("R1:g.4_6AAT>G", "R1:x.3_6AAT>G"),
-        ("R1:g.4_6AAT>6_9", "R1:x.3_6AAT>5_9"),
-        ("R1(t1):c.1A>T", "R1:x.10_11A>T"),
-        ("R1(t1):c.4A>T", "R1:x.16_17A>T"),
-        ("R1(t1):c.2_6AAT>G", "R1:x.11_19AAT>G"),
-        ("R1(t1):c.4_6AAT>7_9", "R1:x.16_19AAT>6_9"),
-        # Insertion
-        ("R1:g.4_5insT", "R1:x.4_4insT"),
-        ("R1:g.4_5ins7_8", "R1:x.4_4ins6_8"),
-        ("R1:g.4_5ins[7_8;10_20]", "R1:x.4_4ins[6_8;9_20]"),
-        ("R1:g.4_5ins[7_8;10_20]", "R1:x.4_4ins[6_8;9_20]"),
-        #
-        # Duplication
-        ("R1:g.4dup", "R1:x.3_4dup"),
-        ("R1:g.3_4dup", "R1:x.2_4dup"),
-        # Inversion
-        ("R1:g.11_13inv", "R1:x.10_13inv"),
-        # # Conversion
-        # # ("R1:g.4_5con7_8", "R1:x.3_5con6_8"),
-        #
-        # Deletion-insertion
-        ("R1:g.4delins7_8", "R1:x.3_4delins6_8"),
-        ("R1:g.4delins6_31", "R1:x.3_4delins5_31"),
-        ("R1:g.4del", "R1:x.3_4del"),
-        ("R1(t1):c.-8_*7A>T", "R1:x.0_29A>T"),
-        ("R1:g.?del", "R1:x.?_?del"),
-        ("R1:g.?_?del", "R1:x.?_?del"),
-        ("R1:g.(?_?)del", "R1:x.(?_?)del"),
-        ("R1:g.(?_?)_(?_?)del", "R1:x.(?_?)_(?_?)del"),
-        ("R1:g.3_?del", "R1:x.2_?del"),
-        ("R1:g.(4_7)del", "R1:x.(3_7)del"),
-        ("R1:g.(4_?)del", "R1:x.(3_?)del"),
-        ("R1:g.(4_?)_(5_7)del", "R1:x.(3_?)_(4_7)del"),
-        ("R1:g.(4_?)_7del", "R1:x.(3_?)_7del"),
-        ("R1:g.(?_4)_7del", "R1:x.(?_4)_7del"),
-        ("R1:g.4_(5_?)del", "R1:x.3_(4_?)del"),
-        # ("R1:g.4_5ins[R1:c.7_8;10_20]", "R1:x.4_4ins[R1:x.6_8;9_20]"),
-    ],
-)
-def test_to_internal_locations_simple(hgvs, hgvs_internal_indexing):
-    d_m = parse_description_to_model(hgvs)
-    r_model = generate_references(
-        {
-            "id": "t1",
-            "type": "mRNA",
-            "inverted": False,
-            "exon": [(3, 6), (8, 13), (16, 21), (24, 26)],
-            "cds": (10, 19),
-        }
-    )
-    hgvs_internal_indexing_out = model_to_string(to_internal_locations(d_m, r_model))
-
-    assert hgvs_internal_indexing_out == hgvs_internal_indexing
-
-
-@pytest.mark.parametrize(
-    "hgvs, hgvs_internal_indexing",
-    [
-        # # Deletion
-        ("R1:g.4del", "R1:x.3_4del"),
-        ("R1:g.3_4del", "R1:x.2_4del"),
-        # Substitution
-        ("R1:g.4A>T", "R1:x.3_4A>T"),
-        ("R1:g.4_6AAT>G", "R1:x.3_6AAT>G"),
-        ("R1:g.4_6AAT>6_9", "R1:x.3_6AAT>5_9"),
-        ("R1(t1):c.1A>T", "R1:x.10_11A>T"),
-        ("R1(t1):c.4A>T", "R1:x.16_17A>T"),
-        ("R1(t1):c.2_6AAT>G", "R1:x.11_19AAT>G"),
-        ("R1(t1):c.4_6AAT>7_9", "R1:x.16_19AAT>6_9"),
-        # Insertion
-        ("R1:g.4_5insT", "R1:x.4_4insT"),
-        ("R1:g.4_5ins7_8", "R1:x.4_4ins6_8"),
-        ("R1:g.4_5ins[7_8;10_20]", "R1:x.4_4ins[6_8;9_20]"),
-        #
-        # Duplication
-        ("R1:g.4dup", "R1:x.3_4dup"),
-        ("R1:g.3_4dup", "R1:x.2_4dup"),
-        # # Inversion
-        ("R1:g.11_13inv", "R1:x.10_13inv"),
-        # Conversion
-        # ("R1:g.4_5con7_8", "R1:x.3_5con6_8"),
-        #
-        # Deletion-insertion
-        ("R1:g.4delins7_8", "R1:x.3_4delins6_8"),
-        ("R1:g.4delins6_31", "R1:x.3_4delins5_31"),
-        ("R1:g.4del", "R1:x.3_4del"),
-        ("R1(t1):c.-8_*7A>T", "R1:x.0_29A>T"),
-        # ("R1:g.?del", "R1:x.?_?del"), # Impossible to determine.
-        ("R1:g.?_?del", "R1:x.?_?del"),
-        ("R1:g.(?_?)del", "R1:x.(?_?)del"),
-        ("R1:g.(?_?)_(?_?)del", "R1:x.(?_?)_(?_?)del"),
-        ("R1:g.3_?del", "R1:x.2_?del"),
-        ("R1:g.(4_7)del", "R1:x.(3_7)del"),
-        ("R1:g.(4_?)del", "R1:x.(3_?)del"),
-        ("R1:g.(4_?)_(5_7)del", "R1:x.(3_?)_(4_7)del"),
-        ("R1:g.(4_?)_7del", "R1:x.(3_?)_7del"),
-        ("R1:g.(?_4)_7del", "R1:x.(?_4)_7del"),
-        ("R1:g.4_(5_?)del", "R1:x.3_(4_?)del"),
-        ("R1(t1):c.-4A>T", "R1:x.4_5A>T"),
-        ("R1(t1):c.-2-1A>T", "R1:x.7_8A>T"),
-        ("R1(t1):c.-2-1_*2+1del", "R1:x.7_22del"),
-        ("R1(t2):n.1-3_15+3A>T", "R1:x.0_29A>T")
-        # ("R1:g.4_5ins[R1:c.7_8;10_20]", "R1:x.4_4ins[R1:x.6_8;9_20]"),
-    ],
-)
-def test_to_hgvs_locations_simple(hgvs, hgvs_internal_indexing):
-    r_model = generate_references(
-        {
-            "id": "t1",
-            "type": "mRNA",
-            "inverted": False,
-            "exon": [(3, 6), (8, 13), (16, 21), (24, 26)],
-            "cds": (10, 19),
-        }
-    )
-    append_transcript(
-        r_model,
-        {
-            "id": "t2",
-            "type": "ncRNA",
-            "inverted": False,
-            "exon": [(3, 6), (8, 13), (16, 21), (24, 26)],
-        },
-    )
-
-    if "c." in hgvs:
-        selector_id = "t1"
-        degenerate = True
-    elif "n." in hgvs:
-        selector_id = "t2"
-        degenerate = True
-    else:
-        selector_id = None
-        degenerate = False
-    d_m = parse_description_to_model(hgvs_internal_indexing.replace("x", "g"))
-    hgvs_internal_indexing_out = model_to_string(
-        to_hgvs_locations(d_m["variants"], r_model["R1"], selector_id, degenerate)
-    )
-
-    assert hgvs_internal_indexing_out == hgvs
-
-
 def generate_to_hgvs_location_test(t, loc, d, refs):
     tests = [
-        (d.format("", "x", loc["x"]), d.format("", "g", loc["g"]["hgvs"]), refs,),
+        (
+            d.format("", "x", loc["x"]),
+            d.format("", "g", loc["g"]["hgvs"]),
+            refs,
+        ),
         (
             d.format("", "x", loc["x"]),
             d.format("({})".format(t["c"]["id"]), "c", loc["c"]["hgvs"]),
@@ -651,7 +514,7 @@ def test_to_hgvs_locations(description_in, description_expected, references):
     print(description_model)
     if "c." in description_expected:
         description_out = model_to_string(
-            to_hgvs_locations(
+            to_internal_coordinates(
                 description_model["variants"],
                 references["reference"],
                 selector_id="t1",
@@ -660,7 +523,7 @@ def test_to_hgvs_locations(description_in, description_expected, references):
         )
     elif "n." in description_expected:
         description_out = model_to_string(
-            to_hgvs_locations(
+            to_internal_coordinates(
                 description_model["variants"],
                 references["reference"],
                 selector_id="t2",
@@ -669,7 +532,162 @@ def test_to_hgvs_locations(description_in, description_expected, references):
         )
     else:
         description_out = model_to_string(
-            to_hgvs_locations(description_model["variants"], references["reference"])
+            to_internal_coordinates(
+                description_model["variants"], references["reference"]
+            )
         )
     print(description_out)
     assert description_out == description_expected
+
+
+@pytest.mark.parametrize(
+    "hgvs, hgvs_internal_indexing",
+    [
+        # Substitution
+        ("R1:g.4A>T", "R1:i.3_4A>T"),
+        ("R1:g.4_6AAT>G", "R1:i.3_6AAT>G"),
+        ("R1:g.4_6AAT>6_9", "R1:i.3_6AAT>5_9"),
+        ("R1(t1):c.1A>T", "R1:i.10_11A>T"),
+        ("R1(t1):c.4A>T", "R1:i.16_17A>T"),
+        ("R1(t1):c.2_6AAT>G", "R1:i.11_19AAT>G"),
+        ("R1(t1):c.4_6AAT>7_9", "R1:i.16_19AAT>19_25"),
+        # Insertion
+        ("R1:g.4_5insT", "R1:i.4_4insT"),
+        ("R1:g.4_5ins7_8", "R1:i.4_4ins6_8"),
+        ("R1:g.4_5ins[7_8;10_20]", "R1:i.4_4ins[6_8;9_20]"),
+        ("R1:g.4_5ins[7_8;10_20]", "R1:i.4_4ins[6_8;9_20]"),
+        # Duplication
+        ("R1:g.4dup", "R1:i.3_4dup"),
+        ("R1:g.3_4dup", "R1:i.2_4dup"),
+        # Inversion
+        ("R1:g.11_13inv", "R1:i.10_13inv"),
+        # # Conversion
+        # # ("R1:g.4_5con7_8", "R1:i.3_5con6_8"),
+        #
+        # Deletion-insertion
+        ("R1:g.4delins7_8", "R1:i.3_4delins6_8"),
+        ("R1:g.4delins6_31", "R1:i.3_4delins5_31"),
+        ("R1:g.4del", "R1:i.3_4del"),
+        ("R1(t1):c.-8_*7A>T", "R1:i.0_29A>T"),
+        ("R1:g.?del", "R1:i.?_?del"),
+        ("R1:g.?_?del", "R1:i.?_?del"),
+        ("R1:g.(?_?)del", "R1:i.(?_?)del"),
+        ("R1:g.(?_?)_(?_?)del", "R1:i.(?_?)_(?_?)del"),
+        ("R1:g.3_?del", "R1:i.2_?del"),
+        ("R1:g.(4_7)del", "R1:i.(3_7)del"),
+        ("R1:g.(4_?)del", "R1:i.(3_?)del"),
+        # ("R1:g.(4_?)_(5_7)del", "R1:i.(3_?)_(4_7)del"),
+        ("R1:g.(4_?)_7del", "R1:i.(3_?)_7del"),
+        # ("R1:g.(?_4)_7del", "R1:i.(?_4)_7del"),
+        ("R1:g.4_(5_?)del", "R1:i.3_(4_?)del"),
+        # ("R1:g.4_5ins[R1:c.7_8;10_20]", "R1:i.4_4ins[R1:i.6_8;9_20]"),
+    ],
+)
+def test_to_internal_coordinates_simple(hgvs, hgvs_internal_indexing):
+    d_m = parse_description_to_model(hgvs)
+    r_model = generate_references(
+        {
+            "id": "t1",
+            "type": "mRNA",
+            "inverted": False,
+            "exon": [(3, 6), (8, 13), (16, 21), (24, 26)],
+            "cds": (10, 19),
+        }
+    )
+    hgvs_internal_indexing_out = model_to_string(
+        to_internal_indexing(to_internal_coordinates(d_m, r_model))
+    )
+    print(model_to_string(to_internal_coordinates(d_m, r_model)))
+
+    assert hgvs_internal_indexing_out == hgvs_internal_indexing
+
+
+@pytest.mark.parametrize(
+    "hgvs, hgvs_internal_indexing",
+    [
+        # Deletion
+        ("R1:g.4del", "R1:i.3_4del"),
+        ("R1:g.3_4del", "R1:i.2_4del"),
+        # Substitution
+        ("R1:g.4A>T", "R1:i.3_4A>T"),
+        ("R1:g.4_6AAT>G", "R1:i.3_6AAT>G"),
+        ("R1:g.4_6AAT>6_9", "R1:i.3_6AAT>5_9"),
+        ("R1(t1):c.1A>T", "R1:i.10_11A>T"),
+        ("R1(t1):c.4A>T", "R1:i.16_17A>T"),
+        ("R1(t1):c.2_6AAT>G", "R1:i.11_19AAT>G"),
+        ("R1(t1):c.4_6AAT>7_9", "R1:i.16_19AAT>19_25"),
+        # Insertion
+        ("R1:g.4_5insT", "R1:i.4_4insT"),
+        ("R1:g.4_5ins7_8", "R1:i.4_4ins6_8"),
+        ("R1:g.4_5ins[7_8;10_20]", "R1:i.4_4ins[6_8;9_20]"),
+        #
+        # Duplication
+        ("R1:g.4dup", "R1:i.3_4dup"),
+        ("R1:g.3_4dup", "R1:i.2_4dup"),
+        # # Inversion
+        ("R1:g.11_13inv", "R1:i.10_13inv"),
+        # Conversion
+        # ("R1:g.4_5con7_8", "R1:i.3_5con6_8"),
+        #
+        # Deletion-insertion
+        ("R1:g.4delins7_8", "R1:i.3_4delins6_8"),
+        ("R1:g.4delins6_31", "R1:i.3_4delins5_31"),
+        ("R1:g.4del", "R1:i.3_4del"),
+        ("R1(t1):c.-8_*7A>T", "R1:i.0_29A>T"),
+        # # ("R1:g.?del", "R1:i.?_?del"), # Impossible to determine.
+        # ("R1:g.?_?del", "R1:i.?_?del"),
+        # ("R1:g.(?_?)del", "R1:i.(?_?)del"),
+        # ("R1:g.(?_?)_(?_?)del", "R1:i.(?_?)_(?_?)del"),
+        # ("R1:g.3_?del", "R1:i.2_?del"),
+        # ("R1:g.(4_7)del", "R1:i.(3_7)del"),
+        # ("R1:g.(4_?)del", "R1:i.(3_?)del"),
+        # ("R1:g.(4_?)_(5_7)del", "R1:i.(3_?)_(4_7)del"),
+        # ("R1:g.(4_?)_7del", "R1:i.(3_?)_7del"),
+        # ("R1:g.(?_4)_7del", "R1:i.(?_4)_7del"),
+        # ("R1:g.4_(5_?)del", "R1:i.3_(4_?)del"),
+        ("R1(t1):c.-4A>T", "R1:i.4_5A>T"),
+        ("R1(t1):c.-2-1A>T", "R1:i.7_8A>T"),
+        ("R1(t1):c.-2-1_*2+1del", "R1:i.7_22del"),
+        ("R1(t2):n.1-3_15+3A>T", "R1:i.0_29A>T")
+        # ("R1:g.4_5ins[R1:c.7_8;10_20]", "R1:i.4_4ins[R1:i.6_8;9_20]"),
+    ],
+)
+def test_to_hgvs_locations_simple(hgvs, hgvs_internal_indexing):
+    r_model = generate_references(
+        {
+            "id": "t1",
+            "type": "mRNA",
+            "inverted": False,
+            "exon": [(3, 6), (8, 13), (16, 21), (24, 26)],
+            "cds": (10, 19),
+        }
+    )
+    append_transcript(
+        r_model,
+        {
+            "id": "t2",
+            "type": "ncRNA",
+            "inverted": False,
+            "exon": [(3, 6), (8, 13), (16, 21), (24, 26)],
+        },
+    )
+    print(hgvs)
+    print(hgvs_internal_indexing)
+    model_internal_indexing = parse_description_to_model(hgvs_internal_indexing)
+    model_hgvs = parse_description_to_model(hgvs)
+    if model_hgvs["coordinate_system"] in ["c", "n"]:
+        to_selector_id = model_hgvs["reference"]["selector"]["id"]
+    else:
+        to_selector_id = None
+
+    hgvs_internal_indexing_out = model_to_string(
+        to_hgvs_locations(
+            model=model_internal_indexing,
+            references=r_model,
+            to_coordinate_system=model_hgvs["coordinate_system"],
+            to_selector_id=to_selector_id,
+            degenerate=True,
+        )
+    )
+
+    assert hgvs_internal_indexing_out == hgvs

@@ -3,7 +3,7 @@ from mutalyzer_hgvs_parser import parse_description_to_model
 from normalizer.description_model import model_to_string
 from normalizer.position_converter import position_convert
 
-from .commons import code_in_errors, get_errors_codes, patch_retriever
+from .commons import code_in, get_codes, patch_retriever
 
 
 def test_error_no_required_inputs_reference_id():
@@ -16,7 +16,7 @@ def test_error_no_required_inputs_reference_id():
         to_selector_id=None,
         include_overlapping=False,
     )
-    assert get_errors_codes(p_c["errors"]) == {"ENOINPUTS", "ENOINPUTSOTHER"}
+    assert get_codes(p_c["errors"]) == {"ENOINPUTS", "ENOINPUTSOTHER"}
 
 
 def test_error_no_required_inputs_position():
@@ -29,7 +29,7 @@ def test_error_no_required_inputs_position():
         to_selector_id=None,
         include_overlapping=False,
     )
-    assert get_errors_codes(p_c["errors"]) == {"ENOINPUTS", "ENOINPUTSOTHER"}
+    assert get_codes(p_c["errors"]) == {"ENOINPUTS", "ENOINPUTSOTHER"}
 
 
 def test_error_no_required_inputs_other():
@@ -109,7 +109,6 @@ def test_outside_cds_segmented():
         position="27",
         to_coordinate_system=None,
         to_selector_id="NM_003002.2",
-        include_overlapping=False,
     )
     assert model_to_string(p_c["converted_model"]) == "NG_012337.1(NM_003002.2):c.-5035"
 
@@ -118,7 +117,6 @@ def test_outside_cds_description():
     p_c = position_convert(
         description="NG_012337.1:27",
         to_selector_id="NM_003002.2",
-        include_overlapping=False,
     )
     assert model_to_string(p_c["converted_model"]) == "NG_012337.1(NM_003002.2):c.-5035"
 
@@ -127,6 +125,45 @@ def test_outside_cds_description_model():
     p_c = position_convert(
         description_model=parse_description_to_model("NG_012337.1:27"),
         to_selector_id="NM_003002.2",
-        include_overlapping=False,
     )
     assert model_to_string(p_c["converted_model"]) == "NG_012337.1(NM_003002.2):c.-5035"
+
+
+def test_point_shift_from_positive_strand_to_negative_strand():
+    """
+    NM_012459.2 is on the negative strand on NG_012337.1
+    """
+    model = parse_description_to_model("NG_012337.1:1005")
+    model["variants"][0]["location"]["shift"] = 4
+    p_c = position_convert(
+        description_model=model,
+        to_selector_id="NM_012459.2",
+    )
+    assert model_to_string(p_c["converted_model"]) == "NG_012337.1(NM_012459.2):c.*2448"
+
+
+def test_point_shift_from_positive_strand_ro_positive_strand():
+    model = parse_description_to_model("NG_012337.1:1005")
+    model["variants"][0]["location"]["shift"] = 4
+    p_c = position_convert(
+        description_model=model,
+        to_selector_id="NM_003002.2",
+    )
+    assert model_to_string(p_c["converted_model"]) == "NG_012337.1(NM_003002.2):c.-4057"
+
+
+def test_range_shift_from_positive_strand_to_negative_strand():
+    """
+    NM_012459.2 is on the negative strand on NG_012337.1
+    """
+    model = parse_description_to_model("NG_012337.1:1004_1005")
+    model["variants"][0]["location"]["start"]["shift"] = 3
+    model["variants"][0]["location"]["end"]["shift"] = 3
+    p_c = position_convert(
+        description_model=model,
+        to_selector_id="NM_012459.2",
+    )
+    assert (
+        model_to_string(p_c["converted_model"])
+        == "NG_012337.1(NM_012459.2):c.*2447_*2448"
+    )

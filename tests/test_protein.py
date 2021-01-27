@@ -5,6 +5,8 @@ import pytest
 
 from normalizer.name_checker import name_check
 
+from .commons import patch_retriever
+
 TEST_SET = [
     {
         "keywords": [
@@ -157,7 +159,7 @@ TEST_SET = [
         "input": "NM_000193.2:c.108_109del2insG",
         "coding_protein_descriptions": {
             (
-                "NM_000193.2(NM_000193.2):c.108_109delinsG",
+                "NM_000193.2:c.108_109delinsG",
                 "NM_000193.2(NP_000184.1):p.(Lys38Serfs*2)",
             )
         },
@@ -173,7 +175,7 @@ TEST_SET = [
         "input": "NM_001199.3:c.2188dup",
         "coding_protein_descriptions": {
             (
-                "NM_001199.3(NM_001199.3):c.2188dup",
+                "NM_001199.3:c.2188dup",
                 "NM_001199.3(NP_001190.1):p.(Gln730Profs*?)",
             )
         },
@@ -189,7 +191,7 @@ TEST_SET = [
         "input": "NM_000193.2:c.1388G>C",
         "coding_protein_descriptions": {
             (
-                "NM_000193.2(NM_000193.2):c.1388G>C",
+                "NM_000193.2:c.1388G>C",
                 "NM_000193.2(NP_000184.1):p.(*463Serext*?)",
             )
         },
@@ -206,7 +208,7 @@ TEST_SET = [
         "input": "NM_000193.2:c.1388_1389insC",
         "coding_protein_descriptions": {
             (
-                "NM_000193.2(NM_000193.2):c.1388_1389insC",
+                "NM_000193.2:c.1388_1389insC",
                 "NM_000193.2(NP_000184.1):p.(*463Cysext*?)",
             )
         },
@@ -237,7 +239,7 @@ TEST_SET = [
         "input": "NM_024426.4:c.1107A>G",
         "coding_protein_descriptions": {
             (
-                "NM_024426.4(NM_024426.4):c.1107A>G",
+                "NM_024426.4:c.1107A>G",
                 "NM_024426.4(NP_077744.3):p.(=)",
             )
         },
@@ -269,7 +271,7 @@ TEST_SET = [
         "input": "NM_024426.4:c.1C>G",
         "coding_protein_descriptions": {
             (
-                "NM_024426.4(NM_024426.4):c.1C>G",
+                "NM_024426.4:c.1C>G",
                 "NM_024426.4(NP_077744.3):p.?",
             )
         },
@@ -304,7 +306,7 @@ TEST_SET = [
         "input": "NM_024426.4:c.1C>A",  # yields ATG start codon
         "coding_protein_descriptions": {
             (
-                "NM_024426.4(NM_024426.4):c.1C>A",
+                "NM_024426.4:c.1C>A",
                 "NM_024426.4(NP_077744.3):p.?",
             )
         },
@@ -339,7 +341,7 @@ TEST_SET = [
         "input": "NM_024426.4:c.1_4delinsATGA",  # yields ATG start codon
         "coding_protein_descriptions": {
             (
-                "NM_024426.4(NM_024426.4):c.[1C>A;4C>A]",
+                "NM_024426.4:c.[1C>A;4C>A]",
                 "NM_024426.4(NP_077744.3):p.?",
             )
         },
@@ -354,7 +356,7 @@ TEST_SET = [
         "input": "NM_000143.3:c.1531T>G",
         "coding_protein_descriptions": {
             (
-                "NM_000143.3(NM_000143.3):c.1531T>G",
+                "NM_000143.3:c.1531T>G",
                 "NM_000143.3(NP_000134.2):p.(*511Glyext*3)",
             )
         },
@@ -422,29 +424,6 @@ TEST_SET = [
 ]
 
 
-def _get_content(relative_location):
-    data_file = Path(__file__).parent.joinpath(relative_location)
-    with open(str(data_file), "r") as file:
-        content = file.read()
-    return content
-
-
-def retrieve_raw(
-    reference_id,
-    reference_source=None,
-    reference_type=None,
-    size_off=True,
-    configuration_path=None,
-    timeout=1,
-):
-    if reference_type == "fasta":
-        return _get_content("data/" + reference_id + ".fasta"), "fasta", "ncbi"
-    elif reference_id.startswith("LRG_"):
-        return _get_content("data/" + reference_id), "lrg", "lrg"
-    else:
-        return _get_content("data/" + reference_id + ".gff3"), "gff3", "ncbi"
-
-
 def get_tests(tests):
     output = []
     for test in tests:
@@ -456,9 +435,7 @@ def get_tests(tests):
 @pytest.mark.parametrize(
     "input_description, coding_protein_descriptions", get_tests(TEST_SET)
 )
-def test_normalizer(input_description, coding_protein_descriptions, monkeypatch):
-    monkeypatch.setattr("mutalyzer_retriever.retriever.retrieve_raw", retrieve_raw)
-    monkeypatch.setattr("normalizer.util.configuration", lambda: None)
+def test_normalizer(input_description, coding_protein_descriptions):
 
     normalized_output = name_check(input_description)
     normalizer_descriptions = set(normalized_output["equivalent_descriptions"]["c"])

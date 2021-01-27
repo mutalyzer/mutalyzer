@@ -32,12 +32,12 @@ def patch_retriever(monkeypatch):
     monkeypatch.setattr("normalizer.util.configuration", lambda: None)
 
 
-def code_in_errors(code, errors):
-    for error in errors:
-        if error["code"] == code:
+def code_in(code, messages):
+    for meessage in messages:
+        if meessage["code"] == code:
             return True
     return False
 
 
-def get_errors_codes(errors):
-    return set([error["code"] for error in errors])
+def get_codes(messages):
+    return set([message["code"] for message in messages])

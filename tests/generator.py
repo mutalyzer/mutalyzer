@@ -7,10 +7,12 @@ def generate_reference_selector_model(selector_model):
     reference_selector_model = {
         "id": selector_model["id"],
         "type": selector_model["type"],
+        "location": create_exact_range_model(
+            selector_model["exon"][0][0], selector_model["exon"][-1][-1]
+        ),
     }
     add_to_dict(reference_selector_model, selector_model, "inverted")
     features = []
-    selector_model["exon"]
     for i, exon in enumerate(selector_model["exon"], start=1):
         features.append(
             {"type": "exon", "id": str(i), "location": create_exact_range_model(*exon)}
@@ -40,7 +42,7 @@ def generate_gene_model(selector_model):
 
 def generate_references(selector_model):
     record = {
-        "model": {
+        "annotations": {
             "type": "record",
             "id": "R1",
             "qualifiers": {"mol_type": "dna"},
@@ -53,7 +55,7 @@ def generate_references(selector_model):
 
 def append_transcript(record, selector_model):
     for r in record:
-        record[r]["model"]["features"][0]["features"].append(
+        record[r]["annotations"]["features"][0]["features"].append(
             generate_reference_selector_model(selector_model)
         )
 
