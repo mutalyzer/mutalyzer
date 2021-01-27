@@ -23,21 +23,24 @@ def point_to_range(point_location):
     :return: A range location model complying object.
     """
     if point_location.get("uncertain"):
-        return {
+        location = {
             "type": "range",
             "start": {"type": "point", "uncertain": True},
             "end": {"type": "point", "uncertain": True},
         }
-    return {
-        "type": "range",
-        "start": {"type": "point", "position": point_location["position"]},
-        "end": {"type": "point", "position": point_location["position"] + 1},
-    }
+    else:
+        location = {
+            "type": "range",
+            "start": {"type": "point", "position": point_location["position"]},
+            "end": {"type": "point", "position": point_location["position"] + 1},
+        }
+    if point_location.get("shift"):
+        location["start"]["shift"] = point_location["shift"]
+        location["end"]["shift"] = point_location["shift"]
+    return location
 
 
 def location_to_internal_indexing(location, insertion=False):
-    """
-    """
     if location["type"] == "range":
         new_location = copy.deepcopy(location)
         update_range_points(new_location, insertion)
