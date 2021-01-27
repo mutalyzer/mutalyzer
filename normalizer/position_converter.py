@@ -1,4 +1,5 @@
 from mutalyzer_hgvs_parser import parse_description_to_model
+from mutalyzer_hgvs_parser.exceptions import UnexpectedCharacter, UnexpectedEnd
 
 from .converter.to_hgvs_coordinates import to_hgvs_locations
 from .description import Description
@@ -69,6 +70,11 @@ class PositionConvert(object):
         ):
             self.errors.append({"code": "ENOINPUTSOTHER"})
 
+        if self.position and not isinstance(self.position, str):
+            self.errors.append(
+                {"code": "EPOSITIONINVALID", "details": "Position must be string"}
+            )
+
     @check_errors
     def _get_description(self):
         if self.input_description:
@@ -103,21 +109,25 @@ class PositionConvert(object):
         ):
             description_model["coordinate_system"] = self.from_coordinate_system
 
-        if not isinstance(self.position, str):
-            self.errors.append(
-                {"code": "EPOSITIONINVALID", "details": "Position must be string"}
+        try:
+            location_model = parse_description_to_model(
+                self.position, start_rule="location"
             )
-            return
-        location_model = parse_description_to_model(
-            self.position, start_rule="location"
-        )
-        if location_model.get("errors"):
+            description_model["variants"] = [{"location": location_model}]
+        except UnexpectedCharacter as e:
             self.errors.append(
-                {"code": "EPOSITIONSYNTAX", "details": location_model["errors"][0]}
+                dict(
+                    {"code": "EPOSITIONSYNTAX", "details": "Unexpected character."},
+                    **e.serialize()
+                )
             )
-            return
-
-        description_model["variants"] = [{"location": location_model}]
+        except UnexpectedEnd as e:
+            self.errors.append(
+                dict(
+                    {"code": "EPOSITIONSYNTAX", "details": "Unexpected end of input."},
+                    **e.serialize()
+                )
+            )
 
         self.input_model = description_model
 
@@ -125,14 +135,37 @@ class PositionConvert(object):
     def _check_to_parameters(self):
         if not (self.to_selector_id or self.to_coordinate_system):
             self.to_coordinate_system = get_coordinate_system_from_reference(
-                self.description["references"]["reference"]
+                self.description.references["reference"]
             )
+            if self.to_coordinate_system:
+                self.infos.append(
+                    {
+                        "code": "ITOSELECTOR",
+                        "details": "To coordinate system identified as {} "
+                        "from the selector molecule type.".format(
+                            self.to_coordinate_system
+                        ),
+                    }
+                )
+            else:
+                self.errors.append({"code": "ENOTOSELECTOR"})
+
         elif self.to_selector_id:
             if not is_selector_in_reference(
                 self.to_selector_id, self.description.references["reference"]
             ):
                 # TODO: update the error.
                 self.errors.append({"code": "ENOTOSELECTOR"})
+
+        if (self.to_selector_id == self.from_selector_id) and (
+            self.to_coordinate_system == self.from_coordinate_system
+        ):
+            self.infos.append(
+                {
+                    "code": "IFROMTOSELECTORSEQUAL",
+                    "details": "Both from and to coordinate systems are " "the same.",
+                }
+            )
 
     @check_errors
     def _convert(self):

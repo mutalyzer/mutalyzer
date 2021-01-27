@@ -54,38 +54,42 @@ def test_error_no_from_selector():
     assert p_c["errors"][0]["code"] == "ENOSELECTORFOUND"
 
 
-# def test_info_from_selector_model_constructed_from_selector_id():
-#     p_c = PositionConvert(
-#         reference_id="NG_012337.1", from_selector_id="NM_003002.2", position=100,
-#     )
-#     assert p_c.infos[0]["code"] == "IFROMSELECTOR"
-#
-#
-# def test_info_from_selector_model_constructed_from_reference():
-#     p_c = PositionConvert(
-#         reference_id="NG_012337.1", position=100, to_selector_id="NM_003002.2",
-#     )
-#     assert p_c.infos[0]["code"] == "IFROMSELECTOR"
-#
-#
-# def test_info_to_selector_model_constructed_from_reference():
-#     p_c = PositionConvert(
-#         reference_id="NG_012337.1",
-#         from_selector_id="NM_003002.2",
-#         from_coordinate_system="c",
-#         position=100,
-#     )
-#     assert p_c.infos[0]["code"] == "ITOSELECTOR"
-#
-#
-# def test_error_from_to_selectors_equal_g():
-#     p_c = PositionConvert(
-#         reference_id="NG_012337.1",
-#         from_coordinate_system="g",
-#         position=100,
-#         to_coordinate_system="g",
-#     )
-#     assert p_c.errors[0]["code"] == "EFROMTOSELECTORSEQUAL"
+def test_info_from_selector_model_identified_from_selector_id():
+    p_c = position_convert(
+        reference_id="NG_012337.1",
+        from_selector_id="NM_003002.2",
+        position="100",
+    )
+    assert p_c["infos"][0]["code"] == "ICORRECTEDCOORDINATESYSTEM"
+
+
+def test_info_from_selector_model_identifed_from_reference():
+    p_c = position_convert(
+        reference_id="NG_012337.1",
+        position="100",
+        to_selector_id="NM_003002.2",
+    )
+    assert p_c["infos"][0]["code"] == "ICORRECTEDCOORDINATESYSTEM"
+
+
+def test_info_to_selector_model_identified_from_reference():
+    p_c = position_convert(
+        reference_id="NG_012337.1",
+        from_selector_id="NM_003002.2",
+        from_coordinate_system="c",
+        position="100",
+    )
+    assert p_c["infos"][0]["code"] == "ITOSELECTOR"
+
+
+def test_error_from_to_selectors_equal_g():
+    p_c = position_convert(
+        reference_id="NG_012337.1",
+        from_coordinate_system="g",
+        position="100",
+        to_coordinate_system="g",
+    )
+    assert p_c["infos"][0]["code"] == "IFROMTOSELECTORSEQUAL"
 
 
 def test_error_invalid_to_selector():
