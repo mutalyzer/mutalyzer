@@ -169,9 +169,11 @@ def get_view_model(model):
     return view_model
 
 
-def model_to_string(model):
+def model_to_string(model, exclude_superfluous_selector=True):
     """
     Convert the variant description model to string.
+    :param exclude_superfluous_selector: Do not include the selector_id
+           if is it the same as the reference_id.
     :param model: Dictionary holding the variant description model.
     :return: Equivalent reference string representation.
     """
@@ -180,6 +182,8 @@ def model_to_string(model):
     elif model.get("source"):
         reference_id = model["source"]["id"]
     selector_id = get_selector_id(model)
+    if exclude_superfluous_selector and reference_id == selector_id:
+        selector_id = None
     if selector_id:
         reference = "{}({})".format(reference_id, selector_id)
     else:
