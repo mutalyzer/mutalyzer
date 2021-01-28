@@ -3,7 +3,7 @@ import pytest
 from normalizer.normalizer import normalize
 
 from .commons import patch_retriever
-from .test_set import TESTS_ALL
+from .variants_set import TESTS_ALL
 
 
 def get_tests(tests):

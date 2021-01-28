@@ -8,8 +8,7 @@ from .commons import patch_retriever
 @pytest.mark.parametrize(
     "hgvs_description, normalized_description",
     [
-        # ('NG_012337.1(SDHD_v001):c.274G>T',
-        #  'NG_012337.1:g.7125G>T'),
+        ("NG_012337.1(SDHD_v001):c.274G>T", "NG_012337.1:g.7125G>T"),
         # ('NG_012337.1(NM_003002.2):c.274G>T',
         #  'NG_012337.1:g.7125G>T'),
         # Roll

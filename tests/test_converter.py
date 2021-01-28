@@ -30,229 +30,229 @@ TESTS_SET = [
         },
         "deleted": [
             {
-                "x": "0_1",
+                "i": "0_1",
                 "g": {"hgvs": "1"},
                 "c": {"hgvs": "-8", "other": ["-5-3"]},
                 "n": {"other": ["1-3", "-3"]},
             },
             {
-                "x": "1_2",
+                "i": "1_2",
                 "g": {"hgvs": "2"},
                 "c": {"hgvs": "-7", "other": ["-5-2"]},
                 "n": {"hgvs": "1-2", "other": ["-3"]},
             },
             {
-                "x": "2_3",
+                "i": "2_3",
                 "g": {"hgvs": "3"},
                 "c": {"hgvs": "-6", "other": ["-5-1"]},
                 "n": {"hgvs": "1-1", "other": ["-1"]},
             },
             {
-                "x": "3_4",
+                "i": "3_4",
                 "g": {"hgvs": "4"},
                 "c": {"hgvs": "-5", "other": []},
                 "n": {"hgvs": "1", "other": []},
             },
             {
-                "x": "4_5",
+                "i": "4_5",
                 "g": {"hgvs": "5"},
                 "c": {"hgvs": "-4", "other": []},
                 "n": {"hgvs": "2", "other": []},
             },
             {
-                "x": "5_6",
+                "i": "5_6",
                 "g": {"hgvs": "6"},
                 "c": {"hgvs": "-3", "other": []},
                 "n": {"hgvs": "3", "other": []},
             },
             {
-                "x": "6_7",
+                "i": "6_7",
                 "g": {"hgvs": "7"},
                 "c": {"hgvs": "-3+1", "other": ["-2-2"]},
                 "n": {"hgvs": "3+1", "other": ["4-2"]},
             },
             {
-                "x": "7_8",
+                "i": "7_8",
                 "g": {"hgvs": "8"},
                 "c": {"hgvs": "-2-1", "other": []},
                 "n": {"hgvs": "4-1", "other": []},
             },
             {
-                "x": "8_9",
+                "i": "8_9",
                 "g": {"hgvs": "9"},
                 "c": {"hgvs": "-2", "other": []},
                 "n": {"hgvs": "4", "other": []},
             },
             {
-                "x": "9_10",
+                "i": "9_10",
                 "g": {"hgvs": "10"},
                 "c": {"hgvs": "-1", "other": []},
                 "n": {"hgvs": "5", "other": []},
             },
             {
-                "x": "10_11",
+                "i": "10_11",
                 "g": {"hgvs": "11"},
                 "c": {"hgvs": "1", "other": ["1"]},
                 "n": {"hgvs": "6", "other": ["6"]},
             },
             {
-                "x": "11_12",
+                "i": "11_12",
                 "g": {"hgvs": "12"},
                 "c": {"hgvs": "2", "other": ["2"]},
                 "n": {"hgvs": "7", "other": ["7"]},
             },
             {
-                "x": "12_13",
+                "i": "12_13",
                 "g": {"hgvs": "13"},
                 "c": {"hgvs": "3", "other": ["3"]},
                 "n": {"hgvs": "8", "other": ["8"]},
             },
             {
-                "x": "13_14",
+                "i": "13_14",
                 "g": {"hgvs": "14"},
                 "c": {"hgvs": "3+1", "other": ["4-3"]},
                 "n": {"hgvs": "8+1", "other": ["9-3"]},
             },
             {
-                "x": "14_15",
+                "i": "14_15",
                 "g": {"hgvs": "15"},
                 "c": {"hgvs": "3+2", "other": ["4-2"]},
                 "n": {"hgvs": "8+2", "other": ["9-2"]},
             },
             {
-                "x": "15_16",
+                "i": "15_16",
                 "g": {"hgvs": "16"},
                 "c": {"hgvs": "4-1", "other": ["3+3"]},
                 "n": {"hgvs": "9-1", "other": ["8+3"]},
             },
             {
-                "x": "16_17",
+                "i": "16_17",
                 "g": {"hgvs": "17"},
                 "c": {"hgvs": "4", "other": ["4"]},
                 "n": {"hgvs": "9", "other": ["9"]},
             },
             {
-                "x": "17_18",
+                "i": "17_18",
                 "g": {"hgvs": "18"},
                 "c": {"hgvs": "5", "other": ["5"]},
                 "n": {"hgvs": "10", "other": ["10"]},
             },
             {
-                "x": "18_19",
+                "i": "18_19",
                 "g": {"hgvs": "19"},
                 "c": {"hgvs": "6", "other": ["6"]},
                 "n": {"hgvs": "11", "other": ["11"]},
             },
             {
-                "x": "19_20",
+                "i": "19_20",
                 "g": {"hgvs": "20"},
                 "c": {"hgvs": "*1", "other": ["*1"]},
                 "n": {"hgvs": "12", "other": ["12"]},
             },
             {
-                "x": "20_21",
+                "i": "20_21",
                 "g": {"hgvs": "21"},
                 "c": {"hgvs": "*2", "other": ["*2"]},
                 "n": {"hgvs": "13", "other": ["13"]},
             },
             {
-                "x": "21_22",
+                "i": "21_22",
                 "g": {"hgvs": "22"},
                 "c": {"hgvs": "*2+1", "other": ["*2+1"]},
                 "n": {"hgvs": "13+1", "other": ["13+1"]},
             },
             {
-                "x": "22_23",
+                "i": "22_23",
                 "g": {"hgvs": "23"},
                 "c": {"hgvs": "*2+2", "other": ["*2+2"]},
                 "n": {"hgvs": "13+2", "other": ["13+2"]},
             },
             {
-                "x": "23_24",
+                "i": "23_24",
                 "g": {"hgvs": "24"},
                 "c": {"hgvs": "*3-1", "other": ["*2+3"]},
                 "n": {"hgvs": "14-1", "other": ["13+3"]},
             },
             {
-                "x": "24_25",
+                "i": "24_25",
                 "g": {"hgvs": "25"},
                 "c": {"hgvs": "*3", "other": ["*3"]},
                 "n": {"hgvs": "14", "other": ["14"]},
             },
             {
-                "x": "25_26",
+                "i": "25_26",
                 "g": {"hgvs": "26"},
                 "c": {"hgvs": "*4", "other": ["*4"]},
                 "n": {"hgvs": "15", "other": ["15"]},
             },
             {
-                "x": "26_27",
+                "i": "26_27",
                 "g": {"hgvs": "27"},
                 "c": {"hgvs": "*5", "other": ["*4+1"]},
                 "n": {"other": ["15+1", "*1"]},
             },
             {
-                "x": "27_28",
+                "i": "27_28",
                 "g": {"hgvs": "28"},
                 "c": {"hgvs": "*6", "other": ["*4+2"]},
                 "n": {"other": ["15+2", "*2"]},
             },
             {
-                "x": "28_29",
+                "i": "28_29",
                 "g": {"hgvs": "29"},
                 "c": {"hgvs": "*7", "other": ["*4+3"]},
                 "n": {"other": ["15+3", "*3"]},
             },
             {
-                "x": "3_6",
+                "i": "3_6",
                 "g": {"hgvs": "4_6"},
                 "c": {"hgvs": "-5_-3", "other": []},
                 "n": {"hgvs": "1_3", "other": []},
             },
             {
-                "x": "3_7",
+                "i": "3_7",
                 "g": {"hgvs": "4_7"},
                 "c": {"hgvs": "-5_-3+1", "other": []},
                 "n": {"hgvs": "1_3+1", "other": []},
             },
             {
-                "x": "2_7",
+                "i": "2_7",
                 "g": {"hgvs": "3_7"},
                 "c": {"hgvs": "-6_-3+1", "other": []},
                 "n": {"hgvs": "1-1_3+1", "other": []},
             },
             {
-                "x": "7_14",
+                "i": "7_14",
                 "g": {"hgvs": "8_14"},
                 "c": {"hgvs": "-2-1_3+1", "other": []},
                 "n": {"hgvs": "4-1_8+1", "other": []},
             },
             {
-                "x": "7_22",
+                "i": "7_22",
                 "g": {"hgvs": "8_22"},
                 "c": {"hgvs": "-2-1_*2+1", "other": []},
                 "n": {"hgvs": "4-1_13+1", "other": []},
             },
             {
-                "x": "0_29",
+                "i": "0_29",
                 "g": {"hgvs": "1_29"},
                 "c": {"hgvs": "-8_*7", "other": []},
                 "n": {"hgvs": "1-3_15+3", "other": []},
             },
             {
-                "x": "0_?",
+                "i": "0_?",
                 "g": {"hgvs": "1_?"},
                 "c": {"hgvs": "-8_?", "other": []},
                 "n": {"hgvs": "1-3_?", "other": []},
             },
             {
-                "x": "(0_?)",
+                "i": "(0_?)",
                 "g": {"hgvs": "(1_?)"},
                 "c": {"hgvs": "(-8_?)", "other": []},
                 "n": {"hgvs": "(1-3_?)", "other": []},
             },
             {
-                "x": "(0_2)",
+                "i": "(0_2)",
                 "g": {"hgvs": "(1_2)"},
                 "c": {"hgvs": "(-8_-7)", "other": []},
                 "n": {"hgvs": "(1-3_1-2)", "other": []},
@@ -260,7 +260,7 @@ TESTS_SET = [
         ],
         "deleted_insertion": [
             {
-                "x": "1_1",
+                "i": "1_1",
                 "g": {"hgvs": "1_2"},
                 "c": {"hgvs": "-8_-7", "other": ["-7-1_-5-2"]},
                 "n": {"hgvs": "1-3_1-2", "other": ["*3-28_13-19"]},
@@ -278,19 +278,19 @@ TESTS_SET = [
         "n": {"id": "t2", "type": "ncRNA", "inverted": False, "exon": [(3, 4)]},
         "deleted": [
             {
-                "x": "0_1",
+                "i": "0_1",
                 "g": {"hgvs": "1"},
                 "c": {"hgvs": "-3", "other": ["-2-1", "*1-4"]},
                 "n": {"hgvs": "-3", "other": ["-3"]},
             },
             {
-                "x": "2_3",
+                "i": "2_3",
                 "g": {"hgvs": "3"},
                 "c": {"hgvs": "-1", "other": ["-1", "*1-2"]},
                 "n": {"hgvs": "-1", "other": ["-1"]},
             },
             {
-                "x": "3_4",
+                "i": "3_4",
                 "g": {"hgvs": "4"},
                 "c": {"hgvs": "1", "other": ["2-1", "-1+1"]},
                 "n": {"hgvs": "1", "other": ["1"]},
@@ -332,14 +332,14 @@ def generate_tests_location_to_internal_raw(t_s, c_s):
                 tests.append(
                     (
                         location[c_s]["hgvs"],
-                        location["x"],
+                        location["i"],
                         "del",  # Can be any operation except for insertion.
                         crossmap,
                     )
                 )
             if location[c_s].get("other"):
                 for other in location[c_s]["other"]:
-                    tests.append((other, location["x"], "del", crossmap))
+                    tests.append((other, location["i"], "del", crossmap))
     return tests
 
 
@@ -368,12 +368,12 @@ def generate_to_internal_location_test(t, loc, d, refs):
     tests = [
         (
             d.format("", "g", loc["g"]["hgvs"]),
-            d.format("", "x", loc["x"]),
+            d.format("", "i", loc["i"]),
             refs,
         ),
         (
             d.format("({})".format(t["c"]["id"]), "c", loc["c"]["hgvs"]),
-            d.format("", "x", loc["x"]),
+            d.format("", "i", loc["i"]),
             refs,
         ),
     ]
@@ -382,7 +382,7 @@ def generate_to_internal_location_test(t, loc, d, refs):
             tests.append(
                 (
                     d.format("({})".format(t["c"]["id"]), "c", other),
-                    d.format("", "x", loc["x"]),
+                    d.format("", "i", loc["i"]),
                     refs,
                 )
             )
@@ -390,7 +390,7 @@ def generate_to_internal_location_test(t, loc, d, refs):
         tests.append(
             (
                 d.format("({})".format(t["n"]["id"]), "n", loc["n"]["hgvs"]),
-                d.format("", "x", loc["x"]),
+                d.format("", "i", loc["i"]),
                 refs,
             ),
         )
@@ -399,7 +399,7 @@ def generate_to_internal_location_test(t, loc, d, refs):
             tests.append(
                 (
                     d.format("({})".format(t["n"]["id"]), "n", other),
-                    d.format("", "x", loc["x"]),
+                    d.format("", "i", loc["i"]),
                     refs,
                 )
             )
@@ -443,7 +443,7 @@ def generate_to_internal_locations_tests(tests_set):
 def test_to_internal_locations(description_in, description_expected, references):
     description_model = parse_description_to_model(description_in)
     description_out = model_to_string(
-        to_internal_coordinates(description_model, references)
+        to_internal_indexing(to_internal_coordinates(description_model, references))
     )
     assert description_out == description_expected
 
@@ -451,12 +451,12 @@ def test_to_internal_locations(description_in, description_expected, references)
 def generate_to_hgvs_location_test(t, loc, d, refs):
     tests = [
         (
-            d.format("", "x", loc["x"]),
+            d.format("", "i", loc["i"]),
             d.format("", "g", loc["g"]["hgvs"]),
             refs,
         ),
         (
-            d.format("", "x", loc["x"]),
+            d.format("", "i", loc["i"]),
             d.format("({})".format(t["c"]["id"]), "c", loc["c"]["hgvs"]),
             refs,
         ),
@@ -464,7 +464,7 @@ def generate_to_hgvs_location_test(t, loc, d, refs):
     if loc["n"].get("hgvs"):
         tests.append(
             (
-                d.format("", "x", loc["x"]),
+                d.format("", "i", loc["i"]),
                 d.format("({})".format(t["n"]["id"]), "n", loc["n"]["hgvs"]),
                 refs,
             )
@@ -475,12 +475,12 @@ def generate_to_hgvs_location_test(t, loc, d, refs):
 
 def generate_to_hgvs_locations_tests(tests_set):
     deleted = [
-        # "R1{}:{}.{}A>T",
+        "R1{}:{}.{}A>T",
         "R1{}:{}.{}del",
-        # "R1{}:{}.{}delinsA",
-        # "R1{}:{}.{}dup",
-        # "R1{}:{}.{}inv",
-        # "R1{}:{}.{}=",
+        "R1{}:{}.{}delinsA",
+        "R1{}:{}.{}dup",
+        "R1{}:{}.{}inv",
+        "R1{}:{}.{}=",
     ]
     deleted_insertion = [
         "R1{}:{}.{}insA",
@@ -510,78 +510,78 @@ def generate_to_hgvs_locations_tests(tests_set):
 def test_to_hgvs_locations(description_in, description_expected, references):
     print(description_in)
     print(description_expected)
-    description_model = parse_description_to_model(description_in.replace("x.", "g."))
-    print(description_model)
-    if "c." in description_expected:
-        description_out = model_to_string(
-            to_internal_coordinates(
-                description_model["variants"],
-                references["reference"],
-                selector_id="t1",
-                degenerate=True,
-            )
-        )
-    elif "n." in description_expected:
-        description_out = model_to_string(
-            to_internal_coordinates(
-                description_model["variants"],
-                references["reference"],
-                selector_id="t2",
-                degenerate=True,
-            )
-        )
+
+    model_internal_indexing = parse_description_to_model(description_in)
+    model_hgvs = parse_description_to_model(description_expected)
+    if model_hgvs["coordinate_system"] in ["c", "n"]:
+        to_selector_id = model_hgvs["reference"]["selector"]["id"]
     else:
-        description_out = model_to_string(
-            to_internal_coordinates(
-                description_model["variants"], references["reference"]
-            )
+        to_selector_id = None
+
+    hgvs_conversion = model_to_string(
+        to_hgvs_locations(
+            model=model_internal_indexing,
+            references=references,
+            to_coordinate_system=model_hgvs["coordinate_system"],
+            to_selector_id=to_selector_id,
+            degenerate=True,
         )
-    print(description_out)
-    assert description_out == description_expected
+    )
+
+    assert hgvs_conversion == description_expected
+
+
+EQUIVALENT_DESCRIPTIONS = [
+    # Deletion
+    ("R1:g.4del", "R1:i.3_4del"),
+    ("R1:g.3_4del", "R1:i.2_4del"),
+    # Substitution
+    ("R1:g.4A>T", "R1:i.3_4A>T"),
+    ("R1:g.4_6AAT>G", "R1:i.3_6AAT>G"),
+    ("R1:g.4_6AAT>6_9", "R1:i.3_6AAT>5_9"),
+    ("R1(t1):c.1A>T", "R1:i.10_11A>T"),
+    ("R1(t1):c.4A>T", "R1:i.16_17A>T"),
+    ("R1(t1):c.2_6AAT>G", "R1:i.11_19AAT>G"),
+    ("R1(t1):c.4_6AAT>2_4", "R1:i.16_19AAT>11_17"),
+    # Insertion
+    ("R1:g.4_5insT", "R1:i.4_4insT"),
+    ("R1:g.4_5ins7_8", "R1:i.4_4ins6_8"),
+    ("R1:g.4_5ins[7_8;10_20]", "R1:i.4_4ins[6_8;9_20]"),
+    #
+    # Duplication
+    ("R1:g.4dup", "R1:i.3_4dup"),
+    ("R1:g.3_4dup", "R1:i.2_4dup"),
+    # # Inversion
+    ("R1:g.11_13inv", "R1:i.10_13inv"),
+    # Conversion
+    # ("R1:g.4_5con7_8", "R1:i.3_5con6_8"),
+    #
+    # Deletion-insertion
+    ("R1:g.4delins7_8", "R1:i.3_4delins6_8"),
+    ("R1:g.4delins6_31", "R1:i.3_4delins5_31"),
+    ("R1(t1):c.-8_*7A>T", "R1:i.0_29A>T"),
+    ("R1:g.?del", "R1:i.?_?del"),  # Impossible to determine?
+    ("R1:g.?_?del", "R1:i.?_?del"),
+    ("R1:g.(?_?)del", "R1:i.(?_?)del"),
+    ("R1:g.(?_?)_(?_?)del", "R1:i.(?_?)_(?_?)del"),
+    ("R1:g.3_?del", "R1:i.2_?del"),
+    ("R1:g.(4_7)del", "R1:i.(3_7)del"),
+    ("R1:g.(4_?)del", "R1:i.(3_?)del"),
+    # ("R1:g.(4_?)_(5_7)del", "R1:i.(3_?)_(4_7)del"),
+    ("R1:g.(4_?)_7del", "R1:i.(3_?)_7del"),
+    # ("R1:g.(?_4)_7del", "R1:i.(?_4)_7del"),
+    # ("R1:g.4_(5_?)del", "R1:i.3_(4_?)del"),
+    ("R1(t1):c.-4A>T", "R1:i.4_5A>T"),
+    ("R1(t1):c.-2-1A>T", "R1:i.7_8A>T"),
+    ("R1(t1):c.-2-1_*2+1del", "R1:i.7_22del"),
+    ("R1(t2):n.1-3_15+3A>T", "R1:i.0_29A>T"),
+    # ("R1:g.4_5ins[R1:c.7_8;10_20]", "R1:i.4_4ins[R1:i.6_8;9_20]"),
+]
 
 
 @pytest.mark.parametrize(
     "hgvs, hgvs_internal_indexing",
-    [
-        # Substitution
-        ("R1:g.4A>T", "R1:i.3_4A>T"),
-        ("R1:g.4_6AAT>G", "R1:i.3_6AAT>G"),
-        ("R1:g.4_6AAT>6_9", "R1:i.3_6AAT>5_9"),
-        ("R1(t1):c.1A>T", "R1:i.10_11A>T"),
-        ("R1(t1):c.4A>T", "R1:i.16_17A>T"),
-        ("R1(t1):c.2_6AAT>G", "R1:i.11_19AAT>G"),
-        ("R1(t1):c.4_6AAT>7_9", "R1:i.16_19AAT>19_25"),
-        # Insertion
-        ("R1:g.4_5insT", "R1:i.4_4insT"),
-        ("R1:g.4_5ins7_8", "R1:i.4_4ins6_8"),
-        ("R1:g.4_5ins[7_8;10_20]", "R1:i.4_4ins[6_8;9_20]"),
-        ("R1:g.4_5ins[7_8;10_20]", "R1:i.4_4ins[6_8;9_20]"),
-        # Duplication
-        ("R1:g.4dup", "R1:i.3_4dup"),
-        ("R1:g.3_4dup", "R1:i.2_4dup"),
-        # Inversion
-        ("R1:g.11_13inv", "R1:i.10_13inv"),
-        # # Conversion
-        # # ("R1:g.4_5con7_8", "R1:i.3_5con6_8"),
-        #
-        # Deletion-insertion
-        ("R1:g.4delins7_8", "R1:i.3_4delins6_8"),
-        ("R1:g.4delins6_31", "R1:i.3_4delins5_31"),
-        ("R1:g.4del", "R1:i.3_4del"),
-        ("R1(t1):c.-8_*7A>T", "R1:i.0_29A>T"),
-        ("R1:g.?del", "R1:i.?_?del"),
-        ("R1:g.?_?del", "R1:i.?_?del"),
-        ("R1:g.(?_?)del", "R1:i.(?_?)del"),
-        ("R1:g.(?_?)_(?_?)del", "R1:i.(?_?)_(?_?)del"),
-        ("R1:g.3_?del", "R1:i.2_?del"),
-        ("R1:g.(4_7)del", "R1:i.(3_7)del"),
-        ("R1:g.(4_?)del", "R1:i.(3_?)del"),
-        # ("R1:g.(4_?)_(5_7)del", "R1:i.(3_?)_(4_7)del"),
-        ("R1:g.(4_?)_7del", "R1:i.(3_?)_7del"),
-        # ("R1:g.(?_4)_7del", "R1:i.(?_4)_7del"),
-        ("R1:g.4_(5_?)del", "R1:i.3_(4_?)del"),
-        # ("R1:g.4_5ins[R1:c.7_8;10_20]", "R1:i.4_4ins[R1:i.6_8;9_20]"),
-    ],
+    EQUIVALENT_DESCRIPTIONS,
 )
 def test_to_internal_coordinates_simple(hgvs, hgvs_internal_indexing):
     d_m = parse_description_to_model(hgvs)
@@ -594,63 +594,27 @@ def test_to_internal_coordinates_simple(hgvs, hgvs_internal_indexing):
             "cds": (10, 19),
         }
     )
-    hgvs_internal_indexing_out = model_to_string(
+    append_transcript(
+        r_model,
+        {
+            "id": "t2",
+            "type": "ncRNA",
+            "inverted": False,
+            "exon": [(3, 6), (8, 13), (16, 21), (24, 26)],
+        },
+    )
+
+    hgvs_internal_indexing_conversion = model_to_string(
         to_internal_indexing(to_internal_coordinates(d_m, r_model))
     )
     print(model_to_string(to_internal_coordinates(d_m, r_model)))
 
-    assert hgvs_internal_indexing_out == hgvs_internal_indexing
+    assert hgvs_internal_indexing_conversion == hgvs_internal_indexing
 
 
 @pytest.mark.parametrize(
     "hgvs, hgvs_internal_indexing",
-    [
-        # Deletion
-        ("R1:g.4del", "R1:i.3_4del"),
-        ("R1:g.3_4del", "R1:i.2_4del"),
-        # Substitution
-        ("R1:g.4A>T", "R1:i.3_4A>T"),
-        ("R1:g.4_6AAT>G", "R1:i.3_6AAT>G"),
-        ("R1:g.4_6AAT>6_9", "R1:i.3_6AAT>5_9"),
-        ("R1(t1):c.1A>T", "R1:i.10_11A>T"),
-        ("R1(t1):c.4A>T", "R1:i.16_17A>T"),
-        ("R1(t1):c.2_6AAT>G", "R1:i.11_19AAT>G"),
-        ("R1(t1):c.4_6AAT>7_9", "R1:i.16_19AAT>19_25"),
-        # Insertion
-        ("R1:g.4_5insT", "R1:i.4_4insT"),
-        ("R1:g.4_5ins7_8", "R1:i.4_4ins6_8"),
-        ("R1:g.4_5ins[7_8;10_20]", "R1:i.4_4ins[6_8;9_20]"),
-        #
-        # Duplication
-        ("R1:g.4dup", "R1:i.3_4dup"),
-        ("R1:g.3_4dup", "R1:i.2_4dup"),
-        # # Inversion
-        ("R1:g.11_13inv", "R1:i.10_13inv"),
-        # Conversion
-        # ("R1:g.4_5con7_8", "R1:i.3_5con6_8"),
-        #
-        # Deletion-insertion
-        ("R1:g.4delins7_8", "R1:i.3_4delins6_8"),
-        ("R1:g.4delins6_31", "R1:i.3_4delins5_31"),
-        ("R1:g.4del", "R1:i.3_4del"),
-        ("R1(t1):c.-8_*7A>T", "R1:i.0_29A>T"),
-        # # ("R1:g.?del", "R1:i.?_?del"), # Impossible to determine.
-        # ("R1:g.?_?del", "R1:i.?_?del"),
-        # ("R1:g.(?_?)del", "R1:i.(?_?)del"),
-        # ("R1:g.(?_?)_(?_?)del", "R1:i.(?_?)_(?_?)del"),
-        # ("R1:g.3_?del", "R1:i.2_?del"),
-        # ("R1:g.(4_7)del", "R1:i.(3_7)del"),
-        # ("R1:g.(4_?)del", "R1:i.(3_?)del"),
-        # ("R1:g.(4_?)_(5_7)del", "R1:i.(3_?)_(4_7)del"),
-        # ("R1:g.(4_?)_7del", "R1:i.(3_?)_7del"),
-        # ("R1:g.(?_4)_7del", "R1:i.(?_4)_7del"),
-        # ("R1:g.4_(5_?)del", "R1:i.3_(4_?)del"),
-        ("R1(t1):c.-4A>T", "R1:i.4_5A>T"),
-        ("R1(t1):c.-2-1A>T", "R1:i.7_8A>T"),
-        ("R1(t1):c.-2-1_*2+1del", "R1:i.7_22del"),
-        ("R1(t2):n.1-3_15+3A>T", "R1:i.0_29A>T")
-        # ("R1:g.4_5ins[R1:c.7_8;10_20]", "R1:i.4_4ins[R1:i.6_8;9_20]"),
-    ],
+    EQUIVALENT_DESCRIPTIONS,
 )
 def test_to_hgvs_locations_simple(hgvs, hgvs_internal_indexing):
     r_model = generate_references(
@@ -671,8 +635,6 @@ def test_to_hgvs_locations_simple(hgvs, hgvs_internal_indexing):
             "exon": [(3, 6), (8, 13), (16, 21), (24, 26)],
         },
     )
-    print(hgvs)
-    print(hgvs_internal_indexing)
     model_internal_indexing = parse_description_to_model(hgvs_internal_indexing)
     model_hgvs = parse_description_to_model(hgvs)
     if model_hgvs["coordinate_system"] in ["c", "n"]:
@@ -680,7 +642,9 @@ def test_to_hgvs_locations_simple(hgvs, hgvs_internal_indexing):
     else:
         to_selector_id = None
 
-    hgvs_internal_indexing_out = model_to_string(
+    print(model_internal_indexing)
+
+    hgvs_conversion = model_to_string(
         to_hgvs_locations(
             model=model_internal_indexing,
             references=r_model,
@@ -690,4 +654,4 @@ def test_to_hgvs_locations_simple(hgvs, hgvs_internal_indexing):
         )
     )
 
-    assert hgvs_internal_indexing_out == hgvs
+    assert hgvs_conversion == hgvs
