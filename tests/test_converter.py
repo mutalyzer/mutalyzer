@@ -7,6 +7,7 @@ from normalizer.converter.to_internal_coordinates import (
     get_point_value,
     point_to_x_coding,
     to_internal_coordinates,
+    point_to_internal
 )
 from normalizer.converter.to_internal_indexing import to_internal_indexing
 from normalizer.description_model import location_to_description, model_to_string
@@ -298,70 +299,6 @@ TESTS_SET = [
         ],
     },
 ]
-
-
-def generate_tests_location_to_internal_raw(t_s, c_s):
-    tests = []
-    if c_s == "g":
-        crossmap = Genomic().genomic_to_coordinate
-        point_function = get_point_value
-    elif c_s == "c":
-        crossmap = Coding(
-            t_s["c"]["exon"], t_s["c"]["cds"], t_s["c"]["inverted"]
-        ).coding_to_coordinate
-        point_function = point_to_x_coding
-    elif c_s == "n":
-        cds = (t_s["n"]["exon"][0][0], t_s["n"]["exon"][-1][-1])
-        crossmap = Coding(
-            t_s["c"]["exon"],
-            cds,
-            t_s["c"]["inverted"],
-        ).coding_to_coordinate
-        point_function = point_to_x_coding
-    else:
-        raise Exception("Unsupported coordinate system")
-
-    crossmap = {
-        "crossmap_function": crossmap,
-        "point_function": point_function,
-    }
-
-    for location in t_s["deleted"]:
-        if location.get(c_s):
-            if location[c_s].get("hgvs"):
-                tests.append(
-                    (
-                        location[c_s]["hgvs"],
-                        location["i"],
-                        "del",  # Can be any operation except for insertion.
-                        crossmap,
-                    )
-                )
-            if location[c_s].get("other"):
-                for other in location[c_s]["other"]:
-                    tests.append((other, location["i"], "del", crossmap))
-    return tests
-
-
-def generate_tests_location_to_internal(test_set):
-    tests = []
-    for t in test_set:
-        tests += generate_tests_location_to_internal_raw(t, "g")
-        tests += generate_tests_location_to_internal_raw(t, "c")
-        tests += generate_tests_location_to_internal_raw(t, "n")
-    return tests
-
-
-@pytest.mark.parametrize(
-    "location_in, location_expected, variant_type, crossmap",
-    generate_tests_location_to_internal(TESTS_SET),
-)
-def test_location_to_internal(location_in, location_expected, variant_type, crossmap):
-    location_model = parse_description_to_model(location_in, start_rule="location")
-    location_out = location_to_description(
-        to_internal_coordinates(location_model, variant_type, crossmap)
-    )
-    assert location_out == location_expected
 
 
 def generate_to_internal_location_test(t, loc, d, refs):
