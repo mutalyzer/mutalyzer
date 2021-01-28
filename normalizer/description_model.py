@@ -235,11 +235,11 @@ def variant_to_description(variant, sequences=None):
     Convert the variant dictionary model to string.
     :return: Equivalent variant string representation.
     """
-    deleted = inserted = ""
+    deleted_location = deleted = inserted = ""
     if variant.get("location"):
-        deleted = location_to_description(variant.get("location"))
+        deleted_location = location_to_description(variant.get("location"))
     if variant.get("inserted"):
-        inserted = inserted_to_description(variant["inserted"], sequences)
+        inserted = inserted_to_description(variant["inserted"])
         if (
             variant["type"] == "repeat"
             and len(variant.get("inserted")) == 1
@@ -256,21 +256,20 @@ def variant_to_description(variant, sequences=None):
         ):
             inserted = "[{}]".format(inserted)
     variant_type = variant.get("type")
+
+    if variant.get("deleted"):
+        deleted = inserted_to_description(variant["deleted"])
+
     if variant_type == "substitution":
-        if variant.get("deleted"):
-            if isinstance(variant["deleted"], dict):
-                deleted += variant["deleted"]["sequence"]
-            elif isinstance(variant["deleted"], list):
-                deleted += variant["deleted"][0]["sequence"]
-        variant_type = ">"
+        variant_type = deleted + ">"
     elif variant_type == "deletion":
-        variant_type = "del"
+        variant_type = "del" + deleted
     elif variant_type == "deletion_insertion":
-        variant_type = "delins"
+        variant_type = "del" + deleted + "ins"
     elif variant_type == "insertion":
         variant_type = "ins"
     elif variant_type == "duplication":
-        variant_type = "dup"
+        variant_type = "dup" + inserted
         inserted = ""
     elif variant_type == "inversion":
         variant_type = "inv"
@@ -278,10 +277,10 @@ def variant_to_description(variant, sequences=None):
         variant_type = "="
     else:
         variant_type = ""
-    return "{}{}{}".format(deleted, variant_type, inserted)
+    return "{}{}{}".format(deleted_location, variant_type, inserted)
 
 
-def inserted_to_description(inserted, sequences):
+def inserted_to_description(inserted):
     """
     Convert the insertions dictionary model to string.
     :param inserted: Insertions dictionary.
@@ -357,7 +356,7 @@ def point_to_description(point):
 def length_to_description(length):
     if length["type"] == "point":
         if length.get("value"):
-            return length["value"]
+            return str(length["value"])
         elif length.get("uncertain"):
             return "?"
     if length["type"] == "range":
