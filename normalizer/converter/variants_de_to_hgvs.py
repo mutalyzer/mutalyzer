@@ -167,6 +167,7 @@ def delins_to_duplication(variant, sequences):
     new_variant["location"]["start"]["position"] = get_start(
         new_variant["location"]
     ) - len(inserted_sequence)
+    new_variant.pop("inserted")
     new_variant["type"] = "duplication"
     return new_variant
 
