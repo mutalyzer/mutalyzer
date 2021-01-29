@@ -20,7 +20,6 @@ class PositionConvert(object):
         to_coordinate_system="",
         include_overlapping=False,
     ):
-        print("-----")
         self.input_description = description
         self.reference_id = reference_id
         self.position = position

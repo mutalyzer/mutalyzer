@@ -1,12 +1,10 @@
 import copy
-import json
 
 from mutalyzer_crossmapper import Coding, Genomic
 
 from normalizer.util import get_end, get_start
 
-from .to_hgvs import genomic_to_point
-from .to_hgvs_coordinates import reverse_strand_shift
+from .to_hgvs_coordinates import genomic_to_point, reverse_strand_shift
 
 
 def _get_last_exon_cds_coding(selector_model, crossmap):

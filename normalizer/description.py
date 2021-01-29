@@ -48,7 +48,7 @@ from .reference import (
     yield_overlap_ids,
     yield_selector_ids,
 )
-from .util import get_end, get_start, set_by_path, check_errors
+from .util import check_errors, get_end, get_start, set_by_path
 
 
 def e_mismatch(input_description, model_description):
@@ -846,7 +846,6 @@ class Description(object):
         }
 
     def __str__(self):
-        print(self.input_model)
         return self.input_description
 
 
