@@ -79,9 +79,13 @@ def crossmap_to_internal_setup(coordinate_system, selector_model=None):
             "inverted": selector_model["inverted"],
         }
     elif coordinate_system == "n":
-        crossmap = NonCoding(selector_model["exon"], selector_model["inverted"])
+        crossmap = Coding(
+            selector_model["exon"],
+            (selector_model["exon"][0][0], selector_model["exon"][-1][-1]),
+            selector_model["inverted"],
+        )
         return {
-            "crossmap_function": crossmap.noncoding_to_coordinate,
+            "crossmap_function": crossmap.coding_to_coordinate,
             "point_function": point_to_x_coding,
             "inverted": selector_model["inverted"],
         }
@@ -89,7 +93,10 @@ def crossmap_to_internal_setup(coordinate_system, selector_model=None):
 
 def initialize_internal_model(model):
     internal_model = copy.deepcopy(model)
-    internal_model["reference"] = {"id": model["reference"]["id"]}
+    if internal_model.get("reference"):
+        internal_model["reference"] = {"id": get_reference_id(model)}
+    if internal_model.get("source") and internal_model["source"].get("selector"):
+        internal_model["source"].pop("selector")
     internal_model["coordinate_system"] = "x"
     return internal_model
 

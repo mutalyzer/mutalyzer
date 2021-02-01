@@ -209,14 +209,14 @@ def i_corrected_coordinate_system(coordinate_system, correction_source, path):
 class Description(object):
     def __init__(self, description=None, description_model=None, stop_on_error=False):
 
+        self.stop_on_errors = stop_on_error
+
         self.errors = []
         self.infos = []
 
         self.input_description = description if description else None
         self.input_model = description_model if description_model else {}
         self._check_input()
-
-        self.stop_on_errors = stop_on_error
 
         self.corrected_model = copy.deepcopy(self.input_model)
         self.internal_coordinates_model = {}

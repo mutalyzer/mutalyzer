@@ -13,6 +13,10 @@ def update_range_points(range_location, insertion=False):
         and range_location["end"]["type"] == "point"
     ):
         range_location["end"]["position"] += 1
+    if range_location["start"]["type"] == "range":
+        update_range_points(range_location["start"], insertion)
+    if range_location["end"]["type"] == "range":
+        update_range_points(range_location["end"], insertion)
 
 
 def point_to_range(point_location):
@@ -72,6 +76,8 @@ def variant_to_internal_indexing(variant):
                 inserted["location"] = location_to_internal_indexing(
                     inserted["location"]
                 )
+            if inserted.get("coordinate_system"):
+                inserted["coordinate_system"] = "i"
     return new_variant
 
 

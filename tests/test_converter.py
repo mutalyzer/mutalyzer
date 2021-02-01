@@ -5,9 +5,9 @@ from mutalyzer_hgvs_parser import parse_description_to_model
 from normalizer.converter.to_hgvs_coordinates import to_hgvs_locations
 from normalizer.converter.to_internal_coordinates import (
     get_point_value,
+    point_to_internal,
     point_to_x_coding,
     to_internal_coordinates,
-    point_to_internal
 )
 from normalizer.converter.to_internal_indexing import to_internal_indexing
 from normalizer.description_model import location_to_description, model_to_string
@@ -40,7 +40,7 @@ TESTS_SET = [
                 "i": "1_2",
                 "g": {"hgvs": "2"},
                 "c": {"hgvs": "-7", "other": ["-5-2"]},
-                "n": {"hgvs": "1-2", "other": ["-3"]},
+                "n": {"hgvs": "1-2", "other": ["-2"]},
             },
             {
                 "i": "2_3",
@@ -445,9 +445,6 @@ def generate_to_hgvs_locations_tests(tests_set):
     generate_to_hgvs_locations_tests(TESTS_SET),
 )
 def test_to_hgvs_locations(description_in, description_expected, references):
-    print(description_in)
-    print(description_expected)
-
     model_internal_indexing = parse_description_to_model(description_in)
     model_hgvs = parse_description_to_model(description_expected)
     if model_hgvs["coordinate_system"] in ["c", "n"]:
@@ -491,34 +488,43 @@ EQUIVALENT_DESCRIPTIONS = [
     # # Inversion
     ("R1:g.11_13inv", "R1:i.10_13inv"),
     # Conversion
-    # ("R1:g.4_5con7_8", "R1:i.3_5con6_8"),
+    ("R1:g.4_5con7_8", "R1:i.3_5con6_8"),
     #
     # Deletion-insertion
     ("R1:g.4delins7_8", "R1:i.3_4delins6_8"),
     ("R1:g.4delins6_31", "R1:i.3_4delins5_31"),
     ("R1(t1):c.-8_*7A>T", "R1:i.0_29A>T"),
-    ("R1:g.?del", "R1:i.?_?del"),  # Impossible to determine?
-    ("R1:g.?_?del", "R1:i.?_?del"),
     ("R1:g.(?_?)del", "R1:i.(?_?)del"),
+    ("R1:g.?_?del", "R1:i.?_?del"),
     ("R1:g.(?_?)_(?_?)del", "R1:i.(?_?)_(?_?)del"),
     ("R1:g.3_?del", "R1:i.2_?del"),
     ("R1:g.(4_7)del", "R1:i.(3_7)del"),
     ("R1:g.(4_?)del", "R1:i.(3_?)del"),
-    # ("R1:g.(4_?)_(5_7)del", "R1:i.(3_?)_(4_7)del"),
+    ("R1:g.(4_?)_(5_7)del", "R1:i.(3_?)_(4_7)del"),
     ("R1:g.(4_?)_7del", "R1:i.(3_?)_7del"),
-    # ("R1:g.(?_4)_7del", "R1:i.(?_4)_7del"),
-    # ("R1:g.4_(5_?)del", "R1:i.3_(4_?)del"),
+    ("R1:g.(?_4)_7del", "R1:i.(?_4)_7del"),
+    ("R1:g.4_(5_?)del", "R1:i.3_(4_?)del"),
     ("R1(t1):c.-4A>T", "R1:i.4_5A>T"),
     ("R1(t1):c.-2-1A>T", "R1:i.7_8A>T"),
     ("R1(t1):c.-2-1_*2+1del", "R1:i.7_22del"),
     ("R1(t2):n.1-3_15+3A>T", "R1:i.0_29A>T"),
-    # ("R1:g.4_5ins[R1:c.7_8;10_20]", "R1:i.4_4ins[R1:i.6_8;9_20]"),
+]
+
+TO_INTERNAL_ONLY = [
+    ("R1:g.?del", "R1:i.?_?del"),
+    ("R1(t2):n.*1A>T", "R1:i.26_27A>T"),
+    ("R1(t2):n.-1A>T", "R1:i.2_3A>T"),
+    ("R1(t2):n.-2A>T", "R1:i.1_2A>T"),
+    ("R1(t2):n.-3A>T", "R1:i.0_1A>T"),
+    ("R1:g.4_5ins[R1:g.7_8;10_20]", "R1:i.4_4ins[R1:i.6_8;9_20]"),
+    ("R1:g.4_5ins[R1:7_8;10_20]", "R1:i.4_4ins[R1:i.6_8;9_20]"),
+    ("R1:g.4_5ins[R1(t1):c.7_8;10_20]", "R1:i.4_4ins[R1:i.19_21;9_20]"),
 ]
 
 
 @pytest.mark.parametrize(
     "hgvs, hgvs_internal_indexing",
-    EQUIVALENT_DESCRIPTIONS,
+    EQUIVALENT_DESCRIPTIONS + TO_INTERNAL_ONLY,
 )
 def test_to_internal_coordinates_simple(hgvs, hgvs_internal_indexing):
     d_m = parse_description_to_model(hgvs)
@@ -544,7 +550,6 @@ def test_to_internal_coordinates_simple(hgvs, hgvs_internal_indexing):
     hgvs_internal_indexing_conversion = model_to_string(
         to_internal_indexing(to_internal_coordinates(d_m, r_model))
     )
-    print(model_to_string(to_internal_coordinates(d_m, r_model)))
 
     assert hgvs_internal_indexing_conversion == hgvs_internal_indexing
 
@@ -578,8 +583,6 @@ def test_to_hgvs_locations_simple(hgvs, hgvs_internal_indexing):
         to_selector_id = model_hgvs["reference"]["selector"]["id"]
     else:
         to_selector_id = None
-
-    print(model_internal_indexing)
 
     hgvs_conversion = model_to_string(
         to_hgvs_locations(

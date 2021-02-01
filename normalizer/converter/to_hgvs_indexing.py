@@ -1,18 +1,36 @@
 import copy
 
 
+def update_range_points(range_location, insertion=False):
+    if (
+        insertion
+        and range_location["start"]["type"] == "point"
+        and not range_location["start"].get("uncertain")
+    ):
+        range_location["start"]["position"] -= 1
+    elif (
+        not range_location["end"].get("uncertain")
+        and range_location["end"]["type"] == "point"
+    ):
+        range_location["end"]["position"] -= 1
+    if range_location["start"]["type"] == "range":
+        update_range_points(range_location["start"], insertion)
+    if range_location["end"]["type"] == "range":
+        update_range_points(range_location["end"], insertion)
+
+
 def location_to_hgvs_indexing(location, insertion=False):
     """"""
-    if insertion:
-        new_location = copy.deepcopy(location)
-        new_location["start"]["position"] -= 1
-    elif location["start"]["position"] + 1 == location["end"]["position"]:
-        new_location = copy.deepcopy(location["start"])
-        if location.get("shift"):
-            new_location["shift"] = location["shift"]
+    new_location = copy.deepcopy(location)
+    if (
+        not insertion
+        and new_location["start"].get("position") is not None
+        and new_location["end"].get("position") is not None
+        and new_location["start"]["position"] + 1 == new_location["end"]["position"]
+    ):
+        new_location = new_location["start"]
     else:
-        new_location = copy.deepcopy(location)
-        new_location["end"]["position"] -= 1
+        update_range_points(new_location, insertion)
 
     return new_location
 
