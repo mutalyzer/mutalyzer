@@ -5,7 +5,7 @@ from normalizer.description_model import model_to_string
 
 from .variants_set import TESTS_ALL
 
-TESTS = [
+DESCRIPTIONS_MODELS = [
     (
         {
             "reference": {"id": "R1"},
@@ -114,12 +114,12 @@ TESTS = [
 ]
 
 
-@pytest.mark.parametrize("model, description", TESTS)
-def test_model_to_string_simple(model, description):
+@pytest.mark.parametrize("model, description", DESCRIPTIONS_MODELS)
+def test_model_to_string(model, description):
     assert model_to_string(model) == description
 
 
-def extract_descriptions():
+def extract_descriptions_tests_all():
     """
     Extract descriptions from variants_set.TEST_ALL.
     """
@@ -133,10 +133,11 @@ def extract_descriptions():
 
 @pytest.mark.parametrize(
     "description",
-    extract_descriptions(),
+    extract_descriptions_tests_all() + ["R1:g.4_5con7_8"],
 )
-def test__model_to_string_descriptions_test_all(description):
+def test_description_to_model_to_description(description):
     """
-    Check if the parsed descriptions from variants_set.TEST_ALL are converted back.
+    Check if the parsed model of a description is converted back to
+    the initial description.
     """
     assert model_to_string(parse_description_to_model(description)) == description

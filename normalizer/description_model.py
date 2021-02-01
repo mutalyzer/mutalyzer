@@ -273,6 +273,8 @@ def variant_to_description(variant, sequences=None):
         inserted = ""
     elif variant_type == "inversion":
         variant_type = "inv"
+    elif variant_type == "conversion":
+        variant_type = "con"
     elif variant_type == "equal":
         variant_type = "="
     else:
