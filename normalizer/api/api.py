@@ -7,7 +7,11 @@ from mutalyzer_hgvs_parser import parse_description, parse_description_to_model
 from normalizer.description_extractor import description_extractor
 from normalizer.name_checker import name_check
 from normalizer.position_converter import position_convert
-from normalizer.reference import get_reference_model, get_selectors_ids
+from normalizer.reference import (
+    get_reference_model,
+    get_reference_model_segmented,
+    get_selectors_ids,
+)
 
 from ..util import log_dir
 
@@ -43,11 +47,37 @@ class DescriptionToModel(Resource):
         return model
 
 
-@ns.route("/reference_model/<string:reference_id>")
+args_reference_model = reqparse.RequestParser()
+args_reference_model.add_argument(
+    "reference_id",
+    type=str,
+    help="Reference ID.",
+    default="NG_012337.1",
+    required=True,
+)
+args_reference_model.add_argument(
+    "feature_id",
+    type=str,
+    help="Restrict to certain feature id.",
+    default=None,
+    required=False,
+)
+args_reference_model.add_argument(
+    "include_siblings",
+    type=bool,
+    help="Include also the siblings of the feature ID provided.",
+    default=False,
+    required=False,
+)
+
+
+@ns.route("/reference_model/")
 class ReferenceModel(Resource):
-    def get(self, reference_id):
+    @api.expect(args_reference_model)
+    def get(self):
         """Retrieve the reference model."""
-        return get_reference_model(reference_id)
+        args = args_reference_model.parse_args()
+        return get_reference_model_segmented(**args)
 
 
 @ns.route("/name_check/<string:hgvs_description>")
@@ -85,7 +115,10 @@ parser.add_argument(
     required=False,
 )
 parser.add_argument(
-    "position", type=str, help="Position to be converted.", required=False,
+    "position",
+    type=str,
+    help="Position to be converted.",
+    required=False,
 )
 parser.add_argument(
     "to_selector_id",

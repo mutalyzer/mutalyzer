@@ -1,3 +1,4 @@
+import copy
 import json
 from functools import lru_cache
 from pathlib import Path
@@ -19,6 +20,43 @@ def get_reference_model(reference_id):
         with open(Path(cache) / reference_id) as json_file:
             return json.load(json_file)
     return retrieve_model(reference_id, timeout=10)
+
+
+def get_reference_model_segmented(
+    reference_id, feature_id=None, include_siblings=False
+):
+    reference_model = get_reference_model(reference_id)
+    if feature_id is not None:
+        return extract_feature_model(
+            reference_model["annotations"], feature_id, include_siblings
+        )[0]
+    return reference_model
+
+
+def extract_feature_model(feature, feature_id, include_siblings=False):
+    output_model = None
+    just_found = False
+    if feature.get("id") is not None and feature_id == feature["id"]:
+        return copy.deepcopy(feature), True
+    elif feature.get("features"):
+        for f in feature["features"]:
+            out = extract_feature_model(f, feature_id, include_siblings)
+            output_model, just_found = out
+            if output_model:
+                break
+        if output_model and just_found and include_siblings:
+            output_model = copy.deepcopy(feature["features"])
+    if output_model is not None:
+        if isinstance(output_model, dict):
+            output_model = [output_model]
+        return {
+            **{
+                k: copy.deepcopy(feature[k])
+                for k in list(set(feature.keys()) - {"features"})
+            },
+            **{"features": output_model},
+        }, False
+    return None, False
 
 
 def is_feature_inverted(feature):
