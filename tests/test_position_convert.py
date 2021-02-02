@@ -54,6 +54,26 @@ def test_error_no_from_selector():
     assert p_c["errors"][0]["code"] == "ENOSELECTORFOUND"
 
 
+def test_error_position_invalid():
+    p_c = position_convert(
+        reference_id="NM_003002.4",
+        from_selector_id="NM_",
+        position=100,
+    )
+    assert p_c["errors"][0]["code"] == "EPOSITIONINVALID"
+
+
+def test_error_position_syntax():
+    p_c = position_convert(
+        reference_id="NG_012337.1",
+        from_selector_id="NM_003002.2",
+        from_coordinate_system="c",
+        to_coordinate_system="g",
+        position="100_",
+    )
+    assert p_c["errors"][0]["code"] == "EPOSITIONSYNTAX"
+
+
 def test_info_from_selector_model_identified_from_selector_id():
     p_c = position_convert(
         reference_id="NG_012337.1",
@@ -79,7 +99,7 @@ def test_info_to_selector_model_identified_from_reference():
         from_coordinate_system="c",
         position="100",
     )
-    assert p_c["infos"][0]["code"] == "ITOSELECTOR"
+    assert p_c["infos"][0]["code"] == "ITOSELECTORFROMREFERENCE"
 
 
 def test_error_from_to_selectors_equal_g():

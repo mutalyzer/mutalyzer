@@ -1,6 +1,9 @@
 from mutalyzer_hgvs_parser import parse_description_to_model
 from mutalyzer_hgvs_parser.exceptions import UnexpectedCharacter, UnexpectedEnd
 
+import normalizer.errors as errors
+import normalizer.infos as infos
+
 from .converter.to_hgvs_coordinates import to_hgvs_locations
 from .description import Description
 from .reference import get_coordinate_system_from_reference, is_selector_in_reference
@@ -59,7 +62,7 @@ class PositionConvert(object):
             or self.input_model
             or (self.reference_id and self.position)
         ):
-            self.errors.append({"code": "ENOINPUTS"})
+            self.errors.append(errors.no_inputs())
 
         if not (
             self.from_selector_id
@@ -67,12 +70,10 @@ class PositionConvert(object):
             or self.to_selector_id
             or self.to_coordinate_system
         ):
-            self.errors.append({"code": "ENOINPUTSOTHER"})
+            self.errors.append(errors.no_inputs_other())
 
         if self.position and not isinstance(self.position, str):
-            self.errors.append(
-                {"code": "EPOSITIONINVALID", "details": "Position must be string"}
-            )
+            self.errors.append(errors.position_invalid())
 
     @check_errors
     def _get_description(self):
@@ -114,19 +115,9 @@ class PositionConvert(object):
             )
             description_model["variants"] = [{"location": location_model}]
         except UnexpectedCharacter as e:
-            self.errors.append(
-                dict(
-                    {"code": "EPOSITIONSYNTAX", "details": "Unexpected character."},
-                    **e.serialize()
-                )
-            )
+            self.errors.append(errors.position_syntax("Unexpected character.", e))
         except UnexpectedEnd as e:
-            self.errors.append(
-                dict(
-                    {"code": "EPOSITIONSYNTAX", "details": "Unexpected end of input."},
-                    **e.serialize()
-                )
-            )
+            self.errors.append(errors.position_syntax("Unexpected end of input.", e))
 
         self.input_model = description_model
 
@@ -138,33 +129,22 @@ class PositionConvert(object):
             )
             if self.to_coordinate_system:
                 self.infos.append(
-                    {
-                        "code": "ITOSELECTOR",
-                        "details": "To coordinate system identified as {} "
-                        "from the selector molecule type.".format(
-                            self.to_coordinate_system
-                        ),
-                    }
+                    infos.to_coordinate_system_from_reference(self.to_coordinate_system)
                 )
             else:
-                self.errors.append({"code": "ENOTOSELECTOR"})
+                self.errors.append(errors.no_to_selector())
 
         elif self.to_selector_id:
             if not is_selector_in_reference(
                 self.to_selector_id, self.description.references["reference"]
             ):
                 # TODO: update the error.
-                self.errors.append({"code": "ENOTOSELECTOR"})
+                self.errors.append(errors.no_to_selector())
 
         if (self.to_selector_id == self.from_selector_id) and (
             self.to_coordinate_system == self.from_coordinate_system
         ):
-            self.infos.append(
-                {
-                    "code": "IFROMTOSELECTORSEQUAL",
-                    "details": "Both from and to coordinate systems are " "the same.",
-                }
-            )
+            self.infos.append(infos.from_to_selector_equal())
 
     @check_errors
     def _convert(self):

@@ -6,6 +6,9 @@ from mutalyzer_hgvs_parser.exceptions import UnexpectedCharacter, UnexpectedEnd
 from mutalyzer_mutator import mutate
 from mutalyzer_retriever.retriever import NoReferenceError, NoReferenceRetrieved
 
+import normalizer.errors as errors
+import normalizer.infos as infos
+
 from .checker import is_overlap, sort_variants
 from .converter.to_delins import to_delins, variants_to_delins
 from .converter.to_hgvs_coordinates import to_hgvs_locations
@@ -15,21 +18,13 @@ from .converter.variants_de_to_hgvs import de_to_hgvs
 from .description_model import (
     get_locations_start_end,
     get_reference_id,
-    location_to_description,
     model_to_string,
     point_to_description,
-    variant_to_description,
-    variants_to_description,
-    yield_point_locations_for_main_reference,
     yield_reference_ids,
     yield_reference_selector_ids,
     yield_reference_selector_ids_coordinate_system,
 )
-from .position_check import (
-    check_locations,
-    contains_uncertain_locations,
-    identify_unsorted_locations,
-)
+from .position_check import contains_uncertain_locations
 from .protein import get_protein_description, get_protein_descriptions
 from .reference import (
     get_coordinate_system_from_reference,
@@ -46,164 +41,8 @@ from .reference import (
     is_selector_in_reference,
     update_start_end,
     yield_overlap_ids,
-    yield_selector_ids,
 )
 from .util import check_errors, get_end, get_start, set_by_path
-
-
-def e_mismatch(input_description, model_description):
-    return {
-        "code": "EMISMATCH",
-        "details": "Model description {} different than the input description {}.".format(
-            model_description, input_description
-        ),
-    }
-
-
-def e_reference_not_retrieved(reference_id, path):
-    return {
-        "code": "ERETR",
-        "details": "Reference {} could not be retrieved.".format(reference_id),
-        "paths": [path],
-    }
-
-
-def e_no_selector_found(reference_id, selector_id, path):
-    return {
-        "code": "ENOSELECTORFOUND",
-        "details": "No {} selector found in reference {}.".format(
-            selector_id, reference_id
-        ),
-        "paths": [path],
-    }
-
-
-def e_selector_options(selector_id, selector_type, options, path):
-    return {
-        "code": "ESELECTOROPTIONS",
-        "details": "{} selector identified as {}.".format(selector_id, selector_type),
-        "options": options,
-        "paths": [path],
-    }
-
-
-def e_no_coordinate_system(path):
-    return {
-        "code": "ENOCOORDINATESYSTEM",
-        "details": "A coordinate system is required.",
-        "paths": [path],
-    }
-
-
-def e_coordinate_system_mismatch(
-    coordinate_system, mismatch_id, mismatch_coordinate_system, path
-):
-    return {
-        "code": "ECOORDINATESYSTEMMISMATCH",
-        "details": "Coordinate system {} does not match with {} "
-        "{} coordinate system. ".format(
-            coordinate_system, mismatch_id, mismatch_coordinate_system
-        ),
-        "paths": [path],
-    }
-
-
-def e_out_of_boundary_lesser(position, path):
-    return {
-        "code": "EOUTOFBOUNDARY",
-        "details": "Position {} is lesser than 1.".format(
-            point_to_description(position)
-        ),
-        "paths": [path],
-    }
-
-
-def e_out_of_boundary_greater(point, sequence_length, path):
-    return {
-        "code": "EOUTOFBOUNDARY",
-        "details": "Position {} is greater than the sequence {} length.".format(
-            point_to_description(point), sequence_length
-        ),
-        "paths": [path],
-    }
-
-
-def e_insertion_range_not_consecutive(location, path):
-    return {
-        "code": "EINSERTIONRANGE",
-        "details": "Range positions {} not consecutive in insertion location.".format(
-            location_to_description(location)
-        ),
-        "paths": [path],
-    }
-
-
-def e_insertion_location_not_range(point, path):
-    return {
-        "code": "EINSERTIONLOCATION",
-        "details": "Insertion location {} is not range.".format(
-            point_to_description(point)
-        ),
-        "paths": [path],
-    }
-
-
-def e_repeat_reference_sequence_length(path):
-    return {
-        "code": "EREPEATREFERENCELENGTH",
-        "details": "Reference sequence length not a multiple of the inserted sequence length.",
-        "paths": [path],
-    }
-
-
-def e_repeat_sequences_mismatch(reference_sequence, repeat_sequence, path):
-    return {
-        "code": "EREPEATMISMATCH",
-        "details": "Reference sequence {} does not contain the repeat sequence {}.".format(
-            reference_sequence, repeat_sequence
-        ),
-        "paths": [path],
-    }
-
-
-def e_repeat_not_supported(variant, path):
-    return {
-        "code": "EREPEATUNSUPPORTED",
-        "details": "Repeat variant {} not supported.".format(
-            variant_to_description(variant)
-        ),
-        "paths": [path],
-    }
-
-
-def i_corrected_reference_id(original_id, corrected_id, path):
-    return {
-        "code": "ICORRECTEDREFERENCEID",
-        "details": "Reference {} was retrieved instead of {}.".format(
-            corrected_id, original_id
-        ),
-        "paths": [path],
-    }
-
-
-def i_corrected_selector_id(original_id, corrected_id, correction_source, path):
-    return {
-        "code": "ICORRECTEDSELECTORID",
-        "details": "Selector {} was corrected to {} from {}.".format(
-            original_id, corrected_id, correction_source
-        ),
-        "paths": [path],
-    }
-
-
-def i_corrected_coordinate_system(coordinate_system, correction_source, path):
-    return {
-        "code": "ICORRECTEDCOORDINATESYSTEM",
-        "details": "Coordinate system corrected to {} from {}.".format(
-            coordinate_system, correction_source
-        ),
-        "paths": [path],
-    }
 
 
 class Description(object):
@@ -243,7 +82,7 @@ class Description(object):
             # TODO: check the input_model
             model_description = model_to_string(self.input_model)
             if self.input_description != model_description:
-                e_mismatch(model_description, self.input_description)
+                errors.mismatch(model_description, self.input_description)
 
     def _add_error(self, error):
         self.errors.append(error)
@@ -256,19 +95,9 @@ class Description(object):
         try:
             self.input_model = parse_description_to_model(self.input_description)
         except UnexpectedCharacter as e:
-            self._add_error(
-                dict(
-                    {"code": "ESYNTAXUC", "details": "Unexpected character."},
-                    **e.serialize()
-                )
-            )
+            self._add_error(errors.syntax_uc(e))
         except UnexpectedEnd as e:
-            self._add_error(
-                dict(
-                    {"code": "ESYNTAXUEOF", "details": "Unexpected end of input."},
-                    **e.serialize()
-                )
-            )
+            self._add_error(errors.syntax_ueof(e))
 
     def _set_main_reference(self):
         reference_id = get_reference_id(self.corrected_model)
@@ -277,7 +106,7 @@ class Description(object):
 
     def _correct_reference_id(self, path, original_id, corrected_id):
         set_by_path(self.corrected_model, path, corrected_id)
-        self._add_info(i_corrected_reference_id(original_id, corrected_id, path))
+        self._add_info(infos.corrected_reference_id(original_id, corrected_id, path))
 
     @check_errors
     def retrieve_references(self):
@@ -292,9 +121,9 @@ class Description(object):
                 reference_model = get_reference_model(reference_id)
                 # print(get_reference_model.cache_info())
             except NoReferenceError:
-                self._add_error(e_reference_not_retrieved(reference_id, [path]))
+                self._add_error(errors.reference_not_retrieved(reference_id, [path]))
             except NoReferenceRetrieved:
-                self._add_error(e_reference_not_retrieved(reference_id, [path]))
+                self._add_error(errors.reference_not_retrieved(reference_id, [path]))
             else:
                 reference_id_in_model = get_reference_id_from_model(reference_model)
                 if reference_id_in_model != reference_id:
@@ -317,7 +146,9 @@ class Description(object):
     def _correct_selector_id(self, path, original_id, corrected_id, correction_source):
         set_by_path(self.corrected_model, path, corrected_id)
         self._add_info(
-            i_corrected_selector_id(original_id, corrected_id, correction_source, path)
+            infos.corrected_selector_id(
+                original_id, corrected_id, correction_source, path
+            )
         )
 
     def handle_selector_not_found(self, reference_id, selector_id, path):
@@ -336,7 +167,7 @@ class Description(object):
             return
         elif len(gene_selectors) > 1:
             self._add_error(
-                e_selector_options(selector_id, "gene", gene_selectors, path)
+                errors.selector_options(selector_id, "gene", gene_selectors, path)
             )
             return
         if "_v" in selector_id:
@@ -351,7 +182,7 @@ class Description(object):
                 return
             elif len(gene_selectors) > 1:
                 self._add_error(
-                    e_selector_options(gene_name, "gene", gene_selectors, path)
+                    errors.selector_options(gene_name, "gene", gene_selectors, path)
                 )
                 return
         gene_selectors = get_gene_selectors_hgnc(
@@ -362,10 +193,10 @@ class Description(object):
             return
         elif len(gene_selectors) > 1:
             self._add_error(
-                e_selector_options(selector_id, "gene HGNC", gene_selectors, path)
+                errors.selector_options(selector_id, "gene HGNC", gene_selectors, path)
             )
             return
-        self._add_error(e_no_selector_found(reference_id, selector_id, path))
+        self._add_error(errors.no_selector_found(reference_id, selector_id, path))
 
     @check_errors
     def _check_coordinate_systems(self):
@@ -385,7 +216,9 @@ class Description(object):
     def _correct_coordinate_system(self, coordinate_system, path, correction_source):
         set_by_path(self.corrected_model, path, coordinate_system)
         self._add_info(
-            i_corrected_coordinate_system(coordinate_system, correction_source, path)
+            infos.corrected_coordinate_system(
+                coordinate_system, correction_source, path
+            )
         )
 
     def _handle_no_coordinate_system(self, c_s_path, r_id, s_id):
@@ -398,13 +231,13 @@ class Description(object):
         if c_s:
             self._correct_coordinate_system(c_s, c_s_path, r_id + " reference")
             return
-        self._add_error(e_no_coordinate_system(c_s_path))
+        self._add_error(errors.no_coordinate_system(c_s_path))
 
     def _correct_selector_id_from_coordinate_system(self, r_id_path, selector_id):
         path = tuple(list(r_id_path[:-1]) + ["selector"])
         set_by_path(self.corrected_model, path, {"id": selector_id})
         self._add_info(
-            i_corrected_selector_id("", selector_id, "coordinate system", path)
+            infos.corrected_selector_id("", selector_id, "coordinate system", path)
         )
 
     @check_errors
@@ -427,7 +260,7 @@ class Description(object):
                     return
                 else:
                     self._add_error(
-                        e_coordinate_system_mismatch(c_s, s_id, s_c_s, c_s_path)
+                        errors.coordinate_system_mismatch(c_s, s_id, s_c_s, c_s_path)
                     )
                     return
             r_c_s = get_coordinate_system_from_reference(self.references[r_id])
@@ -441,7 +274,7 @@ class Description(object):
                     return
                 else:
                     self._add_error(
-                        e_coordinate_system_mismatch(c_s, r_id, r_c_s, c_s_path)
+                        errors.coordinate_system_mismatch(c_s, r_id, r_c_s, c_s_path)
                     )
 
     @check_errors
@@ -611,14 +444,14 @@ class Description(object):
                 < v["location"]["position"]
             ):
                 self._add_error(
-                    e_out_of_boundary_greater(
+                    errors.out_of_boundary_greater(
                         v_r["location"],
                         get_sequence_length(self.references, "reference"),
                         path,
                     )
                 )
             elif v["location"]["position"] < 0:
-                self._add_error(e_out_of_boundary_lesser(v_r["location"], path))
+                self._add_error(errors.out_of_boundary_lesser(v_r["location"], path))
         if v["location"]["type"] == "range":
             if v["location"]["start"]["type"] == "point" and not v.get("uncertain"):
                 if (
@@ -626,7 +459,7 @@ class Description(object):
                     < v["location"]["start"]["position"]
                 ):
                     self._add_error(
-                        e_out_of_boundary_greater(
+                        errors.out_of_boundary_greater(
                             v_r["location"]["start"],
                             get_sequence_length(self.references, "reference"),
                             path + ["start"],
@@ -634,7 +467,7 @@ class Description(object):
                     )
                 elif v["location"]["start"]["position"] < 0:
                     self._add_error(
-                        e_out_of_boundary_lesser(
+                        errors.out_of_boundary_lesser(
                             v_r["location"]["start"], path + ["start"]
                         )
                     )
@@ -644,7 +477,7 @@ class Description(object):
                     < v["location"]["end"]["position"]
                 ):
                     self._add_error(
-                        e_out_of_boundary_greater(
+                        errors.out_of_boundary_greater(
                             v_r["location"]["end"],
                             get_sequence_length(self.references, "reference"),
                             path + ["end"],
@@ -652,7 +485,9 @@ class Description(object):
                     )
                 elif v["location"]["end"]["position"] < 0:
                     self._add_error(
-                        e_out_of_boundary_lesser(v_r["location"]["end"], path + ["end"])
+                        errors.out_of_boundary_lesser(
+                            v_r["location"]["end"], path + ["end"]
+                        )
                     )
 
     def _check_location_range(self, path):
@@ -664,20 +499,20 @@ class Description(object):
                 < v["location"]["position"]
             ):
                 self._add_error(
-                    e_out_of_boundary_greater(
+                    errors.out_of_boundary_greater(
                         v_r["location"],
                         get_sequence_length(self.references, "reference"),
                         path,
                     )
                 )
             elif v["location"]["position"] < 0:
-                self._add_error(e_out_of_boundary_lesser(v_r["location"], path))
+                self._add_error(errors.out_of_boundary_lesser(v_r["location"], path))
 
     def _check_insertion_location(self, path):
         v = self.internal_coordinates_model["variants"][path[1]]
         v_r = self.input_model["variants"][path[1]]
         if v["location"]["type"] == "point" and not v["location"].get("uncertain"):
-            self._add_error(e_insertion_location_not_range(v_r["location"], path))
+            self._add_error(errors.insertion_location_not_range(v_r["location"], path))
 
         if v["location"]["type"] == "range" and not v["location"].get("uncertain"):
             if (
@@ -688,7 +523,7 @@ class Description(object):
                 != 1
             ):
                 self._add_error(
-                    e_insertion_range_not_consecutive(v_r["location"], path)
+                    errors.insertion_range_not_consecutive(v_r["location"], path)
                 )
 
     def _check_repeat(self, path):
@@ -700,7 +535,7 @@ class Description(object):
                 repeat_seq = inserted["sequence"]
             # TODO: get the sequence from a reference slice
             else:
-                self._add_error(e_repeat_not_supported(v, path))
+                self._add_error(errors.repeat_not_supported(v, path))
                 return
 
             ref_seq = self.references["reference"]["sequence"]["seq"][
@@ -708,12 +543,14 @@ class Description(object):
             ]
 
             if len(ref_seq) % len(repeat_seq) != 0:
-                self._add_error(e_repeat_reference_sequence_length(path))
+                self._add_error(errors.repeat_reference_sequence_length(path))
             elif (len(ref_seq) // len(repeat_seq)) * repeat_seq != ref_seq:
-                self._add_error(e_repeat_sequences_mismatch(ref_seq, repeat_seq, path))
+                self._add_error(
+                    errors.repeat_sequences_mismatch(ref_seq, repeat_seq, path)
+                )
         else:
             # TODO: Convert to delins and switch to warning?
-            self._add_error(e_repeat_not_supported(v, path))
+            self._add_error(errors.repeat_not_supported(v, path))
 
     @check_errors
     def check(self):
