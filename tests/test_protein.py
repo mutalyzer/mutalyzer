@@ -1,6 +1,3 @@
-import json
-from pathlib import Path
-
 import pytest
 
 from normalizer.name_checker import name_check

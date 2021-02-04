@@ -1,12 +1,10 @@
 from .description import Description
-import json
 
 
 def normalize(description_to_normalize):
-    description = Description(description_to_normalize)
+    description = Description(description=description_to_normalize,
+                              stop_on_error=True)
 
     description.normalize()
-    print(json.dumps(description.infos, indent=2))
-    print(json.dumps(description.errors, indent=2))
 
     return description.normalized_description
