@@ -120,6 +120,26 @@ def repeat_sequences_mismatch(reference_sequence, repeat_sequence, path):
     }
 
 
+def deleted_length_mismatch(reference_length, deleted_length, path):
+    return {
+        "code": "EDELETEDLENGTHMISMATCH",
+        "details": "The length {} differs from that of the range {}.".format(
+            deleted_length, reference_length
+        ),
+        "paths": [path],
+    }
+
+
+def deleted_sequence_mismatch(reference_sequence, deleted_sequence, path):
+    return {
+        "code": "EDELETEDSEQUENCEMISMATCH",
+        "details": "{} not found in the reference sequence, found {} instead.".format(
+            deleted_sequence, reference_sequence
+        ),
+        "paths": [path],
+    }
+
+
 def repeat_not_supported(variant, path):
     return {
         "code": "EREPEATUNSUPPORTED",

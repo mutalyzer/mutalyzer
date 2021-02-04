@@ -211,3 +211,23 @@ def check_errors(fn):
             raise Exception(str(self.errors))
 
     return wrapper
+
+
+def slice_sequence(location, sequence):
+    return sequence[get_start(location) : get_end(location)]
+
+
+def construct_sequence(options, sequences):
+    seq = ""
+    for option in options:
+        if option.get("sequence"):
+            seq += option["sequence"]
+        else:
+            seq += slice_sequence(option["location"], sequences[option["source"]])
+    return seq
+
+
+def get_inserted_sequence(variant, sequences):
+    if variant.get("inserted"):
+        return construct_sequence(variant["inserted"], sequences)
+    return ""

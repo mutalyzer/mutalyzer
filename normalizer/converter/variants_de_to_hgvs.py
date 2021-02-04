@@ -1,6 +1,13 @@
 import copy
 
-from normalizer.util import get_end, get_location_length, get_start, roll
+from normalizer.util import (
+    get_end,
+    get_inserted_sequence,
+    get_location_length,
+    get_start,
+    roll,
+    slice_sequence,
+)
 
 
 def seq2repeats(long_sequence):
@@ -30,30 +37,12 @@ def is_deletion(delins_variant):
     return True
 
 
-def slice_sequence(location, sequence):
-    return sequence[get_start(location) : get_end(location)]
-
-
 def update_inserted_with_sequences(inserted, sequences):
     for insert in inserted:
         if insert["source"] == "observed":
             insert["sequence"] = sequences["observed"][
                 get_start(insert["location"]) : get_end(insert["location"])
             ]
-
-
-def get_inserted_sequence(variant, sequences):
-    seq = ""
-    if variant.get("inserted"):
-        for inserted in variant["inserted"]:
-            if inserted.get("sequence"):
-                seq += inserted["sequence"]
-            else:
-                seq += slice_sequence(
-                    inserted["location"], sequences[inserted["source"]]
-                )
-        return seq
-    return seq
 
 
 def de_variants_clean(variants, sequences=None):
