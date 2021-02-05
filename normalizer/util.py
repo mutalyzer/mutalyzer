@@ -1,7 +1,8 @@
-from _collections import OrderedDict
-import os
 import configparser
+import os
 from pathlib import Path
+
+from _collections import OrderedDict
 
 
 def create_exact_point_model(point):
@@ -51,11 +52,6 @@ def get_end(model):
         return model["position"]
 
 
-def update_position(location, start_end, value):
-    if location.get("type") == range:
-        location[start_end] = {"type": "point", "position": value}
-
-
 def get_location_length(location):
     return abs(get_end(location) - get_start(location))
 
@@ -73,10 +69,6 @@ def get_location_as_list(location):
 
 def sort_variants(variants):
     return sorted(variants, key=lambda variant: get_start(variant["location"]))
-
-
-def to_description(variant):
-    pass
 
 
 def roll(s, first, last):
@@ -165,8 +157,10 @@ def add_msg(dictionary, message_type, message):
 
 
 def configuration():
-    if os.environ.get("MUTALYZER_SETTINGS") and Path(
-            os.environ["MUTALYZER_SETTINGS"]).is_file():
+    if (
+        os.environ.get("MUTALYZER_SETTINGS")
+        and Path(os.environ["MUTALYZER_SETTINGS"]).is_file()
+    ):
         with open(os.environ["MUTALYZER_SETTINGS"]) as f:
             configuration_content = "[config]\n" + f.read()
 
@@ -186,10 +180,54 @@ def log_dir():
     if settings and settings.get("MUTALYZER_LOG_DIR"):
         return eval(settings["MUTALYZER_LOG_DIR"])
     else:
-        return '/tmp/mutalyzer.log'
+        return "/tmp/mutalyzer.log"
 
 
 def cache_dir():
     settings = configuration()
     if settings and settings.get("MUTALYZER_CACHE_DIR"):
         return eval(settings["MUTALYZER_CACHE_DIR"])
+
+
+def set_by_path(dictionary, path, value):
+    nested_dictionary = dictionary
+    for k in path[:-1]:
+        nested_dictionary = nested_dictionary[k]
+    nested_dictionary[path[-1]] = value
+
+
+def updated_by_path(dictionary, path, value):
+    nested_dictionary = dictionary
+    for k in path[:-1]:
+        nested_dictionary = nested_dictionary[k]
+    nested_dictionary[path[-1]].update(value)
+
+
+def check_errors(fn):
+    def wrapper(self):
+        if not self.errors:
+            fn(self)
+        if self.errors and self.stop_on_errors:
+            raise Exception(str(self.errors))
+
+    return wrapper
+
+
+def slice_sequence(location, sequence):
+    return sequence[get_start(location) : get_end(location)]
+
+
+def construct_sequence(options, sequences):
+    seq = ""
+    for option in options:
+        if option.get("sequence"):
+            seq += option["sequence"]
+        else:
+            seq += slice_sequence(option["location"], sequences[option["source"]])
+    return seq
+
+
+def get_inserted_sequence(variant, sequences):
+    if variant.get("inserted"):
+        return construct_sequence(variant["inserted"], sequences)
+    return ""

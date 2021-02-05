@@ -1,10 +1,16 @@
-from Bio.Alphabet import generic_dna
+import json
+
 from Bio.Seq import Seq
 from Bio.SeqUtils import seq3
 from mutalyzer_mutator import mutate
+from mutalyzer_mutator.util import reverse_complement
 
 from .converter import to_cds_coordinate
-from .reference import extract_sequences, get_mol_type, get_protein_selector_models
+from .reference import (
+    extract_sequences,
+    get_protein_selector_models,
+    get_reference_mol_type,
+)
 
 
 def longest_common_prefix(s1, s2):
@@ -288,21 +294,24 @@ def protein_description(cds_stop, s1, s2):
     return description
 
 
-def extract_cds_sequence(sequence, selector_model):
-    cds_start = selector_model["cds"][0][0]
-    cds_end = selector_model["cds"][0][1]
-    slices = []
-    for exon in selector_model["exon"]:
-        if cds_start < exon[0] < cds_end and cds_start < exon[1] < cds_end:
-            slices.append(exon)
-        elif exon[0] < cds_start < exon[1]:
-            slices.append((cds_start, exon[1]))
-        elif exon[0] < cds_end < exon[1]:
-            slices.append((exon[0], cds_end))
+def new_index(value, slices):
+    output = 0
+    for s in slices:
+        if s[0] <= value <= s[1]:
+            output += value - s[0]
+            break
+        else:
+            output += s[1] - s[0]
+    return output
+
+
+def slice_seq(seq, slices, start=None, end=None):
     output = ""
     for s in slices:
-        output += sequence[s[0] : s[1]]
-    return output
+        output += seq[s[0] : s[1]]
+    start = new_index(start, slices) if start else 0
+    end = new_index(end, slices) if end else -1
+    return output[start:end]
 
 
 def get_protein_description(variants, references, selector_model):
@@ -315,16 +324,45 @@ def get_protein_description(variants, references, selector_model):
                        inserted sequences.
     :param selector_model:
     """
-
     sequences = extract_sequences(references)
-    cds_variants = to_cds_coordinate(variants, sequences, selector_model)
-    cds_sequence = extract_cds_sequence(
-        sequences[references["reference"]["model"]["id"]], selector_model
-    )
-    cds_mutated_sequence = mutate({"reference": cds_sequence}, cds_variants)
 
-    reference_protein = Seq(cds_sequence, generic_dna).translate()
-    predicted_protein = Seq(cds_mutated_sequence, generic_dna).translate()
+    cds_variants = to_cds_coordinate(variants, sequences, selector_model)
+
+    cds_sequence = slice_seq(
+        sequences[references["reference"]["annotations"]["id"]],
+        selector_model["exon"],
+        selector_model["cds"][0][0],
+        selector_model["cds"][0][1],
+    )
+
+    if selector_model["inverted"]:
+        cds_sequence = reverse_complement(cds_sequence)
+        cds_sequence_extended = reverse_complement(
+            slice_seq(
+                sequences[references["reference"]["annotations"]["id"]],
+                selector_model["exon"],
+                0,
+                selector_model["cds"][0][1],
+            )
+        )
+    else:
+        cds_sequence_extended = slice_seq(
+            sequences[references["reference"]["annotations"]["id"]],
+            selector_model["exon"],
+            selector_model["cds"][0][0],
+        )
+
+    cds_sequence_mutated = mutate({"reference": cds_sequence_extended}, cds_variants)
+
+    reference_protein = Seq(cds_sequence).translate()
+    predicted_protein = Seq(cds_sequence_mutated).translate()
+
+    if cds_sequence[:3] != cds_sequence_mutated[:3]:
+        return "{}({}):{}".format(
+            references["reference"]["annotations"]["id"],
+            selector_model["protein_id"],
+            "p.?",
+        )
 
     # Up to and including the first '*', or the entire string.
     try:
@@ -333,12 +371,13 @@ def get_protein_description(variants, references, selector_model):
     except ValueError:
         pass
 
+    cds_stop = len(mutate({"reference": cds_sequence}, cds_variants))
     description = protein_description(
-        len(cds_mutated_sequence), str(reference_protein), str(predicted_protein)
+        cds_stop, str(reference_protein), str(predicted_protein)
     )
 
     return "{}({}):{}".format(
-        references["reference"]["model"]["id"],
+        references["reference"]["annotations"]["id"],
         selector_model["protein_id"],
         description[0],
     )
@@ -360,11 +399,17 @@ def get_protein_descriptions(variants, references):
     :param references: References models. Required to be able to retrieve the
                        inserted sequences.
     """
-    if get_mol_type(references["reference"]) not in ["genomic DNA", "mRNA", "dna"]:
+    if get_reference_mol_type(references["reference"]) not in [
+        "genomic DNA",
+        "mRNA",
+        "dna",
+    ]:
         return
 
     protein_descriptions = []
-    for selector_model in get_protein_selector_models(references["reference"]["model"]):
+    for selector_model in get_protein_selector_models(
+        references["reference"]["annotations"]
+    ):
         protein_descriptions.append(
             get_protein_description(variants, references, selector_model)
         )

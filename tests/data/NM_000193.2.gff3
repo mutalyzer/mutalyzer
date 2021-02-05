@@ -1,0 +1,13 @@
+##sequence-region NM_000193.2 1 1576
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=9606
+NM_000193.2	RefSeq	region	1	1576	.	+	.	ID=NM_000193.2:1..1576;Dbxref=taxon:9606;Name=7;chromosome=7;gbkey=Src;genome=genomic;map=7q36;mol_type=mRNA
+NM_000193.2	RefSeq	gene	1	1576	.	+	.	ID=gene-SHH;Dbxref=GeneID:6469,HGNC:HGNC:10848,HPRD:02838,MIM:600725;Name=SHH;description=sonic hedgehog;gbkey=Gene;gene=SHH;gene_synonym=HHG1,HLP3,HPE3,MCOPCB5,SMMCI,TPT,TPTPS
+NM_000193.2	RefSeq	CDS	152	1540	.	+	0	ID=cds-NP_000184.1;Parent=gene-SHH;Dbxref=CCDS:CCDS5942.1,Genbank:NP_000184.1,GeneID:6469,HGNC:HGNC:10848,HPRD:02838,MIM:600725;Name=NP_000184.1;gbkey=CDS;gene=SHH;product=sonic hedgehog protein preproprotein;protein_id=NP_000184.1
+NM_000193.2	RefSeq	signal_peptide_region_of_CDS	152	220	.	+	.	ID=id-NP_000184.1:1..23;Parent=cds-NP_000184.1;gbkey=Prot;inference=COORDINATES: ab initio prediction:SignalP:4.0
+NM_000193.2	RefSeq	propeptide_region_of_CDS	221	1537	.	+	.	ID=id-NP_000184.1:24..462;Parent=cds-NP_000184.1;gbkey=Prot;product=sonic hedgehog protein proprotein
+NM_000193.2	RefSeq	mature_protein_region_of_CDS	221	1537	.	+	.	ID=id-NP_000184.1:24..462-2;Note=propagated from UniProtKB/Swiss-Prot (Q15465.1);Parent=cds-NP_000184.1;gbkey=Prot;product=Sonic hedgehog protein
+NM_000193.2	RefSeq	mature_protein_region_of_CDS	221	742	.	+	.	ID=id-NP_000184.1:24..197;Parent=cds-NP_000184.1;gbkey=Prot;product=sonic hedgehog protein N-terminal peptide
+NM_000193.2	RefSeq	mature_protein_region_of_CDS	743	1537	.	+	.	ID=id-NP_000184.1:198..462;Parent=cds-NP_000184.1;gbkey=Prot;product=sonic hedgehog protein C-terminal peptide
+NM_000193.2	RefSeq	sequence_feature	221	1537	.	+	.	ID=id-SHH;Dbxref=GeneID:6469,HGNC:HGNC:10848,HPRD:02838,MIM:600725;Note=sonic hedgehog proprotein;gbkey=misc_feature;gene=SHH
+
+

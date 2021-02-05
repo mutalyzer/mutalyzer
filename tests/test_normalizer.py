@@ -1,23 +1,9 @@
 import pytest
-from .test_set import TESTS_ALL
-from normalizer.normalizer import mutalyzer3
-from pathlib import Path
-import json
 
+from normalizer.normalizer import normalize
 
-def _get_content(relative_location):
-    data_file = Path(__file__).parent.joinpath(relative_location)
-    with open(str(data_file), "r") as file:
-        content = file.read()
-    return content
-
-
-def fetch_annotation(reference_id, reference_type=None):
-    return _get_content("data/" + reference_id + ".gff3"), "gff3", "ncbi"
-
-
-def fetch_sequence(reference_id, reference_source=None):
-    return json.loads(_get_content("data/" + reference_id + ".sequence"))
+from .commons import patch_retriever
+from .variants_set import TESTS_ALL
 
 
 def get_tests(tests):
@@ -29,9 +15,12 @@ def get_tests(tests):
 
 
 @pytest.mark.parametrize("input_description, normalized", get_tests(TESTS_ALL))
-def test_mutalyzer3(input_description, normalized, monkeypatch):
-    monkeypatch.setattr(
-        "mutalyzer_retriever.retriever.fetch_annotations", fetch_annotation
-    )
-    monkeypatch.setattr("mutalyzer_retriever.retriever.fetch_sequence", fetch_sequence)
-    assert mutalyzer3(input_description)["normalized description"] == normalized
+def test_normalizer(input_description, normalized):
+    assert normalize(input_description) == normalized
+
+
+def test_normalizer_other(
+    i_d="LRG_303:g.[105_106del;6681G>C;6883_6884insTTTCGCCCCTTTCGCCCC]",
+    n_d="LRG_303:g.[108_109del;6681G>C;6883_6884insTTTCGCCCCTTTCGCCCC]",
+):
+    assert normalize(i_d) == n_d

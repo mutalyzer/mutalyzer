@@ -1,0 +1,50 @@
+def corrected_reference_id(original_id, corrected_id, path):
+    return {
+        "code": "ICORRECTEDREFERENCEID",
+        "details": "Reference {} was retrieved instead of {}.".format(
+            corrected_id, original_id
+        ),
+        "paths": [path],
+    }
+
+
+def corrected_selector_id(original_id, corrected_id, correction_source, path):
+    return {
+        "code": "ICORRECTEDSELECTORID",
+        "details": "Selector {} was corrected to {} from {}.".format(
+            original_id, corrected_id, correction_source
+        ),
+        "paths": [path],
+    }
+
+
+def corrected_coordinate_system(coordinate_system, correction_source, path):
+    return {
+        "code": "ICORRECTEDCOORDINATESYSTEM",
+        "details": "Coordinate system corrected to {} from {}.".format(
+            coordinate_system, correction_source
+        ),
+        "paths": [path],
+    }
+
+
+def to_coordinate_system_from_reference(coordinate_system):
+    return {
+        "code": "ITOSELECTORFROMREFERENCE",
+        "details": "To coordinate system identified as {} "
+        "from the selector molecule type.".format(coordinate_system),
+    }
+
+
+def from_to_selector_equal():
+    return {
+        "code": "IFROMTOSELECTORSEQUAL",
+        "details": "From and to coordinate systems are equal.",
+    }
+
+
+def sorted_variants():
+    return {
+        "code": "ISORTEDVARIANTS",
+        "details": "Variants were sorted according to their locations.",
+    }

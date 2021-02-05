@@ -1,324 +1,724 @@
 import copy
+
+from extractor import describe_dna
 from mutalyzer_hgvs_parser import parse_description_to_model
-from .util import add_msg
-from .reference import Reference
+from mutalyzer_hgvs_parser.exceptions import UnexpectedCharacter, UnexpectedEnd
+from mutalyzer_mutator import mutate
+from mutalyzer_retriever.retriever import NoReferenceError, NoReferenceRetrieved
+
+import normalizer.errors as errors
+import normalizer.infos as infos
+
+from .checker import are_sorted, is_overlap
+from .converter.to_delins import to_delins, variants_to_delins
+from .converter.to_hgvs_coordinates import to_hgvs_locations
+from .converter.to_internal_coordinates import to_internal_coordinates
+from .converter.to_internal_indexing import to_internal_indexing
+from .converter.variants_de_to_hgvs import de_to_hgvs
+from .description_model import (
+    get_locations_start_end,
+    get_reference_id,
+    model_to_string,
+    point_to_description,
+    yield_reference_ids,
+    yield_reference_selector_ids,
+    yield_reference_selector_ids_coordinate_system,
+)
+from .position_check import contains_uncertain_locations
+from .protein import get_protein_description, get_protein_descriptions
+from .reference import (
+    get_coordinate_system_from_reference,
+    get_coordinate_system_from_selector_id,
+    get_gene_selectors,
+    get_gene_selectors_hgnc,
+    get_only_selector_id,
+    get_protein_selector_model,
+    get_reference_id_from_model,
+    get_reference_model,
+    get_selectors_ids,
+    get_sequence_length,
+    is_only_one_selector,
+    is_selector_in_reference,
+    update_start_end,
+    yield_overlap_ids,
+)
+from .util import (
+    check_errors,
+    construct_sequence,
+    get_end,
+    get_location_length,
+    get_start,
+    set_by_path,
+    slice_sequence,
+    sort_variants,
+)
 
 
-def get_reference_from_model(description_model):
-    reference_id = get_reference_id(description_model)
-    if not reference_id:
-        return
+class Description(object):
+    def __init__(self, description=None, description_model=None, stop_on_error=False):
 
-    reference = Reference(reference_id)
-    if not reference.model:
-        if description_model.get('reference'):
-            d_r = description_model['reference']
-        elif description_model.get('source'):
-            d_r = description_model['source']
-        add_msg(
-            d_r,
-            "errors",
-            {"code": "ERETR",
-             "details": "Reference {} could not be retrieved.".format(
-                 reference_id)},
-        )
-    else:
-        if reference.get_id() != reference_id:
-            set_reference_id(description_model, reference.get_id())
-        return reference
+        self.stop_on_errors = stop_on_error
 
+        self.errors = []
+        self.infos = []
 
-def get_references_from_description_model(model, references):
-    if isinstance(model, dict):
-        reference = get_reference_from_model(model)
-        if reference:
-            references[reference.get_id()] = reference
-        for k in model.keys():
-            if k in ['variants', 'inserted']:
-                get_references_from_description_model(model[k], references)
-    elif isinstance(model, list):
-        for sub_model in model:
-            get_references_from_description_model(sub_model, references)
+        self.input_description = description if description else None
+        self.input_model = description_model if description_model else {}
+        self._check_input()
 
+        self.corrected_model = copy.deepcopy(self.input_model)
+        self.internal_coordinates_model = {}
+        self.internal_indexing_model = {}
+        self.delins_model = {}
+        self.de_model = {}
+        self.de_hgvs_internal_indexing_model = {}
+        self.de_hgvs_coordinate_model = {}
+        self.de_hgvs_model = {}
+        self.normalized_description = None
 
-def get_reference_id(model):
-    if (
-        model.get("reference")
-        and model["reference"].get("id")
-    ):
-        return model["reference"]["id"]
-    elif (
-            model.get("source") and isinstance(model["source"], dict)
-            and model["source"].get("id")
-    ):
-        return model["source"]["id"]
+        self.references = {}
 
+        self.equivalent_descriptions = None
+        self.protein_descriptions = None
 
-def set_reference_id(description_model, reference_id):
-    if (
-        description_model.get("reference")
-        and description_model["reference"].get("id")
-    ):
-        old_reference_id = description_model["reference"]["id"]
-        description_model["reference"]["id"] = reference_id
-        add_msg(
-            description_model["reference"],
-            "info",
-            {"code": "IUPDATEDREFERENCEID",
-             "details": "Reference {} was retrieved instead of {}.".format(
-                 reference_id, old_reference_id)},
-        )
-    elif (
-        description_model.get("source")
-        and description_model["source"].get("id")
-    ):
-        old_reference_id = description_model["source"]["id"]
-        description_model["source"]["id"] = reference_id
-        add_msg(
-            description_model["source"],
-            "info",
-            {"code": "IUPDATEDREFERENCEID",
-             "details": "Reference {} was retrieved instead of {}.".format(
-                 reference_id, old_reference_id)},
-        )
-    elif description_model.get("reference"):
-        description_model["reference"]["id"] = reference_id
-    else:
-        description_model["reference"] = {"id": reference_id}
+    def _check_input(self):
+        if self.input_description and not self.input_model:
+            self._convert_description_to_model()
+        elif self.input_description is None and self.input_model:
+            # TODO: check the input_model
+            self.input_description = model_to_string(self.input_model)
+        elif self.input_description and self.input_model:
+            # TODO: check the input_model
+            model_description = model_to_string(self.input_model)
+            if self.input_description != model_description:
+                errors.mismatch(model_description, self.input_description)
 
+    def _add_error(self, error):
+        self.errors.append(error)
 
-def get_selector_id(description_model):
-    """
-    Get the selector ID from the description model. At the moment, no nesting
-    is supported.
-    :param description_model: Provided by the HGVS description parser.
-    :return: The ID of the selector, if provided, otherwise None.
-    """
-    if (
-        description_model.get("reference")
-        and description_model["reference"].get("selector")
-        and description_model["reference"]["selector"].get("id")
-    ):
-        return description_model["reference"]["selector"]["id"]
-    elif (description_model.get("source")
-        and description_model["source"].get("selector")
-        and description_model["source"]["selector"].get("id")
-    ):
-        return description_model["source"]["selector"]["id"]
+    def _add_info(self, info):
+        self.infos.append(info)
 
+    @check_errors
+    def _convert_description_to_model(self):
+        try:
+            self.input_model = parse_description_to_model(self.input_description)
+        except UnexpectedCharacter as e:
+            self._add_error(errors.syntax_uc(e))
+        except UnexpectedEnd as e:
+            self._add_error(errors.syntax_ueof(e))
 
-def get_coordinate_system(description_model):
-    if description_model.get("coordinate_system"):
-        return description_model["coordinate_system"]
+    def _set_main_reference(self):
+        reference_id = get_reference_id(self.corrected_model)
+        if reference_id in self.references:
+            self.references["reference"] = self.references[reference_id]
 
+    def _correct_reference_id(self, path, original_id, corrected_id):
+        set_by_path(self.corrected_model, path, corrected_id)
+        self._add_info(infos.corrected_reference_id(original_id, corrected_id, path))
 
-def model_to_string(model):
-    """
-    Convert the variant description model to string.
-    :param model: Dictionary holding the variant description model.
-    :return: Equivalent reference string representation.
-    """
+    @check_errors
+    def retrieve_references(self):
+        """
+        Populate the references
+        :return:
+        """
+        if not self.corrected_model:
+            return
+        for reference_id, path in yield_reference_ids(self.input_model):
+            try:
+                reference_model = get_reference_model(reference_id)
+                # print(get_reference_model.cache_info())
+            except NoReferenceError:
+                self._add_error(errors.reference_not_retrieved(reference_id, [path]))
+            except NoReferenceRetrieved:
+                self._add_error(errors.reference_not_retrieved(reference_id, [path]))
+            else:
+                reference_id_in_model = get_reference_id_from_model(reference_model)
+                if reference_id_in_model != reference_id:
+                    self._correct_reference_id(
+                        path, reference_id, reference_id_in_model
+                    )
+                    self.references[reference_id_in_model] = reference_model
+                else:
+                    self.references[reference_id] = reference_model
+                self._set_main_reference()
 
-    if model.get('reference'):
-        reference_id = model["reference"]["id"]
-    elif model.get('source'):
-        reference_id = model["source"]["id"]
-    selector_id = get_selector_id(model)
-    if selector_id:
-        reference = "{}({})".format(reference_id, selector_id)
-    else:
-        reference = "{}".format(reference_id)
-    if model.get("coordinate_system"):
-        coordinate_system = model.get("coordinate_system") + "."
-    else:
-        coordinate_system = ""
-    if model.get('variants'):
-        return "{}:{}{}".format(
-            reference,
-            coordinate_system,
-            variants_to_description(model.get("variants")))
-    if model.get('location'):
-        return "{}:{}{}".format(
-            reference,
-            coordinate_system,
-            location_to_description(model.get("location")))
+    @check_errors
+    def _check_selectors_in_references(self):
+        for reference_id, selector_id, path in yield_reference_selector_ids(
+            self.corrected_model
+        ):
+            if not is_selector_in_reference(selector_id, self.references[reference_id]):
+                self.handle_selector_not_found(reference_id, selector_id, path)
 
-
-def reference_to_description(reference):
-    """
-    Convert the reference dictionary model to string.
-    :param reference: Dictionary holding the reference model.
-    :return: Equivalent reference string representation.
-    """
-    version = ""
-    if isinstance(reference, dict):
-        if reference.get("type") == "genbank":
-            accession = reference.get("accession")
-            if reference.get("version"):
-                version = ".{}".format(reference["version"])
-        elif reference.get("type") == "lrg":
-            accession = reference.get("id")
-    return "{}{}".format(accession, version)
-
-
-def specific_locus_to_description(specific_locus):
-    """
-    Convert the specific locus dictionary model to string.
-    :param specific_locus: Dictionary holding the specific locus model.
-    :return: Equivalent specific locus string representation.
-    """
-    if isinstance(specific_locus, dict):
-        if specific_locus.get("id"):
-            return "({})".format(specific_locus.get("id"))
-    return ""
-
-
-def variants_to_description(variants, sequences=None):
-    if isinstance(variants, list):
-        variants_list = []
-        for variant in variants:
-            variants_list.append(variant_to_description(variant, sequences))
-        if len(variants_list) > 1:
-            return "[{}]".format(";".join(variants_list))
-        elif len(variants_list) == 1:
-            return variants_list[0]
-
-
-def variant_to_description(variant, sequences=None):
-    """
-    Convert the variant dictionary model to string.
-    :return: Equivalent variant string representation.
-    """
-    deleted = inserted = ""
-    if variant.get("location"):
-        deleted = location_to_description(variant.get("location"))
-    if variant.get("inserted"):
-        inserted = inserted_to_description(variant["inserted"], sequences)
-    variant_type = variant.get("type")
-    if variant_type == "substitution":
-        if variant.get("deleted"):
-            if isinstance(variant["deleted"], dict):
-                deleted += variant["deleted"]["sequence"]
-            elif isinstance(variant["deleted"], list):
-                deleted += variant["deleted"][0]["sequence"]
-        variant_type = ">"
-    elif variant_type == "deletion":
-        variant_type = "del"
-    elif variant_type == "deletion_insertion":
-        variant_type = "delins"
-    elif variant_type == "insertion":
-        variant_type = "ins"
-    elif variant_type == "duplication":
-        variant_type = "dup"
-        inserted = ""
-    elif variant_type == "inversion":
-        variant_type = "inv"
-    elif variant_type == "equal":
-        variant_type = "="
-    else:
-        variant_type = ''
-    return "{}{}{}".format(deleted, variant_type, inserted)
-
-
-def inserted_to_description(inserted, sequences):
-    """
-    Convert the insertions dictionary model to string.
-    :param inserted: Insertions dictionary.
-    :return: Equivalent insertions string representation.
-    """
-    descriptions = []
-    for insert in inserted:
-        if insert.get("sequence"):
-            descriptions.append(insert["sequence"])
-        elif insert.get("source") and isinstance(insert["source"], dict):
-            descriptions.append(model_to_string(insert))
-        elif insert.get("location"):
-            descriptions.append(location_to_description(insert["location"]))
-            if insert.get("inverted"):
-                descriptions[-1] += "inv"
-    if len(inserted) > 1:
-        return "[{}]".format(";".join(descriptions))
-    else:
-        return descriptions[0]
-
-
-def location_to_description(location):
-    """
-    Convert the location dictionary model to string.
-    :param location: Location dictionary.
-    :return: Equivalent location string representation.
-    """
-    if location["type"] == "point":
-        return point_to_description(location)
-    if location["type"] == "range":
-        if location.get("uncertain"):
-            return "({}_{})".format(
-                point_to_description(location.get("start")),
-                point_to_description(location.get("end")),
+    def _correct_selector_id(self, path, original_id, corrected_id, correction_source):
+        set_by_path(self.corrected_model, path, corrected_id)
+        self._add_info(
+            infos.corrected_selector_id(
+                original_id, corrected_id, correction_source, path
             )
+        )
+
+    def handle_selector_not_found(self, reference_id, selector_id, path):
+        """
+        Checks if the `selector_id` is either a gene name, HGNC gene id, or
+        uses the legacy format (e.g., `SDHD_v1`) and updates the description
+        model correspondingly, based on the provided tree path.
+
+        :param reference_id: The reference id.
+        :param selector_id: The selector id.
+        :param path: Path in the description model tree.
+        """
+        gene_selectors = get_gene_selectors(selector_id, self.references[reference_id])
+        if len(gene_selectors) == 1:
+            self._correct_selector_id(path, selector_id, gene_selectors[0], "gene name")
+            return
+        elif len(gene_selectors) > 1:
+            self._add_error(
+                errors.selector_options(selector_id, "gene", gene_selectors, path)
+            )
+            return
+        if "_v" in selector_id:
+            gene_name = selector_id.split("_v")[0]
+            gene_selectors = get_gene_selectors(
+                gene_name, self.references[reference_id]
+            )
+            if len(gene_selectors) == 1:
+                self._correct_selector_id(
+                    path, selector_id, gene_selectors[0], "gene name"
+                )
+                return
+            elif len(gene_selectors) > 1:
+                self._add_error(
+                    errors.selector_options(gene_name, "gene", gene_selectors, path)
+                )
+                return
+        gene_selectors = get_gene_selectors_hgnc(
+            selector_id, self.references[reference_id]
+        )
+        if len(gene_selectors) == 1:
+            self._correct_selector_id(path, selector_id, gene_selectors[0], "gene HGNC")
+            return
+        elif len(gene_selectors) > 1:
+            self._add_error(
+                errors.selector_options(selector_id, "gene HGNC", gene_selectors, path)
+            )
+            return
+        self._add_error(errors.no_selector_found(reference_id, selector_id, path))
+
+    @check_errors
+    def _check_coordinate_systems(self):
+        for (
+            c_s,
+            c_s_path,
+            r_id,
+            r_path,
+            s_id,
+            s_path,
+        ) in yield_reference_selector_ids_coordinate_system(
+            copy.deepcopy(self.corrected_model)
+        ):
+            if c_s is None:
+                self._handle_no_coordinate_system(c_s_path, r_id, s_id)
+
+    def _correct_coordinate_system(self, coordinate_system, path, correction_source):
+        set_by_path(self.corrected_model, path, coordinate_system)
+        self._add_info(
+            infos.corrected_coordinate_system(
+                coordinate_system, correction_source, path
+            )
+        )
+
+    def _handle_no_coordinate_system(self, c_s_path, r_id, s_id):
+        if s_id:
+            c_s = get_coordinate_system_from_selector_id(self.references[r_id], s_id)
+            if c_s:
+                self._correct_coordinate_system(c_s, c_s_path, s_id + " selector")
+                return
+        c_s = get_coordinate_system_from_reference(self.references[r_id])
+        if c_s:
+            self._correct_coordinate_system(c_s, c_s_path, r_id + " reference")
+            return
+        self._add_error(errors.no_coordinate_system(c_s_path))
+
+    def _correct_selector_id_from_coordinate_system(self, r_id_path, selector_id):
+        path = tuple(list(r_id_path[:-1]) + ["selector"])
+        set_by_path(self.corrected_model, path, {"id": selector_id})
+        self._add_info(
+            infos.corrected_selector_id("", selector_id, "coordinate system", path)
+        )
+
+    @check_errors
+    def _check_coordinate_system_consistency(self):
+        for (
+            c_s,
+            c_s_path,
+            r_id,
+            r_path,
+            s_id,
+            s_path,
+        ) in yield_reference_selector_ids_coordinate_system(
+            copy.deepcopy(self.corrected_model)
+        ):
+            if s_id:
+                s_c_s = get_coordinate_system_from_selector_id(
+                    self.references[r_id], s_id
+                )
+                if s_c_s == c_s:
+                    return
+                else:
+                    self._add_error(
+                        errors.coordinate_system_mismatch(c_s, s_id, s_c_s, c_s_path)
+                    )
+                    return
+            r_c_s = get_coordinate_system_from_reference(self.references[r_id])
+            if (r_c_s == c_s) and (c_s in ["g", "m"]):
+                return
+            else:
+                if is_only_one_selector(self.references[r_id], c_s):
+                    self._correct_selector_id_from_coordinate_system(
+                        r_path, get_only_selector_id(self.references[r_id], c_s)
+                    )
+                    return
+                else:
+                    self._add_error(
+                        errors.coordinate_system_mismatch(c_s, r_id, r_c_s, c_s_path)
+                    )
+
+    @check_errors
+    def _construct_internal_coordinate_model(self):
+        self.internal_coordinates_model = to_internal_coordinates(
+            self.corrected_model, self.references
+        )
+
+    @check_errors
+    def _construct_internal_indexing_model(self):
+        self.internal_indexing_model = to_internal_indexing(
+            self.internal_coordinates_model
+        )
+
+    @check_errors
+    def _construct_delins_model(self):
+        self.delins_model = to_delins(self.internal_indexing_model)
+        if not are_sorted(self.delins_model["variants"]):
+            self.delins_model["variants"] = sort_variants(self.delins_model["variants"])
+            self._add_info(infos.sorted_variants())
+
+    def _get_sequences(self):
+        """
+        Retrieves a dictionary from the references with reference ids as
+        keys and their corresponding sequences as values.
+        """
+        sequences = {k: self.references[k]["sequence"]["seq"] for k in self.references}
+        return sequences
+
+    @check_errors
+    def _mutate(self):
+        if self.delins_model:
+            observed_sequence = mutate(
+                self._get_sequences(), self.delins_model["variants"]
+            )
+            self.references["observed"] = {"sequence": {"seq": observed_sequence}}
+
+    @check_errors
+    def _extract(self):
+        de_variants = describe_dna(
+            self.references["reference"]["sequence"]["seq"],
+            self.references["observed"]["sequence"]["seq"],
+        )
+        if de_variants:
+            self.de_model = {
+                "reference": copy.deepcopy(self.internal_indexing_model["reference"]),
+                "coordinate_system": "i",
+                "variants": de_variants,
+            }
+
+    @check_errors
+    def _construct_de_hgvs_internal_indexing_model(self):
+        if self.de_model:
+            self.de_hgvs_internal_indexing_model = {
+                "reference": copy.deepcopy(self.internal_indexing_model["reference"]),
+                "coordinate_system": "i",
+                "variants": de_to_hgvs(
+                    self.de_model["variants"],
+                    self._get_sequences(),
+                ),
+            }
+
+    @check_errors
+    def _construct_de_hgvs_coordinates_model(self):
+        if self.corrected_model["reference"].get("selector"):
+            selector_id = self.corrected_model["reference"]["selector"]["id"]
         else:
-            start = location_to_description(location.get("start"))
-            end = location_to_description(location.get("end"))
-            return "{}_{}".format(start, end)
+            selector_id = None
+        if self.de_hgvs_internal_indexing_model:
+            self.de_hgvs_model = to_hgvs_locations(
+                self.de_hgvs_internal_indexing_model,
+                self.references,
+                self.corrected_model["coordinate_system"],
+                selector_id,
+                True,
+            )
+
+    def _construct_normalized_description(self):
+        if self.de_hgvs_model:
+            self.normalized_description = model_to_string(self.de_hgvs_model)
+
+    def _construct_equivalent_descriptions(self):
+        if not self.de_model:
+            return
+        equivalent_descriptions = {}
+        get_locations_start_end(self.de_hgvs_internal_indexing_model)
+
+        start_limit, end_limit = update_start_end(
+            self.references["reference"],
+            *get_locations_start_end(self.de_hgvs_internal_indexing_model)
+        )
+
+        if (
+            get_coordinate_system_from_reference(self.references["reference"])
+            == "g"
+            != self.corrected_model["coordinate_system"]
+        ):
+            equivalent_descriptions["g"] = [
+                model_to_string(
+                    to_hgvs_locations(
+                        model=self.de_hgvs_internal_indexing_model,
+                        references=self.references,
+                        to_coordinate_system="g",
+                        to_selector_id=None,
+                        degenerate=True,
+                    )
+                )
+            ]
+
+        for selector in yield_overlap_ids(
+            self.references["reference"], start_limit, end_limit
+        ):
+            converted_model = to_hgvs_locations(
+                model=self.de_hgvs_internal_indexing_model,
+                references=self.references,
+                to_coordinate_system=None,
+                to_selector_id=selector["id"],
+                degenerate=True,
+            )
+            c_s = converted_model["coordinate_system"]
+            if not equivalent_descriptions.get(c_s):
+                equivalent_descriptions[c_s] = []
+
+            if converted_model["coordinate_system"] == "c":
+                protein_selector_model = get_protein_selector_model(
+                    self.references["reference"]["annotations"], selector["id"]
+                )
+                if protein_selector_model:
+                    equivalent_descriptions[c_s].append(
+                        (
+                            model_to_string(converted_model),
+                            get_protein_description(
+                                variants_to_delins(
+                                    self.de_hgvs_internal_indexing_model["variants"]
+                                ),
+                                self.references,
+                                protein_selector_model,
+                            ),
+                        )
+                    )
+                else:
+                    equivalent_descriptions[c_s].append(
+                        model_to_string(converted_model)
+                    )
+            else:
+                equivalent_descriptions[c_s].append(model_to_string(converted_model))
+
+        self.equivalent_descriptions = equivalent_descriptions
+
+    def _construct_protein_descriptions(self):
+        if self.de_model:
+            self.protein_descriptions = get_protein_descriptions(
+                self.de_model["variants"], self.references
+            )
+
+    def check_locations(self):
+        pass
+
+    def _check_location_boundaries(self, path):
+        v = self.internal_coordinates_model["variants"][path[1]]
+        v_r = self.input_model["variants"][path[1]]
+        if v["location"]["type"] == "point" and not v.get("uncertain"):
+            if (
+                get_sequence_length(self.references, "reference")
+                < v["location"]["position"]
+            ):
+                self._add_error(
+                    errors.out_of_boundary_greater(
+                        v_r["location"],
+                        get_sequence_length(self.references, "reference"),
+                        path,
+                    )
+                )
+            elif v["location"]["position"] < 0:
+                self._add_error(errors.out_of_boundary_lesser(v_r["location"], path))
+        if v["location"]["type"] == "range":
+            if v["location"]["start"]["type"] == "point" and not v.get("uncertain"):
+                if (
+                    get_sequence_length(self.references, "reference")
+                    < v["location"]["start"]["position"]
+                ):
+                    self._add_error(
+                        errors.out_of_boundary_greater(
+                            v_r["location"]["start"],
+                            get_sequence_length(self.references, "reference"),
+                            path + ["start"],
+                        )
+                    )
+                elif v["location"]["start"]["position"] < 0:
+                    self._add_error(
+                        errors.out_of_boundary_lesser(
+                            v_r["location"]["start"], path + ["start"]
+                        )
+                    )
+            if v["location"]["end"]["type"] == "point" and not v.get("uncertain"):
+                if (
+                    get_sequence_length(self.references, "reference")
+                    < v["location"]["end"]["position"]
+                ):
+                    self._add_error(
+                        errors.out_of_boundary_greater(
+                            v_r["location"]["end"],
+                            get_sequence_length(self.references, "reference"),
+                            path + ["end"],
+                        )
+                    )
+                elif v["location"]["end"]["position"] < 0:
+                    self._add_error(
+                        errors.out_of_boundary_lesser(
+                            v_r["location"]["end"], path + ["end"]
+                        )
+                    )
+
+    def _check_location_range(self, path):
+        v = self.internal_coordinates_model["variants"][path[1]]
+        v_r = self.input_model["variants"][path[1]]
+        if v["location"]["type"] == "point" and not v.get("uncertain"):
+            if (
+                get_sequence_length(self.references, "reference")
+                < v["location"]["position"]
+            ):
+                self._add_error(
+                    errors.out_of_boundary_greater(
+                        v_r["location"],
+                        get_sequence_length(self.references, "reference"),
+                        path,
+                    )
+                )
+            elif v["location"]["position"] < 0:
+                self._add_error(errors.out_of_boundary_lesser(v_r["location"], path))
+
+    def _check_insertion_location(self, path):
+        v = self.internal_coordinates_model["variants"][path[1]]
+        v_r = self.input_model["variants"][path[1]]
+        if v["location"]["type"] == "point" and not v["location"].get("uncertain"):
+            self._add_error(errors.insertion_location_not_range(v_r["location"], path))
+
+        if v["location"]["type"] == "range" and not v["location"].get("uncertain"):
+            if (
+                abs(
+                    v["location"]["start"]["position"]
+                    - v["location"]["end"]["position"]
+                )
+                != 1
+            ):
+                self._add_error(
+                    errors.insertion_range_not_consecutive(v_r["location"], path)
+                )
+
+    def _check_repeat(self, path):
+        v = self.input_model["variants"][path[1]]
+        v_i = self.internal_indexing_model["variants"][path[1]]
+        if v.get("inserted") and len(v.get("inserted")) == 1:
+            inserted = v["inserted"][0]
+            if inserted.get("sequence") and inserted.get("source") == "description":
+                repeat_seq = inserted["sequence"]
+            # TODO: get the sequence from a reference slice
+            else:
+                self._add_error(errors.repeat_not_supported(v, path))
+                return
+
+            ref_seq = self.references["reference"]["sequence"]["seq"][
+                get_start(v_i) : get_end(v_i)
+            ]
+
+            if len(ref_seq) % len(repeat_seq) != 0:
+                self._add_error(errors.repeat_reference_sequence_length(path))
+            elif (len(ref_seq) // len(repeat_seq)) * repeat_seq != ref_seq:
+                self._add_error(
+                    errors.repeat_sequences_mismatch(ref_seq, repeat_seq, path)
+                )
+        else:
+            # TODO: Convert to delins and switch to warning?
+            self._add_error(errors.repeat_not_supported(v, path))
+
+    def _check_deleted(self, path):
+        v_i = self.internal_indexing_model["variants"][path[1]]
+        sequences = self._get_sequences()
+        if (
+            len(v_i["deleted"]) == 1
+            and v_i["deleted"][0].get("length")
+            and v_i["deleted"][0]["length"].get("value")
+        ):
+            len_del = v_i["deleted"][0]["length"].get("value")
+            len_loc = get_location_length(v_i["location"])
+            if len_loc != len_del:
+                self._add_error(errors.deleted_length_mismatch(len_loc, len_del, path))
+        else:
+            seq_ref = slice_sequence(v_i["location"], sequences["reference"])
+            seq_del = construct_sequence(v_i["deleted"], sequences)
+            if seq_del != seq_ref:
+                self._add_error(
+                    errors.deleted_sequence_mismatch(seq_ref, seq_del, path)
+                )
+
+    @check_errors
+    def check(self):
+        for i, variant in enumerate(self.internal_coordinates_model["variants"]):
+            if variant.get("location"):
+                path = ["variants", i, "location"]
+                self._check_location_boundaries(path)
+
+            if variant.get("deleted"):
+                self._check_deleted(["variants", i, "deleted"])
+
+            if variant.get("type") == "insertion":
+                self._check_insertion_location(["variants", i])
+
+            if variant.get("type") == "repeat":
+                self._check_repeat(["variants", i])
+        if is_overlap(self.internal_indexing_model["variants"]):
+            self._add_error(errors.overlap())
+
+    def to_internal_indexing_model(self):
+        self.retrieve_references()
+
+        self._check_selectors_in_references()
+        self._check_coordinate_systems()
+        self._check_coordinate_system_consistency()
+
+        self._construct_internal_coordinate_model()
+        self._construct_internal_indexing_model()
+
+    def normalize(self):
+        self.retrieve_references()
+
+        self._check_selectors_in_references()
+        self._check_coordinate_systems()
+        self._check_coordinate_system_consistency()
+
+        self._construct_internal_coordinate_model()
+        self._construct_internal_indexing_model()
+        self._construct_delins_model()
+
+        if contains_uncertain_locations(self.delins_model):
+            return
+
+        self.check()
+
+        self._mutate()
+        self._extract()
+        if self.de_model:
+            self._construct_de_hgvs_internal_indexing_model()
+            self._construct_de_hgvs_coordinates_model()
+            self._construct_normalized_description()
+            self._construct_equivalent_descriptions()
+
+        # self.print_models_summary()
+
+    def output(self):
+        output = {
+            "input_model": self.input_model,
+        }
+        if self.corrected_model:
+            output["corrected_model"] = self.corrected_model
+            output["corrected_description"] = model_to_string(self.corrected_model)
+        output["normalized_description"] = self.normalized_description
+        output["normalized_model"] = self.de_hgvs_model
+        output["input_description"] = self.input_description
+
+        if self.equivalent_descriptions is not None:
+            output["equivalent_descriptions"] = self.equivalent_descriptions
+        if self.errors:
+            output["errors"] = self.errors
+        if self.infos:
+            output["infos"] = self.infos
+        return output
+
+    def print_models_summary(self):
+        print("------")
+        if self.input_description:
+            print(self.input_description)
+
+        if self.corrected_model:
+            print("- Corrected model")
+            print(model_to_string(self.corrected_model))
+        else:
+            print("- No corrected model")
+
+        if self.internal_coordinates_model:
+            print("- Internal coordinates model")
+            print(model_to_string(self.internal_coordinates_model))
+        else:
+            print("- No internal coordinates model")
+
+        if self.internal_indexing_model:
+            print("- Internal indexing model")
+            print(model_to_string(self.internal_indexing_model))
+        else:
+            print("- No internal_indexing_model")
+
+        if self.delins_model:
+            print("- Delins model")
+            print(model_to_string(self.delins_model))
+        else:
+            print("- No delins model")
+
+        if self.de_model:
+            print("- De model")
+            print(model_to_string(self.de_model))
+        else:
+            print("- No de_model")
+
+        if self.de_hgvs_internal_indexing_model:
+            print("- De hgvs internal indexing model")
+            print(model_to_string(self.de_hgvs_internal_indexing_model))
+        else:
+            print("- De hgvs internal indexing model")
+
+        if self.de_hgvs_coordinate_model:
+            print("- De hgvs coordinate model")
+            print(model_to_string(self.de_hgvs_coordinate_model))
+        else:
+            print("- No de_hgvs_coordinate_model")
+
+        if self.de_hgvs_model:
+            print("- De hgvs model")
+            print(model_to_string(self.de_hgvs_model))
+        else:
+            print("- No de hgvs model")
+        print("------")
+
+    def get_reference_summary(self):
+        return {
+            "sequence_length": get_sequence_length(self.references, "reference"),
+            "selector_ids": len(
+                get_selectors_ids(self.references["reference"]["annotations"])
+            ),
+        }
+
+    def __str__(self):
+        return self.input_description
 
 
-def point_to_description(point):
-    """
-    Convert the position dictionary model to string.
-    :param point: Position dictionary.
-    :return: Equivalent position string representation.
-    """
-    outside_cds = offset = ""
-    if point.get("outside_cds"):
-        if point["outside_cds"] == "downstream":
-            outside_cds = "*"
-        elif point["outside_cds"] == "upstream":
-            outside_cds = "-"
-    if point.get("uncertain"):
-        position = "?"
-    else:
-        position = str(point.get("position"))
-    if point.get("offset"):
-        offset = "%+d" % point["offset"]["value"]
-    if point.get("uncertain_offset"):
-        offset = point.get("uncertain_offset")
-    return "{}{}{}".format(outside_cds, position, offset)
-
-
-def construct_reference(reference_id, selector_id):
-    if selector_id is None:
-        return {"id": reference_id}
-    else:
-        return {"id": reference_id, "selector": {"id": selector_id}}
-
-
-def get_errors(model):
-    errors = []
-    if isinstance(model, list):
-        for m in model:
-            errors.extend(get_errors(m))
-    elif isinstance(model, dict):
-        if model.get('errors'):
-            errors.extend(model['errors'])
-        for k in model.keys():
-            if k in ['location', 'deleted', 'inserted', 'variants', 'reference', 'selector', 'source']:
-                errors.extend(get_errors(model[k]))
-    return errors
-
-
-def description_to_model(description):
-    try:
-        model = parse_description_to_model(description)
-    except Exception as e:
-        # TODO: Make it more explicit.
-        model = {"errors": [{
-            "details": "Some error occured during description parsing.",
-            "raw_message": e
-        }]}
-    return model
-
-
-
-
-
-
+def normalize(description_to_normalize):
+    description = Description(description_to_normalize)
+    description.normalize()
+    return description.output()

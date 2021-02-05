@@ -1,0 +1,17 @@
+##sequence-region NM_000143.3 1 1877
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=9606
+NM_000143.3	RefSeq	region	1	1877	.	+	.	ID=NM_000143.3:1..1877;Dbxref=taxon:9606;Name=1;chromosome=1;gbkey=Src;genome=genomic;map=1q43;mol_type=mRNA
+NM_000143.3	RefSeq	gene	1	1877	.	+	.	ID=gene-FH;Dbxref=GeneID:2271,HGNC:HGNC:3700,MIM:136850;Name=FH;description=fumarate hydratase;gbkey=Gene;gene=FH;gene_synonym=FMRD,HLRCC,HsFH,LRCC,MCL,MCUL1
+NM_000143.3	RefSeq	CDS	64	1596	.	+	0	ID=cds-NP_000134.2;Parent=gene-FH;Dbxref=CCDS:CCDS1617.1,Genbank:NP_000134.2,GeneID:2271,HGNC:HGNC:3700,MIM:136850;Name=NP_000134.2;gbkey=CDS;gene=FH;product=fumarate hydratase%2C mitochondrial;protein_id=NP_000134.2
+NM_000143.3	RefSeq	exon	1	195	.	+	.	ID=id-FH;Parent=gene-FH;Dbxref=GeneID:2271,HGNC:HGNC:3700,MIM:136850;gbkey=exon;gene=FH;inference=alignment:Splign:2.1.0
+NM_000143.3	RefSeq	exon	196	330	.	+	.	ID=id-FH-2;Parent=gene-FH;Dbxref=GeneID:2271,HGNC:HGNC:3700,MIM:136850;gbkey=exon;gene=FH;inference=alignment:Splign:2.1.0
+NM_000143.3	RefSeq	exon	331	441	.	+	.	ID=id-FH-3;Parent=gene-FH;Dbxref=GeneID:2271,HGNC:HGNC:3700,MIM:136850;gbkey=exon;gene=FH;inference=alignment:Splign:2.1.0
+NM_000143.3	RefSeq	exon	442	618	.	+	.	ID=id-FH-4;Parent=gene-FH;Dbxref=GeneID:2271,HGNC:HGNC:3700,MIM:136850;gbkey=exon;gene=FH;inference=alignment:Splign:2.1.0
+NM_000143.3	RefSeq	exon	619	801	.	+	.	ID=id-FH-5;Parent=gene-FH;Dbxref=GeneID:2271,HGNC:HGNC:3700,MIM:136850;gbkey=exon;gene=FH;inference=alignment:Splign:2.1.0
+NM_000143.3	RefSeq	exon	802	967	.	+	.	ID=id-FH-6;Parent=gene-FH;Dbxref=GeneID:2271,HGNC:HGNC:3700,MIM:136850;gbkey=exon;gene=FH;inference=alignment:Splign:2.1.0
+NM_000143.3	RefSeq	exon	968	1171	.	+	.	ID=id-FH-7;Parent=gene-FH;Dbxref=GeneID:2271,HGNC:HGNC:3700,MIM:136850;gbkey=exon;gene=FH;inference=alignment:Splign:2.1.0
+NM_000143.3	RefSeq	exon	1172	1299	.	+	.	ID=id-FH-8;Parent=gene-FH;Dbxref=GeneID:2271,HGNC:HGNC:3700,MIM:136850;gbkey=exon;gene=FH;inference=alignment:Splign:2.1.0
+NM_000143.3	RefSeq	exon	1300	1453	.	+	.	ID=id-FH-9;Parent=gene-FH;Dbxref=GeneID:2271,HGNC:HGNC:3700,MIM:136850;gbkey=exon;gene=FH;inference=alignment:Splign:2.1.0
+NM_000143.3	RefSeq	exon	1454	1867	.	+	.	ID=id-FH-10;Parent=gene-FH;Dbxref=GeneID:2271,HGNC:HGNC:3700,MIM:136850;gbkey=exon;gene=FH;inference=alignment:Splign:2.1.0
+
+
