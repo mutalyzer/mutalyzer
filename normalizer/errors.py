@@ -150,6 +150,10 @@ def repeat_not_supported(variant, path):
     }
 
 
+def overlap():
+    return {"code": "EOVERLAP", "details": "Variant locations overlap."}
+
+
 def syntax_uc(e):
     return dict(
         {"code": "ESYNTAXUC", "details": "Unexpected character."}, **e.serialize()

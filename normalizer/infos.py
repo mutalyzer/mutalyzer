@@ -41,3 +41,10 @@ def from_to_selector_equal():
         "code": "IFROMTOSELECTORSEQUAL",
         "details": "From and to coordinate systems are equal.",
     }
+
+
+def sorted_variants():
+    return {
+        "code": "ISORTEDVARIANTS",
+        "details": "Variants were sorted according to their locations.",
+    }

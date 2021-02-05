@@ -9,7 +9,7 @@ from mutalyzer_retriever.retriever import NoReferenceError, NoReferenceRetrieved
 import normalizer.errors as errors
 import normalizer.infos as infos
 
-from .checker import is_overlap, sort_variants
+from .checker import are_sorted, is_overlap
 from .converter.to_delins import to_delins, variants_to_delins
 from .converter.to_hgvs_coordinates import to_hgvs_locations
 from .converter.to_internal_coordinates import to_internal_coordinates
@@ -50,6 +50,7 @@ from .util import (
     get_start,
     set_by_path,
     slice_sequence,
+    sort_variants,
 )
 
 
@@ -300,11 +301,9 @@ class Description(object):
     @check_errors
     def _construct_delins_model(self):
         self.delins_model = to_delins(self.internal_indexing_model)
-        # sorted_delins_variants = sort_variants(self.delins_model["variants"])
-        # print("delins variants", variants_to_description(self.delins_model["variants"]))
-        # print("sorted variants:", variants_to_description(sorted_delins_variants))
-        # print("are variants sorted:", sorted_delins_variants == self.delins_model["variants"])
-        # print("is overlap:", is_overlap(self.delins_model["variants"]))
+        if not are_sorted(self.delins_model["variants"]):
+            self.delins_model["variants"] = sort_variants(self.delins_model["variants"])
+            self._add_info(infos.sorted_variants())
 
     def _get_sequences(self):
         """
@@ -595,6 +594,8 @@ class Description(object):
 
             if variant.get("type") == "repeat":
                 self._check_repeat(["variants", i])
+        if is_overlap(self.internal_indexing_model["variants"]):
+            self._add_error(errors.overlap())
 
     def to_internal_indexing_model(self):
         self.retrieve_references()

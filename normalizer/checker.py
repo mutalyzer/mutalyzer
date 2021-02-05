@@ -1,10 +1,3 @@
-from .description_model import yield_reference_selector_ids
-from .reference import (
-    get_reference_mol_type,
-    get_sequence_length,
-    is_selector_in_reference,
-    yield_selector_ids,
-)
 from .util import get_end, get_start, sort_variants
 
 
