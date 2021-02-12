@@ -9,7 +9,7 @@ from .variants_set import TESTS_ALL
 def get_tests(tests):
     output = []
     for test in tests:
-        if test.get("to_test") and test["normalized"]:
+        if test.get("to_test") and test.get("normalized"):
             output.append((test["input"], test["normalized"]))
     return output
 
