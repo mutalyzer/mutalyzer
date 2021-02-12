@@ -1,0 +1,67 @@
+##sequence-region NM_000088.3 1 5927
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=9606
+NM_000088.3	RefSeq	region	1	5927	.	+	.	ID=NM_000088.3:1..5927;Dbxref=taxon:9606;Name=17;chromosome=17;gbkey=Src;genome=genomic;map=17q21.33;mol_type=mRNA
+NM_000088.3	RefSeq	gene	1	5927	.	+	.	ID=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;Name=COL1A1;description=collagen type I alpha 1 chain;gbkey=Gene;gene=COL1A1;gene_synonym=EDSARTH1,EDSC,OI1,OI2,OI3,OI4
+NM_000088.3	RefSeq	CDS	127	4521	.	+	0	ID=cds-NP_000079.2;Parent=gene-COL1A1;Dbxref=CCDS:CCDS11561.1,Genbank:NP_000079.2,GeneID:1277,HGNC:HGNC:2197,MIM:120150;Name=NP_000079.2;gbkey=CDS;gene=COL1A1;product=collagen alpha-1(I) chain preproprotein;protein_id=NP_000079.2
+NM_000088.3	RefSeq	signal_peptide_region_of_CDS	127	192	.	+	.	ID=id-NP_000079.2:1..22;Parent=cds-NP_000079.2;gbkey=Prot;inference=COORDINATES: ab initio prediction:SignalP:4.0
+NM_000088.3	RefSeq	propeptide_region_of_CDS	193	4518	.	+	.	ID=id-NP_000079.2:23..1464;Parent=cds-NP_000079.2;gbkey=Prot;product=collagen alpha-1(I) chain proprotein
+NM_000088.3	RefSeq	mature_protein_region_of_CDS	610	3780	.	+	.	ID=id-NP_000079.2:162..1218;Parent=cds-NP_000079.2;gbkey=Prot;product=collagen alpha-1(I) chain
+NM_000088.3	RefSeq	exon	1	229	.	+	.	ID=id-COL1A1;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	230	424	.	+	.	ID=id-COL1A1-2;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	425	459	.	+	.	ID=id-COL1A1-3;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	460	495	.	+	.	ID=id-COL1A1-4;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	496	597	.	+	.	ID=id-COL1A1-5;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	598	669	.	+	.	ID=id-COL1A1-6;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	670	714	.	+	.	ID=id-COL1A1-7;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	715	768	.	+	.	ID=id-COL1A1-8;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	769	822	.	+	.	ID=id-COL1A1-9;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	823	876	.	+	.	ID=id-COL1A1-10;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	877	930	.	+	.	ID=id-COL1A1-11;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	931	984	.	+	.	ID=id-COL1A1-12;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	985	1029	.	+	.	ID=id-COL1A1-13;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	1030	1083	.	+	.	ID=id-COL1A1-14;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	1084	1128	.	+	.	ID=id-COL1A1-15;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	1129	1182	.	+	.	ID=id-COL1A1-16;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	1183	1281	.	+	.	ID=id-COL1A1-17;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	1282	1326	.	+	.	ID=id-COL1A1-18;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	1327	1425	.	+	.	ID=id-COL1A1-19;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	1426	1479	.	+	.	ID=id-COL1A1-20;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	1480	1587	.	+	.	ID=id-COL1A1-21;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	1588	1641	.	+	.	ID=id-COL1A1-22;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	1642	1740	.	+	.	ID=id-COL1A1-23;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	1741	1794	.	+	.	ID=id-COL1A1-24;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	1795	1893	.	+	.	ID=id-COL1A1-25;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	1894	1947	.	+	.	ID=id-COL1A1-26;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	1948	2001	.	+	.	ID=id-COL1A1-27;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	2002	2055	.	+	.	ID=id-COL1A1-28;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	2056	2109	.	+	.	ID=id-COL1A1-29;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	2110	2154	.	+	.	ID=id-COL1A1-30;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	2155	2253	.	+	.	ID=id-COL1A1-31;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	2254	2361	.	+	.	ID=id-COL1A1-32;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	2362	2469	.	+	.	ID=id-COL1A1-33;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	2470	2523	.	+	.	ID=id-COL1A1-34;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	2524	2577	.	+	.	ID=id-COL1A1-35;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	2578	2685	.	+	.	ID=id-COL1A1-36;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	2686	2739	.	+	.	ID=id-COL1A1-37;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	2740	2793	.	+	.	ID=id-COL1A1-38;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	2794	2955	.	+	.	ID=id-COL1A1-39;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	2956	3063	.	+	.	ID=id-COL1A1-40;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	3064	3171	.	+	.	ID=id-COL1A1-41;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	3172	3225	.	+	.	ID=id-COL1A1-42;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	3226	3333	.	+	.	ID=id-COL1A1-43;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	3334	3387	.	+	.	ID=id-COL1A1-44;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	3388	3495	.	+	.	ID=id-COL1A1-45;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	3496	3549	.	+	.	ID=id-COL1A1-46;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	3550	3657	.	+	.	ID=id-COL1A1-47;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	3658	3940	.	+	.	ID=id-COL1A1-48;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	3941	4131	.	+	.	ID=id-COL1A1-49;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	4132	4374	.	+	.	ID=id-COL1A1-50;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	exon	4375	5927	.	+	.	ID=id-COL1A1-51;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=exon;gene=COL1A1;inference=alignment:Splign:2.1.0
+NM_000088.3	RefSeq	sequence_feature	115	117	.	+	.	ID=id-COL1A1-52;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;Note=upstream in-frame stop codon;gbkey=misc_feature;gene=COL1A1
+NM_000088.3	RefSeq	polyA_site	4795	4795	.	+	.	ID=id-COL1A1-53;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=polyA_site;gene=COL1A1
+NM_000088.3	RefSeq	polyA_site	5927	5927	.	+	.	ID=id-COL1A1-54;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=polyA_site;gene=COL1A1
+NM_000088.3	RefSeq	polyA_signal_sequence	4767	4772	.	+	.	ID=id-COL1A1-55;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=regulatory;gene=COL1A1;regulatory_class=polyA_signal_sequence
+NM_000088.3	RefSeq	polyA_signal_sequence	4771	4776	.	+	.	ID=id-COL1A1-56;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=regulatory;gene=COL1A1;regulatory_class=polyA_signal_sequence
+NM_000088.3	RefSeq	polyA_signal_sequence	5897	5902	.	+	.	ID=id-COL1A1-57;Parent=gene-COL1A1;Dbxref=GeneID:1277,HGNC:HGNC:2197,MIM:120150;gbkey=regulatory;gene=COL1A1;regulatory_class=polyA_signal_sequence
+
+
