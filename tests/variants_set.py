@@ -581,11 +581,29 @@ TESTS_ALL = [
         "to_test": True,
     },
     {
-        "keywords": [],
-        "input": "",
-        "normalized": "",
-        "genomic": "",
-        "to_test": False,
+        "keywords": ["reverse strand sequence"],
+        "input": "NG_009299.1(NM_017668.3):c.41A>C",
+        "normalized": "NG_009299.1(NM_017668.3):c.41A>C",
+        "genomic": "NG_009299.1:g.137800T>G",
+        "coding_protein_descriptions": {
+            (
+                "NG_009299.1(NM_001040113.2):c.4316T>G",
+                "NG_009299.1(NP_001035202.1):p.(Leu1439Arg)",
+            ),
+            (
+                "NG_009299.1(NM_002474.3):c.4295T>G",
+                "NG_009299.1(NP_002465.1):p.(Leu1432Arg)",
+            ),
+            (
+                "NG_009299.1(NM_017668.3):c.41A>C",
+                "NG_009299.1(NP_060138.1):p.(Gln14Profs*68)",
+            ),
+            (
+                "NG_009299.1(NM_001143979.2):c.41A>C",
+                "NG_009299.1(NP_001137451.1):p.(Gln14Profs*68)",
+            ),
+        },
+        "to_test": True,
     },
     {
         "keywords": [],

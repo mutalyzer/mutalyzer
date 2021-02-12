@@ -4,6 +4,7 @@ from extractor import describe_dna
 from mutalyzer_hgvs_parser import parse_description_to_model
 from mutalyzer_hgvs_parser.exceptions import UnexpectedCharacter, UnexpectedEnd
 from mutalyzer_mutator import mutate
+from mutalyzer_mutator.util import reverse_complement
 from mutalyzer_retriever.retriever import NoReferenceError, NoReferenceRetrieved
 
 import normalizer.errors as errors
@@ -18,6 +19,7 @@ from .converter.variants_de_to_hgvs import de_to_hgvs
 from .description_model import (
     get_locations_start_end,
     get_reference_id,
+    get_selector_id,
     model_to_string,
     point_to_description,
     yield_reference_ids,
@@ -35,6 +37,7 @@ from .reference import (
     get_protein_selector_model,
     get_reference_id_from_model,
     get_reference_model,
+    get_selector_model,
     get_selectors_ids,
     get_sequence_length,
     is_only_one_selector,
@@ -98,6 +101,27 @@ class Description(object):
 
     def _add_info(self, info):
         self.infos.append(info)
+
+    def _get_selector_id(self):
+        if self.corrected_model:
+            return get_selector_id(self.corrected_model)
+
+    def _get_selector_model(self):
+        selector_id = self._get_selector_id()
+        if self.references and selector_id:
+            return get_selector_model(
+                self.references["reference"]["annotations"], selector_id
+            )
+
+    def _is_inverted(self):
+        selector_model = self._get_selector_model()
+        if (
+            selector_model
+            and selector_model.get("location")
+            and selector_model["location"].get("strand") == -1
+        ):
+            return True
+        return False
 
     @check_errors
     def _convert_description_to_model(self):
@@ -574,6 +598,8 @@ class Description(object):
         else:
             seq_ref = slice_sequence(v_i["location"], sequences["reference"])
             seq_del = construct_sequence(v_i["deleted"], sequences)
+            if self._is_inverted():
+                seq_ref = reverse_complement(seq_ref)
             if seq_del != seq_ref:
                 self._add_error(
                     errors.deleted_sequence_mismatch(seq_ref, seq_del, path)

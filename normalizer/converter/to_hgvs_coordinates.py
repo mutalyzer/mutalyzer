@@ -134,6 +134,10 @@ def reverse_strand_shift(variants, seq):
                 for inserted in variant["inserted"]:
                     if inserted.get("sequence"):
                         inserted["sequence"] = reverse_complement(inserted["sequence"])
+        if variant.get("deleted"):
+            for deleted in variant["deleted"]:
+                if deleted.get("sequence"):
+                    deleted["sequence"] = reverse_complement(deleted["sequence"])
 
 
 def to_hgvs_locations(
