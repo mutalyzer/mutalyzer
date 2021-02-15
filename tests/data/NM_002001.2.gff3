@@ -1,0 +1,12 @@
+##sequence-region NM_002001.2 1 1191
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=9606
+NM_002001.2	RefSeq	region	1	1191	.	+	.	ID=NM_002001.2:1..1191;Dbxref=taxon:9606;Name=1;chromosome=1;gbkey=Src;genome=genomic;map=1q23;mol_type=mRNA
+NM_002001.2	RefSeq	gene	1	1191	.	+	.	ID=gene-FCER1A;Dbxref=GeneID:2205,HGNC:3609,HPRD:00917,MIM:147140;Name=FCER1A;description=Fc fragment of IgE%2C high affinity I%2C receptor for%3B alpha polypeptide;gbkey=Gene;gene=FCER1A;gene_synonym=FCE1A,FcERI
+NM_002001.2	RefSeq	CDS	100	873	.	+	0	ID=cds-NP_001992.1;Parent=gene-FCER1A;Dbxref=CCDS:CCDS1184.1,Genbank:NP_001992.1,GeneID:2205,HGNC:3609,HPRD:00917,MIM:147140;Name=NP_001992.1;gbkey=CDS;gene=FCER1A;product=high affinity immunoglobulin epsilon receptor subunit alpha precursor;protein_id=NP_001992.1
+NM_002001.2	RefSeq	signal_peptide_region_of_CDS	100	174	.	+	.	ID=id-NP_001992.1:1..25;Parent=cds-NP_001992.1;gbkey=Prot
+NM_002001.2	RefSeq	mature_protein_region_of_CDS	175	870	.	+	.	ID=id-NP_001992.1:26..257;Parent=cds-NP_001992.1;gbkey=Prot;product=high affinity immunoglobulin epsilon receptor subunit alpha
+NM_002001.2	RefSeq	sequence_feature	49	51	.	+	.	ID=id-FCER1A;Dbxref=GeneID:2205,HGNC:3609,HPRD:00917,MIM:147140;Note=upstream in-frame stop codon;gbkey=misc_feature;gene=FCER1A
+NM_002001.2	RefSeq	region	1128	1133	.	+	.	ID=id-FCER1A-2;Dbxref=GeneID:2205,HGNC:3609,HPRD:00917,MIM:147140;gbkey=polyA_signal;gene=FCER1A
+NM_002001.2	RefSeq	polyA_site	1165	1165	.	+	.	ID=id-FCER1A-3;Parent=gene-FCER1A;Dbxref=GeneID:2205,HGNC:3609,HPRD:00917,MIM:147140;gbkey=polyA_site;gene=FCER1A
+
+

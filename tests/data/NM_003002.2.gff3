@@ -1,0 +1,12 @@
+##sequence-region NM_003002.2 1 1382
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=9606
+NM_003002.2	RefSeq	region	1	1382	.	+	.	ID=NM_003002.2:1..1382;Dbxref=taxon:9606;Name=11;chromosome=11;gbkey=Src;genome=genomic;map=11q23;mol_type=mRNA
+NM_003002.2	RefSeq	gene	1	1382	.	+	.	ID=gene-SDHD;Dbxref=GeneID:6392,HGNC:10683,HPRD:04069,MIM:602690;Name=SDHD;description=succinate dehydrogenase complex%2C subunit D%2C integral membrane protein;gbkey=Gene;gene=SDHD;gene_synonym=CBT1,PGL,PGL1,SDH4
+NM_003002.2	RefSeq	CDS	62	541	.	+	0	ID=cds-NP_002993.1;Parent=gene-SDHD;Dbxref=CCDS:CCDS31678.1,Genbank:NP_002993.1,GeneID:6392,HGNC:10683,HPRD:04069,MIM:602690;Name=NP_002993.1;gbkey=CDS;gene=SDHD;product=succinate dehydrogenase [ubiquinone] cytochrome b small subunit%2C mitochondrial precursor;protein_id=NP_002993.1
+NM_003002.2	RefSeq	transit_peptide_region_of_CDS	62	229	.	+	.	ID=id-NP_002993.1:1..56;Parent=cds-NP_002993.1;gbkey=Prot
+NM_003002.2	RefSeq	mature_protein_region_of_CDS	230	538	.	+	.	ID=id-NP_002993.1:57..159;Parent=cds-NP_002993.1;gbkey=Prot;product=succinate dehydrogenase [ubiquinone] cytochrome b small subunit%2C mitochondrial
+NM_003002.2	RefSeq	sequence_feature	44	46	.	+	.	ID=id-SDHD;Dbxref=GeneID:6392,HGNC:10683,HPRD:04069,MIM:602690;Note=upstream in-frame stop codon;gbkey=misc_feature;gene=SDHD
+NM_003002.2	RefSeq	region	1341	1346	.	+	.	ID=id-SDHD-2;Dbxref=GeneID:6392,HGNC:10683,HPRD:04069,MIM:602690;gbkey=polyA_signal;gene=SDHD
+NM_003002.2	RefSeq	polyA_site	1365	1365	.	+	.	ID=id-SDHD-3;Parent=gene-SDHD;Dbxref=GeneID:6392,HGNC:10683,HPRD:04069,MIM:602690;gbkey=polyA_site;gene=SDHD
+
+
