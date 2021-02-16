@@ -206,7 +206,7 @@ def updated_by_path(dictionary, path, value):
 def check_errors(fn):
     def wrapper(self):
         if not self.errors:
-            fn(self)
+            return fn(self)
         if self.errors and self.stop_on_errors:
             raise Exception(str(self.errors))
 

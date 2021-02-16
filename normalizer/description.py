@@ -417,14 +417,17 @@ class Description(object):
             self.normalized_description = model_to_string(self.de_hgvs_model)
 
     def _construct_equivalent_descriptions(self):
-        if not self.de_model:
+        if not self.de_hgvs_internal_indexing_model:
             return
         equivalent_descriptions = {}
-        get_locations_start_end(self.de_hgvs_internal_indexing_model)
+        variants_start, variants_end = get_locations_start_end(
+            self.de_hgvs_internal_indexing_model
+        )
+        if not (variants_start and variants_end):
+            return
 
         start_limit, end_limit = update_start_end(
-            self.references["reference"],
-            *get_locations_start_end(self.de_hgvs_internal_indexing_model)
+            self.references["reference"], variants_start, variants_end
         )
 
         if (
@@ -660,29 +663,35 @@ class Description(object):
         self._construct_internal_coordinate_model()
         self._construct_internal_indexing_model()
 
+    @check_errors
+    def _only_equals(self):
+        for variant in self.internal_coordinates_model["variants"]:
+            if variant["type"] != "equal":
+                return False
+        return True
+
     def normalize(self):
-        self.retrieve_references()
-
-        self._check_selectors_in_references()
-        self._check_coordinate_systems()
-        self._check_coordinate_system_consistency()
-
-        self._construct_internal_coordinate_model()
-        self._construct_internal_indexing_model()
-        self._construct_delins_model()
+        self.to_internal_indexing_model()
 
         if contains_uncertain_locations(self.delins_model):
             return
 
         self.check()
 
-        self._mutate()
-        self._extract()
-        if self.de_model:
-            self._construct_de_hgvs_internal_indexing_model()
+        if self._only_equals():
+            self.de_hgvs_internal_indexing_model = self.internal_indexing_model
             self._construct_de_hgvs_coordinates_model()
             self._construct_normalized_description()
             self._construct_equivalent_descriptions()
+        else:
+            self._construct_delins_model()
+            self._mutate()
+            self._extract()
+            if self.de_model:
+                self._construct_de_hgvs_internal_indexing_model()
+                self._construct_de_hgvs_coordinates_model()
+                self._construct_normalized_description()
+                self._construct_equivalent_descriptions()
 
         # self.print_models_summary()
 

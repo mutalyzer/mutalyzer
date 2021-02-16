@@ -378,4 +378,7 @@ def get_locations_start_end(model):
         for x in yield_point_locations_for_main_reference_variants(model)
         if x[0].get("position")
     ]
-    return min(locations), max(locations)
+    if locations:
+        return min(locations), max(locations)
+    else:
+        return None, None
