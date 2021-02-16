@@ -141,21 +141,48 @@ class Description(object):
         set_by_path(self.corrected_model, path, corrected_id)
         self._add_info(infos.corrected_reference_id(original_id, corrected_id, path))
 
+    def _correct_lrg_reference_id(self, original_id, model, path):
+        set_by_path(self.corrected_model, path[:-1], model)
+        self._add_info(infos.corrected_lrg_reference(original_id, model, path))
+
+    @staticmethod
+    def _check_if_lrg_reference(reference_id):
+        if reference_id.startswith("LRG_") and "t" in reference_id:
+            lrg_split = reference_id.split("t")
+            if len(lrg_split) == 2 and lrg_split[1].isdigit():
+                return {
+                    "id": lrg_split[0],
+                    "selector": {"id": "t" + lrg_split[1]},
+                }
+
+    @staticmethod
+    def _retrieve_reference2(reference_id):
+        try:
+            reference_model = get_reference_model(reference_id)
+            # print(get_reference_model.cache_info())
+        except NoReferenceError:
+            return None, "NoReference"
+        except NoReferenceRetrieved:
+            return None, "NoReferenceRetrieved"
+        return reference_model, "OK"
+
     @check_errors
     def retrieve_references(self):
         """
         Populate the references
-        :return:
         """
         if not self.corrected_model:
             return
         for reference_id, path in yield_reference_ids(self.input_model):
-            try:
-                reference_model = get_reference_model(reference_id)
-                # print(get_reference_model.cache_info())
-            except NoReferenceError:
-                self._add_error(errors.reference_not_retrieved(reference_id, [path]))
-            except NoReferenceRetrieved:
+            reference_model, status = self._retrieve_reference2(reference_id)
+            if not reference_model and status == "NoReference":
+                lrg = self._check_if_lrg_reference(reference_id)
+                if lrg:
+                    reference_model, status = self._retrieve_reference2(lrg["id"])
+                    if reference_model:
+                        self._correct_lrg_reference_id(reference_id, lrg, path)
+                        reference_id = lrg["id"]
+            if status in ["NoReferenceRetrieved", "NoReference"]:
                 self._add_error(errors.reference_not_retrieved(reference_id, [path]))
             else:
                 reference_id_in_model = get_reference_id_from_model(reference_model)

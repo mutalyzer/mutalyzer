@@ -1,12 +1,16 @@
 from pathlib import Path
 
 import pytest
+from mutalyzer_retriever.retriever import NoReferenceError
 
 
 def _get_content(relative_location):
     data_file = Path(__file__).parent.joinpath(relative_location)
-    with open(str(data_file), "r") as file:
-        content = file.read()
+    try:
+        with open(str(data_file), "r") as file:
+            content = file.read()
+    except FileNotFoundError:
+        raise NoReferenceError({})
     return content
 
 

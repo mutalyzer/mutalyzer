@@ -673,6 +673,13 @@ TESTS_ALL = [
         # TODO: Add test for dup sequence.
         "to_test": True,
     },
+    {
+        "keywords": ["reference", "LRG", "replace"],
+        "input": "LRG_303(t1):c.10_11insLRG_1t1:c.100_101",
+        "normalized": "LRG_303(t1):c.10_11insGA",
+        "infos": ["ICORRECTEDLRGREFERENCE"],
+        "to_test": True,
+    },
     # {
     #     "keywords": [
     #
