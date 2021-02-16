@@ -42,9 +42,10 @@ def variant_to_internal_indexing(variant):
             location=new_variant["location"], insertion=True
         )
     else:
-        new_variant["location"] = location_to_hgvs_indexing(
-            location=new_variant["location"]
-        )
+        if new_variant.get("location"):
+            new_variant["location"] = location_to_hgvs_indexing(
+                location=new_variant["location"]
+            )
     if new_variant.get("deleted"):
         for deleted in new_variant["deleted"]:
             if deleted.get("location"):

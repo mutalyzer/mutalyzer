@@ -229,7 +229,9 @@ def de_to_hgvs(variants, sequences=None):
     deletion insertion of one nucleotide is converted to a substitution).
     """
     if len(variants) == 1 and variants[0].get("type") == "equal":
-        return [copy.deepcopy(variants[0])]
+        new_variant = copy.deepcopy(variants[0])
+        new_variant.pop("location")
+        return [new_variant]
 
     new_variants = []
 
