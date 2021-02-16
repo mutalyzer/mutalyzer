@@ -103,7 +103,8 @@ def initialize_internal_model(model):
 
 def invert_sequences(variant, element_type):
     if variant.get(element_type):
-        for element in variant.get(element_type):
+        variant[element_type].reverse()
+        for element in variant[element_type]:
             if element.get("sequence"):
                 if element.get("inverted"):
                     element.pop("inverted")

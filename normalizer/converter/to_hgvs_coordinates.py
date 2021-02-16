@@ -117,6 +117,7 @@ def locations_to_hgvs_locations(internal_model, crossmap):
 def reverse_strand_shift(variants, seq):
     for variant in variants:
         if variant.get("inserted"):
+            variant["inserted"].reverse()
             if (
                 len(variant["inserted"]) == 1
                 and variant["inserted"][0].get("sequence")
@@ -135,6 +136,7 @@ def reverse_strand_shift(variants, seq):
                     if inserted.get("sequence"):
                         inserted["sequence"] = reverse_complement(inserted["sequence"])
         if variant.get("deleted"):
+            variant["deleted"].reverse()
             for deleted in variant["deleted"]:
                 if deleted.get("sequence"):
                     deleted["sequence"] = reverse_complement(deleted["sequence"])
