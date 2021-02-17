@@ -11,6 +11,7 @@ from .reference import (
     get_protein_selector_models,
     get_reference_mol_type,
 )
+from .util import get_end, get_start
 
 
 def longest_common_prefix(s1, s2):

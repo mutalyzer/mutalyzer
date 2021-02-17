@@ -389,7 +389,7 @@ TESTS = [
         "normalized": "NG_012772.1(NM_000059.3):c.632_681del",
         "coding_protein_descriptions": {
             (
-                "NG_012772.1(NM_000059.3):c.632-5_681+7del",
+                "NG_012772.1(NM_000059.3):c.632_681del",
                 "NG_012772.1(NP_000050.2):p.(Val211Glufs*10)",
             ),
         },
@@ -646,6 +646,7 @@ TESTS = [
         "keywords": [
             "M2: test_ins_seq_list",
             "M2: Insertion of a sequence as a list.",
+            "input not for test_description_to_model_to_description",
         ],
         "input": "NG_008939.1:g.5207_5208ins[GTCCTGTGCTCATTATCTGGC]",
         "normalized": "NG_008939.1:g.5207_5208insGTCCTGTGCTCATTATCTGGC",
@@ -662,6 +663,7 @@ TESTS = [
             "M2: test_ins_seq_list_reverse",
             "M2: Insertion of a sequence as a list on reverse strand.",
             "Transcripts mismatch between genbank and gff3.",
+            "input not for test_description_to_model_to_description",
         ],
         "input": "NG_012337.1(TIMM8B_v001):c.12_13ins[GATC]",
         "normalized": "NG_012337.1(NM_012459.2):c.12_13insGATC",
@@ -678,6 +680,7 @@ TESTS = [
         "keywords": [
             "M2: test_ins_range_list",
             "M2: Insertion of a range as a list.",
+            "input not for test_description_to_model_to_description",
         ],
         "input": "NG_008939.1:g.5207_5208ins[4300_4320]",
         "normalized": "NG_008939.1:g.5207_5208insGTCCTGTGCTCATTATCTGGC",
@@ -694,6 +697,7 @@ TESTS = [
         "keywords": [
             "M2: test_ins_range_inv_list",
             "M2: Insertion of an inverse range as a list.",
+            "input not for test_description_to_model_to_description",
         ],
         "input": "NG_008939.1:g.5207_5208ins[4300_4320inv]",
         "normalized": "NG_008939.1:g.5207_5208insGCCAGATAATGAGCACAGGAC",
@@ -728,11 +732,11 @@ TESTS = [
             "M2: Insertion of two sequences on reverse strand.",
         ],
         "input": "NG_012337.1(TIMM8B_v001):c.12_13ins[TTT;GATC]",
-        "normalized": "NG_012337.1(NM_012459.2):c.12_13insGATCTTT",
+        "normalized": "NG_012337.1(NM_012459.2):c.12_13insTTTGATC",
         "genomic": "NG_012337.1:g.4911_4912insATCAAAG",
         "coding_protein_descriptions": {
             (
-                "NG_012337.1(NM_012459.2):c.12_13insGATCTTT",
+                "NG_012337.1(NM_012459.2):c.12_13insTTTGATC",
                 "NG_012337.1(NP_036591.2):p.(Ser5Phefs*22)",
             )
         },
@@ -854,6 +858,7 @@ TESTS = [
         "keywords": [
             "M2: test_ins_seq_list_coding",
             "M2: Insertion of a sequence as a list (coding).",
+            "input not for test_description_to_model_to_description",
         ],
         "input": "NG_008939.1(PCCB_v001):c.156_157ins[GTCCTGTGCTCATTATCTGGC]",
         "normalized": "NG_008939.1(NM_000532.5):c.156_157insGTCCTGTGCTCATTATCTGGC",
@@ -921,6 +926,7 @@ TESTS = [
             "M2: test_ins_range_list_coding",
             "M2: Insertion of a range as a list (coding).",
             "Updated, since M3 supports this insertion.",
+            "input not for test_description_to_model_to_description",
         ],
         "input": "NG_008939.1(PCCB_v001):c.156_157ins[180_188]",
         "normalized": "NG_008939.1(NM_000532.5):c.156_157ins180_188",
@@ -938,6 +944,7 @@ TESTS = [
             "M2: test_ins_range_inv_list_coding",
             "M2: Insertion of an inverse range as a list (coding).",
             "Updated, since M3 supports this insertion.",
+            "input not for test_description_to_model_to_description",
         ],
         "input": "NG_008939.1(PCCB_v001):c.156_157ins[180_188inv]",
         "normalized": "NG_008939.1(NM_000532.5):c.156_157ins180_188inv",
@@ -1002,6 +1009,7 @@ TESTS = [
         "keywords": [
             "M2: test_delins_seq_list",
             "M2: Insertion-deletion of a sequence as a list.",
+            "input not for test_description_to_model_to_description",
         ],
         "input": "NG_008939.1:g.5207_5212delins[GTCCTGTGCTCATTATCTGGC]",
         "normalized": "NG_008939.1:g.5207_5212delinsGTCCTGTGCTCATTATCTGGC",
@@ -1018,6 +1026,7 @@ TESTS = [
         "keywords": [
             "M2: test_delins_range_list",
             "M2: Insertion-deletion of a range as a list.",
+            "input not for test_description_to_model_to_description",
         ],
         "input": "NG_008939.1:g.5207_5212delins[4300_4320]",
         "normalized": "NG_008939.1:g.5207_5212delinsGTCCTGTGCTCATTATCTGGC",
@@ -1034,6 +1043,7 @@ TESTS = [
         "keywords": [
             "M2: test_delins_range_inv_list",
             "M2: Insertion-deletion of an inverse range as a list.",
+            "input not for test_description_to_model_to_description",
         ],
         "input": "NG_008939.1:g.5207_5212delins[4300_4320inv]",
         "normalized": "NG_008939.1:g.5207_5212delinsGCCAGATAATGAGCACAGGAC",
@@ -1091,7 +1101,7 @@ TESTS = [
         "genomic": "NG_008939.1:g.5207_5212delinsGTCCTGTGCTCATTATCTGGC",
         "coding_protein_descriptions": {
             (
-                "NG_008939.1(NM_000532.5):c.156_161delinsGTCCTGTGCTCATTATCTGGC",
+                "NG_008939.1(NM_000532.5):c.157_161delinsGCACAGGACCATTATCTGGC",
                 "NG_008939.1(NP_000523.2):p.(Arg53_Arg54delinsAlaGlnAspHisTyrLeuAla)",
             )
         },
@@ -1126,8 +1136,8 @@ TESTS = [
         "genomic": "NG_008939.1:g.5207_5211delinsGTCCTGTGCTGCCAGATAAT",
         "coding_protein_descriptions": {
             (
-                "NG_008939.1(NM_000532.5):c.56_160delinsGTCCTGTGCTGCCAGATAAT",
-                "NG_008939.1(NP_000523.2):p.(Gly20Profs*17)",
+                "NG_008939.1(NM_000532.5):c.156_160delinsGTCCTGTGCTGCCAGATAAT",
+                "NG_008939.1(NP_000523.2):p.(Arg53_Leu539delinsSerCysAlaAlaArg)",
             )
         },
         "to_test": True,
@@ -1162,7 +1172,7 @@ TESTS = [
         "coding_protein_descriptions": {
             (
                 "NG_008939.1(NM_000532.5):c.157_161delinsGCACAGGACCATTATCTGGC",
-                "NG_008939.1(NP_000523.2):p.(Arg53_Arg54delinsSerCysAlaHisTyrLeuAla)",
+                "NG_008939.1(NP_000523.2):p.(Arg53_Arg54delinsAlaGlnAspHisTyrLeuAla)",
             )
         },
         "to_test": True,
@@ -1187,6 +1197,7 @@ TESTS = [
         "keywords": [
             "M2: test_delins_seq_list_coding",
             "M2: Insertion-deletion of a sequence as a list (coding).",
+            "input not for test_description_to_model_to_description",
         ],
         "input": "NG_008939.1(PCCB_v001):c.156_161delins[GTCCTGTGCTCATTATCTGGC]",
         "normalized": "NG_008939.1(NM_000532.5):c.156_161delinsGTCCTGTGCTCATTATCTGGC",
@@ -1242,6 +1253,7 @@ TESTS = [
             "M2: test_delins_range_list_coding",
             "M2: Insertion-deletion of a range as a list (coding).",
             "Updated, since M3 supports this insertion.",
+            "input not for test_description_to_model_to_description",
         ],
         "input": "NG_008939.1(PCCB_v001):c.156_161delins[180_188]",
         "normalized": "NG_008939.1(NM_000532.5):c.[155_156ins180_183+69;156_161inv;161_162ins183+76_188]",
@@ -1253,6 +1265,7 @@ TESTS = [
             "M2: test_delins_range_inv_list_coding",
             "M2: Insertion-deletion of an inverse range as a list (coding).",
             "Updated, since M3 supports this insertion.",
+            "input not for test_description_to_model_to_description",
         ],
         "input": "NG_008939.1(PCCB_v001):c.156_161delins[180_188inv]",
         "normalized": "NG_008939.1(NM_000532.5):c.[155_156ins183+76_188inv;161_162ins180_183+69inv]",
@@ -1264,6 +1277,7 @@ TESTS = [
             "M2: test_no_reference",
             "M2: Variant description without a reference.",
             "M2 error ENOREF: No reference sequence given.",
+            "input not for test_description_to_model_to_description",
         ],
         "input": "g.244355733del",
         "errors": ["ESYNTAXUEOF"],
@@ -1285,6 +1299,7 @@ TESTS = [
                 "LRG_1(p1):p.(Gly89Val)",
             )
         },
+        "infos": ["ICORRECTEDLRGREFERENCE"],
         "to_test": True,
     },
     # test_gi_reference_plain: gi numbers not supported in M3.
@@ -1318,9 +1333,13 @@ TESTS = [
         "normalized": "NG_007485.1:g.5350_5352del",
         "coding_protein_descriptions": {
             (
-                "LNG_007485.1(NM_058195.3):c.190_192del",
+                "NG_007485.1(NM_058195.3):c.190_192del",
                 "NG_007485.1(NP_478102.2):p.(Pro64del)",
-            )
+            ),
+            (
+                "NG_007485.1(NM_000077.4):c.-19315_-19313del",
+                "NG_007485.1(NP_000068.1):p.(=)",
+            ),
         },
         "to_test": True,
     },
@@ -1651,30 +1670,30 @@ TESTS = [
     },
     {
         "keywords": [
-            "M2: ",
-            "M2: ",
+            "M2: test_del_no_arg",
+            "M2: Deletion without argument.",
         ],
-        "input": "",
-        "normalized": "",
-        "to_test": False,
+        "input": "NM_000143.3:c.45del",
+        "normalized": "NM_000143.3:c.45del",
+        "to_test": True,
     },
     {
         "keywords": [
-            "M2: ",
-            "M2: ",
+            "M2: test_del_arg_seq",
+            "M2: Deletion with sequence argument.",
         ],
-        "input": "",
-        "normalized": "",
-        "to_test": False,
+        "input": "NM_000143.3:c.45delG",
+        "normalized": "NM_000143.3:c.45del",
+        "to_test": True,
     },
     {
         "keywords": [
-            "M2: ",
-            "M2: ",
+            "M2: test_del_arg_seq_enodna",
+            "M2: Deletion with non-DNA sequence argument.",
         ],
-        "input": "",
-        "normalized": "",
+        "input": "NM_000143.3:c.45delR",
         "to_test": False,
+        "errors": ["ENODNA"],
     },
     {
         "keywords": [
