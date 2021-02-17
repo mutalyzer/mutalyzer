@@ -231,3 +231,11 @@ def get_inserted_sequence(variant, sequences):
     if variant.get("inserted"):
         return construct_sequence(variant["inserted"], sequences)
     return ""
+
+
+def is_dna(sequence):
+    for s in sequence:
+        if s not in "ATCG":
+            return False
+
+    return True
