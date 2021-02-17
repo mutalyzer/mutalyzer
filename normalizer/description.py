@@ -485,7 +485,8 @@ class Description(object):
             else:
                 equivalent_descriptions[c_s].append(model_to_string(converted_model))
 
-        self.equivalent_descriptions = equivalent_descriptions
+        if equivalent_descriptions:
+            self.equivalent_descriptions = equivalent_descriptions
 
     def _construct_protein_descriptions(self):
         if self.de_model:
