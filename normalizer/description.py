@@ -51,6 +51,7 @@ from .util import (
     get_end,
     get_location_length,
     get_start,
+    is_dna,
     set_by_path,
     slice_sequence,
     sort_variants,
@@ -614,42 +615,47 @@ class Description(object):
             # TODO: Convert to delins and switch to warning?
             self._add_error(errors.repeat_not_supported(v, path))
 
-    def _check_deleted(self, path):
+    def _check_superfluous(self, path):
         v_i = self.internal_indexing_model["variants"][path[1]]
+        key = path[-1]
         sequences = self._get_sequences()
         if (
-            len(v_i["deleted"]) == 1
-            and v_i["deleted"][0].get("length")
-            and v_i["deleted"][0]["length"].get("value")
+            len(v_i[key]) == 1
+            and v_i[key][0].get("length")
+            and v_i[key][0]["length"].get("value")
         ):
-            len_del = v_i["deleted"][0]["length"].get("value")
+            len_del = v_i[key][0]["length"].get("value")
             len_loc = get_location_length(v_i["location"])
             if len_loc != len_del:
-                self._add_error(errors.deleted_length_mismatch(len_loc, len_del, path))
+                self._add_error(errors.length_mismatch(len_loc, len_del, path))
         else:
             seq_ref = slice_sequence(v_i["location"], sequences["reference"])
-            seq_del = construct_sequence(v_i["deleted"], sequences)
+            seq_del = construct_sequence(v_i[key], sequences)
+            if not is_dna(seq_del):
+                self._add_error(errors.no_dna(seq_del, path))
+                return
             if self._is_inverted():
                 seq_ref = reverse_complement(seq_ref)
             if seq_del != seq_ref:
-                self._add_error(
-                    errors.deleted_sequence_mismatch(seq_ref, seq_del, path)
-                )
+                self._add_error(errors.sequence_mismatch(seq_ref, seq_del, path))
 
     @check_errors
     def check(self):
-        for i, variant in enumerate(self.internal_coordinates_model["variants"]):
-            if variant.get("location"):
+        for i, v in enumerate(self.internal_coordinates_model["variants"]):
+            if v.get("location"):
                 path = ["variants", i, "location"]
                 self._check_location_boundaries(path)
 
-            if variant.get("deleted"):
-                self._check_deleted(["variants", i, "deleted"])
+            if v.get("deleted"):
+                self._check_superfluous(["variants", i, "deleted"])
 
-            if variant.get("type") == "insertion":
+            if v.get("type") == "duplication" and v.get("inserted"):
+                self._check_superfluous(["variants", i, "inserted"])
+
+            if v.get("type") == "insertion":
                 self._check_insertion_location(["variants", i])
 
-            if variant.get("type") == "repeat":
+            if v.get("type") == "repeat":
                 self._check_repeat(["variants", i])
         if is_overlap(self.internal_indexing_model["variants"]):
             self._add_error(errors.overlap())
