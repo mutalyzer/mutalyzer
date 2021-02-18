@@ -47,6 +47,18 @@ def test_coding(input_description, coding):
     assert set(coding).issubset(set(name_check_coding))
 
 
+@pytest.mark.parametrize(
+    "input_description, coding_protein_descriptions",
+    get_tests(TESTS_ALL, "coding_protein_descriptions"),
+)
+def test_protein(input_description, coding_protein_descriptions):
+
+    normalized_output = name_check(input_description)
+    normalizer_descriptions = set(normalized_output["equivalent_descriptions"]["c"])
+
+    assert coding_protein_descriptions.issubset(normalizer_descriptions)
+
+
 @pytest.mark.parametrize("input_description, codes", get_tests(TESTS_ALL, "errors"))
 def test_errors(input_description, codes):
     for code in codes:
