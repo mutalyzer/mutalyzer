@@ -203,6 +203,13 @@ def updated_by_path(dictionary, path, value):
     nested_dictionary[path[-1]].update(value)
 
 
+def get_submodel_by_path(dictionary, path):
+    nested_dictionary = dictionary
+    for k in path:
+        nested_dictionary = nested_dictionary[k]
+    return nested_dictionary
+
+
 def check_errors(fn):
     def wrapper(self):
         if not self.errors:

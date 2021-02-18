@@ -148,6 +148,34 @@ def yield_range_locations_for_main_reference(model, path=[]):
                     )
 
 
+def yield_point_locations_all(model, path=[]):
+    for k in model.keys():
+        if k in ["location", "start", "end"]:
+            if model[k]["type"] == "point":
+                yield model[k], path + [k]
+            else:
+                yield from yield_point_locations_all(model[k], path + [k])
+        elif k in ["variants", "inserted", "deleted"]:
+            for i, sub_model in enumerate(model[k]):
+                yield from yield_point_locations_all(sub_model, path + [k, i])
+
+
+def yield_sub_model(model, keys, model_type, path=[]):
+    if isinstance(model, dict):
+        for k in model.keys():
+            if k in keys:
+                if model[k]["type"] == model_type:
+                    yield model[k], path + [k]
+                else:
+                    yield from yield_sub_model(model[k], keys, model_type, path + [k])
+            else:
+                if isinstance(model[k], list):
+                    for i, sub_model in enumerate(model[k]):
+                        yield from yield_sub_model(
+                            sub_model, keys, model_type, path + [k, i]
+                        )
+
+
 def yield_view_nodes(model, path=[]):
     for k in model.keys():
         if k in ["reference", "location", "start", "end", "selector"]:
@@ -372,7 +400,13 @@ def length_to_description(length):
             return output
 
 
-def get_locations_start_end(model):
+def get_locations_min_max(model):
+    """
+    Get the minimum and maximum positions from all the locations present in
+    the model.
+    :param model: Desription model.
+    :return: Minimum and maximum positions.
+    """
     locations = [
         x[0]["position"]
         for x in yield_point_locations_for_main_reference_variants(model)

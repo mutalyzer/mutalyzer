@@ -17,14 +17,16 @@ from .converter.to_internal_coordinates import to_internal_coordinates
 from .converter.to_internal_indexing import to_internal_indexing
 from .converter.variants_de_to_hgvs import de_to_hgvs
 from .description_model import (
-    get_locations_start_end,
+    get_locations_min_max,
     get_reference_id,
     get_selector_id,
     model_to_string,
     point_to_description,
+    yield_point_locations_all,
     yield_reference_ids,
     yield_reference_selector_ids,
     yield_reference_selector_ids_coordinate_system,
+    yield_sub_model,
 )
 from .position_check import contains_uncertain_locations
 from .protein import get_protein_description, get_protein_descriptions
@@ -42,7 +44,7 @@ from .reference import (
     get_sequence_length,
     is_only_one_selector,
     is_selector_in_reference,
-    update_start_end,
+    overlap_min_max,
     yield_overlap_ids,
 )
 from .util import (
@@ -51,6 +53,7 @@ from .util import (
     get_end,
     get_location_length,
     get_start,
+    get_submodel_by_path,
     is_dna,
     set_by_path,
     slice_sequence,
@@ -421,15 +424,11 @@ class Description(object):
         if not self.de_hgvs_internal_indexing_model:
             return
         equivalent_descriptions = {}
-        variants_start, variants_end = get_locations_start_end(
-            self.de_hgvs_internal_indexing_model
-        )
-        if not (variants_start and variants_end):
+        l_min, l_max = get_locations_min_max(self.de_hgvs_internal_indexing_model)
+        if not (l_min and l_max):
             return
 
-        start_limit, end_limit = update_start_end(
-            self.references["reference"], variants_start, variants_end
-        )
+        l_min, l_max = overlap_min_max(self.references["reference"], l_min, l_max)
 
         if (
             get_coordinate_system_from_reference(self.references["reference"])
@@ -448,9 +447,7 @@ class Description(object):
                 )
             ]
 
-        for selector in yield_overlap_ids(
-            self.references["reference"], start_limit, end_limit
-        ):
+        for selector in yield_overlap_ids(self.references["reference"], l_min, l_max):
             converted_model = to_hgvs_locations(
                 model=self.de_hgvs_internal_indexing_model,
                 references=self.references,
@@ -495,99 +492,69 @@ class Description(object):
                 self.de_model["variants"], self.references
             )
 
-    def check_locations(self):
-        pass
-
-    def _check_location_boundaries(self, path):
-        v = self.internal_coordinates_model["variants"][path[1]]
-        v_r = self.input_model["variants"][path[1]]
-        if v["location"]["type"] == "point" and not v.get("uncertain"):
-            if (
-                get_sequence_length(self.references, "reference")
-                < v["location"]["position"]
-            ):
-                self._add_error(
-                    errors.out_of_boundary_greater(
-                        v_r["location"],
-                        get_sequence_length(self.references, "reference"),
-                        path,
-                    )
+    def _check_location_boundaries(self):
+        for point, path in yield_point_locations_all(self.internal_coordinates_model):
+            ref_id = "reference"
+            if "inserted" in path:
+                s_m = get_submodel_by_path(
+                    self.internal_coordinates_model, path[: path.index("inserted") + 2]
                 )
-            elif v["location"]["position"] < 0:
-                self._add_error(errors.out_of_boundary_lesser(v_r["location"], path))
-        if v["location"]["type"] == "range":
-            if v["location"]["start"]["type"] == "point" and not v.get("uncertain"):
-                if (
-                    get_sequence_length(self.references, "reference")
-                    < v["location"]["start"]["position"]
-                ):
+                if get_reference_id(s_m):
+                    ref_id = get_reference_id(s_m)
+            elif "deleted" in path:
+                s_m = get_submodel_by_path(
+                    self.internal_coordinates_model, path[: path.index("deleted") + 2]
+                )
+                if get_reference_id(s_m):
+                    ref_id = get_reference_id(s_m)
+
+            len_seq = get_sequence_length(self.references, ref_id)
+            if not point.get("uncertain") and point.get("position"):
+                point = point["position"]
+                if len_seq < point:
                     self._add_error(
                         errors.out_of_boundary_greater(
-                            v_r["location"]["start"],
-                            get_sequence_length(self.references, "reference"),
-                            path + ["start"],
+                            get_submodel_by_path(self.corrected_model, path),
+                            len_seq,
+                            path,
                         )
                     )
-                elif v["location"]["start"]["position"] < 0:
+                elif point < 0:
                     self._add_error(
                         errors.out_of_boundary_lesser(
-                            v_r["location"]["start"], path + ["start"]
-                        )
-                    )
-            if v["location"]["end"]["type"] == "point" and not v.get("uncertain"):
-                if (
-                    get_sequence_length(self.references, "reference")
-                    < v["location"]["end"]["position"]
-                ):
-                    self._add_error(
-                        errors.out_of_boundary_greater(
-                            v_r["location"]["end"],
-                            get_sequence_length(self.references, "reference"),
-                            path + ["end"],
-                        )
-                    )
-                elif v["location"]["end"]["position"] < 0:
-                    self._add_error(
-                        errors.out_of_boundary_lesser(
-                            v_r["location"]["end"], path + ["end"]
+                            get_submodel_by_path(self.corrected_model, path),
+                            path,
                         )
                     )
 
-    def _check_location_range(self, path):
-        v = self.internal_coordinates_model["variants"][path[1]]
-        v_r = self.input_model["variants"][path[1]]
-        if v["location"]["type"] == "point" and not v.get("uncertain"):
-            if (
-                get_sequence_length(self.references, "reference")
-                < v["location"]["position"]
+    def _check_location_range(self):
+        for location, path in yield_sub_model(
+            self.internal_coordinates_model, ["location"], "range"
+        ):
+            if not location.get("uncertain") and get_start(location) > get_end(
+                location
             ):
-                self._add_error(
-                    errors.out_of_boundary_greater(
-                        v_r["location"],
-                        get_sequence_length(self.references, "reference"),
-                        path,
-                    )
-                )
-            elif v["location"]["position"] < 0:
-                self._add_error(errors.out_of_boundary_lesser(v_r["location"], path))
+                self._add_error(errors.range_reversed(location, path))
 
     def _check_insertion_location(self, path):
+        """
+        Checks if the insertion location range is according to HGVS.
+        Incorrect descriptions example:
+            NM_000143.3:c.40_50insATC
+        Notes:
+            - One could argue to correct it to a delins. This can be done as
+            a proposal in the web interface.
+        :param path: Model path towards the variant ["variants", #].
+        """
         v = self.internal_coordinates_model["variants"][path[1]]
         v_r = self.input_model["variants"][path[1]]
+
         if v["location"]["type"] == "point" and not v["location"].get("uncertain"):
-            self._add_error(errors.insertion_location_not_range(v_r["location"], path))
+            self._add_error(errors.insertion_range(v_r["location"], path))
 
         if v["location"]["type"] == "range" and not v["location"].get("uncertain"):
-            if (
-                abs(
-                    v["location"]["start"]["position"]
-                    - v["location"]["end"]["position"]
-                )
-                != 1
-            ):
-                self._add_error(
-                    errors.insertion_range_not_consecutive(v_r["location"], path)
-                )
+            if abs(get_start(v) - get_end(v)) != 1:
+                self._add_error(errors.insertion_range(v_r["location"], path))
 
     def _check_repeat(self, path):
         v = self.input_model["variants"][path[1]]
@@ -616,6 +583,15 @@ class Description(object):
             self._add_error(errors.repeat_not_supported(v, path))
 
     def _check_superfluous(self, path):
+        """
+        Checks if any additional provided sequence/length is correct.
+        Incorrect descriptions examples:
+            NM_000143.3:c.45delT
+            NG_012337.1:g.274ATT>T
+            NM_000143.3:c.45dupT
+            NM_000143.3:c.45dup4
+        :param path: Model path towards "deleted" or "inserted".
+        """
         v_i = self.internal_indexing_model["variants"][path[1]]
         key = path[-1]
         sequences = self._get_sequences()
@@ -641,10 +617,9 @@ class Description(object):
 
     @check_errors
     def check(self):
+        self._check_location_boundaries()
+        self._check_location_range()
         for i, v in enumerate(self.internal_coordinates_model["variants"]):
-            if v.get("location"):
-                path = ["variants", i, "location"]
-                self._check_location_boundaries(path)
 
             if v.get("deleted"):
                 self._check_superfluous(["variants", i, "deleted"])

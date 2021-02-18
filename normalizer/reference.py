@@ -274,19 +274,28 @@ def is_overlap(selector, start, end):
     return False
 
 
-def update_start_end(model, start, end):
-    new_start = start
-    new_end = end
+def overlap_min_max(model, l_min, l_max):
+    """
+    Get the overlapping minimum and maximum locations based on the selectors
+    that are contain the l_min and l_max locations.
+
+    :param model: Reference annotations model.
+    :param l_min: 5' location.
+    :param l_max: 3' location.
+    :return: Minimum and maximum locations based on the overlapping selectors.
+    """
+    new_min = l_min
+    new_max = l_max
     for gene in yield_gene_models(model):
         if gene.get("features"):
             for selector in gene["features"]:
                 if selector["type"] in SELECTOR_MOL_TYPES_TYPES:
-                    if is_overlap(selector, new_start, new_end):
-                        if get_start(selector["location"]) < start:
-                            new_start = get_start(selector["location"])
-                        if end < get_end(selector["location"]):
-                            new_end = get_end(selector["location"])
-    return new_start, new_end
+                    if is_overlap(selector, new_min, new_max):
+                        if get_start(selector["location"]) < l_min:
+                            new_min = get_start(selector["location"])
+                        if l_max < get_end(selector["location"]):
+                            new_max = get_end(selector["location"])
+    return new_min, new_max
 
 
 def yield_overlap_ids(model, start, end):

@@ -82,7 +82,17 @@ def out_of_boundary_greater(point, sequence_length, path):
     }
 
 
-def insertion_range_not_consecutive(location, path):
+def range_reversed(location, path):
+    return {
+        "code": "ERANGEREVERSED",
+        "details": "Range start position greater than the end position.".format(
+            location_to_description(location)
+        ),
+        "paths": [path],
+    }
+
+
+def insertion_range(location, path):
     return {
         "code": "EINSERTIONRANGE",
         "details": "Range positions {} not consecutive in insertion location.".format(
