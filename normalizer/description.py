@@ -29,7 +29,7 @@ from .description_model import (
     yield_sub_model,
 )
 from .position_check import contains_uncertain_locations
-from .protein import get_protein_description, get_protein_descriptions
+from .protein import get_protein_description
 from .reference import (
     get_coordinate_system_from_reference,
     get_coordinate_system_from_selector_id,
@@ -83,6 +83,7 @@ class Description(object):
         self.de_hgvs_coordinate_model = {}
         self.de_hgvs_model = {}
         self.normalized_description = None
+        self.protein = None
 
         self.references = {}
 
@@ -497,7 +498,7 @@ class Description(object):
                                 ),
                                 self.references,
                                 protein_selector_model,
-                            ),
+                            )[0],
                         )
                     )
                 else:
@@ -510,11 +511,17 @@ class Description(object):
         if equivalent_descriptions:
             self.equivalent_descriptions = equivalent_descriptions
 
-    def _construct_protein_descriptions(self):
-        if self.de_model:
-            self.protein_descriptions = get_protein_descriptions(
-                self.de_model["variants"], self.references
-            )
+    @check_errors
+    def _construct_protein_description(self):
+        if self.de_hgvs_model["coordinate_system"] == "c":
+            self.protein = dict(zip(["description", "reference", "predicted"], get_protein_description(
+                variants_to_delins(self.de_hgvs_internal_indexing_model["variants"]),
+                self.references,
+                get_protein_selector_model(
+                    self.references["reference"]["annotations"],
+                    get_selector_id(self.de_hgvs_model),
+                ),
+            )))
 
     def _check_location_boundaries(self):
         for point, path in yield_sub_model(
@@ -723,6 +730,7 @@ class Description(object):
                 self._construct_de_hgvs_internal_indexing_model()
                 self._construct_de_hgvs_coordinates_model()
                 self._construct_normalized_description()
+                self._construct_protein_description()
                 self._construct_equivalent_descriptions()
 
         # self.print_models_summary()
@@ -738,6 +746,8 @@ class Description(object):
         output["normalized_model"] = self.de_hgvs_model
         output["input_description"] = self.input_description
 
+        if self.protein:
+            output["protein"] = self.protein
         if self.equivalent_descriptions is not None:
             output["equivalent_descriptions"] = self.equivalent_descriptions
         if self.errors:

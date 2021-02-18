@@ -363,7 +363,7 @@ def get_protein_description(variants, references, selector_model):
             references["reference"]["annotations"]["id"],
             selector_model["protein_id"],
             "p.?",
-        )
+        ), reference_protein, predicted_protein
 
     # Up to and including the first '*', or the entire string.
     try:
@@ -381,7 +381,7 @@ def get_protein_description(variants, references, selector_model):
         references["reference"]["annotations"]["id"],
         selector_model["protein_id"],
         description[0],
-    )
+    ), str(reference_protein), str(predicted_protein)
 
 
 def get_protein_descriptions(variants, references):
