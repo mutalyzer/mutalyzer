@@ -355,8 +355,8 @@ def get_protein_description(variants, references, selector_model):
 
     cds_sequence_mutated = mutate({"reference": cds_sequence_extended}, cds_variants)
 
-    reference_protein = Seq(cds_sequence).translate()
-    predicted_protein = Seq(cds_sequence_mutated).translate()
+    reference_protein = str(Seq(cds_sequence).translate())
+    predicted_protein = str(Seq(cds_sequence_mutated).translate())
 
     if cds_sequence[:3] != cds_sequence_mutated[:3]:
         return "{}({}):{}".format(
@@ -367,8 +367,8 @@ def get_protein_description(variants, references, selector_model):
 
     # Up to and including the first '*', or the entire string.
     try:
-        stop = str(predicted_protein).index("*")
-        predicted_protein = str(predicted_protein)[: stop + 1]
+        stop = predicted_protein.index("*")
+        predicted_protein = predicted_protein[: stop + 1]
     except ValueError:
         pass
 
@@ -381,7 +381,7 @@ def get_protein_description(variants, references, selector_model):
         references["reference"]["annotations"]["id"],
         selector_model["protein_id"],
         description[0],
-    ), str(reference_protein), str(predicted_protein)
+    ), reference_protein, predicted_protein
 
 
 def get_protein_descriptions(variants, references):
