@@ -62,6 +62,16 @@ def coordinate_system_mismatch(
     }
 
 
+def offset(location, path):
+    return {
+        "code": "EOFFSET",
+        "details": "Offsets, as in `{}', are not allowed with 'g' coordinate system.".format(
+            location_to_description(location)
+        ),
+        "paths": [path],
+    }
+
+
 def out_of_boundary_lesser(position, path):
     return {
         "code": "EOUTOFBOUNDARY",

@@ -2726,6 +2726,20 @@ TESTS = [
         },
         "to_test": True,
     },
+    {
+        "keywords": [],
+        "input": "NG_012337.1(NM_012459.2):c.[10del;23_25del;36_37insAAT]",
+        "normalized": "NG_012337.1(NM_012459.2):c.[10del;23_25del;37_38insATA]",
+        "genomic": "NG_012337.1:g.[4886_4887insATT;4898_4900del;4913del]",
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NG_012337.1:g.7125G>TA",
+        "normalized": "NG_012337.1:g.7125delinsTA",
+        "infos": ["ICORRECTEDVARIANTTYPE"],
+        "to_test": True,
+    },
     # {
     #     "keywords": [
     #

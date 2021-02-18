@@ -131,21 +131,17 @@ def yield_point_locations_for_main_reference_variants(model, path=[]):
                     )
 
 
-def yield_range_locations_for_main_reference(model, path=[]):
+def yield_ranges_main_reference(model, path=[]):
     for k in model.keys():
         if k in ["location", "start", "end"]:
             if model[k]["type"] == "range":
                 yield model[k], path + [k]
             else:
-                yield from yield_range_locations_for_main_reference(
-                    model[k], path + [k]
-                )
+                yield from yield_ranges_main_reference(model[k], path + [k])
         elif k in ["variants", "inserted"]:
             for i, sub_model in enumerate(model[k]):
                 if not isinstance(sub_model.get("source"), dict):
-                    yield from yield_range_locations_for_main_reference(
-                        sub_model, path + [k, i]
-                    )
+                    yield from yield_ranges_main_reference(sub_model, path + [k, i])
 
 
 def yield_point_locations_all(model, path=[]):
@@ -161,19 +157,22 @@ def yield_point_locations_all(model, path=[]):
 
 
 def yield_sub_model(model, keys, model_type, path=[]):
+    """
+
+    :param model:
+    :param keys:
+    :param model_type:
+    :param path:
+    """
     if isinstance(model, dict):
         for k in model.keys():
-            if k in keys:
-                if model[k]["type"] == model_type:
-                    yield model[k], path + [k]
-                else:
-                    yield from yield_sub_model(model[k], keys, model_type, path + [k])
+            if k in keys and model[k]["type"] == model_type:
+                yield model[k], path + [k]
             else:
-                if isinstance(model[k], list):
-                    for i, sub_model in enumerate(model[k]):
-                        yield from yield_sub_model(
-                            sub_model, keys, model_type, path + [k, i]
-                        )
+                yield from yield_sub_model(model[k], keys, model_type, path + [k])
+    elif isinstance(model, list):
+        for i, sub_model in enumerate(model):
+            yield from yield_sub_model(sub_model, keys, model_type, path + [i])
 
 
 def yield_view_nodes(model, path=[]):

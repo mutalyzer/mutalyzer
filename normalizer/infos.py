@@ -46,6 +46,15 @@ def to_coordinate_system_from_reference(coordinate_system):
     }
 
 
+def corrected_variant_type(original_type, corrected_type):
+    return {
+        "code": "ICORRECTEDVARIANTTYPE",
+        "details": "Variant corrected from '{}' to '{}'".format(
+            original_type, corrected_type
+        ),
+    }
+
+
 def from_to_selector_equal():
     return {
         "code": "IFROMTOSELECTORSEQUAL",

@@ -36,6 +36,17 @@ def test_genomic(input_description, genomic):
         assert d["equivalent_descriptions"]["g"][0] == genomic
 
 
+@pytest.mark.parametrize(
+    "input_description, coding", get_tests(TESTS_ALL, "coding_protein_descriptions")
+)
+def test_coding(input_description, coding):
+    d = name_check(input_description)
+    coding = [c[0] for c in coding]
+    if d["equivalent_descriptions"].get("c"):
+        name_check_coding = [c[0] for c in d["equivalent_descriptions"]["c"]]
+    assert set(coding).issubset(set(name_check_coding))
+
+
 @pytest.mark.parametrize("input_description, codes", get_tests(TESTS_ALL, "errors"))
 def test_errors(input_description, codes):
     for code in codes:

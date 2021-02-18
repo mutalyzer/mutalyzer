@@ -210,6 +210,20 @@ def get_submodel_by_path(dictionary, path):
     return nested_dictionary
 
 
+def reverse_path(model, path):
+    new_path = []
+    for i, p in enumerate(path):
+        if isinstance(p, int):
+            new_path.append(len(get_submodel_by_path(model, path[:i])) - 1 - p)
+        elif p == "start":
+            new_path.append("'end")
+        elif p == "end":
+            new_path.append("start")
+        else:
+            new_path.append(p)
+    return new_path
+
+
 def check_errors(fn):
     def wrapper(self):
         if not self.errors:
@@ -224,13 +238,15 @@ def slice_sequence(location, sequence):
     return sequence[get_start(location) : get_end(location)]
 
 
-def construct_sequence(options, sequences):
+def construct_sequence(slices, sequences):
     seq = ""
-    for option in options:
-        if option.get("sequence"):
-            seq += option["sequence"]
+    for slice in slices:
+        if slice.get("sequence"):
+            seq += slice["sequence"]
+        elif slice.get("location"):
+            seq += slice_sequence(slice["location"], sequences[slice["source"]])
         else:
-            seq += slice_sequence(option["location"], sequences[option["source"]])
+            raise Exception("Unrecognized slice.")
     return seq
 
 

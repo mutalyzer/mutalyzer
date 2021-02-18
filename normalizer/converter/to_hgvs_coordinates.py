@@ -6,7 +6,7 @@ from mutalyzer_mutator.util import reverse_complement
 from ..description_model import (
     get_reference_id,
     yield_point_locations_for_main_reference,
-    yield_range_locations_for_main_reference,
+    yield_ranges_main_reference,
 )
 from ..reference import get_coordinate_system_from_selector_id, get_selector_model
 from ..util import get_start, set_by_path
@@ -178,9 +178,7 @@ def to_hgvs_locations(
         set_by_path(hgvs_model, path, point_to_hgvs(point, **crossmap))
 
     if selector_model and selector_model.get("inverted"):
-        for range_location, path in yield_range_locations_for_main_reference(
-            hgvs_model
-        ):
+        for range_location, path in yield_ranges_main_reference(hgvs_model):
             range_location["start"], range_location["end"] = (
                 range_location["end"],
                 range_location["start"],

@@ -55,6 +55,7 @@ from .util import (
     get_start,
     get_submodel_by_path,
     is_dna,
+    reverse_path,
     set_by_path,
     slice_sequence,
     sort_variants,
@@ -342,6 +343,27 @@ class Description(object):
                     )
 
     @check_errors
+    def _correct_variants_type(self):
+        for i, v in enumerate(self.internal_indexing_model["variants"]):
+            if v["type"] == "substitution":
+                if len(construct_sequence(v["inserted"], self._get_sequences())) > 1:
+                    path = ["variants", i, "type"]
+                    if self._is_inverted():
+                        path = reverse_path(self.corrected_model, path)
+                    set_by_path(self.corrected_model, path, "deletion_insertion")
+                    set_by_path(
+                        self.internal_coordinates_model, path, "deletion_insertion"
+                    )
+                    set_by_path(
+                        self.internal_indexing_model, path, "deletion_insertion"
+                    )
+                    self._add_info(
+                        infos.corrected_variant_type(
+                            "substitution", "deletion insertion"
+                        )
+                    )
+
+    @check_errors
     def _construct_internal_coordinate_model(self):
         self.internal_coordinates_model = to_internal_coordinates(
             self.corrected_model, self.references
@@ -415,6 +437,8 @@ class Description(object):
                 selector_id,
                 True,
             )
+            if self._is_inverted():
+                self.de_hgvs_model["variants"].reverse()
 
     def _construct_normalized_description(self):
         if self.de_hgvs_model:
@@ -493,25 +517,26 @@ class Description(object):
             )
 
     def _check_location_boundaries(self):
-        for point, path in yield_point_locations_all(self.internal_coordinates_model):
+        for point, path in yield_sub_model(
+            self.internal_coordinates_model, ["location", "start", "end"], "point"
+        ):
             ref_id = "reference"
-            if "inserted" in path:
-                s_m = get_submodel_by_path(
-                    self.internal_coordinates_model, path[: path.index("inserted") + 2]
-                )
-                if get_reference_id(s_m):
-                    ref_id = get_reference_id(s_m)
-            elif "deleted" in path:
-                s_m = get_submodel_by_path(
-                    self.internal_coordinates_model, path[: path.index("deleted") + 2]
-                )
-                if get_reference_id(s_m):
-                    ref_id = get_reference_id(s_m)
-
+            for ins_or_del in ["inserted", "deleted"]:
+                if ins_or_del in path:
+                    ins_or_del_ref = get_reference_id(
+                        get_submodel_by_path(
+                            self.internal_coordinates_model,
+                            path[: path.index(ins_or_del) + 2],
+                        )
+                    )
+                    if ins_or_del_ref:
+                        ref_id = ins_or_del_ref
             len_seq = get_sequence_length(self.references, ref_id)
             if not point.get("uncertain") and point.get("position"):
                 point = point["position"]
                 if len_seq < point:
+                    if self._is_inverted():
+                        path = reverse_path(self.internal_coordinates_model, path)
                     self._add_error(
                         errors.out_of_boundary_greater(
                             get_submodel_by_path(self.corrected_model, path),
@@ -520,6 +545,8 @@ class Description(object):
                         )
                     )
                 elif point < 0:
+                    if self._is_inverted():
+                        path = reverse_path(self.internal_coordinates_model, path)
                     self._add_error(
                         errors.out_of_boundary_lesser(
                             get_submodel_by_path(self.corrected_model, path),
@@ -535,6 +562,23 @@ class Description(object):
                 location
             ):
                 self._add_error(errors.range_reversed(location, path))
+
+    def _check_location_offset(self):
+        for point, path in yield_sub_model(
+            self.corrected_model, ["location", "start", "end"], "point"
+        ):
+            if point.get("offset"):
+                c_s = self.corrected_model.get("coordinate_system")
+                for ins_or_del in ["inserted", "deleted"]:
+                    if ins_or_del in path:
+                        ins_or_del_c_s = get_submodel_by_path(
+                            self.corrected_model,
+                            path[: path.index(ins_or_del) + 2],
+                        ).get("coordinate_system")
+                        if ins_or_del_c_s:
+                            c_s = ins_or_del_c_s
+                if c_s == "g":
+                    self._add_error(errors.offset(point, path))
 
     def _check_insertion_location(self, path):
         """
@@ -593,20 +637,20 @@ class Description(object):
         :param path: Model path towards "deleted" or "inserted".
         """
         v_i = self.internal_indexing_model["variants"][path[1]]
-        key = path[-1]
+        ins_or_del = path[-1]
         sequences = self._get_sequences()
         if (
-            len(v_i[key]) == 1
-            and v_i[key][0].get("length")
-            and v_i[key][0]["length"].get("value")
+            len(v_i[ins_or_del]) == 1
+            and v_i[ins_or_del][0].get("length")
+            and v_i[ins_or_del][0]["length"].get("value")
         ):
-            len_del = v_i[key][0]["length"].get("value")
+            len_del = v_i[ins_or_del][0]["length"].get("value")
             len_loc = get_location_length(v_i["location"])
             if len_loc != len_del:
                 self._add_error(errors.length_mismatch(len_loc, len_del, path))
         else:
             seq_ref = slice_sequence(v_i["location"], sequences["reference"])
-            seq_del = construct_sequence(v_i[key], sequences)
+            seq_del = construct_sequence(v_i[ins_or_del], sequences)
             if not is_dna(seq_del):
                 self._add_error(errors.no_dna(seq_del, path))
                 return
@@ -635,12 +679,16 @@ class Description(object):
         if is_overlap(self.internal_indexing_model["variants"]):
             self._add_error(errors.overlap())
 
-    def to_internal_indexing_model(self):
-        self.retrieve_references()
-
+    def pre_conversion_checks(self):
         self._check_selectors_in_references()
         self._check_coordinate_systems()
         self._check_coordinate_system_consistency()
+        self._check_location_offset()
+
+    def to_internal_indexing_model(self):
+        self.retrieve_references()
+
+        self.pre_conversion_checks()
 
         self._construct_internal_coordinate_model()
         self._construct_internal_indexing_model()
@@ -657,6 +705,8 @@ class Description(object):
 
         if contains_uncertain_locations(self.delins_model):
             return
+
+        self._correct_variants_type()
 
         self.check()
 
