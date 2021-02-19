@@ -11,8 +11,13 @@ import normalizer.errors as errors
 import normalizer.infos as infos
 
 from .checker import are_sorted, is_overlap
+from .converter.extras import convert_selector_model
 from .converter.to_delins import to_delins, variants_to_delins
-from .converter.to_hgvs_coordinates import to_hgvs_locations
+from .converter.to_hgvs_coordinates import (
+    crossmap_to_hgvs_setup,
+    point_to_hgvs,
+    to_hgvs_locations,
+)
 from .converter.to_internal_coordinates import to_internal_coordinates
 from .converter.to_internal_indexing import to_internal_indexing
 from .converter.variants_de_to_hgvs import de_to_hgvs
@@ -20,6 +25,7 @@ from .description_model import (
     get_locations_min_max,
     get_reference_id,
     get_selector_id,
+    location_to_description,
     model_to_string,
     point_to_description,
     yield_point_locations_all,
@@ -50,6 +56,7 @@ from .reference import (
 from .util import (
     check_errors,
     construct_sequence,
+    create_exact_point_model,
     get_end,
     get_location_length,
     get_start,
@@ -116,7 +123,7 @@ class Description(object):
         selector_id = self._get_selector_id()
         if self.references and selector_id:
             return get_selector_model(
-                self.references["reference"]["annotations"], selector_id
+                self.references["reference"]["annotations"], selector_id, True
             )
 
     def _is_inverted(self):
@@ -514,14 +521,21 @@ class Description(object):
     @check_errors
     def _construct_protein_description(self):
         if self.de_hgvs_model["coordinate_system"] == "c":
-            self.protein = dict(zip(["description", "reference", "predicted"], get_protein_description(
-                variants_to_delins(self.de_hgvs_internal_indexing_model["variants"]),
-                self.references,
-                get_protein_selector_model(
-                    self.references["reference"]["annotations"],
-                    get_selector_id(self.de_hgvs_model),
-                ),
-            )))
+            self.protein = dict(
+                zip(
+                    ["description", "reference", "predicted"],
+                    get_protein_description(
+                        variants_to_delins(
+                            self.de_hgvs_internal_indexing_model["variants"]
+                        ),
+                        self.references,
+                        get_protein_selector_model(
+                            self.references["reference"]["annotations"],
+                            get_selector_id(self.de_hgvs_model),
+                        ),
+                    ),
+                )
+            )
 
     def _check_location_boundaries(self):
         for point, path in yield_sub_model(
@@ -754,6 +768,10 @@ class Description(object):
             output["errors"] = self.errors
         if self.infos:
             output["infos"] = self.infos
+        if self._get_selector_model():
+            output["selector_short"] = convert_selector_model(
+                self._get_selector_model()
+            )
         return output
 
     def print_models_summary(self):
