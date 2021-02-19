@@ -126,7 +126,11 @@ def extract_descriptions_tests_all():
     variants = []
     for test in TESTS_ALL:
         for k in ["input", "normalized", "genomic"]:
-            if test.get(k):
+            if test.get(k) and (
+                k == "input"
+                and "input not for test_description_to_model_to_description"
+                not in test["keywords"]
+            ):
                 variants.append(test[k])
     return variants
 

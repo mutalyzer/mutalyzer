@@ -1,0 +1,83 @@
+##sequence-region NG_008939.1 1 86845
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=9606
+NG_008939.1	RefSeq	region	1	86845	.	+	.	ID=NG_008939.1:1..86845;Dbxref=taxon:9606;Name=3;chromosome=3;gbkey=Src;genome=genomic;map=3q22.3;mol_type=genomic DNA
+NG_008939.1	RefSeq	gene	5016	84845	.	+	.	ID=gene-PCCB;Dbxref=GeneID:5096,HGNC:HGNC:8654,MIM:232050;Name=PCCB;description=propionyl-CoA carboxylase subunit beta;gbkey=Gene;gene=PCCB;gene_biotype=protein_coding
+NG_008939.1	RefSeq	exon	5016	5234	.	+	.	ID=id-PCCB-1;Parent=gene-PCCB;Dbxref=GeneID:5096,HGNC:HGNC:8654,MIM:232050;exon_number=1;gbkey=exon;gene=PCCB;inference=alignment:Splign:2.1.0;number=1
+NG_008939.1	RefSeq	exon	10532	10651	.	+	.	ID=id-PCCB-2;Parent=gene-PCCB;Dbxref=GeneID:5096,HGNC:HGNC:8654,MIM:232050;exon_number=2;gbkey=exon;gene=PCCB;inference=alignment:Splign:2.1.0;number=2
+NG_008939.1	RefSeq	exon	11231	11299	.	+	.	ID=id-PCCB-3;Parent=gene-PCCB;Dbxref=GeneID:5096,HGNC:HGNC:8654,MIM:232050;exon_number=3;gbkey=exon;gene=PCCB;inference=alignment:Splign:2.1.0;number=3
+NG_008939.1	RefSeq	exon	15155	15211	.	+	.	ID=id-PCCB-4;Parent=gene-PCCB;Dbxref=GeneID:5096,HGNC:HGNC:8654,MIM:232050;exon_number=4;gbkey=exon;gene=PCCB;inference=alignment:Splign:2.1.0;number=4
+NG_008939.1	RefSeq	exon	16628	16741	.	+	.	ID=id-PCCB-5;Parent=gene-PCCB;Dbxref=GeneID:5096,HGNC:HGNC:8654,MIM:232050;exon_number=5;gbkey=exon;gene=PCCB;inference=alignment:Splign:2.1.0;number=5
+NG_008939.1	RefSeq	exon	38513	38623	.	+	.	ID=id-PCCB-6;Parent=gene-PCCB;Dbxref=GeneID:5096,HGNC:HGNC:8654,MIM:232050;exon_number=6;gbkey=exon;gene=PCCB;inference=alignment:Splign:2.1.0;number=6
+NG_008939.1	RefSeq	exon	48432	48540	.	+	.	ID=id-PCCB-7;Parent=gene-PCCB;Dbxref=GeneID:5096,HGNC:HGNC:8654,MIM:232050;exon_number=7;gbkey=exon;gene=PCCB;inference=alignment:Splign:2.1.0;number=7
+NG_008939.1	RefSeq	exon	52628	52748	.	+	.	ID=id-PCCB-8;Parent=gene-PCCB;Dbxref=GeneID:5096,HGNC:HGNC:8654,MIM:232050;exon_number=8;gbkey=exon;gene=PCCB;inference=alignment:Splign:2.1.0;number=8
+NG_008939.1	RefSeq	exon	55706	55787	.	+	.	ID=id-PCCB-9;Parent=gene-PCCB;Dbxref=GeneID:5096,HGNC:HGNC:8654,MIM:232050;exon_number=9;gbkey=exon;gene=PCCB;inference=alignment:Splign:2.1.0;number=9
+NG_008939.1	RefSeq	exon	71617	71740	.	+	.	ID=id-PCCB-10;Parent=gene-PCCB;Dbxref=GeneID:5096,HGNC:HGNC:8654,MIM:232050;exon_number=10;gbkey=exon;gene=PCCB;inference=alignment:Splign:2.1.0;number=10
+NG_008939.1	RefSeq	exon	81479	81586	.	+	.	ID=id-PCCB-11;Parent=gene-PCCB;Dbxref=GeneID:5096,HGNC:HGNC:8654,MIM:232050;exon_number=11;gbkey=exon;gene=PCCB;inference=alignment:Splign:2.1.0;number=11
+NG_008939.1	RefSeq	exon	81831	81931	.	+	.	ID=id-PCCB-12;Parent=gene-PCCB;Dbxref=GeneID:5096,HGNC:HGNC:8654,MIM:232050;exon_number=12;gbkey=exon;gene=PCCB;inference=alignment:Splign:2.1.0;number=12
+NG_008939.1	RefSeq	exon	82310	82408	.	+	.	ID=id-PCCB-13;Parent=gene-PCCB;Dbxref=GeneID:5096,HGNC:HGNC:8654,MIM:232050;exon_number=13;gbkey=exon;gene=PCCB;inference=alignment:Splign:2.1.0;number=13
+NG_008939.1	RefSeq	exon	83434	83533	.	+	.	ID=id-PCCB-14;Parent=gene-PCCB;Dbxref=GeneID:5096,HGNC:HGNC:8654,MIM:232050;exon_number=14;gbkey=exon;gene=PCCB;inference=alignment:Splign:2.1.0;number=14
+NG_008939.1	RefSeq	exon	84581	84845	.	+	.	ID=id-PCCB-15;Parent=gene-PCCB;Dbxref=GeneID:5096,HGNC:HGNC:8654,MIM:232050;exon_number=15;gbkey=exon;gene=PCCB;inference=alignment:Splign:2.1.0;number=15
+NG_008939.1	RefSeq	mRNA	5016	84845	.	+	.	ID=rna-NM_000532.5;Parent=gene-PCCB;Dbxref=GeneID:5096,Genbank:NM_000532.5,HGNC:HGNC:8654,MIM:232050;Name=NM_000532.5;gbkey=mRNA;gene=PCCB;product=propionyl-CoA carboxylase subunit beta%2C transcript variant 1;transcript_id=NM_000532.5
+NG_008939.1	RefSeq	exon	5016	5234	.	+	.	ID=exon-NM_000532.5-1;Parent=rna-NM_000532.5;Dbxref=GeneID:5096,Genbank:NM_000532.5,HGNC:HGNC:8654,MIM:232050;gbkey=mRNA;gene=PCCB;part=1;product=propionyl-CoA carboxylase subunit beta%2C transcript variant 1;transcript_id=NM_000532.5
+NG_008939.1	RefSeq	exon	10532	10651	.	+	.	ID=exon-NM_000532.5-2;Parent=rna-NM_000532.5;Dbxref=GeneID:5096,Genbank:NM_000532.5,HGNC:HGNC:8654,MIM:232050;gbkey=mRNA;gene=PCCB;part=2;product=propionyl-CoA carboxylase subunit beta%2C transcript variant 1;transcript_id=NM_000532.5
+NG_008939.1	RefSeq	exon	11231	11299	.	+	.	ID=exon-NM_000532.5-3;Parent=rna-NM_000532.5;Dbxref=GeneID:5096,Genbank:NM_000532.5,HGNC:HGNC:8654,MIM:232050;gbkey=mRNA;gene=PCCB;part=3;product=propionyl-CoA carboxylase subunit beta%2C transcript variant 1;transcript_id=NM_000532.5
+NG_008939.1	RefSeq	exon	15155	15211	.	+	.	ID=exon-NM_000532.5-4;Parent=rna-NM_000532.5;Dbxref=GeneID:5096,Genbank:NM_000532.5,HGNC:HGNC:8654,MIM:232050;gbkey=mRNA;gene=PCCB;part=4;product=propionyl-CoA carboxylase subunit beta%2C transcript variant 1;transcript_id=NM_000532.5
+NG_008939.1	RefSeq	exon	16628	16741	.	+	.	ID=exon-NM_000532.5-5;Parent=rna-NM_000532.5;Dbxref=GeneID:5096,Genbank:NM_000532.5,HGNC:HGNC:8654,MIM:232050;gbkey=mRNA;gene=PCCB;part=5;product=propionyl-CoA carboxylase subunit beta%2C transcript variant 1;transcript_id=NM_000532.5
+NG_008939.1	RefSeq	exon	38513	38623	.	+	.	ID=exon-NM_000532.5-6;Parent=rna-NM_000532.5;Dbxref=GeneID:5096,Genbank:NM_000532.5,HGNC:HGNC:8654,MIM:232050;gbkey=mRNA;gene=PCCB;part=6;product=propionyl-CoA carboxylase subunit beta%2C transcript variant 1;transcript_id=NM_000532.5
+NG_008939.1	RefSeq	exon	48432	48540	.	+	.	ID=exon-NM_000532.5-7;Parent=rna-NM_000532.5;Dbxref=GeneID:5096,Genbank:NM_000532.5,HGNC:HGNC:8654,MIM:232050;gbkey=mRNA;gene=PCCB;part=7;product=propionyl-CoA carboxylase subunit beta%2C transcript variant 1;transcript_id=NM_000532.5
+NG_008939.1	RefSeq	exon	52628	52748	.	+	.	ID=exon-NM_000532.5-8;Parent=rna-NM_000532.5;Dbxref=GeneID:5096,Genbank:NM_000532.5,HGNC:HGNC:8654,MIM:232050;gbkey=mRNA;gene=PCCB;part=8;product=propionyl-CoA carboxylase subunit beta%2C transcript variant 1;transcript_id=NM_000532.5
+NG_008939.1	RefSeq	exon	55706	55787	.	+	.	ID=exon-NM_000532.5-9;Parent=rna-NM_000532.5;Dbxref=GeneID:5096,Genbank:NM_000532.5,HGNC:HGNC:8654,MIM:232050;gbkey=mRNA;gene=PCCB;part=9;product=propionyl-CoA carboxylase subunit beta%2C transcript variant 1;transcript_id=NM_000532.5
+NG_008939.1	RefSeq	exon	71617	71740	.	+	.	ID=exon-NM_000532.5-10;Parent=rna-NM_000532.5;Dbxref=GeneID:5096,Genbank:NM_000532.5,HGNC:HGNC:8654,MIM:232050;gbkey=mRNA;gene=PCCB;part=10;product=propionyl-CoA carboxylase subunit beta%2C transcript variant 1;transcript_id=NM_000532.5
+NG_008939.1	RefSeq	exon	81479	81586	.	+	.	ID=exon-NM_000532.5-11;Parent=rna-NM_000532.5;Dbxref=GeneID:5096,Genbank:NM_000532.5,HGNC:HGNC:8654,MIM:232050;gbkey=mRNA;gene=PCCB;part=11;product=propionyl-CoA carboxylase subunit beta%2C transcript variant 1;transcript_id=NM_000532.5
+NG_008939.1	RefSeq	exon	81831	81931	.	+	.	ID=exon-NM_000532.5-12;Parent=rna-NM_000532.5;Dbxref=GeneID:5096,Genbank:NM_000532.5,HGNC:HGNC:8654,MIM:232050;gbkey=mRNA;gene=PCCB;part=12;product=propionyl-CoA carboxylase subunit beta%2C transcript variant 1;transcript_id=NM_000532.5
+NG_008939.1	RefSeq	exon	82310	82408	.	+	.	ID=exon-NM_000532.5-13;Parent=rna-NM_000532.5;Dbxref=GeneID:5096,Genbank:NM_000532.5,HGNC:HGNC:8654,MIM:232050;gbkey=mRNA;gene=PCCB;part=13;product=propionyl-CoA carboxylase subunit beta%2C transcript variant 1;transcript_id=NM_000532.5
+NG_008939.1	RefSeq	exon	83434	83533	.	+	.	ID=exon-NM_000532.5-14;Parent=rna-NM_000532.5;Dbxref=GeneID:5096,Genbank:NM_000532.5,HGNC:HGNC:8654,MIM:232050;gbkey=mRNA;gene=PCCB;part=14;product=propionyl-CoA carboxylase subunit beta%2C transcript variant 1;transcript_id=NM_000532.5
+NG_008939.1	RefSeq	exon	84581	84845	.	+	.	ID=exon-NM_000532.5-15;Parent=rna-NM_000532.5;Dbxref=GeneID:5096,Genbank:NM_000532.5,HGNC:HGNC:8654,MIM:232050;gbkey=mRNA;gene=PCCB;part=15;product=propionyl-CoA carboxylase subunit beta%2C transcript variant 1;transcript_id=NM_000532.5
+NG_008939.1	RefSeq	CDS	5052	5234	.	+	0	ID=cds-NP_000523.2;Parent=rna-NM_000532.5;Dbxref=CCDS:CCDS3089.1,GeneID:5096,Genbank:NP_000523.2,HGNC:HGNC:8654,MIM:232050;Name=NP_000523.2;Note=isoform 1 precursor is encoded by transcript variant 1;gbkey=CDS;gene=PCCB;part=1;product=propionyl-CoA carboxylase beta chain%2C mitochondrial isoform 1 precursor;protein_id=NP_000523.2
+NG_008939.1	RefSeq	CDS	10532	10651	.	+	0	ID=cds-NP_000523.2;Parent=rna-NM_000532.5;Dbxref=CCDS:CCDS3089.1,GeneID:5096,Genbank:NP_000523.2,HGNC:HGNC:8654,MIM:232050;Name=NP_000523.2;Note=isoform 1 precursor is encoded by transcript variant 1;gbkey=CDS;gene=PCCB;part=2;product=propionyl-CoA carboxylase beta chain%2C mitochondrial isoform 1 precursor;protein_id=NP_000523.2
+NG_008939.1	RefSeq	CDS	11231	11299	.	+	0	ID=cds-NP_000523.2;Parent=rna-NM_000532.5;Dbxref=CCDS:CCDS3089.1,GeneID:5096,Genbank:NP_000523.2,HGNC:HGNC:8654,MIM:232050;Name=NP_000523.2;Note=isoform 1 precursor is encoded by transcript variant 1;gbkey=CDS;gene=PCCB;part=3;product=propionyl-CoA carboxylase beta chain%2C mitochondrial isoform 1 precursor;protein_id=NP_000523.2
+NG_008939.1	RefSeq	CDS	15155	15211	.	+	0	ID=cds-NP_000523.2;Parent=rna-NM_000532.5;Dbxref=CCDS:CCDS3089.1,GeneID:5096,Genbank:NP_000523.2,HGNC:HGNC:8654,MIM:232050;Name=NP_000523.2;Note=isoform 1 precursor is encoded by transcript variant 1;gbkey=CDS;gene=PCCB;part=4;product=propionyl-CoA carboxylase beta chain%2C mitochondrial isoform 1 precursor;protein_id=NP_000523.2
+NG_008939.1	RefSeq	CDS	16628	16741	.	+	0	ID=cds-NP_000523.2;Parent=rna-NM_000532.5;Dbxref=CCDS:CCDS3089.1,GeneID:5096,Genbank:NP_000523.2,HGNC:HGNC:8654,MIM:232050;Name=NP_000523.2;Note=isoform 1 precursor is encoded by transcript variant 1;gbkey=CDS;gene=PCCB;part=5;product=propionyl-CoA carboxylase beta chain%2C mitochondrial isoform 1 precursor;protein_id=NP_000523.2
+NG_008939.1	RefSeq	CDS	38513	38623	.	+	0	ID=cds-NP_000523.2;Parent=rna-NM_000532.5;Dbxref=CCDS:CCDS3089.1,GeneID:5096,Genbank:NP_000523.2,HGNC:HGNC:8654,MIM:232050;Name=NP_000523.2;Note=isoform 1 precursor is encoded by transcript variant 1;gbkey=CDS;gene=PCCB;part=6;product=propionyl-CoA carboxylase beta chain%2C mitochondrial isoform 1 precursor;protein_id=NP_000523.2
+NG_008939.1	RefSeq	CDS	48432	48540	.	+	0	ID=cds-NP_000523.2;Parent=rna-NM_000532.5;Dbxref=CCDS:CCDS3089.1,GeneID:5096,Genbank:NP_000523.2,HGNC:HGNC:8654,MIM:232050;Name=NP_000523.2;Note=isoform 1 precursor is encoded by transcript variant 1;gbkey=CDS;gene=PCCB;part=7;product=propionyl-CoA carboxylase beta chain%2C mitochondrial isoform 1 precursor;protein_id=NP_000523.2
+NG_008939.1	RefSeq	CDS	52628	52748	.	+	2	ID=cds-NP_000523.2;Parent=rna-NM_000532.5;Dbxref=CCDS:CCDS3089.1,GeneID:5096,Genbank:NP_000523.2,HGNC:HGNC:8654,MIM:232050;Name=NP_000523.2;Note=isoform 1 precursor is encoded by transcript variant 1;gbkey=CDS;gene=PCCB;part=8;product=propionyl-CoA carboxylase beta chain%2C mitochondrial isoform 1 precursor;protein_id=NP_000523.2
+NG_008939.1	RefSeq	CDS	55706	55787	.	+	1	ID=cds-NP_000523.2;Parent=rna-NM_000532.5;Dbxref=CCDS:CCDS3089.1,GeneID:5096,Genbank:NP_000523.2,HGNC:HGNC:8654,MIM:232050;Name=NP_000523.2;Note=isoform 1 precursor is encoded by transcript variant 1;gbkey=CDS;gene=PCCB;part=9;product=propionyl-CoA carboxylase beta chain%2C mitochondrial isoform 1 precursor;protein_id=NP_000523.2
+NG_008939.1	RefSeq	CDS	71617	71740	.	+	0	ID=cds-NP_000523.2;Parent=rna-NM_000532.5;Dbxref=CCDS:CCDS3089.1,GeneID:5096,Genbank:NP_000523.2,HGNC:HGNC:8654,MIM:232050;Name=NP_000523.2;Note=isoform 1 precursor is encoded by transcript variant 1;gbkey=CDS;gene=PCCB;part=10;product=propionyl-CoA carboxylase beta chain%2C mitochondrial isoform 1 precursor;protein_id=NP_000523.2
+NG_008939.1	RefSeq	CDS	81479	81586	.	+	2	ID=cds-NP_000523.2;Parent=rna-NM_000532.5;Dbxref=CCDS:CCDS3089.1,GeneID:5096,Genbank:NP_000523.2,HGNC:HGNC:8654,MIM:232050;Name=NP_000523.2;Note=isoform 1 precursor is encoded by transcript variant 1;gbkey=CDS;gene=PCCB;part=11;product=propionyl-CoA carboxylase beta chain%2C mitochondrial isoform 1 precursor;protein_id=NP_000523.2
+NG_008939.1	RefSeq	CDS	81831	81931	.	+	2	ID=cds-NP_000523.2;Parent=rna-NM_000532.5;Dbxref=CCDS:CCDS3089.1,GeneID:5096,Genbank:NP_000523.2,HGNC:HGNC:8654,MIM:232050;Name=NP_000523.2;Note=isoform 1 precursor is encoded by transcript variant 1;gbkey=CDS;gene=PCCB;part=12;product=propionyl-CoA carboxylase beta chain%2C mitochondrial isoform 1 precursor;protein_id=NP_000523.2
+NG_008939.1	RefSeq	CDS	82310	82408	.	+	0	ID=cds-NP_000523.2;Parent=rna-NM_000532.5;Dbxref=CCDS:CCDS3089.1,GeneID:5096,Genbank:NP_000523.2,HGNC:HGNC:8654,MIM:232050;Name=NP_000523.2;Note=isoform 1 precursor is encoded by transcript variant 1;gbkey=CDS;gene=PCCB;part=13;product=propionyl-CoA carboxylase beta chain%2C mitochondrial isoform 1 precursor;protein_id=NP_000523.2
+NG_008939.1	RefSeq	CDS	83434	83533	.	+	0	ID=cds-NP_000523.2;Parent=rna-NM_000532.5;Dbxref=CCDS:CCDS3089.1,GeneID:5096,Genbank:NP_000523.2,HGNC:HGNC:8654,MIM:232050;Name=NP_000523.2;Note=isoform 1 precursor is encoded by transcript variant 1;gbkey=CDS;gene=PCCB;part=14;product=propionyl-CoA carboxylase beta chain%2C mitochondrial isoform 1 precursor;protein_id=NP_000523.2
+NG_008939.1	RefSeq	CDS	84581	84702	.	+	2	ID=cds-NP_000523.2;Parent=rna-NM_000532.5;Dbxref=CCDS:CCDS3089.1,GeneID:5096,Genbank:NP_000523.2,HGNC:HGNC:8654,MIM:232050;Name=NP_000523.2;Note=isoform 1 precursor is encoded by transcript variant 1;gbkey=CDS;gene=PCCB;part=15;product=propionyl-CoA carboxylase beta chain%2C mitochondrial isoform 1 precursor;protein_id=NP_000523.2
+NG_008939.1	RefSeq	cDNA_match	5016	5234	.	+	.	ID=aln0;Target=NM_000532.5 1 219 +;idty=1;splign=219
+NG_008939.1	RefSeq	cDNA_match	10532	10651	.	+	.	ID=aln0;Target=NM_000532.5 220 339 +;idty=1;splign=120
+NG_008939.1	RefSeq	cDNA_match	11231	11299	.	+	.	ID=aln0;Target=NM_000532.5 340 408 +;idty=1;splign=69
+NG_008939.1	RefSeq	cDNA_match	15155	15211	.	+	.	ID=aln0;Target=NM_000532.5 409 465 +;idty=1;splign=57
+NG_008939.1	RefSeq	cDNA_match	16628	16741	.	+	.	ID=aln0;Target=NM_000532.5 466 579 +;idty=1;splign=114
+NG_008939.1	RefSeq	cDNA_match	38513	38623	.	+	.	ID=aln0;Target=NM_000532.5 580 690 +;idty=1;splign=111
+NG_008939.1	RefSeq	cDNA_match	48432	48540	.	+	.	ID=aln0;Target=NM_000532.5 691 799 +;idty=1;splign=109
+NG_008939.1	RefSeq	cDNA_match	52628	52748	.	+	.	ID=aln0;Target=NM_000532.5 800 920 +;idty=1;splign=121
+NG_008939.1	RefSeq	cDNA_match	55706	55787	.	+	.	ID=aln0;Target=NM_000532.5 921 1002 +;idty=1;splign=82
+NG_008939.1	RefSeq	cDNA_match	71617	71740	.	+	.	ID=aln0;Target=NM_000532.5 1003 1126 +;idty=1;splign=124
+NG_008939.1	RefSeq	cDNA_match	81479	81586	.	+	.	ID=aln0;Target=NM_000532.5 1127 1234 +;idty=1;splign=108
+NG_008939.1	RefSeq	cDNA_match	81831	81931	.	+	.	ID=aln0;Target=NM_000532.5 1235 1335 +;idty=1;splign=101
+NG_008939.1	RefSeq	cDNA_match	82310	82408	.	+	.	ID=aln0;Target=NM_000532.5 1336 1434 +;idty=1;splign=99
+NG_008939.1	RefSeq	cDNA_match	83434	83533	.	+	.	ID=aln0;Target=NM_000532.5 1435 1534 +;idty=1;splign=100
+NG_008939.1	RefSeq	cDNA_match	84581	84845	.	+	.	ID=aln0;Target=NM_000532.5 1535 1799 +;idty=1;splign=265
+NG_008939.1	RefSeq	cDNA_match	5016	5234	.	+	.	ID=aln1;Target=NM_001178014.2 1 219 +;idty=1;splign=219
+NG_008939.1	RefSeq	cDNA_match	10532	10651	.	+	.	ID=aln1;Target=NM_001178014.2 220 339 +;idty=1;splign=120
+NG_008939.1	RefSeq	cDNA_match	11231	11299	.	+	.	ID=aln1;Target=NM_001178014.2 340 408 +;idty=1;splign=69
+NG_008939.1	RefSeq	cDNA_match	13852	13911	.	+	.	ID=aln1;Target=NM_001178014.2 409 468 +;idty=1;splign=60
+NG_008939.1	RefSeq	cDNA_match	15155	15211	.	+	.	ID=aln1;Target=NM_001178014.2 469 525 +;idty=1;splign=57
+NG_008939.1	RefSeq	cDNA_match	16628	16741	.	+	.	ID=aln1;Target=NM_001178014.2 526 639 +;idty=1;splign=114
+NG_008939.1	RefSeq	cDNA_match	38513	38623	.	+	.	ID=aln1;Target=NM_001178014.2 640 750 +;idty=1;splign=111
+NG_008939.1	RefSeq	cDNA_match	48432	48540	.	+	.	ID=aln1;Target=NM_001178014.2 751 859 +;idty=1;splign=109
+NG_008939.1	RefSeq	cDNA_match	52628	52748	.	+	.	ID=aln1;Target=NM_001178014.2 860 980 +;idty=1;splign=121
+NG_008939.1	RefSeq	cDNA_match	55706	55787	.	+	.	ID=aln1;Target=NM_001178014.2 981 1062 +;idty=1;splign=82
+NG_008939.1	RefSeq	cDNA_match	71617	71740	.	+	.	ID=aln1;Target=NM_001178014.2 1063 1186 +;idty=1;splign=124
+NG_008939.1	RefSeq	cDNA_match	81479	81586	.	+	.	ID=aln1;Target=NM_001178014.2 1187 1294 +;idty=1;splign=108
+NG_008939.1	RefSeq	cDNA_match	81831	81931	.	+	.	ID=aln1;Target=NM_001178014.2 1295 1395 +;idty=1;splign=101
+NG_008939.1	RefSeq	cDNA_match	82310	82408	.	+	.	ID=aln1;Target=NM_001178014.2 1396 1494 +;idty=1;splign=99
+NG_008939.1	RefSeq	cDNA_match	83434	83533	.	+	.	ID=aln1;Target=NM_001178014.2 1495 1594 +;idty=1;splign=100
+NG_008939.1	RefSeq	cDNA_match	84581	84845	.	+	.	ID=aln1;Target=NM_001178014.2 1595 1859 +;idty=1;splign=265
+
+

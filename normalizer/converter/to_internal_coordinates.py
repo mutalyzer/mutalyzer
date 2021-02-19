@@ -5,9 +5,10 @@ from mutalyzer_crossmapper import Coding, Genomic, NonCoding
 from ..description_model import (
     get_reference_id,
     get_selector_id,
+    model_to_string,
     yield_inserted_other_reference,
     yield_point_locations_for_main_reference,
-    yield_range_locations_for_main_reference,
+    yield_ranges_main_reference,
 )
 from ..reference import get_selector_model
 from ..util import set_by_path
@@ -103,7 +104,8 @@ def initialize_internal_model(model):
 
 def invert_sequences(variant, element_type):
     if variant.get(element_type):
-        for element in variant.get(element_type):
+        variant[element_type].reverse()
+        for element in variant[element_type]:
             if element.get("sequence"):
                 if element.get("inverted"):
                     element.pop("inverted")
@@ -116,13 +118,8 @@ def reverse_strand(internal_model):
         invert_sequences(variant, "deleted")
         invert_sequences(variant, "inserted")
 
-    for range_location, path in yield_range_locations_for_main_reference(
-        internal_model
-    ):
-        range_location["start"], range_location["end"] = (
-            range_location["end"],
-            range_location["start"],
-        )
+    for loc, path in yield_ranges_main_reference(internal_model):
+        loc["start"], loc["end"] = loc["end"], loc["start"]
 
 
 def points_to_internal_coordinates(model, references):
@@ -140,8 +137,9 @@ def points_to_internal_coordinates(model, references):
 
     for point, path in yield_point_locations_for_main_reference(model):
         set_by_path(internal_model, path, point_to_internal(point, crossmap))
-    if selector_model and selector_model.get("inverted"):
-        reverse_strand(internal_model)
+
+    # if selector_model and selector_model.get("inverted"):
+    #     reverse_strand(internal_model)
 
     return internal_model
 
@@ -158,5 +156,15 @@ def to_internal_coordinates(model, references):
         set_by_path(
             internal_model, path, points_to_internal_coordinates(inserted, references)
         )
+    reference_id = get_reference_id(model)
+    selector_id = get_selector_id(model)
+    selector_model = (
+        get_selector_model(references[reference_id]["annotations"], selector_id, True)
+        if selector_id
+        else None
+    )
+
+    if selector_model and selector_model.get("inverted"):
+        reverse_strand(internal_model)
 
     return internal_model

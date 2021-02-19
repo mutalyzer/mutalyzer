@@ -11,23 +11,31 @@ import normalizer.errors as errors
 import normalizer.infos as infos
 
 from .checker import are_sorted, is_overlap
+from .converter.extras import convert_selector_model
 from .converter.to_delins import to_delins, variants_to_delins
-from .converter.to_hgvs_coordinates import to_hgvs_locations
+from .converter.to_hgvs_coordinates import (
+    crossmap_to_hgvs_setup,
+    point_to_hgvs,
+    to_hgvs_locations,
+)
 from .converter.to_internal_coordinates import to_internal_coordinates
 from .converter.to_internal_indexing import to_internal_indexing
 from .converter.variants_de_to_hgvs import de_to_hgvs
 from .description_model import (
-    get_locations_start_end,
+    get_locations_min_max,
     get_reference_id,
     get_selector_id,
+    location_to_description,
     model_to_string,
     point_to_description,
+    yield_point_locations_all,
     yield_reference_ids,
     yield_reference_selector_ids,
     yield_reference_selector_ids_coordinate_system,
+    yield_sub_model,
 )
 from .position_check import contains_uncertain_locations
-from .protein import get_protein_description, get_protein_descriptions
+from .protein import get_protein_description
 from .reference import (
     get_coordinate_system_from_reference,
     get_coordinate_system_from_selector_id,
@@ -42,15 +50,19 @@ from .reference import (
     get_sequence_length,
     is_only_one_selector,
     is_selector_in_reference,
-    update_start_end,
+    overlap_min_max,
     yield_overlap_ids,
 )
 from .util import (
     check_errors,
     construct_sequence,
+    create_exact_point_model,
     get_end,
     get_location_length,
     get_start,
+    get_submodel_by_path,
+    is_dna,
+    reverse_path,
     set_by_path,
     slice_sequence,
     sort_variants,
@@ -78,6 +90,7 @@ class Description(object):
         self.de_hgvs_coordinate_model = {}
         self.de_hgvs_model = {}
         self.normalized_description = None
+        self.protein = None
 
         self.references = {}
 
@@ -110,7 +123,7 @@ class Description(object):
         selector_id = self._get_selector_id()
         if self.references and selector_id:
             return get_selector_model(
-                self.references["reference"]["annotations"], selector_id
+                self.references["reference"]["annotations"], selector_id, True
             )
 
     def _is_inverted(self):
@@ -141,21 +154,48 @@ class Description(object):
         set_by_path(self.corrected_model, path, corrected_id)
         self._add_info(infos.corrected_reference_id(original_id, corrected_id, path))
 
+    def _correct_lrg_reference_id(self, original_id, model, path):
+        set_by_path(self.corrected_model, path[:-1], model)
+        self._add_info(infos.corrected_lrg_reference(original_id, model, path))
+
+    @staticmethod
+    def _check_if_lrg_reference(reference_id):
+        if reference_id.startswith("LRG_") and "t" in reference_id:
+            lrg_split = reference_id.split("t")
+            if len(lrg_split) == 2 and lrg_split[1].isdigit():
+                return {
+                    "id": lrg_split[0],
+                    "selector": {"id": "t" + lrg_split[1]},
+                }
+
+    @staticmethod
+    def _retrieve_reference2(reference_id):
+        try:
+            reference_model = get_reference_model(reference_id)
+            # print(get_reference_model.cache_info())
+        except NoReferenceError:
+            return None, "NoReference"
+        except NoReferenceRetrieved:
+            return None, "NoReferenceRetrieved"
+        return reference_model, "OK"
+
     @check_errors
     def retrieve_references(self):
         """
         Populate the references
-        :return:
         """
         if not self.corrected_model:
             return
         for reference_id, path in yield_reference_ids(self.input_model):
-            try:
-                reference_model = get_reference_model(reference_id)
-                # print(get_reference_model.cache_info())
-            except NoReferenceError:
-                self._add_error(errors.reference_not_retrieved(reference_id, [path]))
-            except NoReferenceRetrieved:
+            reference_model, status = self._retrieve_reference2(reference_id)
+            if not reference_model and status == "NoReference":
+                lrg = self._check_if_lrg_reference(reference_id)
+                if lrg:
+                    reference_model, status = self._retrieve_reference2(lrg["id"])
+                    if reference_model:
+                        self._correct_lrg_reference_id(reference_id, lrg, path)
+                        reference_id = lrg["id"]
+            if status in ["NoReferenceRetrieved", "NoReference"]:
                 self._add_error(errors.reference_not_retrieved(reference_id, [path]))
             else:
                 reference_id_in_model = get_reference_id_from_model(reference_model)
@@ -311,6 +351,27 @@ class Description(object):
                     )
 
     @check_errors
+    def _correct_variants_type(self):
+        for i, v in enumerate(self.internal_indexing_model["variants"]):
+            if v["type"] == "substitution":
+                if len(construct_sequence(v["inserted"], self._get_sequences())) > 1:
+                    path = ["variants", i, "type"]
+                    if self._is_inverted():
+                        path = reverse_path(self.corrected_model, path)
+                    set_by_path(self.corrected_model, path, "deletion_insertion")
+                    set_by_path(
+                        self.internal_coordinates_model, path, "deletion_insertion"
+                    )
+                    set_by_path(
+                        self.internal_indexing_model, path, "deletion_insertion"
+                    )
+                    self._add_info(
+                        infos.corrected_variant_type(
+                            "substitution", "deletion insertion"
+                        )
+                    )
+
+    @check_errors
     def _construct_internal_coordinate_model(self):
         self.internal_coordinates_model = to_internal_coordinates(
             self.corrected_model, self.references
@@ -384,21 +445,22 @@ class Description(object):
                 selector_id,
                 True,
             )
+            if self._is_inverted():
+                self.de_hgvs_model["variants"].reverse()
 
     def _construct_normalized_description(self):
         if self.de_hgvs_model:
             self.normalized_description = model_to_string(self.de_hgvs_model)
 
     def _construct_equivalent_descriptions(self):
-        if not self.de_model:
+        if not self.de_hgvs_internal_indexing_model:
             return
         equivalent_descriptions = {}
-        get_locations_start_end(self.de_hgvs_internal_indexing_model)
+        l_min, l_max = get_locations_min_max(self.de_hgvs_internal_indexing_model)
+        if not (l_min and l_max):
+            return
 
-        start_limit, end_limit = update_start_end(
-            self.references["reference"],
-            *get_locations_start_end(self.de_hgvs_internal_indexing_model)
-        )
+        l_min, l_max = overlap_min_max(self.references["reference"], l_min, l_max)
 
         if (
             get_coordinate_system_from_reference(self.references["reference"])
@@ -417,9 +479,7 @@ class Description(object):
                 )
             ]
 
-        for selector in yield_overlap_ids(
-            self.references["reference"], start_limit, end_limit
-        ):
+        for selector in yield_overlap_ids(self.references["reference"], l_min, l_max):
             converted_model = to_hgvs_locations(
                 model=self.de_hgvs_internal_indexing_model,
                 references=self.references,
@@ -445,7 +505,7 @@ class Description(object):
                                 ),
                                 self.references,
                                 protein_selector_model,
-                            ),
+                            )[0],
                         )
                     )
                 else:
@@ -455,107 +515,111 @@ class Description(object):
             else:
                 equivalent_descriptions[c_s].append(model_to_string(converted_model))
 
-        self.equivalent_descriptions = equivalent_descriptions
+        if equivalent_descriptions:
+            self.equivalent_descriptions = equivalent_descriptions
 
-    def _construct_protein_descriptions(self):
-        if self.de_model:
-            self.protein_descriptions = get_protein_descriptions(
-                self.de_model["variants"], self.references
+    @check_errors
+    def _construct_protein_description(self):
+        if self.de_hgvs_model["coordinate_system"] == "c":
+            self.protein = dict(
+                zip(
+                    ["description", "reference", "predicted"],
+                    get_protein_description(
+                        variants_to_delins(
+                            self.de_hgvs_internal_indexing_model["variants"]
+                        ),
+                        self.references,
+                        get_protein_selector_model(
+                            self.references["reference"]["annotations"],
+                            get_selector_id(self.de_hgvs_model),
+                        ),
+                    ),
+                )
             )
 
-    def check_locations(self):
-        pass
-
-    def _check_location_boundaries(self, path):
-        v = self.internal_coordinates_model["variants"][path[1]]
-        v_r = self.input_model["variants"][path[1]]
-        if v["location"]["type"] == "point" and not v.get("uncertain"):
-            if (
-                get_sequence_length(self.references, "reference")
-                < v["location"]["position"]
-            ):
-                self._add_error(
-                    errors.out_of_boundary_greater(
-                        v_r["location"],
-                        get_sequence_length(self.references, "reference"),
-                        path,
+    def _check_location_boundaries(self):
+        for point, path in yield_sub_model(
+            self.internal_coordinates_model, ["location", "start", "end"], "point"
+        ):
+            ref_id = "reference"
+            for ins_or_del in ["inserted", "deleted"]:
+                if ins_or_del in path:
+                    ins_or_del_ref = get_reference_id(
+                        get_submodel_by_path(
+                            self.internal_coordinates_model,
+                            path[: path.index(ins_or_del) + 2],
+                        )
                     )
-                )
-            elif v["location"]["position"] < 0:
-                self._add_error(errors.out_of_boundary_lesser(v_r["location"], path))
-        if v["location"]["type"] == "range":
-            if v["location"]["start"]["type"] == "point" and not v.get("uncertain"):
-                if (
-                    get_sequence_length(self.references, "reference")
-                    < v["location"]["start"]["position"]
-                ):
+                    if ins_or_del_ref:
+                        ref_id = ins_or_del_ref
+            len_seq = get_sequence_length(self.references, ref_id)
+            if not point.get("uncertain") and point.get("position"):
+                point = point["position"]
+                if len_seq < point:
+                    if self._is_inverted():
+                        path = reverse_path(self.internal_coordinates_model, path)
                     self._add_error(
                         errors.out_of_boundary_greater(
-                            v_r["location"]["start"],
-                            get_sequence_length(self.references, "reference"),
-                            path + ["start"],
+                            get_submodel_by_path(self.corrected_model, path),
+                            len_seq,
+                            path,
                         )
                     )
-                elif v["location"]["start"]["position"] < 0:
+                elif point < 0:
+                    if self._is_inverted():
+                        path = reverse_path(self.internal_coordinates_model, path)
                     self._add_error(
                         errors.out_of_boundary_lesser(
-                            v_r["location"]["start"], path + ["start"]
-                        )
-                    )
-            if v["location"]["end"]["type"] == "point" and not v.get("uncertain"):
-                if (
-                    get_sequence_length(self.references, "reference")
-                    < v["location"]["end"]["position"]
-                ):
-                    self._add_error(
-                        errors.out_of_boundary_greater(
-                            v_r["location"]["end"],
-                            get_sequence_length(self.references, "reference"),
-                            path + ["end"],
-                        )
-                    )
-                elif v["location"]["end"]["position"] < 0:
-                    self._add_error(
-                        errors.out_of_boundary_lesser(
-                            v_r["location"]["end"], path + ["end"]
+                            get_submodel_by_path(self.corrected_model, path),
+                            path,
                         )
                     )
 
-    def _check_location_range(self, path):
-        v = self.internal_coordinates_model["variants"][path[1]]
-        v_r = self.input_model["variants"][path[1]]
-        if v["location"]["type"] == "point" and not v.get("uncertain"):
-            if (
-                get_sequence_length(self.references, "reference")
-                < v["location"]["position"]
+    def _check_location_range(self):
+        for location, path in yield_sub_model(
+            self.internal_coordinates_model, ["location"], "range"
+        ):
+            if not location.get("uncertain") and get_start(location) > get_end(
+                location
             ):
-                self._add_error(
-                    errors.out_of_boundary_greater(
-                        v_r["location"],
-                        get_sequence_length(self.references, "reference"),
-                        path,
-                    )
-                )
-            elif v["location"]["position"] < 0:
-                self._add_error(errors.out_of_boundary_lesser(v_r["location"], path))
+                self._add_error(errors.range_reversed(location, path))
+
+    def _check_location_offset(self):
+        for point, path in yield_sub_model(
+            self.corrected_model, ["location", "start", "end"], "point"
+        ):
+            if point.get("offset"):
+                c_s = self.corrected_model.get("coordinate_system")
+                for ins_or_del in ["inserted", "deleted"]:
+                    if ins_or_del in path:
+                        ins_or_del_c_s = get_submodel_by_path(
+                            self.corrected_model,
+                            path[: path.index(ins_or_del) + 2],
+                        ).get("coordinate_system")
+                        if ins_or_del_c_s:
+                            c_s = ins_or_del_c_s
+                if c_s == "g":
+                    self._add_error(errors.offset(point, path))
 
     def _check_insertion_location(self, path):
+        """
+        Checks if the insertion location range is according to HGVS.
+        Incorrect descriptions example:
+            NM_000143.3:c.40_50insATC
+        Notes:
+            - One could argue to correct it to a delins. This can be done as
+            a proposal in the web interface.
+        :param path: Model path towards the variant ["variants", #].
+        """
         v = self.internal_coordinates_model["variants"][path[1]]
         v_r = self.input_model["variants"][path[1]]
+
         if v["location"]["type"] == "point" and not v["location"].get("uncertain"):
-            self._add_error(errors.insertion_location_not_range(v_r["location"], path))
+            self._add_error(errors.insertion_range(v_r["location"], path))
 
         if v["location"]["type"] == "range" and not v["location"].get("uncertain"):
-            if (
-                abs(
-                    v["location"]["start"]["position"]
-                    - v["location"]["end"]["position"]
-                )
-                != 1
-            ):
-                self._add_error(
-                    errors.insertion_range_not_consecutive(v_r["location"], path)
-                )
+            if abs(get_start(v) - get_end(v)) != 1:
+                self._add_error(errors.insertion_range(v_r["location"], path))
 
     def _check_repeat(self, path):
         v = self.input_model["variants"][path[1]]
@@ -583,79 +647,105 @@ class Description(object):
             # TODO: Convert to delins and switch to warning?
             self._add_error(errors.repeat_not_supported(v, path))
 
-    def _check_deleted(self, path):
+    def _check_superfluous(self, path):
+        """
+        Checks if any additional provided sequence/length is correct.
+        Incorrect descriptions examples:
+            NM_000143.3:c.45delT
+            NG_012337.1:g.274ATT>T
+            NM_000143.3:c.45dupT
+            NM_000143.3:c.45dup4
+        :param path: Model path towards "deleted" or "inserted".
+        """
         v_i = self.internal_indexing_model["variants"][path[1]]
+        ins_or_del = path[-1]
         sequences = self._get_sequences()
         if (
-            len(v_i["deleted"]) == 1
-            and v_i["deleted"][0].get("length")
-            and v_i["deleted"][0]["length"].get("value")
+            len(v_i[ins_or_del]) == 1
+            and v_i[ins_or_del][0].get("length")
+            and v_i[ins_or_del][0]["length"].get("value")
         ):
-            len_del = v_i["deleted"][0]["length"].get("value")
+            len_del = v_i[ins_or_del][0]["length"].get("value")
             len_loc = get_location_length(v_i["location"])
             if len_loc != len_del:
-                self._add_error(errors.deleted_length_mismatch(len_loc, len_del, path))
+                self._add_error(errors.length_mismatch(len_loc, len_del, path))
         else:
             seq_ref = slice_sequence(v_i["location"], sequences["reference"])
-            seq_del = construct_sequence(v_i["deleted"], sequences)
+            seq_del = construct_sequence(v_i[ins_or_del], sequences)
+            if not is_dna(seq_del):
+                self._add_error(errors.no_dna(seq_del, path))
+                return
             if self._is_inverted():
                 seq_ref = reverse_complement(seq_ref)
             if seq_del != seq_ref:
-                self._add_error(
-                    errors.deleted_sequence_mismatch(seq_ref, seq_del, path)
-                )
+                self._add_error(errors.sequence_mismatch(seq_ref, seq_del, path))
 
     @check_errors
     def check(self):
-        for i, variant in enumerate(self.internal_coordinates_model["variants"]):
-            if variant.get("location"):
-                path = ["variants", i, "location"]
-                self._check_location_boundaries(path)
+        self._check_location_boundaries()
+        self._check_location_range()
+        for i, v in enumerate(self.internal_coordinates_model["variants"]):
 
-            if variant.get("deleted"):
-                self._check_deleted(["variants", i, "deleted"])
+            if v.get("deleted"):
+                self._check_superfluous(["variants", i, "deleted"])
 
-            if variant.get("type") == "insertion":
+            if v.get("type") == "duplication" and v.get("inserted"):
+                self._check_superfluous(["variants", i, "inserted"])
+
+            if v.get("type") == "insertion":
                 self._check_insertion_location(["variants", i])
 
-            if variant.get("type") == "repeat":
+            if v.get("type") == "repeat":
                 self._check_repeat(["variants", i])
         if is_overlap(self.internal_indexing_model["variants"]):
             self._add_error(errors.overlap())
 
+    def pre_conversion_checks(self):
+        self._check_selectors_in_references()
+        self._check_coordinate_systems()
+        self._check_coordinate_system_consistency()
+        self._check_location_offset()
+
     def to_internal_indexing_model(self):
         self.retrieve_references()
 
-        self._check_selectors_in_references()
-        self._check_coordinate_systems()
-        self._check_coordinate_system_consistency()
+        self.pre_conversion_checks()
 
         self._construct_internal_coordinate_model()
         self._construct_internal_indexing_model()
+
+    @check_errors
+    def _only_equals(self):
+        for variant in self.internal_coordinates_model["variants"]:
+            if variant["type"] != "equal":
+                return False
+        return True
 
     def normalize(self):
-        self.retrieve_references()
-
-        self._check_selectors_in_references()
-        self._check_coordinate_systems()
-        self._check_coordinate_system_consistency()
-
-        self._construct_internal_coordinate_model()
-        self._construct_internal_indexing_model()
-        self._construct_delins_model()
+        self.to_internal_indexing_model()
 
         if contains_uncertain_locations(self.delins_model):
             return
 
+        self._correct_variants_type()
+
         self.check()
 
-        self._mutate()
-        self._extract()
-        if self.de_model:
-            self._construct_de_hgvs_internal_indexing_model()
+        if self._only_equals():
+            self.de_hgvs_internal_indexing_model = self.internal_indexing_model
             self._construct_de_hgvs_coordinates_model()
             self._construct_normalized_description()
             self._construct_equivalent_descriptions()
+        else:
+            self._construct_delins_model()
+            self._mutate()
+            self._extract()
+            if self.de_model:
+                self._construct_de_hgvs_internal_indexing_model()
+                self._construct_de_hgvs_coordinates_model()
+                self._construct_normalized_description()
+                self._construct_protein_description()
+                self._construct_equivalent_descriptions()
 
         # self.print_models_summary()
 
@@ -670,12 +760,18 @@ class Description(object):
         output["normalized_model"] = self.de_hgvs_model
         output["input_description"] = self.input_description
 
+        if self.protein:
+            output["protein"] = self.protein
         if self.equivalent_descriptions is not None:
             output["equivalent_descriptions"] = self.equivalent_descriptions
         if self.errors:
             output["errors"] = self.errors
         if self.infos:
             output["infos"] = self.infos
+        if self._get_selector_model():
+            output["selector_short"] = convert_selector_model(
+                self._get_selector_model()
+            )
         return output
 
     def print_models_summary(self):

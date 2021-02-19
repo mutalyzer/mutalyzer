@@ -8,6 +8,16 @@ def corrected_reference_id(original_id, corrected_id, path):
     }
 
 
+def corrected_lrg_reference(original_id, lrg_model, path):
+    return {
+        "code": "ICORRECTEDLRGREFERENCE",
+        "details": "Reference {} was identified as LRG with ID {} and selector {}.".format(
+            original_id, lrg_model["id"], lrg_model["selector"]["id"]
+        ),
+        "paths": [path],
+    }
+
+
 def corrected_selector_id(original_id, corrected_id, correction_source, path):
     return {
         "code": "ICORRECTEDSELECTORID",
@@ -33,6 +43,15 @@ def to_coordinate_system_from_reference(coordinate_system):
         "code": "ITOSELECTORFROMREFERENCE",
         "details": "To coordinate system identified as {} "
         "from the selector molecule type.".format(coordinate_system),
+    }
+
+
+def corrected_variant_type(original_type, corrected_type):
+    return {
+        "code": "ICORRECTEDVARIANTTYPE",
+        "details": "Variant corrected from '{}' to '{}'".format(
+            original_type, corrected_type
+        ),
     }
 
 

@@ -6,7 +6,7 @@ from mutalyzer_mutator.util import reverse_complement
 from ..description_model import (
     get_reference_id,
     yield_point_locations_for_main_reference,
-    yield_range_locations_for_main_reference,
+    yield_ranges_main_reference,
 )
 from ..reference import get_coordinate_system_from_selector_id, get_selector_model
 from ..util import get_start, set_by_path
@@ -117,6 +117,7 @@ def locations_to_hgvs_locations(internal_model, crossmap):
 def reverse_strand_shift(variants, seq):
     for variant in variants:
         if variant.get("inserted"):
+            variant["inserted"].reverse()
             if (
                 len(variant["inserted"]) == 1
                 and variant["inserted"][0].get("sequence")
@@ -135,6 +136,7 @@ def reverse_strand_shift(variants, seq):
                     if inserted.get("sequence"):
                         inserted["sequence"] = reverse_complement(inserted["sequence"])
         if variant.get("deleted"):
+            variant["deleted"].reverse()
             for deleted in variant["deleted"]:
                 if deleted.get("sequence"):
                     deleted["sequence"] = reverse_complement(deleted["sequence"])
@@ -176,9 +178,7 @@ def to_hgvs_locations(
         set_by_path(hgvs_model, path, point_to_hgvs(point, **crossmap))
 
     if selector_model and selector_model.get("inverted"):
-        for range_location, path in yield_range_locations_for_main_reference(
-            hgvs_model
-        ):
+        for range_location, path in yield_ranges_main_reference(hgvs_model):
             range_location["start"], range_location["end"] = (
                 range_location["end"],
                 range_location["start"],

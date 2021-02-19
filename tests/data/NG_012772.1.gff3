@@ -1,0 +1,155 @@
+##sequence-region NG_012772.1 1 91193
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=9606
+NG_012772.1	RefSeq	region	1	91193	.	+	.	ID=NG_012772.1:1..91193;Dbxref=taxon:9606;Name=13;chromosome=13;gbkey=Src;genome=genomic;map=13q12.3;mol_type=genomic DNA
+NG_012772.1	RefSeq	gene	1	1475	.	-	.	ID=gene-ZAR1L;Dbxref=GeneID:646799,HGNC:37116;Name=ZAR1L;description=zygote arrest 1-like;gbkey=Gene;gene=ZAR1L;gene_biotype=protein_coding;gene_synonym=RP11-37E23.4,ZAR2;partial=true;start_range=.,1
+NG_012772.1	RefSeq	mRNA	160	1475	.	-	.	ID=rna-NM_001136571.1;Parent=gene-ZAR1L;Dbxref=GeneID:646799,Genbank:NM_001136571.1,HGNC:37116;Name=NM_001136571.1;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=ZAR1L;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_001136571.1;partial=true;product=zygote arrest 1-like;start_range=.,160;transcript_id=NM_001136571.1
+NG_012772.1	RefSeq	exon	793	1475	.	-	.	ID=exon-NM_001136571.1-1;Parent=rna-NM_001136571.1;Dbxref=GeneID:646799,Genbank:NM_001136571.1,HGNC:37116;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=ZAR1L;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_001136571.1;part=1;partial=true;product=zygote arrest 1-like;transcript_id=NM_001136571.1
+NG_012772.1	RefSeq	exon	160	252	.	-	.	ID=exon-NM_001136571.1-2;Parent=rna-NM_001136571.1;Dbxref=GeneID:646799,Genbank:NM_001136571.1,HGNC:37116;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=ZAR1L;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_001136571.1;part=2;partial=true;product=zygote arrest 1-like;start_range=.,160;transcript_id=NM_001136571.1
+NG_012772.1	RefSeq	CDS	793	1446	.	-	0	ID=cds-NP_001130043.1;Parent=rna-NM_001136571.1;Dbxref=CCDS:CCDS45023.1,GeneID:646799,Genbank:NP_001130043.1,HGNC:37116;Name=NP_001130043.1;exception=annotated by transcript or proteomic data;gbkey=CDS;gene=ZAR1L;inference=similar to AA sequence (same species):RefSeq:NP_001130043.1;part=1;partial=true;product=ZAR1-like protein;protein_id=NP_001130043.1
+NG_012772.1	RefSeq	CDS	160	252	.	-	0	ID=cds-NP_001130043.1;Parent=rna-NM_001136571.1;Dbxref=CCDS:CCDS45023.1,GeneID:646799,Genbank:NP_001130043.1,HGNC:37116;Name=NP_001130043.1;exception=annotated by transcript or proteomic data;gbkey=CDS;gene=ZAR1L;inference=similar to AA sequence (same species):RefSeq:NP_001130043.1;part=2;partial=true;product=ZAR1-like protein;protein_id=NP_001130043.1;start_range=.,160
+NG_012772.1	RefSeq	gene	5001	89193	.	+	.	ID=gene-BRCA2;Dbxref=GeneID:675,HGNC:1101,MIM:600185;Name=BRCA2;description=breast cancer 2%2C early onset;gbkey=Gene;gene=BRCA2;gene_biotype=protein_coding;gene_synonym=BRCC2,BROVCA2,FACD,FAD,FAD1,FANCB,FANCD,FANCD1,GLM3,PNCA2
+NG_012772.1	RefSeq	exon	5001	5188	.	+	.	ID=id-BRCA2-1;Parent=gene-BRCA2;Dbxref=GeneID:675,HGNC:1101,MIM:600185;exon_number=1;gbkey=exon;gene=BRCA2;inference=alignment:Splign:1.39.8;number=1
+NG_012772.1	RefSeq	exon	5943	6048	.	+	.	ID=id-BRCA2-2;Parent=gene-BRCA2;Dbxref=GeneID:675,HGNC:1101,MIM:600185;exon_number=2;gbkey=exon;gene=BRCA2;inference=alignment:Splign:1.39.8;number=2
+NG_012772.1	RefSeq	exon	8598	8846	.	+	.	ID=id-BRCA2-3;Parent=gene-BRCA2;Dbxref=GeneID:675,HGNC:1101,MIM:600185;exon_number=3;gbkey=exon;gene=BRCA2;inference=alignment:Splign:1.39.8;number=3
+NG_012772.1	RefSeq	exon	14597	14705	.	+	.	ID=id-BRCA2-4;Parent=gene-BRCA2;Dbxref=GeneID:675,HGNC:1101,MIM:600185;exon_number=4;gbkey=exon;gene=BRCA2;inference=alignment:Splign:1.39.8;number=4
+NG_012772.1	RefSeq	exon	15622	15671	.	+	.	ID=id-BRCA2-5;Parent=gene-BRCA2;Dbxref=GeneID:675,HGNC:1101,MIM:600185;exon_number=5;gbkey=exon;gene=BRCA2;inference=alignment:Splign:1.39.8;number=5
+NG_012772.1	RefSeq	exon	15763	15803	.	+	.	ID=id-BRCA2-6;Parent=gene-BRCA2;Dbxref=GeneID:675,HGNC:1101,MIM:600185;exon_number=6;gbkey=exon;gene=BRCA2;inference=alignment:Splign:1.39.8;number=6
+NG_012772.1	RefSeq	exon	16020	16134	.	+	.	ID=id-BRCA2-7;Parent=gene-BRCA2;Dbxref=GeneID:675,HGNC:1101,MIM:600185;exon_number=7;gbkey=exon;gene=BRCA2;inference=alignment:Splign:1.39.8;number=7
+NG_012772.1	RefSeq	exon	18964	19013	.	+	.	ID=id-BRCA2-8;Parent=gene-BRCA2;Dbxref=GeneID:675,HGNC:1101,MIM:600185;exon_number=8;gbkey=exon;gene=BRCA2;inference=alignment:Splign:1.39.8;number=8
+NG_012772.1	RefSeq	exon	20440	20551	.	+	.	ID=id-BRCA2-9;Parent=gene-BRCA2;Dbxref=GeneID:675,HGNC:1101,MIM:600185;exon_number=9;gbkey=exon;gene=BRCA2;inference=alignment:Splign:1.39.8;number=9
+NG_012772.1	RefSeq	exon	21793	22908	.	+	.	ID=id-BRCA2-10;Parent=gene-BRCA2;Dbxref=GeneID:675,HGNC:1101,MIM:600185;exon_number=10;gbkey=exon;gene=BRCA2;inference=alignment:Splign:1.39.8;number=10
+NG_012772.1	RefSeq	exon	25786	30717	.	+	.	ID=id-BRCA2-11;Parent=gene-BRCA2;Dbxref=GeneID:675,HGNC:1101,MIM:600185;exon_number=11;gbkey=exon;gene=BRCA2;inference=alignment:Splign:1.39.8;number=11
+NG_012772.1	RefSeq	exon	34079	34174	.	+	.	ID=id-BRCA2-12;Parent=gene-BRCA2;Dbxref=GeneID:675,HGNC:1101,MIM:600185;exon_number=12;gbkey=exon;gene=BRCA2;inference=alignment:Splign:1.39.8;number=12
+NG_012772.1	RefSeq	exon	36348	36417	.	+	.	ID=id-BRCA2-13;Parent=gene-BRCA2;Dbxref=GeneID:675,HGNC:1101,MIM:600185;exon_number=13;gbkey=exon;gene=BRCA2;inference=alignment:Splign:1.39.8;number=13
+NG_012772.1	RefSeq	exon	44382	44809	.	+	.	ID=id-BRCA2-14;Parent=gene-BRCA2;Dbxref=GeneID:675,HGNC:1101,MIM:600185;exon_number=14;gbkey=exon;gene=BRCA2;inference=alignment:Splign:1.39.8;number=14
+NG_012772.1	RefSeq	exon	45949	46130	.	+	.	ID=id-BRCA2-15;Parent=gene-BRCA2;Dbxref=GeneID:675,HGNC:1101,MIM:600185;exon_number=15;gbkey=exon;gene=BRCA2;inference=alignment:Splign:1.39.8;number=15
+NG_012772.1	RefSeq	exon	47263	47450	.	+	.	ID=id-BRCA2-16;Parent=gene-BRCA2;Dbxref=GeneID:675,HGNC:1101,MIM:600185;exon_number=16;gbkey=exon;gene=BRCA2;inference=alignment:Splign:1.39.8;number=16
+NG_012772.1	RefSeq	exon	52044	52214	.	+	.	ID=id-BRCA2-17;Parent=gene-BRCA2;Dbxref=GeneID:675,HGNC:1101,MIM:600185;exon_number=17;gbkey=exon;gene=BRCA2;inference=alignment:Splign:1.39.8;number=17
+NG_012772.1	RefSeq	exon	52700	53054	.	+	.	ID=id-BRCA2-18;Parent=gene-BRCA2;Dbxref=GeneID:675,HGNC:1101,MIM:600185;exon_number=18;gbkey=exon;gene=BRCA2;inference=alignment:Splign:1.39.8;number=18
+NG_012772.1	RefSeq	exon	59923	60078	.	+	.	ID=id-BRCA2-19;Parent=gene-BRCA2;Dbxref=GeneID:675,HGNC:1101,MIM:600185;exon_number=19;gbkey=exon;gene=BRCA2;inference=alignment:Splign:1.39.8;number=19
+NG_012772.1	RefSeq	exon	60477	60621	.	+	.	ID=id-BRCA2-20;Parent=gene-BRCA2;Dbxref=GeneID:675,HGNC:1101,MIM:600185;exon_number=20;gbkey=exon;gene=BRCA2;inference=alignment:Splign:1.39.8;number=20
+NG_012772.1	RefSeq	exon	66191	66312	.	+	.	ID=id-BRCA2-21;Parent=gene-BRCA2;Dbxref=GeneID:675,HGNC:1101,MIM:600185;exon_number=21;gbkey=exon;gene=BRCA2;inference=alignment:Splign:1.39.8;number=21
+NG_012772.1	RefSeq	exon	68838	69036	.	+	.	ID=id-BRCA2-22;Parent=gene-BRCA2;Dbxref=GeneID:675,HGNC:1101,MIM:600185;exon_number=22;gbkey=exon;gene=BRCA2;inference=alignment:Splign:1.39.8;number=22
+NG_012772.1	RefSeq	exon	69271	69434	.	+	.	ID=id-BRCA2-23;Parent=gene-BRCA2;Dbxref=GeneID:675,HGNC:1101,MIM:600185;exon_number=23;gbkey=exon;gene=BRCA2;inference=alignment:Splign:1.39.8;number=23
+NG_012772.1	RefSeq	exon	69528	69666	.	+	.	ID=id-BRCA2-24;Parent=gene-BRCA2;Dbxref=GeneID:675,HGNC:1101,MIM:600185;exon_number=24;gbkey=exon;gene=BRCA2;inference=alignment:Splign:1.39.8;number=24
+NG_012772.1	RefSeq	exon	84210	84454	.	+	.	ID=id-BRCA2-25;Parent=gene-BRCA2;Dbxref=GeneID:675,HGNC:1101,MIM:600185;exon_number=25;gbkey=exon;gene=BRCA2;inference=alignment:Splign:1.39.8;number=25
+NG_012772.1	RefSeq	exon	86419	86565	.	+	.	ID=id-BRCA2-26;Parent=gene-BRCA2;Dbxref=GeneID:675,HGNC:1101,MIM:600185;exon_number=26;gbkey=exon;gene=BRCA2;inference=alignment:Splign:1.39.8;number=26
+NG_012772.1	RefSeq	exon	87683	89193	.	+	.	ID=id-BRCA2-27;Parent=gene-BRCA2;Dbxref=GeneID:675,HGNC:1101,MIM:600185;exon_number=27;gbkey=exon;gene=BRCA2;inference=alignment:Splign:1.39.8;number=27
+NG_012772.1	RefSeq	mRNA	5001	89193	.	+	.	ID=rna-NM_000059.3;Parent=gene-BRCA2;Dbxref=GeneID:675,Genbank:NM_000059.3,HGNC:1101,MIM:600185;Name=NM_000059.3;gbkey=mRNA;gene=BRCA2;product=breast cancer 2%2C early onset;transcript_id=NM_000059.3
+NG_012772.1	RefSeq	exon	5001	5188	.	+	.	ID=exon-NM_000059.3-1;Parent=rna-NM_000059.3;Dbxref=GeneID:675,Genbank:NM_000059.3,HGNC:1101,MIM:600185;gbkey=mRNA;gene=BRCA2;part=1;product=breast cancer 2%2C early onset;transcript_id=NM_000059.3
+NG_012772.1	RefSeq	exon	5943	6048	.	+	.	ID=exon-NM_000059.3-2;Parent=rna-NM_000059.3;Dbxref=GeneID:675,Genbank:NM_000059.3,HGNC:1101,MIM:600185;gbkey=mRNA;gene=BRCA2;part=2;product=breast cancer 2%2C early onset;transcript_id=NM_000059.3
+NG_012772.1	RefSeq	exon	8598	8846	.	+	.	ID=exon-NM_000059.3-3;Parent=rna-NM_000059.3;Dbxref=GeneID:675,Genbank:NM_000059.3,HGNC:1101,MIM:600185;gbkey=mRNA;gene=BRCA2;part=3;product=breast cancer 2%2C early onset;transcript_id=NM_000059.3
+NG_012772.1	RefSeq	exon	14597	14705	.	+	.	ID=exon-NM_000059.3-4;Parent=rna-NM_000059.3;Dbxref=GeneID:675,Genbank:NM_000059.3,HGNC:1101,MIM:600185;gbkey=mRNA;gene=BRCA2;part=4;product=breast cancer 2%2C early onset;transcript_id=NM_000059.3
+NG_012772.1	RefSeq	exon	15622	15671	.	+	.	ID=exon-NM_000059.3-5;Parent=rna-NM_000059.3;Dbxref=GeneID:675,Genbank:NM_000059.3,HGNC:1101,MIM:600185;gbkey=mRNA;gene=BRCA2;part=5;product=breast cancer 2%2C early onset;transcript_id=NM_000059.3
+NG_012772.1	RefSeq	exon	15763	15803	.	+	.	ID=exon-NM_000059.3-6;Parent=rna-NM_000059.3;Dbxref=GeneID:675,Genbank:NM_000059.3,HGNC:1101,MIM:600185;gbkey=mRNA;gene=BRCA2;part=6;product=breast cancer 2%2C early onset;transcript_id=NM_000059.3
+NG_012772.1	RefSeq	exon	16020	16134	.	+	.	ID=exon-NM_000059.3-7;Parent=rna-NM_000059.3;Dbxref=GeneID:675,Genbank:NM_000059.3,HGNC:1101,MIM:600185;gbkey=mRNA;gene=BRCA2;part=7;product=breast cancer 2%2C early onset;transcript_id=NM_000059.3
+NG_012772.1	RefSeq	exon	18964	19013	.	+	.	ID=exon-NM_000059.3-8;Parent=rna-NM_000059.3;Dbxref=GeneID:675,Genbank:NM_000059.3,HGNC:1101,MIM:600185;gbkey=mRNA;gene=BRCA2;part=8;product=breast cancer 2%2C early onset;transcript_id=NM_000059.3
+NG_012772.1	RefSeq	exon	20440	20551	.	+	.	ID=exon-NM_000059.3-9;Parent=rna-NM_000059.3;Dbxref=GeneID:675,Genbank:NM_000059.3,HGNC:1101,MIM:600185;gbkey=mRNA;gene=BRCA2;part=9;product=breast cancer 2%2C early onset;transcript_id=NM_000059.3
+NG_012772.1	RefSeq	exon	21793	22908	.	+	.	ID=exon-NM_000059.3-10;Parent=rna-NM_000059.3;Dbxref=GeneID:675,Genbank:NM_000059.3,HGNC:1101,MIM:600185;gbkey=mRNA;gene=BRCA2;part=10;product=breast cancer 2%2C early onset;transcript_id=NM_000059.3
+NG_012772.1	RefSeq	exon	25786	30717	.	+	.	ID=exon-NM_000059.3-11;Parent=rna-NM_000059.3;Dbxref=GeneID:675,Genbank:NM_000059.3,HGNC:1101,MIM:600185;gbkey=mRNA;gene=BRCA2;part=11;product=breast cancer 2%2C early onset;transcript_id=NM_000059.3
+NG_012772.1	RefSeq	exon	34079	34174	.	+	.	ID=exon-NM_000059.3-12;Parent=rna-NM_000059.3;Dbxref=GeneID:675,Genbank:NM_000059.3,HGNC:1101,MIM:600185;gbkey=mRNA;gene=BRCA2;part=12;product=breast cancer 2%2C early onset;transcript_id=NM_000059.3
+NG_012772.1	RefSeq	exon	36348	36417	.	+	.	ID=exon-NM_000059.3-13;Parent=rna-NM_000059.3;Dbxref=GeneID:675,Genbank:NM_000059.3,HGNC:1101,MIM:600185;gbkey=mRNA;gene=BRCA2;part=13;product=breast cancer 2%2C early onset;transcript_id=NM_000059.3
+NG_012772.1	RefSeq	exon	44382	44809	.	+	.	ID=exon-NM_000059.3-14;Parent=rna-NM_000059.3;Dbxref=GeneID:675,Genbank:NM_000059.3,HGNC:1101,MIM:600185;gbkey=mRNA;gene=BRCA2;part=14;product=breast cancer 2%2C early onset;transcript_id=NM_000059.3
+NG_012772.1	RefSeq	exon	45949	46130	.	+	.	ID=exon-NM_000059.3-15;Parent=rna-NM_000059.3;Dbxref=GeneID:675,Genbank:NM_000059.3,HGNC:1101,MIM:600185;gbkey=mRNA;gene=BRCA2;part=15;product=breast cancer 2%2C early onset;transcript_id=NM_000059.3
+NG_012772.1	RefSeq	exon	47263	47450	.	+	.	ID=exon-NM_000059.3-16;Parent=rna-NM_000059.3;Dbxref=GeneID:675,Genbank:NM_000059.3,HGNC:1101,MIM:600185;gbkey=mRNA;gene=BRCA2;part=16;product=breast cancer 2%2C early onset;transcript_id=NM_000059.3
+NG_012772.1	RefSeq	exon	52044	52214	.	+	.	ID=exon-NM_000059.3-17;Parent=rna-NM_000059.3;Dbxref=GeneID:675,Genbank:NM_000059.3,HGNC:1101,MIM:600185;gbkey=mRNA;gene=BRCA2;part=17;product=breast cancer 2%2C early onset;transcript_id=NM_000059.3
+NG_012772.1	RefSeq	exon	52700	53054	.	+	.	ID=exon-NM_000059.3-18;Parent=rna-NM_000059.3;Dbxref=GeneID:675,Genbank:NM_000059.3,HGNC:1101,MIM:600185;gbkey=mRNA;gene=BRCA2;part=18;product=breast cancer 2%2C early onset;transcript_id=NM_000059.3
+NG_012772.1	RefSeq	exon	59923	60078	.	+	.	ID=exon-NM_000059.3-19;Parent=rna-NM_000059.3;Dbxref=GeneID:675,Genbank:NM_000059.3,HGNC:1101,MIM:600185;gbkey=mRNA;gene=BRCA2;part=19;product=breast cancer 2%2C early onset;transcript_id=NM_000059.3
+NG_012772.1	RefSeq	exon	60477	60621	.	+	.	ID=exon-NM_000059.3-20;Parent=rna-NM_000059.3;Dbxref=GeneID:675,Genbank:NM_000059.3,HGNC:1101,MIM:600185;gbkey=mRNA;gene=BRCA2;part=20;product=breast cancer 2%2C early onset;transcript_id=NM_000059.3
+NG_012772.1	RefSeq	exon	66191	66312	.	+	.	ID=exon-NM_000059.3-21;Parent=rna-NM_000059.3;Dbxref=GeneID:675,Genbank:NM_000059.3,HGNC:1101,MIM:600185;gbkey=mRNA;gene=BRCA2;part=21;product=breast cancer 2%2C early onset;transcript_id=NM_000059.3
+NG_012772.1	RefSeq	exon	68838	69036	.	+	.	ID=exon-NM_000059.3-22;Parent=rna-NM_000059.3;Dbxref=GeneID:675,Genbank:NM_000059.3,HGNC:1101,MIM:600185;gbkey=mRNA;gene=BRCA2;part=22;product=breast cancer 2%2C early onset;transcript_id=NM_000059.3
+NG_012772.1	RefSeq	exon	69271	69434	.	+	.	ID=exon-NM_000059.3-23;Parent=rna-NM_000059.3;Dbxref=GeneID:675,Genbank:NM_000059.3,HGNC:1101,MIM:600185;gbkey=mRNA;gene=BRCA2;part=23;product=breast cancer 2%2C early onset;transcript_id=NM_000059.3
+NG_012772.1	RefSeq	exon	69528	69666	.	+	.	ID=exon-NM_000059.3-24;Parent=rna-NM_000059.3;Dbxref=GeneID:675,Genbank:NM_000059.3,HGNC:1101,MIM:600185;gbkey=mRNA;gene=BRCA2;part=24;product=breast cancer 2%2C early onset;transcript_id=NM_000059.3
+NG_012772.1	RefSeq	exon	84210	84454	.	+	.	ID=exon-NM_000059.3-25;Parent=rna-NM_000059.3;Dbxref=GeneID:675,Genbank:NM_000059.3,HGNC:1101,MIM:600185;gbkey=mRNA;gene=BRCA2;part=25;product=breast cancer 2%2C early onset;transcript_id=NM_000059.3
+NG_012772.1	RefSeq	exon	86419	86565	.	+	.	ID=exon-NM_000059.3-26;Parent=rna-NM_000059.3;Dbxref=GeneID:675,Genbank:NM_000059.3,HGNC:1101,MIM:600185;gbkey=mRNA;gene=BRCA2;part=26;product=breast cancer 2%2C early onset;transcript_id=NM_000059.3
+NG_012772.1	RefSeq	exon	87683	89193	.	+	.	ID=exon-NM_000059.3-27;Parent=rna-NM_000059.3;Dbxref=GeneID:675,Genbank:NM_000059.3,HGNC:1101,MIM:600185;gbkey=mRNA;gene=BRCA2;part=27;product=breast cancer 2%2C early onset;transcript_id=NM_000059.3
+NG_012772.1	RefSeq	CDS	5982	6048	.	+	0	ID=cds-NP_000050.2;Parent=rna-NM_000059.3;Dbxref=CCDS:CCDS9344.1,GeneID:675,Genbank:NP_000050.2,HGNC:1101,MIM:600185;Name=NP_000050.2;gbkey=CDS;gene=BRCA2;part=1;product=breast cancer type 2 susceptibility protein;protein_id=NP_000050.2
+NG_012772.1	RefSeq	CDS	8598	8846	.	+	2	ID=cds-NP_000050.2;Parent=rna-NM_000059.3;Dbxref=CCDS:CCDS9344.1,GeneID:675,Genbank:NP_000050.2,HGNC:1101,MIM:600185;Name=NP_000050.2;gbkey=CDS;gene=BRCA2;part=2;product=breast cancer type 2 susceptibility protein;protein_id=NP_000050.2
+NG_012772.1	RefSeq	CDS	14597	14705	.	+	2	ID=cds-NP_000050.2;Parent=rna-NM_000059.3;Dbxref=CCDS:CCDS9344.1,GeneID:675,Genbank:NP_000050.2,HGNC:1101,MIM:600185;Name=NP_000050.2;gbkey=CDS;gene=BRCA2;part=3;product=breast cancer type 2 susceptibility protein;protein_id=NP_000050.2
+NG_012772.1	RefSeq	CDS	15622	15671	.	+	1	ID=cds-NP_000050.2;Parent=rna-NM_000059.3;Dbxref=CCDS:CCDS9344.1,GeneID:675,Genbank:NP_000050.2,HGNC:1101,MIM:600185;Name=NP_000050.2;gbkey=CDS;gene=BRCA2;part=4;product=breast cancer type 2 susceptibility protein;protein_id=NP_000050.2
+NG_012772.1	RefSeq	CDS	15763	15803	.	+	2	ID=cds-NP_000050.2;Parent=rna-NM_000059.3;Dbxref=CCDS:CCDS9344.1,GeneID:675,Genbank:NP_000050.2,HGNC:1101,MIM:600185;Name=NP_000050.2;gbkey=CDS;gene=BRCA2;part=5;product=breast cancer type 2 susceptibility protein;protein_id=NP_000050.2
+NG_012772.1	RefSeq	CDS	16020	16134	.	+	0	ID=cds-NP_000050.2;Parent=rna-NM_000059.3;Dbxref=CCDS:CCDS9344.1,GeneID:675,Genbank:NP_000050.2,HGNC:1101,MIM:600185;Name=NP_000050.2;gbkey=CDS;gene=BRCA2;part=6;product=breast cancer type 2 susceptibility protein;protein_id=NP_000050.2
+NG_012772.1	RefSeq	CDS	18964	19013	.	+	2	ID=cds-NP_000050.2;Parent=rna-NM_000059.3;Dbxref=CCDS:CCDS9344.1,GeneID:675,Genbank:NP_000050.2,HGNC:1101,MIM:600185;Name=NP_000050.2;gbkey=CDS;gene=BRCA2;part=7;product=breast cancer type 2 susceptibility protein;protein_id=NP_000050.2
+NG_012772.1	RefSeq	CDS	20440	20551	.	+	0	ID=cds-NP_000050.2;Parent=rna-NM_000059.3;Dbxref=CCDS:CCDS9344.1,GeneID:675,Genbank:NP_000050.2,HGNC:1101,MIM:600185;Name=NP_000050.2;gbkey=CDS;gene=BRCA2;part=8;product=breast cancer type 2 susceptibility protein;protein_id=NP_000050.2
+NG_012772.1	RefSeq	CDS	21793	22908	.	+	2	ID=cds-NP_000050.2;Parent=rna-NM_000059.3;Dbxref=CCDS:CCDS9344.1,GeneID:675,Genbank:NP_000050.2,HGNC:1101,MIM:600185;Name=NP_000050.2;gbkey=CDS;gene=BRCA2;part=9;product=breast cancer type 2 susceptibility protein;protein_id=NP_000050.2
+NG_012772.1	RefSeq	CDS	25786	30717	.	+	2	ID=cds-NP_000050.2;Parent=rna-NM_000059.3;Dbxref=CCDS:CCDS9344.1,GeneID:675,Genbank:NP_000050.2,HGNC:1101,MIM:600185;Name=NP_000050.2;gbkey=CDS;gene=BRCA2;part=10;product=breast cancer type 2 susceptibility protein;protein_id=NP_000050.2
+NG_012772.1	RefSeq	CDS	34079	34174	.	+	2	ID=cds-NP_000050.2;Parent=rna-NM_000059.3;Dbxref=CCDS:CCDS9344.1,GeneID:675,Genbank:NP_000050.2,HGNC:1101,MIM:600185;Name=NP_000050.2;gbkey=CDS;gene=BRCA2;part=11;product=breast cancer type 2 susceptibility protein;protein_id=NP_000050.2
+NG_012772.1	RefSeq	CDS	36348	36417	.	+	2	ID=cds-NP_000050.2;Parent=rna-NM_000059.3;Dbxref=CCDS:CCDS9344.1,GeneID:675,Genbank:NP_000050.2,HGNC:1101,MIM:600185;Name=NP_000050.2;gbkey=CDS;gene=BRCA2;part=12;product=breast cancer type 2 susceptibility protein;protein_id=NP_000050.2
+NG_012772.1	RefSeq	CDS	44382	44809	.	+	1	ID=cds-NP_000050.2;Parent=rna-NM_000059.3;Dbxref=CCDS:CCDS9344.1,GeneID:675,Genbank:NP_000050.2,HGNC:1101,MIM:600185;Name=NP_000050.2;gbkey=CDS;gene=BRCA2;part=13;product=breast cancer type 2 susceptibility protein;protein_id=NP_000050.2
+NG_012772.1	RefSeq	CDS	45949	46130	.	+	2	ID=cds-NP_000050.2;Parent=rna-NM_000059.3;Dbxref=CCDS:CCDS9344.1,GeneID:675,Genbank:NP_000050.2,HGNC:1101,MIM:600185;Name=NP_000050.2;gbkey=CDS;gene=BRCA2;part=14;product=breast cancer type 2 susceptibility protein;protein_id=NP_000050.2
+NG_012772.1	RefSeq	CDS	47263	47450	.	+	0	ID=cds-NP_000050.2;Parent=rna-NM_000059.3;Dbxref=CCDS:CCDS9344.1,GeneID:675,Genbank:NP_000050.2,HGNC:1101,MIM:600185;Name=NP_000050.2;gbkey=CDS;gene=BRCA2;part=15;product=breast cancer type 2 susceptibility protein;protein_id=NP_000050.2
+NG_012772.1	RefSeq	CDS	52044	52214	.	+	1	ID=cds-NP_000050.2;Parent=rna-NM_000059.3;Dbxref=CCDS:CCDS9344.1,GeneID:675,Genbank:NP_000050.2,HGNC:1101,MIM:600185;Name=NP_000050.2;gbkey=CDS;gene=BRCA2;part=16;product=breast cancer type 2 susceptibility protein;protein_id=NP_000050.2
+NG_012772.1	RefSeq	CDS	52700	53054	.	+	1	ID=cds-NP_000050.2;Parent=rna-NM_000059.3;Dbxref=CCDS:CCDS9344.1,GeneID:675,Genbank:NP_000050.2,HGNC:1101,MIM:600185;Name=NP_000050.2;gbkey=CDS;gene=BRCA2;part=17;product=breast cancer type 2 susceptibility protein;protein_id=NP_000050.2
+NG_012772.1	RefSeq	CDS	59923	60078	.	+	0	ID=cds-NP_000050.2;Parent=rna-NM_000059.3;Dbxref=CCDS:CCDS9344.1,GeneID:675,Genbank:NP_000050.2,HGNC:1101,MIM:600185;Name=NP_000050.2;gbkey=CDS;gene=BRCA2;part=18;product=breast cancer type 2 susceptibility protein;protein_id=NP_000050.2
+NG_012772.1	RefSeq	CDS	60477	60621	.	+	0	ID=cds-NP_000050.2;Parent=rna-NM_000059.3;Dbxref=CCDS:CCDS9344.1,GeneID:675,Genbank:NP_000050.2,HGNC:1101,MIM:600185;Name=NP_000050.2;gbkey=CDS;gene=BRCA2;part=19;product=breast cancer type 2 susceptibility protein;protein_id=NP_000050.2
+NG_012772.1	RefSeq	CDS	66191	66312	.	+	2	ID=cds-NP_000050.2;Parent=rna-NM_000059.3;Dbxref=CCDS:CCDS9344.1,GeneID:675,Genbank:NP_000050.2,HGNC:1101,MIM:600185;Name=NP_000050.2;gbkey=CDS;gene=BRCA2;part=20;product=breast cancer type 2 susceptibility protein;protein_id=NP_000050.2
+NG_012772.1	RefSeq	CDS	68838	69036	.	+	0	ID=cds-NP_000050.2;Parent=rna-NM_000059.3;Dbxref=CCDS:CCDS9344.1,GeneID:675,Genbank:NP_000050.2,HGNC:1101,MIM:600185;Name=NP_000050.2;gbkey=CDS;gene=BRCA2;part=21;product=breast cancer type 2 susceptibility protein;protein_id=NP_000050.2
+NG_012772.1	RefSeq	CDS	69271	69434	.	+	2	ID=cds-NP_000050.2;Parent=rna-NM_000059.3;Dbxref=CCDS:CCDS9344.1,GeneID:675,Genbank:NP_000050.2,HGNC:1101,MIM:600185;Name=NP_000050.2;gbkey=CDS;gene=BRCA2;part=22;product=breast cancer type 2 susceptibility protein;protein_id=NP_000050.2
+NG_012772.1	RefSeq	CDS	69528	69666	.	+	0	ID=cds-NP_000050.2;Parent=rna-NM_000059.3;Dbxref=CCDS:CCDS9344.1,GeneID:675,Genbank:NP_000050.2,HGNC:1101,MIM:600185;Name=NP_000050.2;gbkey=CDS;gene=BRCA2;part=23;product=breast cancer type 2 susceptibility protein;protein_id=NP_000050.2
+NG_012772.1	RefSeq	CDS	84210	84454	.	+	2	ID=cds-NP_000050.2;Parent=rna-NM_000059.3;Dbxref=CCDS:CCDS9344.1,GeneID:675,Genbank:NP_000050.2,HGNC:1101,MIM:600185;Name=NP_000050.2;gbkey=CDS;gene=BRCA2;part=24;product=breast cancer type 2 susceptibility protein;protein_id=NP_000050.2
+NG_012772.1	RefSeq	CDS	86419	86565	.	+	0	ID=cds-NP_000050.2;Parent=rna-NM_000059.3;Dbxref=CCDS:CCDS9344.1,GeneID:675,Genbank:NP_000050.2,HGNC:1101,MIM:600185;Name=NP_000050.2;gbkey=CDS;gene=BRCA2;part=25;product=breast cancer type 2 susceptibility protein;protein_id=NP_000050.2
+NG_012772.1	RefSeq	CDS	87683	88291	.	+	0	ID=cds-NP_000050.2;Parent=rna-NM_000059.3;Dbxref=CCDS:CCDS9344.1,GeneID:675,Genbank:NP_000050.2,HGNC:1101,MIM:600185;Name=NP_000050.2;gbkey=CDS;gene=BRCA2;part=26;product=breast cancer type 2 susceptibility protein;protein_id=NP_000050.2
+NG_012772.1	RefSeq	sequence_difference	44771	44771	.	+	.	ID=id-BRCA2;Dbxref=GeneID:675,HGNC:1101,MIM:600185;Note=This sequence differs from the reference genome assembly (NCBI Build 37) at this position. T was replaced by C to represent the standard allele identified by alignment of public cDNAs.;gbkey=misc_difference;gene=BRCA2;replace=t
+NG_012772.1	RefSeq	pseudogene	74123	76163	.	+	.	ID=gene-IFIT1P1;Dbxref=GeneID:8373,HGNC:5408;Name=IFIT1P1;description=interferon-induced protein with tetratricopeptide repeats 1 pseudogene 1;gbkey=Gene;gene=IFIT1P1;gene_biotype=pseudogene;gene_synonym=G13P1,IFI56P,IFIT1P,II56P;pseudo=true
+NG_012772.1	RefSeq	gene	90244	91193	.	-	.	ID=gene-N4BP2L1;Dbxref=GeneID:90634,HGNC:25037;Name=N4BP2L1;description=NEDD4 binding protein 2-like 1;end_range=91193,.;gbkey=Gene;gene=N4BP2L1;gene_biotype=other;gene_synonym=CG018;partial=true
+NG_012772.1	RefSeq	mRNA	90244	91193	.	-	.	ID=rna-NM_052818.2;Parent=gene-N4BP2L1;Dbxref=GeneID:90634,Genbank:NM_052818.2,HGNC:25037;Name=NM_052818.2;end_range=91193,.;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=N4BP2L1;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_052818.2;partial=true;product=NEDD4 binding protein 2-like 1%2C transcript variant 1;transcript_id=NM_052818.2
+NG_012772.1	RefSeq	exon	90244	91193	.	-	.	ID=exon-NM_052818.2-1;Parent=rna-NM_052818.2;Dbxref=GeneID:90634,Genbank:NM_052818.2,HGNC:25037;end_range=91193,.;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=N4BP2L1;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_052818.2;partial=true;product=NEDD4 binding protein 2-like 1%2C transcript variant 1;transcript_id=NM_052818.2
+NG_012772.1	RefSeq	mRNA	90244	91193	.	-	.	ID=rna-NM_001079691.1;Parent=gene-N4BP2L1;Dbxref=GeneID:90634,Genbank:NM_001079691.1,HGNC:25037;Name=NM_001079691.1;end_range=91193,.;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=N4BP2L1;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_001079691.1;partial=true;product=NEDD4 binding protein 2-like 1%2C transcript variant 2;transcript_id=NM_001079691.1
+NG_012772.1	RefSeq	exon	90244	91193	.	-	.	ID=exon-NM_001079691.1-1;Parent=rna-NM_001079691.1;Dbxref=GeneID:90634,Genbank:NM_001079691.1,HGNC:25037;end_range=91193,.;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=N4BP2L1;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_001079691.1;partial=true;product=NEDD4 binding protein 2-like 1%2C transcript variant 2;transcript_id=NM_001079691.1
+NG_012772.1	RefSeq	cDNA_match	5001	5188	.	+	.	ID=aln0;Target=NM_000059.3 1 188 +;idty=1;splign=188
+NG_012772.1	RefSeq	cDNA_match	5943	6048	.	+	.	ID=aln0;Target=NM_000059.3 189 294 +;idty=1;splign=106
+NG_012772.1	RefSeq	cDNA_match	8598	8846	.	+	.	ID=aln0;Target=NM_000059.3 295 543 +;idty=1;splign=249
+NG_012772.1	RefSeq	cDNA_match	14597	14705	.	+	.	ID=aln0;Target=NM_000059.3 544 652 +;idty=1;splign=109
+NG_012772.1	RefSeq	cDNA_match	15622	15671	.	+	.	ID=aln0;Target=NM_000059.3 653 702 +;idty=1;splign=50
+NG_012772.1	RefSeq	cDNA_match	15763	15803	.	+	.	ID=aln0;Target=NM_000059.3 703 743 +;idty=1;splign=41
+NG_012772.1	RefSeq	cDNA_match	16020	16134	.	+	.	ID=aln0;Target=NM_000059.3 744 858 +;idty=1;splign=115
+NG_012772.1	RefSeq	cDNA_match	18964	19013	.	+	.	ID=aln0;Target=NM_000059.3 859 908 +;idty=1;splign=50
+NG_012772.1	RefSeq	cDNA_match	20440	20551	.	+	.	ID=aln0;Target=NM_000059.3 909 1020 +;idty=1;splign=112
+NG_012772.1	RefSeq	cDNA_match	21793	22908	.	+	.	ID=aln0;Target=NM_000059.3 1021 2136 +;idty=1;splign=1116
+NG_012772.1	RefSeq	cDNA_match	25786	30717	.	+	.	ID=aln0;Target=NM_000059.3 2137 7068 +;idty=1;splign=4932
+NG_012772.1	RefSeq	cDNA_match	34079	34174	.	+	.	ID=aln0;Target=NM_000059.3 7069 7164 +;idty=1;splign=96
+NG_012772.1	RefSeq	cDNA_match	36348	36417	.	+	.	ID=aln0;Target=NM_000059.3 7165 7234 +;idty=1;splign=70
+NG_012772.1	RefSeq	cDNA_match	44382	44809	.	+	.	ID=aln0;Target=NM_000059.3 7235 7662 +;idty=1;splign=428
+NG_012772.1	RefSeq	cDNA_match	45949	46130	.	+	.	ID=aln0;Target=NM_000059.3 7663 7844 +;idty=1;splign=182
+NG_012772.1	RefSeq	cDNA_match	47263	47450	.	+	.	ID=aln0;Target=NM_000059.3 7845 8032 +;idty=1;splign=188
+NG_012772.1	RefSeq	cDNA_match	52044	52214	.	+	.	ID=aln0;Target=NM_000059.3 8033 8203 +;idty=1;splign=171
+NG_012772.1	RefSeq	cDNA_match	52700	53054	.	+	.	ID=aln0;Target=NM_000059.3 8204 8558 +;idty=1;splign=355
+NG_012772.1	RefSeq	cDNA_match	59923	60078	.	+	.	ID=aln0;Target=NM_000059.3 8559 8714 +;idty=1;splign=156
+NG_012772.1	RefSeq	cDNA_match	60477	60621	.	+	.	ID=aln0;Target=NM_000059.3 8715 8859 +;idty=1;splign=145
+NG_012772.1	RefSeq	cDNA_match	66191	66312	.	+	.	ID=aln0;Target=NM_000059.3 8860 8981 +;idty=1;splign=122
+NG_012772.1	RefSeq	cDNA_match	68838	69036	.	+	.	ID=aln0;Target=NM_000059.3 8982 9180 +;idty=1;splign=199
+NG_012772.1	RefSeq	cDNA_match	69271	69434	.	+	.	ID=aln0;Target=NM_000059.3 9181 9344 +;idty=1;splign=164
+NG_012772.1	RefSeq	cDNA_match	69528	69666	.	+	.	ID=aln0;Target=NM_000059.3 9345 9483 +;idty=1;splign=139
+NG_012772.1	RefSeq	cDNA_match	84210	84454	.	+	.	ID=aln0;Target=NM_000059.3 9484 9728 +;idty=1;splign=245
+NG_012772.1	RefSeq	cDNA_match	86419	86565	.	+	.	ID=aln0;Target=NM_000059.3 9729 9875 +;idty=1;splign=147
+NG_012772.1	RefSeq	cDNA_match	87683	89193	.	+	.	ID=aln0;Target=NM_000059.3 9876 11386 +;idty=1;splign=1511
+NG_012772.1	Genbank	cDNA_match	5001	5188	.	+	.	ID=aln1;Target=U43746.1 2 189 +;idty=1;splign=188
+NG_012772.1	Genbank	cDNA_match	5943	6048	.	+	.	ID=aln1;Target=U43746.1 190 295 +;idty=1;splign=106
+NG_012772.1	Genbank	cDNA_match	8598	8846	.	+	.	ID=aln1;Target=U43746.1 296 544 +;idty=1;splign=249
+NG_012772.1	Genbank	cDNA_match	14597	14705	.	+	.	ID=aln1;Target=U43746.1 545 653 +;idty=1;splign=109
+NG_012772.1	Genbank	cDNA_match	15622	15671	.	+	.	ID=aln1;Target=U43746.1 654 703 +;idty=1;splign=50
+NG_012772.1	Genbank	cDNA_match	15763	15803	.	+	.	ID=aln1;Target=U43746.1 704 744 +;idty=1;splign=41
+NG_012772.1	Genbank	cDNA_match	16020	16134	.	+	.	ID=aln1;Target=U43746.1 745 859 +;idty=1;splign=115
+NG_012772.1	Genbank	cDNA_match	18964	19013	.	+	.	ID=aln1;Target=U43746.1 860 909 +;idty=1;splign=50
+NG_012772.1	Genbank	cDNA_match	20440	20551	.	+	.	ID=aln1;Target=U43746.1 910 1021 +;idty=1;splign=112
+NG_012772.1	Genbank	cDNA_match	21793	22908	.	+	.	ID=aln1;Target=U43746.1 1022 2137 +;idty=0.998208;splign=1111.91
+NG_012772.1	Genbank	cDNA_match	25786	30717	.	+	.	ID=aln1;Target=U43746.1 2138 7069 +;idty=0.999594;splign=4927.91
+NG_012772.1	Genbank	cDNA_match	34079	34174	.	+	.	ID=aln1;Target=U43746.1 7070 7165 +;idty=1;splign=96
+NG_012772.1	Genbank	cDNA_match	36348	36417	.	+	.	ID=aln1;Target=U43746.1 7166 7235 +;idty=1;splign=70
+NG_012772.1	Genbank	cDNA_match	44382	44809	.	+	.	ID=aln1;Target=U43746.1 7236 7663 +;idty=1;splign=428
+NG_012772.1	Genbank	cDNA_match	45949	46130	.	+	.	ID=aln1;Target=U43746.1 7664 7845 +;idty=1;splign=182
+NG_012772.1	Genbank	cDNA_match	47263	47450	.	+	.	ID=aln1;Target=U43746.1 7846 8033 +;idty=1;splign=188
+NG_012772.1	Genbank	cDNA_match	52044	52214	.	+	.	ID=aln1;Target=U43746.1 8034 8204 +;idty=1;splign=171
+NG_012772.1	Genbank	cDNA_match	52700	53054	.	+	.	ID=aln1;Target=U43746.1 8205 8559 +;idty=1;splign=355
+NG_012772.1	Genbank	cDNA_match	59923	60078	.	+	.	ID=aln1;Target=U43746.1 8560 8715 +;idty=1;splign=156
+NG_012772.1	Genbank	cDNA_match	60477	60621	.	+	.	ID=aln1;Target=U43746.1 8716 8860 +;idty=1;splign=145
+NG_012772.1	Genbank	cDNA_match	66191	66312	.	+	.	ID=aln1;Target=U43746.1 8861 8982 +;idty=1;splign=122
+NG_012772.1	Genbank	cDNA_match	68838	69036	.	+	.	ID=aln1;Target=U43746.1 8983 9181 +;idty=1;splign=199
+NG_012772.1	Genbank	cDNA_match	69271	69434	.	+	.	ID=aln1;Target=U43746.1 9182 9345 +;idty=1;splign=164
+NG_012772.1	Genbank	cDNA_match	69528	69666	.	+	.	ID=aln1;Target=U43746.1 9346 9484 +;idty=1;splign=139
+NG_012772.1	Genbank	cDNA_match	84210	84454	.	+	.	ID=aln1;Target=U43746.1 9485 9729 +;idty=1;splign=245
+NG_012772.1	Genbank	cDNA_match	86419	86565	.	+	.	ID=aln1;Target=U43746.1 9730 9876 +;idty=1;splign=147
+NG_012772.1	Genbank	cDNA_match	87683	88731	.	+	.	ID=aln1;Target=U43746.1 9877 10926 +;idty=0.998095;splign=1043.71;Gap=M991 I1 M58
+NG_012772.1	Genbank	cDNA_match	89130	89189	.	+	.	ID=aln1;Target=U43746.1 10927 10986 +;idty=0.983333;splign=57.956
+
+
