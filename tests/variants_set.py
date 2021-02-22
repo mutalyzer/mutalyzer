@@ -2740,6 +2740,25 @@ TESTS = [
         "infos": ["ICORRECTEDVARIANTTYPE"],
         "to_test": True,
     },
+    {
+        "keywords": ["no operation"],
+        "input": "NG_012337.1:274",
+        "normalized": "NG_012337.1:g.274",
+        "to_test": True,
+    },
+    {
+        "keywords": ["no operation"],
+        "input": "NG_012337.1(NM_003002.2):c.[274;600]",
+        "normalized": "NG_012337.1(NM_003002.2):c.[274;*120]",
+        "genomic": "NG_012337.1:g.[7125;13244]",
+        "coding_protein_descriptions": {
+            (
+                "NG_012337.1(NM_003002.2):c.[274;*120]",
+                "NG_012337.1(NP_002993.1):p.(=)",
+            ),
+        },
+        "to_test": True,
+    },
     # {
     #     "keywords": [
     #

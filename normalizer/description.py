@@ -353,7 +353,7 @@ class Description(object):
     @check_errors
     def _correct_variants_type(self):
         for i, v in enumerate(self.internal_indexing_model["variants"]):
-            if v["type"] == "substitution":
+            if v.get("type") == "substitution":
                 if len(construct_sequence(v["inserted"], self._get_sequences())) > 1:
                     path = ["variants", i, "type"]
                     if self._is_inverted():
@@ -717,7 +717,16 @@ class Description(object):
     @check_errors
     def _only_equals(self):
         for variant in self.internal_coordinates_model["variants"]:
-            if variant["type"] != "equal":
+            if variant.get("type") != "equal":
+                return False
+        return True
+
+    @check_errors
+    def _no_operation(self):
+        if self.internal_coordinates_model.get("variants") is None:
+            return True
+        for variant in self.internal_coordinates_model["variants"]:
+            if variant.get("type") is not None:
                 return False
         return True
 
@@ -731,7 +740,7 @@ class Description(object):
 
         self.check()
 
-        if self._only_equals():
+        if self._only_equals() or self._no_operation():
             self.de_hgvs_internal_indexing_model = self.internal_indexing_model
             self._construct_de_hgvs_coordinates_model()
             self._construct_normalized_description()
