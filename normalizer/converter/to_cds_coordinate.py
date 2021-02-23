@@ -9,30 +9,14 @@ from normalizer.util import get_end, get_start
 from .to_hgvs_coordinates import genomic_to_point, reverse_strand_shift
 
 
-def _get_downstream_cds_position(selector_model, crossmap, offset):
-    cds_end_coordinate = crossmap.genomic_to_coordinate(selector_model["cds"][0][1])
-    cds_end_coding = crossmap.coordinate_to_coding(cds_end_coordinate)
-    return genomic_to_point(crossmap.genomic_to_coordinate(cds_end_coding[0] + offset))
-
-
-def _point_to_cds_coordinate(point, selector_model, crossmap, end_location=False):
+def _point_to_cds_coordinate(point, selector_model, crossmap):
     genomic_to_coordinate = Genomic().genomic_to_coordinate
-    point_position = point["position"]
     if selector_model.get("inverted"):
-        # TODO: This should be checked in more detail.
-        point_position -= 1
         if point.get("shift"):
-            point_position -= point["shift"]
-    coding = crossmap.coordinate_to_coding(point_position, degenerate=True)
-    if coding[2] == 0:
-        if end_location and coding[1] > 0:
-            return genomic_to_point(genomic_to_coordinate(coding[0] + 1))
-        return genomic_to_point(genomic_to_coordinate(coding[0]))
-    elif coding[2] == 1:
-        return _get_downstream_cds_position(selector_model, crossmap, coding[0])
-    elif coding[2] == -1:
-        return genomic_to_point(0)
-    # TODO: Should not reach this, but what if?
+            point["position"] -= point["shift"]
+    coding = crossmap.coordinate_to_coding(point["position"], degenerate=True)
+    print(coding)
+    return genomic_to_point(genomic_to_coordinate(coding[0]))
 
 
 def get_inserted_sequence(insertion, sequences):
@@ -64,7 +48,7 @@ def variant_to_cds_coordinate(variant, sequences, selector_model, crossmap):
             location["start"], selector_model, crossmap
         )
         location["end"] = _point_to_cds_coordinate(
-            location["end"], selector_model, crossmap, True
+            location["end"], selector_model, crossmap
         )
     else:
         location = _point_to_cds_coordinate(location, selector_model, crossmap)
@@ -79,25 +63,86 @@ def variant_to_cds_coordinate(variant, sequences, selector_model, crossmap):
 def reverse_start_end(variants):
     for variant in variants:
         if variant.get("location") and variant["location"]["type"] == "range":
-            loc = variant["location"]
-            loc["start"], loc["end"] = loc["end"], loc["start"]
+            location = variant["location"]
+            location["start"], location["end"] = location["end"], location["start"]
+            location["start"]["position"] -= 1
+            location["end"]["position"] -= 1
 
 
-def location_in_same_intron(location, selector_model, coding_exons=True):
-    exons = [e for l in selector_model["exon"] for e in l]
-    cds = selector_model["cds"][0]
-    if coding_exons:
-        l_index = bisect.bisect_right(exons, cds[0])
-        r_index = bisect.bisect_left(exons, cds[1])
-        exons = [cds[0]] + exons[l_index:r_index] + [cds[1]]
+def _get_cds_into_exons(exons, cds):
+    l_index = bisect.bisect_right(exons, cds[0])
+    r_index = bisect.bisect_left(exons, cds[1])
+    return [cds[0]] + exons[l_index:r_index] + [cds[1]]
 
+
+def _location_in_same_intron(location, exons):
     start_i = bisect.bisect_right(exons, get_start(location))
     end_i = bisect.bisect_left(exons, get_end(location))
-
     if start_i == end_i and start_i % 2 == 0:
         return True
     else:
         return False
+
+
+def _splice_site_removal(location, exons):
+    start_i = bisect.bisect_right(exons, get_start(location))
+    end_i = bisect.bisect_left(exons, get_end(location))
+    if end_i - start_i == 1:
+        return True
+
+
+def _get_exons_and_cds(selector_model):
+    exons = [e for l in selector_model["exon"] for e in l]
+    cds = [selector_model["cds"][0][0], selector_model["cds"][0][1]]
+    if selector_model.get("inverted"):
+        cds[0] = exons[0]
+    else:
+        cds[1] = exons[-1]
+    return exons, cds
+
+
+def to_exon_positions(variants, exons, cds):
+    exons = _get_cds_into_exons(exons, cds)
+    new_variants = []
+    print(exons)
+    for variant in variants:
+        if (
+            variant.get("type") == "deletion_insertion"
+            and variant.get("location")
+            and not _location_in_same_intron(variant["location"], exons)
+            and not (get_start(variant) <= exons[0] and get_end(variant) <= exons[0])
+        ):
+            print(get_start(variant))
+            print(get_end(variant))
+            n_v = copy.deepcopy(variant)
+            exon_s = bisect.bisect(exons, get_start(n_v))
+            if exon_s % 2 == 0 and exon_s < len(exons):
+                n_v["location"]["start"]["position"] = exons[exon_s]
+
+            exon_e = bisect.bisect(exons, get_end(n_v))
+            if exon_e % 2 == 0:
+                if exon_e < len(exons):
+                    n_v["location"]["end"]["position"] = exons[exon_e]
+
+            new_variants.append(n_v)
+            print(get_start(n_v))
+            print(get_end(n_v))
+
+    return new_variants
+
+
+def _get_splice_site_hits(variants, exons, cds):
+    hits = []
+    for i, variant in enumerate(variants):
+        if (
+            variant.get("type") == "deletion_insertion"
+            and variant.get("location")
+            and _splice_site_removal(
+                variant["location"], _get_cds_into_exons(exons, cds)
+            )
+        ):
+            hits.append(i)
+    return hits
 
 
 def to_cds_coordinate(variants, sequences, selector_model):
@@ -108,22 +153,22 @@ def to_cds_coordinate(variants, sequences, selector_model):
     :param selector_model:
     :param crossmap:
     """
+    exons, cds = _get_exons_and_cds(selector_model)
     crossmap = Coding(
-        selector_model["exon"], selector_model["cds"][0], selector_model["inverted"]
+        list(zip(exons[::2], exons[1::2])), cds, selector_model["inverted"]
     )
     shifted_variants = copy.deepcopy(variants)
     if selector_model.get("inverted"):
         reverse_strand_shift(shifted_variants, sequences["reference"])
         reverse_start_end(shifted_variants)
 
-    new_variants = []
-    for variant in shifted_variants:
-        if (
-            variant["type"] == "deletion_insertion"
-            and variant.get("location")
-            and not location_in_same_intron(variant["location"], selector_model)
-        ):
-            new_variants.append(
-                variant_to_cds_coordinate(variant, sequences, selector_model, crossmap)
-            )
-    return new_variants
+    splice_site_hits = _get_splice_site_hits(shifted_variants, exons, cds)
+
+    coordinate_variants = to_exon_positions(shifted_variants, exons, cds)
+
+    cds_variants = []
+    for variant in coordinate_variants:
+        cds_variants.append(
+            variant_to_cds_coordinate(variant, sequences, selector_model, crossmap)
+        )
+    return cds_variants, splice_site_hits

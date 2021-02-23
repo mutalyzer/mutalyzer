@@ -2759,6 +2759,45 @@ TESTS = [
         },
         "to_test": True,
     },
+    {
+        "keywords": ["protein reverse strand end of CDS"],
+        "input": "NG_012337.1(NM_012459.2):c.297_*1del",
+        "normalized": "NG_012337.1(NM_012459.2):c.297_*1del",
+        "genomic": "NG_012337.1:g.3448_3449del",
+        "coding_protein_descriptions": {
+            (
+                "NG_012337.1(NM_012459.2):c.297_*1del",
+                "NG_012337.1(NP_036591.2):p.(*99Tyrext*6)",
+            ),
+        },
+        "to_test": True,
+    },
+    {
+        "keywords": ["protein reverse strand end of CDS"],
+        "input": "NG_012337.1(NM_012459.2):c.-35_*1del",
+        "normalized": "NG_012337.1(NM_012459.2):c.-35_*1del",
+        "genomic": "NG_012337.1:g.3448_4957del",
+        "coding_protein_descriptions": {
+            (
+                "NG_012337.1(NM_012459.2):c.-35_*1del",
+                "NG_012337.1(NP_036591.2):p.?",
+            ),
+        },
+        "to_test": True,
+    },
+    {
+        "keywords": ["protein reverse strand end of CDS"],
+        "input": "NG_012337.1(NM_012459.2):c.-1_*1del",
+        "normalized": "NG_012337.1(NM_012459.2):c.1_*2del",
+        "genomic": "NG_012337.1:g.3448_4957del",
+        "coding_protein_descriptions": {
+            (
+                "NG_012337.1(NM_012459.2):c.1_*2del",
+                "NG_012337.1(NP_036591.2):p.?",
+            ),
+        },
+        "to_test": True,
+    },
     # {
     #     "keywords": [
     #

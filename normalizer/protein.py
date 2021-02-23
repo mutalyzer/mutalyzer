@@ -1,17 +1,10 @@
-import json
-
 from Bio.Seq import Seq
 from Bio.SeqUtils import seq3
 from mutalyzer_mutator import mutate
 from mutalyzer_mutator.util import reverse_complement
 
 from .converter import to_cds_coordinate
-from .reference import (
-    extract_sequences,
-    get_protein_selector_models,
-    get_reference_mol_type,
-)
-from .util import get_end, get_start
+from .reference import extract_sequences
 
 
 def longest_common_prefix(s1, s2):
@@ -325,9 +318,22 @@ def get_protein_description(variants, references, selector_model):
                        inserted sequences.
     :param selector_model:
     """
+    print("-----")
     sequences = extract_sequences(references)
 
-    cds_variants = to_cds_coordinate(variants, sequences, selector_model)
+    cds_variants, splice_site_hits = to_cds_coordinate(
+        variants, sequences, selector_model
+    )
+    if splice_site_hits:
+        return (
+            "{}({}):{}".format(
+                references["reference"]["annotations"]["id"],
+                selector_model["protein_id"],
+                "p.?",
+            ),
+            None,
+            None,
+        )
 
     cds_sequence = slice_seq(
         sequences[references["reference"]["annotations"]["id"]],
@@ -359,11 +365,15 @@ def get_protein_description(variants, references, selector_model):
     predicted_protein = str(Seq(cds_sequence_mutated).translate())
 
     if cds_sequence[:3] != cds_sequence_mutated[:3]:
-        return "{}({}):{}".format(
-            references["reference"]["annotations"]["id"],
-            selector_model["protein_id"],
-            "p.?",
-        ), reference_protein, predicted_protein
+        return (
+            "{}({}):{}".format(
+                references["reference"]["annotations"]["id"],
+                selector_model["protein_id"],
+                "p.?",
+            ),
+            reference_protein,
+            predicted_protein,
+        )
 
     # Up to and including the first '*', or the entire string.
     try:
@@ -377,41 +387,24 @@ def get_protein_description(variants, references, selector_model):
         cds_stop, str(reference_protein), str(predicted_protein)
     )
 
-    return "{}({}):{}".format(
-        references["reference"]["annotations"]["id"],
-        selector_model["protein_id"],
-        description[0],
-    ), reference_protein, predicted_protein
-
-
-def get_protein_descriptions(variants, references):
-    """
-    Retrieves all the possible protein descriptions.
-
-    - First, it identifies if protein descriptions can be obtained for this
-      particular reference.
-    - Next, it retrieves the selector models for which a protein description
-      can be obtained.
-    - Finally, it loops over the selector models and calls the appropriate
-      function to obtain the protein descriptions.
-
-    :param variants: Only deletion_insertion variants with coordinate locations.
-                     Preferable, from the description extractor.
-    :param references: References models. Required to be able to retrieve the
-                       inserted sequences.
-    """
-    if get_reference_mol_type(references["reference"]) not in [
-        "genomic DNA",
-        "mRNA",
-        "dna",
-    ]:
-        return
-
-    protein_descriptions = []
-    for selector_model in get_protein_selector_models(
-        references["reference"]["annotations"]
-    ):
-        protein_descriptions.append(
-            get_protein_description(variants, references, selector_model)
+    if len(cds_variants) > 1:
+        # TODO: This seems to happen in M2. Check why.
+        return (
+            "{}({}):{}".format(
+                references["reference"]["annotations"]["id"],
+                selector_model["protein_id"],
+                "p.?",
+            ),
+            reference_protein,
+            predicted_protein,
         )
-    return protein_descriptions
+
+    return (
+        "{}({}):{}".format(
+            references["reference"]["annotations"]["id"],
+            selector_model["protein_id"],
+            description[0],
+        ),
+        reference_protein,
+        predicted_protein,
+    )
