@@ -445,8 +445,6 @@ class Description(object):
                 selector_id,
                 True,
             )
-            if self._is_inverted():
-                self.de_hgvs_model["variants"].reverse()
 
     def _construct_normalized_description(self):
         if self.de_hgvs_model:
