@@ -316,95 +316,62 @@ def get_protein_description(variants, references, selector_model):
                      Preferable, from the description extractor.
     :param references: References models. Required to be able to retrieve the
                        inserted sequences.
-    :param selector_model:
+    :param selector_model: The selector model that includes the exon and cds
+                           information.
     """
-    print("-----")
     sequences = extract_sequences(references)
+    ref_id = references["reference"]["annotations"]["id"]
+    dna_ref_seq = sequences[ref_id]
+    exons = selector_model["exon"]
+    cds = [selector_model["cds"][0][0], selector_model["cds"][0][1]]
+    protein_id = selector_model["protein_id"]
+
+    cds_seq = slice_seq(dna_ref_seq, exons, cds[0], cds[1])
+
+    if selector_model["inverted"]:
+        cds_seq = reverse_complement(cds_seq)
+        cds_seq_ext = reverse_complement(slice_seq(dna_ref_seq, exons, 0, cds[1]))
+    else:
+        cds_seq_ext = slice_seq(dna_ref_seq, exons, cds[0])
+
+    p_ref_seq = str(Seq(cds_seq).translate())
 
     cds_variants, splice_site_hits = to_cds_coordinate(
         variants, sequences, selector_model
     )
+
     if splice_site_hits:
-        return (
-            "{}({}):{}".format(
-                references["reference"]["annotations"]["id"],
-                selector_model["protein_id"],
-                "p.?",
-            ),
-            None,
-            None,
-        )
+        return "{}({}):{}".format(ref_id, protein_id, "p.?"), p_ref_seq, "?"
+    elif not cds_variants:
+        return "{}({}):{}".format(ref_id, protein_id, "p.(=)"), p_ref_seq, p_ref_seq
 
-    cds_sequence = slice_seq(
-        sequences[references["reference"]["annotations"]["id"]],
-        selector_model["exon"],
-        selector_model["cds"][0][0],
-        selector_model["cds"][0][1],
-    )
+    cds_obs_seq = mutate({"reference": cds_seq_ext}, cds_variants)
 
-    if selector_model["inverted"]:
-        cds_sequence = reverse_complement(cds_sequence)
-        cds_sequence_extended = reverse_complement(
-            slice_seq(
-                sequences[references["reference"]["annotations"]["id"]],
-                selector_model["exon"],
-                0,
-                selector_model["cds"][0][1],
-            )
-        )
-    else:
-        cds_sequence_extended = slice_seq(
-            sequences[references["reference"]["annotations"]["id"]],
-            selector_model["exon"],
-            selector_model["cds"][0][0],
-        )
+    p_obs_seq = str(Seq(cds_obs_seq).translate())
 
-    cds_sequence_mutated = mutate({"reference": cds_sequence_extended}, cds_variants)
-
-    reference_protein = str(Seq(cds_sequence).translate())
-    predicted_protein = str(Seq(cds_sequence_mutated).translate())
-
-    if cds_sequence[:3] != cds_sequence_mutated[:3]:
-        return (
-            "{}({}):{}".format(
-                references["reference"]["annotations"]["id"],
-                selector_model["protein_id"],
-                "p.?",
-            ),
-            reference_protein,
-            predicted_protein,
-        )
+    if cds_seq[:3] != cds_obs_seq[:3]:
+        return "{}({}):{}".format(ref_id, protein_id, "p.?"), p_ref_seq, "?"
 
     # Up to and including the first '*', or the entire string.
     try:
-        stop = predicted_protein.index("*")
-        predicted_protein = predicted_protein[: stop + 1]
+        stop = p_obs_seq.index("*")
+        p_obs_seq = p_obs_seq[: stop + 1]
     except ValueError:
         pass
 
-    cds_stop = len(mutate({"reference": cds_sequence}, cds_variants))
-    description = protein_description(
-        cds_stop, str(reference_protein), str(predicted_protein)
-    )
+    cds_stop = len(mutate({"reference": cds_seq}, cds_variants))
+    description = protein_description(cds_stop, p_ref_seq, p_obs_seq)
 
     if len(cds_variants) > 1:
         # TODO: This seems to happen in M2. Check why.
         return (
-            "{}({}):{}".format(
-                references["reference"]["annotations"]["id"],
-                selector_model["protein_id"],
-                "p.?",
-            ),
-            reference_protein,
-            predicted_protein,
+            "{}({}):{}".format(ref_id, protein_id, "p.?"),
+            p_ref_seq,
+            p_obs_seq,
         )
 
     return (
-        "{}({}):{}".format(
-            references["reference"]["annotations"]["id"],
-            selector_model["protein_id"],
-            description[0],
-        ),
-        reference_protein,
-        predicted_protein,
+        "{}({}):{}".format(ref_id, protein_id, description[0]),
+        p_ref_seq,
+        p_obs_seq,
     )
