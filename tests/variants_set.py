@@ -2833,6 +2833,13 @@ TESTS = [
         "infos": ["ISORTEDVARIANTS"],
         "to_test": True,
     },
+    {
+        "keywords": [],
+        "input": "NM_003002.2:c.[274+20C>T;400_401insNM_003002.4:100_102]",
+        "normalized": "NM_003002.2:c.[294C>T;399_401dup]",
+        "infos": ["ICORRECTEDCOORDINATESYSTEM"],
+        "to_test": True,
+    },
     # {
     #     "keywords": [
     #

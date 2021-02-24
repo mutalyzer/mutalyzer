@@ -45,6 +45,7 @@ from .reference import (
     get_protein_selector_model,
     get_reference_id_from_model,
     get_reference_model,
+    get_reference_mol_type,
     get_selector_model,
     get_selectors_ids,
     get_sequence_length,
@@ -169,7 +170,7 @@ class Description(object):
                 }
 
     @staticmethod
-    def _retrieve_reference2(reference_id):
+    def _retrieve_reference(reference_id):
         try:
             reference_model = get_reference_model(reference_id)
             # print(get_reference_model.cache_info())
@@ -187,11 +188,11 @@ class Description(object):
         if not self.corrected_model:
             return
         for reference_id, path in yield_reference_ids(self.input_model):
-            reference_model, status = self._retrieve_reference2(reference_id)
+            reference_model, status = self._retrieve_reference(reference_id)
             if not reference_model and status == "NoReference":
                 lrg = self._check_if_lrg_reference(reference_id)
                 if lrg:
-                    reference_model, status = self._retrieve_reference2(lrg["id"])
+                    reference_model, status = self._retrieve_reference(lrg["id"])
                     if reference_model:
                         self._correct_lrg_reference_id(reference_id, lrg, path)
                         reference_id = lrg["id"]
@@ -309,9 +310,10 @@ class Description(object):
     def _correct_selector_id_from_coordinate_system(self, r_id_path, selector_id):
         path = tuple(list(r_id_path[:-1]) + ["selector"])
         set_by_path(self.corrected_model, path, {"id": selector_id})
-        self._add_info(
-            infos.corrected_selector_id("", selector_id, "coordinate system", path)
-        )
+        if get_reference_mol_type(self.references["reference"]) != "mRNA":
+            self._add_info(
+                infos.corrected_selector_id("", selector_id, "coordinate system", path)
+            )
 
     @check_errors
     def _check_coordinate_system_consistency(self):
@@ -329,26 +331,23 @@ class Description(object):
                 s_c_s = get_coordinate_system_from_selector_id(
                     self.references[r_id], s_id
                 )
-                if s_c_s == c_s:
-                    return
-                else:
+                if s_c_s != c_s:
                     self._add_error(
                         errors.coordinate_system_mismatch(c_s, s_id, s_c_s, c_s_path)
                     )
-                    return
-            r_c_s = get_coordinate_system_from_reference(self.references[r_id])
-            if (r_c_s == c_s) and (c_s in ["g", "m"]):
-                return
             else:
-                if is_only_one_selector(self.references[r_id], c_s):
-                    self._correct_selector_id_from_coordinate_system(
-                        r_path, get_only_selector_id(self.references[r_id], c_s)
-                    )
-                    return
-                else:
-                    self._add_error(
-                        errors.coordinate_system_mismatch(c_s, r_id, r_c_s, c_s_path)
-                    )
+                r_c_s = get_coordinate_system_from_reference(self.references[r_id])
+                if not ((r_c_s == c_s) and (c_s in ["g", "m"])):
+                    if is_only_one_selector(self.references[r_id], c_s):
+                        self._correct_selector_id_from_coordinate_system(
+                            r_path, get_only_selector_id(self.references[r_id], c_s)
+                        )
+                    else:
+                        self._add_error(
+                            errors.coordinate_system_mismatch(
+                                c_s, r_id, r_c_s, c_s_path
+                            )
+                        )
 
     @check_errors
     def _correct_variants_type(self):
