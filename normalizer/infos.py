@@ -1,3 +1,10 @@
+from .description_model import (
+    location_to_description,
+    point_to_description,
+    variant_to_description,
+)
+
+
 def corrected_reference_id(original_id, corrected_id, path):
     return {
         "code": "ICORRECTEDREFERENCEID",
@@ -52,6 +59,16 @@ def corrected_variant_type(original_type, corrected_type):
         "details": "Variant corrected from '{}' to '{}'".format(
             original_type, corrected_type
         ),
+    }
+
+
+def corrected_point(original, corrected, path):
+    return {
+        "code": "ICORRECTEDPOINT",
+        "details": "Point corrected from '{}' to '{}'".format(
+            point_to_description(original), point_to_description(corrected)
+        ),
+        "paths": [path],
     }
 
 

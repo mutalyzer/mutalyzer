@@ -18,17 +18,18 @@ from .converter.to_hgvs_coordinates import (
     point_to_hgvs,
     to_hgvs_locations,
 )
-from .converter.to_internal_coordinates import to_internal_coordinates
+from .converter.to_internal_coordinates import (
+    crossmap_to_internal_setup,
+    point_to_internal,
+    to_internal_coordinates,
+)
 from .converter.to_internal_indexing import to_internal_indexing
 from .converter.variants_de_to_hgvs import de_to_hgvs
 from .description_model import (
     get_locations_min_max,
     get_reference_id,
     get_selector_id,
-    location_to_description,
     model_to_string,
-    point_to_description,
-    yield_point_locations_all,
     yield_reference_ids,
     yield_reference_selector_ids,
     yield_reference_selector_ids_coordinate_system,
@@ -57,7 +58,6 @@ from .reference import (
 from .util import (
     check_errors,
     construct_sequence,
-    create_exact_point_model,
     get_end,
     get_location_length,
     get_start,
@@ -371,6 +371,24 @@ class Description(object):
                     )
 
     @check_errors
+    def _correct_points(self):
+        crossmap_to = crossmap_to_internal_setup(
+            self.corrected_model["coordinate_system"], self._get_selector_model()
+        )
+        crossmap_from = crossmap_to_hgvs_setup(
+            self.corrected_model["coordinate_system"], self._get_selector_model()
+        )
+
+        for point, path in yield_sub_model(
+            self.corrected_model, ["location", "start", "end"], "point"
+        ):
+            internal = point_to_internal(point, crossmap_to)
+            corrected = point_to_hgvs(internal, **crossmap_from)
+            if corrected != point:
+                set_by_path(self.corrected_model, path, corrected)
+                self._add_info(infos.corrected_point(point, corrected, path))
+
+    @check_errors
     def _construct_internal_coordinate_model(self):
         self.internal_coordinates_model = to_internal_coordinates(
             self.corrected_model, self.references
@@ -432,16 +450,12 @@ class Description(object):
 
     @check_errors
     def _construct_de_hgvs_coordinates_model(self):
-        if self.corrected_model["reference"].get("selector"):
-            selector_id = self.corrected_model["reference"]["selector"]["id"]
-        else:
-            selector_id = None
         if self.de_hgvs_internal_indexing_model:
             self.de_hgvs_model = to_hgvs_locations(
                 self.de_hgvs_internal_indexing_model,
                 self.references,
                 self.corrected_model["coordinate_system"],
-                selector_id,
+                get_selector_id(self.corrected_model),
                 True,
             )
 
@@ -581,11 +595,11 @@ class Description(object):
             ):
                 self._add_error(errors.range_reversed(location, path))
 
-    def _check_location_offset(self):
+    def _check_location_extras(self):
         for point, path in yield_sub_model(
             self.corrected_model, ["location", "start", "end"], "point"
         ):
-            if point.get("offset"):
+            if point.get("offset") or point.get("outside_cds"):
                 c_s = self.corrected_model.get("coordinate_system")
                 for ins_or_del in ["inserted", "deleted"]:
                     if ins_or_del in path:
@@ -596,7 +610,10 @@ class Description(object):
                         if ins_or_del_c_s:
                             c_s = ins_or_del_c_s
                 if c_s == "g":
-                    self._add_error(errors.offset(point, path))
+                    if point.get("offset"):
+                        self._add_error(errors.offset(point, path))
+                    if point.get("outside_cds"):
+                        self._add_error(errors.outside_cds(point, path))
 
     def _check_insertion_location(self, path):
         """
@@ -701,7 +718,7 @@ class Description(object):
         self._check_selectors_in_references()
         self._check_coordinate_systems()
         self._check_coordinate_system_consistency()
-        self._check_location_offset()
+        self._check_location_extras()
 
     def to_internal_indexing_model(self):
         self.retrieve_references()
@@ -734,6 +751,7 @@ class Description(object):
             return
 
         self._correct_variants_type()
+        self._correct_points()
 
         self.check()
 

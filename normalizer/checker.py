@@ -1,3 +1,4 @@
+from .description_model import yield_sub_model
 from .util import get_end, get_start, sort_variants
 
 
@@ -20,11 +21,14 @@ def is_overlap(variants):
     TODO: Add support for fuzzy (uncertain) locations.
     """
     sorted_variants = sort_variants(variants)
-
-    current_end_position = 0
+    positions = []
+    for point, path in yield_sub_model(variants, ["location", "start", "end"], "point"):
+        if point.get("position") is not None:
+            positions.append(point["position"])
+    min_position = min(positions) - 1
     for variant in sorted_variants:
-        if get_start(variant["location"]) <= current_end_position - 1:
+        if get_start(variant["location"]) <= min_position - 1:
             return True
         else:
-            current_end_position = get_end(variant["location"])
+            min_position = get_end(variant["location"])
     return False
