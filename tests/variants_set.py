@@ -2819,6 +2819,20 @@ TESTS = [
         },
         "to_test": True,
     },
+    {
+        "keywords": ["reverse strand"],
+        "input": "NG_009299.1(NM_017668.3):c.[250del;41A>C]",
+        "normalized": "NG_009299.1(NM_017668.3):c.[41A>C;*189del]",
+        "infos": ["ISORTEDVARIANTS"],
+        "to_test": True,
+    },
+    {
+        "keywords": ["reverse strand"],
+        "input": "NG_009299.1(NM_002474.3):c.[310del;295G>A]",
+        "normalized": "NG_009299.1(NM_002474.3):c.[295G>A;311del]",
+        "infos": ["ISORTEDVARIANTS"],
+        "to_test": True,
+    },
     # {
     #     "keywords": [
     #
