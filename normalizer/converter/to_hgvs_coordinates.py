@@ -178,6 +178,8 @@ def to_hgvs_locations(
         set_by_path(hgvs_model, path, point_to_hgvs(point, **crossmap))
 
     if selector_model and selector_model.get("inverted"):
+        if hgvs_model.get("variants"):
+            hgvs_model["variants"].reverse()
         for range_location, path in yield_ranges_main_reference(hgvs_model):
             range_location["start"], range_location["end"] = (
                 range_location["end"],

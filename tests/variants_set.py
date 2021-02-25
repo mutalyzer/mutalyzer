@@ -2347,8 +2347,7 @@ TESTS = [
         "keywords": [],
         "input": "NM_003002.4:c.1del",
         "normalized": "NM_003002.4:c.1del",
-        "coordinate": "NM_003002.4:x.36del",
-        "to_test": False,
+        "to_test": True,
     },
     {
         "keywords": [],
@@ -2468,9 +2467,9 @@ TESTS = [
     {
         "keywords": [],
         "input": "NG_008835.1(CDH23_v001):c.1449+846delA",
-        "normalized": "",
+        "normalized": "NG_008835.1(NM_022124.6):c.1449+858del",
         "genomic": "NG_008835.1:g.255529del",
-        "to_test": False,
+        "to_test": True,
     },
     {
         "keywords": [],
@@ -2481,10 +2480,10 @@ TESTS = [
     },
     {
         "keywords": [],
-        "input": "NG_007107.2(MECP2_v001):c.378-17delT",
-        "normalized": "",
+        "input": "NG_007107.2(NM_004992.3):c.378-17delT",
+        "normalized": "NG_007107.2(NM_004992.3):c.378-17del",
         "genomic": "NG_007107.2:g.110661del",
-        "to_test": False,
+        "to_test": True,
     },
     {
         "keywords": [],
@@ -2496,9 +2495,9 @@ TESTS = [
     {
         "keywords": [],
         "input": "NG_009113.2(NM_016346.4):c.948delC",
-        "normalized": "",
+        "normalized": "NG_009113.2(NM_016346.4):c.951del",
         "genomic": "NG_009113.2:g.8038del",
-        "to_test": False,
+        "to_test": True,
     },
     {
         "keywords": [],
@@ -2510,9 +2509,9 @@ TESTS = [
     {
         "keywords": [],
         "input": "NG_009497.1(USH2A_v001):c.8682-19dup",
-        "normalized": "",
+        "normalized": "NG_009497.1(NM_206933.2):c.8682-19dup",
         "genomic": "NG_009497.1:g.561208dup",
-        "to_test": False,
+        "to_test": True,
     },
     {
         "keywords": [],
@@ -2590,8 +2589,8 @@ TESTS = [
         "keywords": ["repeat"],
         "input": "LRG_303:g.3_4GT[2]",
         "normalized": "LRG_303:g.3_4dup",
-        "normalized-alt": "LRG_303:g.1_4[3]",
-        "to_test": False,
+        "normalized-alt": "LRG_303:g.1_4[3]",  # TODO: check the alt.
+        "to_test": True,
     },
     {
         "keywords": ["issue #25"],
@@ -2645,13 +2644,6 @@ TESTS = [
             ),
         },
         "to_test": True,
-    },
-    {
-        "keywords": [],
-        "input": "",
-        "normalized": "",
-        "genomic": "",
-        "to_test": False,
     },
     {
         "keywords": [],
@@ -2727,7 +2719,7 @@ TESTS = [
         "to_test": True,
     },
     {
-        "keywords": [],
+        "keywords": ["reverse strand"],
         "input": "NG_012337.1(NM_012459.2):c.[10del;23_25del;36_37insAAT]",
         "normalized": "NG_012337.1(NM_012459.2):c.[10del;23_25del;37_38insATA]",
         "genomic": "NG_012337.1:g.[4886_4887insATT;4898_4900del;4913del]",
@@ -2738,6 +2730,114 @@ TESTS = [
         "input": "NG_012337.1:g.7125G>TA",
         "normalized": "NG_012337.1:g.7125delinsTA",
         "infos": ["ICORRECTEDVARIANTTYPE"],
+        "to_test": True,
+    },
+    {
+        "keywords": ["no operation"],
+        "input": "NG_012337.1:274",
+        "normalized": "NG_012337.1:g.274",
+        "to_test": True,
+    },
+    {
+        "keywords": ["no operation"],
+        "input": "NG_012337.1(NM_003002.2):c.[274;600]",
+        "normalized": "NG_012337.1(NM_003002.2):c.[274;*120]",
+        "genomic": "NG_012337.1:g.[7125;13244]",
+        "coding_protein_descriptions": {
+            (
+                "NG_012337.1(NM_003002.2):c.[274;*120]",
+                "NG_012337.1(NP_002993.1):p.(=)",
+            ),
+        },
+        "to_test": True,
+    },
+    {
+        "keywords": ["protein reverse strand end of CDS"],
+        "input": "NG_012337.1(NM_012459.2):c.297_*1del",
+        "normalized": "NG_012337.1(NM_012459.2):c.297_*1del",
+        "genomic": "NG_012337.1:g.3448_3449del",
+        "coding_protein_descriptions": {
+            (
+                "NG_012337.1(NM_012459.2):c.297_*1del",
+                "NG_012337.1(NP_036591.2):p.(*99Tyrext*6)",
+            ),
+        },
+        "to_test": True,
+    },
+    {
+        "keywords": ["protein reverse strand end of CDS"],
+        "input": "NG_012337.1(NM_012459.2):c.-35_*1del",
+        "normalized": "NG_012337.1(NM_012459.2):c.-35_*1del",
+        "genomic": "NG_012337.1:g.3448_4957del",
+        "coding_protein_descriptions": {
+            (
+                "NG_012337.1(NM_012459.2):c.-35_*1del",
+                "NG_012337.1(NP_036591.2):p.?",
+            ),
+        },
+        "to_test": True,
+    },
+    {
+        "keywords": ["protein reverse strand end of CDS"],
+        "input": "NG_012337.1(NM_012459.2):c.-1_*1del",
+        "normalized": "NG_012337.1(NM_012459.2):c.1_*2del",
+        "genomic": "NG_012337.1:g.3449_4924del",
+        "coding_protein_descriptions": {
+            (
+                "NG_012337.1(NM_012459.2):c.1_*2del",
+                "NG_012337.1(NP_036591.2):p.?",
+            ),
+        },
+        "to_test": True,
+    },
+    {
+        "keywords": ["reverse strand"],
+        "input": "NG_009299.1(NM_017668.3):c.[41A>C;250del]",
+        "normalized": "NG_009299.1(NM_017668.3):c.[41A>C;*189del]",
+        "genomic": "NG_009299.1:g.[137591del;137800T>G]",
+        "coding_protein_descriptions": {
+            (
+                "NG_009299.1(NM_001040113.2):c.[4138-31del;4316T>G]",
+                "NG_009299.1(NP_001035202.1):p.(Leu1439Arg)",
+                # TODO: Check if it should be '?'
+            ),
+            (
+                "NG_009299.1(NM_002474.3):c.[4117-31del;4295T>G]",
+                "NG_009299.1(NP_002465.1):p.(Leu1432Arg)",
+                # TODO: Check if it should be '?'
+            ),
+            (
+                "NG_009299.1(NM_017668.3):c.[41A>C;*189del]",
+                "NG_009299.1(NP_060138.1):p.?",
+                # TODO: Check if it should not be '?'
+            ),
+            (
+                "NG_009299.1(NM_001143979.2):c.[41A>C;*189del]",
+                "NG_009299.1(NP_001137451.1):p.?",
+                # TODO: Check if it should not be '?'
+            ),
+        },
+        "to_test": True,
+    },
+    {
+        "keywords": ["reverse strand"],
+        "input": "NG_009299.1(NM_017668.3):c.[250del;41A>C]",
+        "normalized": "NG_009299.1(NM_017668.3):c.[41A>C;*189del]",
+        "infos": ["ISORTEDVARIANTS"],
+        "to_test": True,
+    },
+    {
+        "keywords": ["reverse strand"],
+        "input": "NG_009299.1(NM_002474.3):c.[310del;295G>A]",
+        "normalized": "NG_009299.1(NM_002474.3):c.[295G>A;311del]",
+        "infos": ["ISORTEDVARIANTS"],
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NM_003002.2:c.[274+20C>T;400_401insNM_003002.4:100_102]",
+        "normalized": "NM_003002.2:c.[294C>T;399_401dup]",
+        "infos": ["ICORRECTEDCOORDINATESYSTEM"],
         "to_test": True,
     },
     # {
@@ -2786,11 +2886,11 @@ OTHER = [
     # ('NM_003002.4:c.5762_5763insNG_009113.2:g.91138_91274',
     #  'NG_009497.1:g.561208dup'),
     # ('NG_009113.2:g.575_576insNG_009113.2:g.9118_9127',
-    #  'NG_009497.1:g.561208dup'),
+    #  'NG_009113.2:g.575_576insGGAGGCAGAG'),
     # ('NG_009113.2:g.575_576insNG_009497.1:g.9118_9127',
-    #  'NG_009497.1:g.561208dup'),
+    #  'NG_009113.2:g.575_576insAGTTGGACTG'),
     # ('NG_017013.2(NM_001126118.1):c.100-10del',
     #  'Offset may not be from position 100 because this is not an exon boundary.'),
     # ('NG_017013.2(NM_001126118.1):c.259del',
-    #  'Offset may not be from position 100 because this is not an exon boundary.'),
+    #  ''),
 ]

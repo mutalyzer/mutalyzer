@@ -114,6 +114,7 @@ def invert_sequences(variant, element_type):
 
 
 def reverse_strand(internal_model):
+    internal_model["variants"].reverse()
     for variant in internal_model["variants"]:
         invert_sequences(variant, "deleted")
         invert_sequences(variant, "inserted")

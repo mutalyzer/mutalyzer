@@ -65,8 +65,24 @@ def coordinate_system_mismatch(
 def offset(location, path):
     return {
         "code": "EOFFSET",
-        "details": "Offsets, as in `{}', are not allowed with 'g' coordinate system.".format(
+        "details": "Offsets, as in `{}', are not allowed with the 'g' coordinate system.".format(
             location_to_description(location)
+        ),
+        "paths": [path],
+    }
+
+
+def outside_cds(location, path):
+    if location["outside_cds"] == "upstream":
+        d_in = "-"
+    elif location["outside_cds"] == "downstream":
+        d_in = "*"
+    else:
+        d_in = ""
+    return {
+        "code": "EOUTSIDECDS",
+        "details": "Outside CDS specifics, as '{}' in '{}', are not allowed with the 'g' coordinate system.".format(
+            d_in, location_to_description(location)
         ),
         "paths": [path],
     }

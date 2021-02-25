@@ -18,17 +18,18 @@ from .converter.to_hgvs_coordinates import (
     point_to_hgvs,
     to_hgvs_locations,
 )
-from .converter.to_internal_coordinates import to_internal_coordinates
+from .converter.to_internal_coordinates import (
+    crossmap_to_internal_setup,
+    point_to_internal,
+    to_internal_coordinates,
+)
 from .converter.to_internal_indexing import to_internal_indexing
 from .converter.variants_de_to_hgvs import de_to_hgvs
 from .description_model import (
     get_locations_min_max,
     get_reference_id,
     get_selector_id,
-    location_to_description,
     model_to_string,
-    point_to_description,
-    yield_point_locations_all,
     yield_reference_ids,
     yield_reference_selector_ids,
     yield_reference_selector_ids_coordinate_system,
@@ -45,6 +46,7 @@ from .reference import (
     get_protein_selector_model,
     get_reference_id_from_model,
     get_reference_model,
+    get_reference_mol_type,
     get_selector_model,
     get_selectors_ids,
     get_sequence_length,
@@ -56,7 +58,6 @@ from .reference import (
 from .util import (
     check_errors,
     construct_sequence,
-    create_exact_point_model,
     get_end,
     get_location_length,
     get_start,
@@ -169,7 +170,7 @@ class Description(object):
                 }
 
     @staticmethod
-    def _retrieve_reference2(reference_id):
+    def _retrieve_reference(reference_id):
         try:
             reference_model = get_reference_model(reference_id)
             # print(get_reference_model.cache_info())
@@ -187,11 +188,11 @@ class Description(object):
         if not self.corrected_model:
             return
         for reference_id, path in yield_reference_ids(self.input_model):
-            reference_model, status = self._retrieve_reference2(reference_id)
+            reference_model, status = self._retrieve_reference(reference_id)
             if not reference_model and status == "NoReference":
                 lrg = self._check_if_lrg_reference(reference_id)
                 if lrg:
-                    reference_model, status = self._retrieve_reference2(lrg["id"])
+                    reference_model, status = self._retrieve_reference(lrg["id"])
                     if reference_model:
                         self._correct_lrg_reference_id(reference_id, lrg, path)
                         reference_id = lrg["id"]
@@ -309,9 +310,10 @@ class Description(object):
     def _correct_selector_id_from_coordinate_system(self, r_id_path, selector_id):
         path = tuple(list(r_id_path[:-1]) + ["selector"])
         set_by_path(self.corrected_model, path, {"id": selector_id})
-        self._add_info(
-            infos.corrected_selector_id("", selector_id, "coordinate system", path)
-        )
+        if get_reference_mol_type(self.references["reference"]) != "mRNA":
+            self._add_info(
+                infos.corrected_selector_id("", selector_id, "coordinate system", path)
+            )
 
     @check_errors
     def _check_coordinate_system_consistency(self):
@@ -329,31 +331,28 @@ class Description(object):
                 s_c_s = get_coordinate_system_from_selector_id(
                     self.references[r_id], s_id
                 )
-                if s_c_s == c_s:
-                    return
-                else:
+                if s_c_s != c_s:
                     self._add_error(
                         errors.coordinate_system_mismatch(c_s, s_id, s_c_s, c_s_path)
                     )
-                    return
-            r_c_s = get_coordinate_system_from_reference(self.references[r_id])
-            if (r_c_s == c_s) and (c_s in ["g", "m"]):
-                return
             else:
-                if is_only_one_selector(self.references[r_id], c_s):
-                    self._correct_selector_id_from_coordinate_system(
-                        r_path, get_only_selector_id(self.references[r_id], c_s)
-                    )
-                    return
-                else:
-                    self._add_error(
-                        errors.coordinate_system_mismatch(c_s, r_id, r_c_s, c_s_path)
-                    )
+                r_c_s = get_coordinate_system_from_reference(self.references[r_id])
+                if not ((r_c_s == c_s) and (c_s in ["g", "m"])):
+                    if is_only_one_selector(self.references[r_id], c_s):
+                        self._correct_selector_id_from_coordinate_system(
+                            r_path, get_only_selector_id(self.references[r_id], c_s)
+                        )
+                    else:
+                        self._add_error(
+                            errors.coordinate_system_mismatch(
+                                c_s, r_id, r_c_s, c_s_path
+                            )
+                        )
 
     @check_errors
     def _correct_variants_type(self):
         for i, v in enumerate(self.internal_indexing_model["variants"]):
-            if v["type"] == "substitution":
+            if v.get("type") == "substitution":
                 if len(construct_sequence(v["inserted"], self._get_sequences())) > 1:
                     path = ["variants", i, "type"]
                     if self._is_inverted():
@@ -370,6 +369,24 @@ class Description(object):
                             "substitution", "deletion insertion"
                         )
                     )
+
+    @check_errors
+    def _correct_points(self):
+        crossmap_to = crossmap_to_internal_setup(
+            self.corrected_model["coordinate_system"], self._get_selector_model()
+        )
+        crossmap_from = crossmap_to_hgvs_setup(
+            self.corrected_model["coordinate_system"], self._get_selector_model()
+        )
+
+        for point, path in yield_sub_model(
+            self.corrected_model, ["location", "start", "end"], "point"
+        ):
+            internal = point_to_internal(point, crossmap_to)
+            corrected = point_to_hgvs(internal, **crossmap_from)
+            if corrected != point:
+                set_by_path(self.corrected_model, path, corrected)
+                self._add_info(infos.corrected_point(point, corrected, path))
 
     @check_errors
     def _construct_internal_coordinate_model(self):
@@ -433,20 +450,14 @@ class Description(object):
 
     @check_errors
     def _construct_de_hgvs_coordinates_model(self):
-        if self.corrected_model["reference"].get("selector"):
-            selector_id = self.corrected_model["reference"]["selector"]["id"]
-        else:
-            selector_id = None
         if self.de_hgvs_internal_indexing_model:
             self.de_hgvs_model = to_hgvs_locations(
                 self.de_hgvs_internal_indexing_model,
                 self.references,
                 self.corrected_model["coordinate_system"],
-                selector_id,
+                get_selector_id(self.corrected_model),
                 True,
             )
-            if self._is_inverted():
-                self.de_hgvs_model["variants"].reverse()
 
     def _construct_normalized_description(self):
         if self.de_hgvs_model:
@@ -584,11 +595,11 @@ class Description(object):
             ):
                 self._add_error(errors.range_reversed(location, path))
 
-    def _check_location_offset(self):
+    def _check_location_extras(self):
         for point, path in yield_sub_model(
             self.corrected_model, ["location", "start", "end"], "point"
         ):
-            if point.get("offset"):
+            if point.get("offset") or point.get("outside_cds"):
                 c_s = self.corrected_model.get("coordinate_system")
                 for ins_or_del in ["inserted", "deleted"]:
                     if ins_or_del in path:
@@ -599,7 +610,10 @@ class Description(object):
                         if ins_or_del_c_s:
                             c_s = ins_or_del_c_s
                 if c_s == "g":
-                    self._add_error(errors.offset(point, path))
+                    if point.get("offset"):
+                        self._add_error(errors.offset(point, path))
+                    if point.get("outside_cds"):
+                        self._add_error(errors.outside_cds(point, path))
 
     def _check_insertion_location(self, path):
         """
@@ -704,7 +718,7 @@ class Description(object):
         self._check_selectors_in_references()
         self._check_coordinate_systems()
         self._check_coordinate_system_consistency()
-        self._check_location_offset()
+        self._check_location_extras()
 
     def to_internal_indexing_model(self):
         self.retrieve_references()
@@ -717,7 +731,16 @@ class Description(object):
     @check_errors
     def _only_equals(self):
         for variant in self.internal_coordinates_model["variants"]:
-            if variant["type"] != "equal":
+            if variant.get("type") != "equal":
+                return False
+        return True
+
+    @check_errors
+    def _no_operation(self):
+        if self.internal_coordinates_model.get("variants") is None:
+            return True
+        for variant in self.internal_coordinates_model["variants"]:
+            if variant.get("type") is not None:
                 return False
         return True
 
@@ -728,10 +751,11 @@ class Description(object):
             return
 
         self._correct_variants_type()
+        self._correct_points()
 
         self.check()
 
-        if self._only_equals():
+        if self._only_equals() or self._no_operation():
             self.de_hgvs_internal_indexing_model = self.internal_indexing_model
             self._construct_de_hgvs_coordinates_model()
             self._construct_normalized_description()
