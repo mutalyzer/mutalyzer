@@ -9,15 +9,12 @@ M2_TESTS = [
         "input": "NG_007485.1(NM_000077.4):c.161_163del",
         "coding_protein_descriptions": {
             (
-                "NG_007485.1(NM_000077.4):c.161_163del",
-                # "AL449423.14(CDKN2A_i001):p.(Met54_Gly55delinsSer)",
-                "NG_007485.1(NP_000068.1):p.(Met54_Gly55delinsSer)",
-            ),
-            (
                 "NG_007485.1(NM_058195.3):c.204_206del",
                 "NG_007485.1(NP_478102.2):p.(Asp68_Gly69delinsGlu)",
             ),
         },
+        "protein_description": "NG_007485.1(NP_000068.1):p.(Met54_Gly55delinsSer)",
+        # "AL449423.14(CDKN2A_i001):p.(Met54_Gly55delinsSer)",
         "to_test": True,
     },
     {
@@ -32,16 +29,13 @@ M2_TESTS = [
         "genomic": "NG_007485.1:g.28294_28295insATC",
         "coding_protein_descriptions": {
             (
-                "NG_007485.1(NM_000077.4):c.161_162insATC",
-                # "AL449423.14(CDKN2A_i001):p.(Met54delinsIleSer)"
-                "NG_007485.1(NP_000068.1):p.(Met54delinsIleSer)",
-            ),
-            (
                 "NG_007485.1(NM_058195.3):c.204_205insATC",
                 "NG_007485.1(NP_478102.2):p.(Asp68_Gly69insIle)",
             ),
         },
         "noncoding": ["NG_007485.1(NR_024274.1):n.616+3443_616+3444insGAT"],
+        "protein_description": "NG_007485.1(NP_000068.1):p.(Met54delinsIleSer)",
+        # "AL449423.14(CDKN2A_i001):p.(Met54delinsIleSer)"
         "to_test": True,
     },
     {
@@ -57,15 +51,12 @@ M2_TESTS = [
         "genomic": "NG_007485.1:g.28294_28295insATC",
         "coding_protein_descriptions": {
             (
-                "NG_007485.1(NM_000077.4):c.161_162insATC",
-                # "AL449423.14(CDKN2A_i001):p.(Met54delinsIleSer)"
-                "NG_007485.1(NP_000068.1):p.(Met54delinsIleSer)",
-            ),
-            (
                 "NG_007485.1(NM_058195.3):c.204_205insATC",
                 "NG_007485.1(NP_478102.2):p.(Asp68_Gly69insIle)",
             ),
         },
+        "protein_description": "NG_007485.1(NP_000068.1):p.(Met54delinsIleSer)",
+        # "AL449423.14(CDKN2A_i001):p.(Met54delinsIleSer)"
         "noncoding": ["NG_007485.1(NR_024274.1):n.616+3443_616+3444insGAT"],
         "to_test": True,
     },
@@ -80,16 +71,13 @@ M2_TESTS = [
         "genomic": "NG_007485.1:g.28294_28295delinsATCCC",
         "coding_protein_descriptions": {
             (
-                "NG_007485.1(NM_000077.4):c.161_162delinsATCCC",
-                # "AL449423.14(CDKN2A_i001):p.(Met54delinsAsnPro)"
-                "NG_007485.1(NP_000068.1):p.(Met54delinsAsnPro)",
-            ),
-            (
                 "NG_007485.1(NM_058195.3):c.204_205delinsATCCC",
                 "NG_007485.1(NP_478102.2):p.(Asp68_Gly69delinsGluSerArg)",
             ),
         },
         "noncoding": ["NG_007485.1(NR_024274.1):n.616+3443_616+3444delinsGGGAT"],
+        "protein_description": "NG_007485.1(NP_000068.1):p.(Met54delinsAsnPro)",
+        # "AL449423.14(CDKN2A_i001):p.(Met54delinsAsnPro)"
         "to_test": True,
     },
     {
@@ -103,16 +91,13 @@ M2_TESTS = [
         "input": "NG_007485.1(NM_000077.4):c.161_162delins[ATCCC]",
         "coding_protein_descriptions": {
             (
-                "NG_007485.1(NM_000077.4):c.161_162delinsATCCC",
-                # "AL449423.14(CDKN2A_i001):p.(Met54delinsAsnPro)"
-                "NG_007485.1(NP_000068.1):p.(Met54delinsAsnPro)",
-            ),
-            (
                 "NG_007485.1(NM_058195.3):c.204_205delinsATCCC",
                 "NG_007485.1(NP_478102.2):p.(Asp68_Gly69delinsGluSerArg)",
             ),
         },
         "noncoding": ["NG_007485.1(NR_024274.1):n.616+3443_616+3444delinsGGGAT"],
+        "protein_description": "NG_007485.1(NP_000068.1):p.(Met54delinsAsnPro)",
+        # "AL449423.14(CDKN2A_i001):p.(Met54delinsAsnPro)"
         "to_test": True,
     },
     {
@@ -127,16 +112,13 @@ M2_TESTS = [
         "genomic": "NG_007485.1:g.28294_28295delinsATCCC",
         "coding_protein_descriptions": {
             (
-                "NG_007485.1(NM_000077.4):c.161_162delinsATCCC",
-                # "AL449423.14(CDKN2A_i001):p.(Met54delinsAsnPro)"
-                "NG_007485.1(NP_000068.1):p.(Met54delinsAsnPro)",
-            ),
-            (
                 "NG_007485.1(NM_058195.3):c.204_205delinsATCCC",
                 "NG_007485.1(NP_478102.2):p.(Asp68_Gly69delinsGluSerArg)",
             ),
         },
         "noncoding": ["NG_007485.1(NR_024274.1):n.616+3443_616+3444delinsGGGAT"],
+        "protein_description": "NG_007485.1(NP_000068.1):p.(Met54delinsAsnPro)",
+        # "AL449423.14(CDKN2A_i001):p.(Met54delinsAsnPro)"
         "to_test": True,
     },
     {
@@ -152,16 +134,13 @@ M2_TESTS = [
         "genomic": "NG_007485.1:g.28294_28295delinsATCCC",
         "coding_protein_descriptions": {
             (
-                "NG_007485.1(NM_000077.4):c.161_162delinsATCCC",
-                # "AL449423.14(CDKN2A_i001):p.(Met54delinsAsnPro)"
-                "NG_007485.1(NP_000068.1):p.(Met54delinsAsnPro)",
-            ),
-            (
                 "NG_007485.1(NM_058195.3):c.204_205delinsATCCC",
                 "NG_007485.1(NP_478102.2):p.(Asp68_Gly69delinsGluSerArg)",
             ),
         },
         "noncoding": ["NG_007485.1(NR_024274.1):n.616+3443_616+3444delinsGGGAT"],
+        "protein_description": "NG_007485.1(NP_000068.1):p.(Met54delinsAsnPro)",
+        # "AL449423.14(CDKN2A_i001):p.(Met54delinsAsnPro)"
         "to_test": True,
     },
     {
@@ -197,9 +176,7 @@ M2_TESTS = [
         ],
         "input": "NM_003002.2:c.273del",
         "normalized": "NM_003002.2:c.274del",
-        "coding_protein_descriptions": {
-            ("NM_003002.2:c.274del", "NM_003002.2(NP_002993.1):p.(Asp92Thrfs*43)")
-        },
+        "protein_description": "NM_003002.2(NP_002993.1):p.(Asp92Thrfs*43)",
         "to_test": True,
     },
     {
@@ -209,9 +186,7 @@ M2_TESTS = [
         ],
         "input": "NM_003002.2:c.274del",
         "normalized": "NM_003002.2:c.274del",
-        "coding_protein_descriptions": {
-            ("NM_003002.2:c.274del", "NM_003002.2(NP_002993.1):p.(Asp92Thrfs*43)")
-        },
+        "protein_description": "NM_003002.2(NP_002993.1):p.(Asp92Thrfs*43)",
         "to_test": True,
     },
     {
@@ -323,13 +298,7 @@ M2_TESTS = [
         ],
         "input": "NM_000143.3:c.-1_1insCAT",
         "normalized": "NM_000143.3:c.-1_1insCAT",
-        "coding_protein_descriptions": {
-            (
-                "NM_000143.3:c.-1_1insCAT",
-                "NM_000143.3(NP_000134.2):p.(=)",  # M2
-                # TODO: or "NM_000143.3(NP_000134.2):p.?",
-            ),
-        },
+        "protein_description": "NM_000143.3(NP_000134.2):p.(=)",
         "to_test": True,
     },
     {
@@ -339,12 +308,7 @@ M2_TESTS = [
         ],
         "input": "NM_000143.3:c.1_2insCAT",
         "normalized": "NM_000143.3:c.1_2insCAT",
-        "coding_protein_descriptions": {
-            (
-                "NM_000143.3:c.1_2insCAT",
-                "NM_000143.3(NP_000134.2):p.?",
-            ),
-        },
+        "protein_description": "NM_000143.3(NP_000134.2):p.?",
         "to_test": True,
     },
     {
@@ -355,12 +319,7 @@ M2_TESTS = [
         "input": "NG_012772.1(BRCA2_v001):c.632-5_670del",
         "normalized": "NG_012772.1(NM_000059.3):c.632-5_670del",
         "genomic": "NG_012772.1:g.18959_19002del",
-        "coding_protein_descriptions": {
-            (
-                "NG_012772.1(NM_000059.3):c.632-5_670del",
-                "NG_012772.1(NP_000050.2):p.?",
-            ),
-        },
+        "protein_description": "NG_012772.1(NP_000050.2):p.?",
         # TODO: Add splice site warning?
         "to_test": True,
     },
@@ -372,12 +331,7 @@ M2_TESTS = [
         "input": "NG_012772.1(BRCA2_v001):c.632-5_681+7del",
         "normalized": "NG_012772.1(NM_000059.3):c.632-5_681+7del",
         "genomic": "NG_012772.1:g.18959_19020del",
-        "coding_protein_descriptions": {
-            (
-                "NG_012772.1(NM_000059.3):c.632-5_681+7del",
-                "NG_012772.1(NP_000050.2):p.(Val211Glufs*10)",
-            ),
-        },
+        "protein_description": "NG_012772.1(NP_000050.2):p.(Val211Glufs*10)",
         # TODO: Add splice site warning?
         "to_test": True,
     },
@@ -388,12 +342,7 @@ M2_TESTS = [
         ],
         "input": "NG_012772.1(BRCA2_v001):c.632_681del",
         "normalized": "NG_012772.1(NM_000059.3):c.632_681del",
-        "coding_protein_descriptions": {
-            (
-                "NG_012772.1(NM_000059.3):c.632_681del",
-                "NG_012772.1(NP_000050.2):p.(Val211Glufs*10)",
-            ),
-        },
+        "protein_description": "NG_012772.1(NP_000050.2):p.(Val211Glufs*10)",
         # TODO: Add splice site warning?
         "to_test": True,
     },
@@ -411,12 +360,7 @@ M2_TESTS = [
         "input": "NG_012772.1(BRCA2_v001):c.68-7_316+7del",
         "normalized": "NG_012772.1(NM_000059.3):c.68-7_316+7del",
         "genomic": "NG_012772.1:g.8591_8853del",
-        "coding_protein_descriptions": {
-            (
-                "NG_012772.1(NM_000059.3):c.68-7_316+7del",
-                "NG_012772.1(NP_000050.2):p.(Asp23_Leu105del)",
-            ),
-        },
+        "protein_description": "NG_012772.1(NP_000050.2):p.(Asp23_Leu105del)",
         # TODO: Add splice site warning?
         "to_test": True,
     },
@@ -428,12 +372,7 @@ M2_TESTS = [
         "input": "NG_012772.1(BRCA2_v001):c.632-5_793+7del",
         "normalized": "NG_012772.1(NM_000059.3):c.632-5_793+7del",
         "genomic": "NG_012772.1:g.18959_20558del",
-        "coding_protein_descriptions": {
-            (
-                "NG_012772.1(NM_000059.3):c.632-5_793+7del",
-                "NG_012772.1(NP_000050.2):p.(Val211_His264del)",
-            ),
-        },
+        "protein_description": "NG_012772.1(NP_000050.2):p.(Val211_His264del)",
         # TODO: Add splice site warning?
         "to_test": True,
     },
@@ -445,12 +384,7 @@ M2_TESTS = [
         "input": "NG_012772.1(BRCA2_v001):c.622_674del",
         "normalized": "NG_012772.1(NM_000059.3):c.622_674del",
         "genomic": "NG_012772.1:g.16125_19006del",
-        "coding_protein_descriptions": {
-            (
-                "NG_012772.1(NM_000059.3):c.622_674del",
-                "NG_012772.1(NP_000050.2):p.(Val208Tyrfs*3)",
-            ),
-        },
+        "protein_description": "NG_012772.1(NP_000050.2):p.(Val208Tyrfs*3)",
         # TODO: Add splice site warning?
         "to_test": True,
     },
@@ -462,12 +396,7 @@ M2_TESTS = [
         "input": "NG_012772.1(BRCA2_v001):c.681+1_682-1del",
         "normalized": "NG_012772.1(NM_000059.3):c.681+1_682-1del",
         "genomic": "NG_012772.1:g.19014_20439del",
-        "coding_protein_descriptions": {
-            (
-                "NG_012772.1(NM_000059.3):c.681+1_682-1del",
-                "NG_012772.1(NP_000050.2):p.(=)",
-            ),
-        },
+        "protein_description": "NG_012772.1(NP_000050.2):p.(=)",
         # TODO: Add splice site warning?
         "to_test": True,
     },
@@ -479,12 +408,7 @@ M2_TESTS = [
         "input": "NG_012772.1(BRCA2_v001):c.622_672del",
         "normalized": "NG_012772.1(NM_000059.3):c.622_672del",
         "genomic": "NG_012772.1:g.16125_19004del",
-        "coding_protein_descriptions": {
-            (
-                "NG_012772.1(NM_000059.3):c.622_672del",
-                "NG_012772.1(NP_000050.2):p.(Val208_Asp224del)",
-            ),
-        },
+        "protein_description": "NG_012772.1(NP_000050.2):p.(Val208_Asp224del)",
         # TODO: Add splice site warning?
         "to_test": True,
     },
@@ -497,12 +421,7 @@ M2_TESTS = [
         "input": "NG_012772.1(BRCA2_v001):c.632-?_681+?del",
         "normalized": "NG_012772.1(NM_000059.3):c.632-?_681+?del",
         "genomic": "NG_012772.1:g.(17550_19725)del",
-        "coding_protein_descriptions": {
-            (
-                "NG_012772.1(NM_000059.3):c.632-?_681+?del",
-                "NG_012772.1(NP_000050.2):p.(Val211Glufs*10)",
-            )
-        },
+        "protein_description": "NG_012772.1(NP_000050.2):p.(Val211Glufs*10)",
         "to_test": False,
     },
     {
@@ -521,12 +440,7 @@ M2_TESTS = [
         "input": "NG_012772.1(BRCA2_v001):c.68-?_316+?del",
         "normalized": "NG_012772.1(NM_000059.3):c.68-?_316+?del",
         "genomic": "NG_012772.1:g.(7324_11720)del",
-        "coding_protein_descriptions": {
-            (
-                "NG_012772.1(NM_000059.3):c.68-?_316+?del",
-                "NG_012772.1(NP_000050.2):p.(Asp23_Leu105del)",
-            )
-        },
+        "protein_description": "NG_012772.1(NP_000050.2):p.(Asp23_Leu105del)",
         "to_test": False,
     },
     {
@@ -569,12 +483,7 @@ M2_TESTS = [
         ],
         "input": "NM_000143.3:c.739_904del",
         "normalized": "NM_000143.3:c.739_904del",
-        "coding_protein_descriptions": {
-            (
-                "NM_000143.3:c.739_904del",
-                "NM_000143.3(NP_000134.2):p.(Glu247Alafs*27)",
-            )
-        },
+        "protein_description": "NM_000143.3(NP_000134.2):p.(Glu247Alafs*27)",
         # TODO: Add splice site warning?
         # TODO: M2 message: Sequence "GAATTT [154bp] TTACAG" at position
         #  802_967 was not corrected to "AATTTA [154bp] TACAGG" at position
@@ -605,12 +514,7 @@ M2_TESTS = [
         "input": "NG_012337.1(TIMM8B_v001):c.12_13insGATC",
         "normalized": "NG_012337.1(NM_012459.2):c.12_13insGATC",
         "genomic": "NG_012337.1:g.4911_4912insATCG",
-        "coding_protein_descriptions": {
-            (
-                "NG_012337.1(NM_012459.2):c.12_13insGATC",
-                "NG_012337.1(NP_036591.2):p.(Ser5Aspfs*21)",
-            )
-        },
+        "protein_description": "NG_012337.1(NP_036591.2):p.(Ser5Aspfs*21)",
         "to_test": True,
     },
     {
@@ -669,12 +573,7 @@ M2_TESTS = [
         "input": "NG_012337.1(TIMM8B_v001):c.12_13ins[GATC]",
         "normalized": "NG_012337.1(NM_012459.2):c.12_13insGATC",
         "genomic": "NG_012337.1:g.4911_4912insATCG",
-        "coding_protein_descriptions": {
-            (
-                "NG_012337.1(NM_012459.2):c.12_13insGATC",
-                "NG_012337.1(NP_036591.2):p.(Ser5Aspfs*21)",
-            )
-        },
+        "protein_description": "NG_012337.1(NP_036591.2):p.(Ser5Aspfs*21)",
         "to_test": True,
     },
     {
@@ -735,12 +634,7 @@ M2_TESTS = [
         "input": "NG_012337.1(TIMM8B_v001):c.12_13ins[TTT;GATC]",
         "normalized": "NG_012337.1(NM_012459.2):c.12_13insTTTGATC",
         "genomic": "NG_012337.1:g.4911_4912insATCAAAG",
-        "coding_protein_descriptions": {
-            (
-                "NG_012337.1(NM_012459.2):c.12_13insTTTGATC",
-                "NG_012337.1(NP_036591.2):p.(Ser5Phefs*22)",
-            )
-        },
+        "protein_description": "NG_012337.1(NP_036591.2):p.(Ser5Phefs*22)",
         "to_test": True,
     },
     {
@@ -847,12 +741,7 @@ M2_TESTS = [
         "input": "NG_008939.1(PCCB_v001):c.156_157insGTCCTGTGCTCATTATCTGGC",
         "normalized": "NG_008939.1(NM_000532.5):c.156_157insGTCCTGTGCTCATTATCTGGC",
         "genomic": "NG_008939.1:g.5207_5208insGTCCTGTGCTCATTATCTGGC",
-        "coding_protein_descriptions": {
-            (
-                "NG_008939.1(NM_000532.5):c.156_157insGTCCTGTGCTCATTATCTGGC",
-                "NG_008939.1(NP_000523.2):p.(Gln52_Arg53insValLeuCysSerLeuSerGly)",
-            )
-        },
+        "protein_description": "NG_008939.1(NP_000523.2):p.(Gln52_Arg53insValLeuCysSerLeuSerGly)",
         "to_test": True,
     },
     {
@@ -864,12 +753,7 @@ M2_TESTS = [
         "input": "NG_008939.1(PCCB_v001):c.156_157ins[GTCCTGTGCTCATTATCTGGC]",
         "normalized": "NG_008939.1(NM_000532.5):c.156_157insGTCCTGTGCTCATTATCTGGC",
         "genomic": "NG_008939.1:g.5207_5208insGTCCTGTGCTCATTATCTGGC",
-        "coding_protein_descriptions": {
-            (
-                "NG_008939.1(NM_000532.5):c.156_157insGTCCTGTGCTCATTATCTGGC",
-                "NG_008939.1(NP_000523.2):p.(Gln52_Arg53insValLeuCysSerLeuSerGly)",
-            )
-        },
+        "protein_description": "NG_008939.1(NP_000523.2):p.(Gln52_Arg53insValLeuCysSerLeuSerGly)",
         "to_test": True,
     },
     {
@@ -880,12 +764,7 @@ M2_TESTS = [
         "input": "NG_008939.1(PCCB_v001):c.156_157ins[GTCCTGTGCTC;ATTATCTGGC]",
         "normalized": "NG_008939.1(NM_000532.5):c.156_157insGTCCTGTGCTCATTATCTGGC",
         "genomic": "NG_008939.1:g.5207_5208insGTCCTGTGCTCATTATCTGGC",
-        "coding_protein_descriptions": {
-            (
-                "NG_008939.1(NM_000532.5):c.156_157insGTCCTGTGCTCATTATCTGGC",
-                "NG_008939.1(NP_000523.2):p.(Gln52_Arg53insValLeuCysSerLeuSerGly)",
-            )
-        },
+        "protein_description": "NG_008939.1(NP_000523.2):p.(Gln52_Arg53insValLeuCysSerLeuSerGly)",
         "to_test": True,
     },
     {
@@ -897,12 +776,7 @@ M2_TESTS = [
         "input": "NG_008939.1(PCCB_v001):c.156_157ins180_188",
         "normalized": "NG_008939.1(NM_000532.5):c.156_157ins180_188",
         "genomic": "NG_008939.1:g.5207_5208ins5231_10536",
-        "coding_protein_descriptions": {
-            (
-                "NG_008939.1(NM_000532.5):c.156_157ins180_188",
-                "NG_008939.1(NP_000523.2):p.(Arg53Alafs*5)",
-            )
-        },
+        "protein_description": "NG_008939.1(NP_000523.2):p.(Arg53Alafs*5)",
         "to_test": True,
     },
     {
@@ -914,12 +788,7 @@ M2_TESTS = [
         "input": "NG_008939.1(PCCB_v001):c.156_157ins180_188inv",
         "normalized": "NG_008939.1(NM_000532.5):c.156_157ins180_188inv",
         "genomic": "NG_008939.1:g.5207_5208ins5231_10536inv",
-        "coding_protein_descriptions": {
-            (
-                "NG_008939.1(NM_000532.5):c.156_157ins180_188inv",
-                "NG_008939.1(NP_000523.2):p.(Arg53Phefs*11)",
-            )
-        },
+        "protein_description": "NG_008939.1(NP_000523.2):p.(Arg53Phefs*11)",
         "to_test": True,
     },
     {
@@ -932,12 +801,7 @@ M2_TESTS = [
         "input": "NG_008939.1(PCCB_v001):c.156_157ins[180_188]",
         "normalized": "NG_008939.1(NM_000532.5):c.156_157ins180_188",
         "genomic": "NG_008939.1:g.5207_5208ins5231_10536",
-        "coding_protein_descriptions": {
-            (
-                "NG_008939.1(NM_000532.5):c.156_157ins180_188",
-                "NG_008939.1(NP_000523.2):p.(Arg53Alafs*5)",
-            )
-        },
+        "protein_description": "NG_008939.1(NP_000523.2):p.(Arg53Alafs*5)",
         "to_test": True,
     },
     {
@@ -950,12 +814,7 @@ M2_TESTS = [
         "input": "NG_008939.1(PCCB_v001):c.156_157ins[180_188inv]",
         "normalized": "NG_008939.1(NM_000532.5):c.156_157ins180_188inv",
         "genomic": "NG_008939.1:g.5207_5208ins5231_10536inv",
-        "coding_protein_descriptions": {
-            (
-                "NG_008939.1(NM_000532.5):c.156_157ins180_188inv",
-                "NG_008939.1(NP_000523.2):p.(Arg53Phefs*11)",
-            )
-        },
+        "protein_description": "NG_008939.1(NP_000523.2):p.(Arg53Phefs*11)",
         "to_test": True,
     },
     {
@@ -1186,12 +1045,7 @@ M2_TESTS = [
         "input": "NG_008939.1(PCCB_v001):c.156_161delinsGTCCTGTGCTCATTATCTGGC",
         "normalized": "NG_008939.1(NM_000532.5):c.156_161delinsGTCCTGTGCTCATTATCTGGC",
         "genomic": "NG_008939.1:g.5207_5212delinsGTCCTGTGCTCATTATCTGGC",
-        "coding_protein_descriptions": {
-            (
-                "NG_008939.1(NM_000532.5):c.156_161delinsGTCCTGTGCTCATTATCTGGC",
-                "NG_008939.1(NP_000523.2):p.(Arg53_Arg54delinsSerCysAlaHisTyrLeuAla)",
-            )
-        },
+        "protein_description": "NG_008939.1(NP_000523.2):p.(Arg53_Arg54delinsSerCysAlaHisTyrLeuAla)",
         "to_test": True,
     },
     {
@@ -1203,12 +1057,7 @@ M2_TESTS = [
         "input": "NG_008939.1(PCCB_v001):c.156_161delins[GTCCTGTGCTCATTATCTGGC]",
         "normalized": "NG_008939.1(NM_000532.5):c.156_161delinsGTCCTGTGCTCATTATCTGGC",
         "genomic": "NG_008939.1:g.5207_5212delinsGTCCTGTGCTCATTATCTGGC",
-        "coding_protein_descriptions": {
-            (
-                "NG_008939.1(NM_000532.5):c.156_161delinsGTCCTGTGCTCATTATCTGGC",
-                "NG_008939.1(NP_000523.2):p.(Arg53_Arg54delinsSerCysAlaHisTyrLeuAla)",
-            )
-        },
+        "protein_description": "NG_008939.1(NP_000523.2):p.(Arg53_Arg54delinsSerCysAlaHisTyrLeuAla)",
         "to_test": True,
     },
     {
@@ -1219,12 +1068,7 @@ M2_TESTS = [
         "input": "NG_008939.1(PCCB_v001):c.156_161delins[GTCCTGTGCT;CATTATCTGGC]",
         "normalized": "NG_008939.1(NM_000532.5):c.156_161delinsGTCCTGTGCTCATTATCTGGC",
         "genomic": "NG_008939.1:g.5207_5212delinsGTCCTGTGCTCATTATCTGGC",
-        "coding_protein_descriptions": {
-            (
-                "NG_008939.1(NM_000532.5):c.156_161delinsGTCCTGTGCTCATTATCTGGC",
-                "NG_008939.1(NP_000523.2):p.(Arg53_Arg54delinsSerCysAlaHisTyrLeuAla)",
-            )
-        },
+        "protein_description": "NG_008939.1(NP_000523.2):p.(Arg53_Arg54delinsSerCysAlaHisTyrLeuAla)",
         "to_test": True,
     },
     {
@@ -1294,12 +1138,7 @@ M2_TESTS = [
         "input": "LRG_1t1:c.266G>T",
         "normalized": "LRG_1(t1):c.266G>T",  # TODO: check if OK.
         "genomic": "LRG_1:g.6855G>T",
-        "coding_protein_descriptions": {
-            (
-                "LRG_1(t1):c.266G>T",
-                "LRG_1(p1):p.(Gly89Val)",
-            )
-        },
+        "protein_description": "LRG_1(p1):p.(Gly89Val)",
         "infos": ["ICORRECTEDLRGREFERENCE"],
         "to_test": True,
     },
@@ -1390,12 +1229,7 @@ M2_TESTS = [
         "input": "NG_008939.1:c.155_157delAAC",
         "normalized": "NG_008939.1(NM_000532.5):c.155_157del",
         "genomic": "NG_008939.1:g.5206_5208del",
-        "coding_protein_descriptions": {
-            (
-                "NG_008939.1(NM_000532.5):c.155_157del",
-                "NG_008939.1(NP_000523.2):p.(Gln52del)",
-            )
-        },
+        "protein_description": "NG_008939.1(NP_000523.2):p.(Gln52del)",
         "to_test": True,
     },
     {
@@ -1406,12 +1240,7 @@ M2_TESTS = [
         "input": "NG_008939.1:c.155_157del3",
         "normalized": "NG_008939.1(NM_000532.5):c.155_157del",
         "genomic": "NG_008939.1:g.5206_5208del",
-        "coding_protein_descriptions": {
-            (
-                "NG_008939.1(NM_000532.5):c.155_157del",
-                "NG_008939.1(NP_000523.2):p.(Gln52del)",
-            )
-        },
+        "protein_description": "NG_008939.1(NP_000523.2):p.(Gln52del)",
         "to_test": True,
     },
     {
@@ -1423,12 +1252,7 @@ M2_TESTS = [
         "input": "NG_008939.1:c.274_275inv",
         "normalized": "NG_008939.1(NM_000532.5):c.274_275inv",
         "genomic": "NG_008939.1:g.10622_10623inv",
-        "coding_protein_descriptions": {
-            (
-                "NG_008939.1(NM_000532.5):c.274_275inv",
-                "NG_008939.1(NP_000523.2):p.(Asp92Ser)",
-            )
-        },
+        "protein_description": "NG_008939.1(NP_000523.2):p.(Asp92Ser)",
         "to_test": True,
     },
     {
@@ -1437,12 +1261,7 @@ M2_TESTS = [
             "Delins with explicit length of deleted sequence (bug #108).",
         ],
         "input": "NM_000193.2:c.108_109del2insG",
-        "coding_protein_descriptions": {
-            (
-                "NM_000193.2:c.108_109delinsG",
-                "NM_000193.2(NP_000184.1):p.(Lys38Serfs*2)",
-            )
-        },
+        "protein_description": "NM_000193.2(NP_000184.1):p.(Lys38Serfs*2)",
         "to_test": True,
     },
     # test_protein_level_description: to be implemented.
@@ -1478,12 +1297,7 @@ M2_TESTS = [
             "http://www.hgvs.org/mutnomen/FAQ.html#nostop",
         ],
         "input": "NM_001199.3:c.2188dup",
-        "coding_protein_descriptions": {
-            (
-                "NM_001199.3:c.2188dup",
-                "NM_001199.3(NP_001190.1):p.(Gln730Profs*?)",
-            )
-        },
+        "protein_description": "NM_001199.3(NP_001190.1):p.(Gln730Profs*?)",
         "to_test": True,
     },
     {
@@ -1494,12 +1308,7 @@ M2_TESTS = [
             "http://www.hgvs.org/mutnomen/FAQ.html#nostop",
         ],
         "input": "NM_000193.2:c.1388G>C",
-        "coding_protein_descriptions": {
-            (
-                "NM_000193.2:c.1388G>C",
-                "NM_000193.2(NP_000184.1):p.(*463Serext*?)",
-            )
-        },
+        "protein_description": "NM_000193.2(NP_000184.1):p.(*463Serext*?)",
         "to_test": True,
     },
     {
@@ -1511,12 +1320,7 @@ M2_TESTS = [
             "To be implemented.",
         ],
         "input": "NM_000193.2:c.1388_1389insC",
-        "coding_protein_descriptions": {
-            (
-                "NM_000193.2:c.1388_1389insC",
-                "NM_000193.2(NP_000184.1):p.(*463Cysext*?)",
-            )
-        },
+        "protein_description": "NM_000193.2(NP_000184.1):p.(*463Cysext*?)",
         "to_test": True,
     },
     {
@@ -1526,13 +1330,8 @@ M2_TESTS = [
             "Switched from AB026906.1 to NG_012337.1 and from SDHD_v001 to NM_003002.2",
         ],
         "input": "NG_012337.1(NM_003002.2):c.276C>T",
-        "coding_protein_descriptions": {
-            (
-                # "AB026906.1(SDHD_v001):c.276C>T",
-                "NG_012337.1(NM_003002.2):c.276C>T",
-                "NG_012337.1(NP_002993.1):p.(=)",
-            )
-        },
+        # "AB026906.1(SDHD_v001):c.276C>T"
+        "protein_description": "NG_012337.1(NP_002993.1):p.(=)",
         "to_test": True,
     },
     {
@@ -1542,12 +1341,7 @@ M2_TESTS = [
             "alternative start codon.",
         ],
         "input": "NM_024426.4:c.1107A>G",
-        "coding_protein_descriptions": {
-            (
-                "NM_024426.4:c.1107A>G",
-                "NM_024426.4(NP_077744.3):p.(=)",
-            )
-        },
+        "protein_description": "NM_024426.4(NP_077744.3):p.(=)",
         "to_test": True,
     },
     {
@@ -1558,12 +1352,7 @@ M2_TESTS = [
         ],
         # "input": "AB026906.1:c.1A>G",
         "input": "NG_012337.1(NM_003002.2):c.1A>G",
-        "coding_protein_descriptions": {
-            (
-                "NG_012337.1(NM_003002.2):c.1A>G",
-                "NG_012337.1(NP_002993.1):p.?",
-            )
-        },
+        "protein_description": "NG_012337.1(NP_002993.1):p.?",
         "to_test": True,
     },
     {
@@ -1574,12 +1363,7 @@ M2_TESTS = [
             "To be implemented.",
         ],
         "input": "NM_024426.4:c.1C>G",
-        "coding_protein_descriptions": {
-            (
-                "NM_024426.4:c.1C>G",
-                "NM_024426.4(NP_077744.3):p.?",
-            )
-        },
+        "protein_description": "NM_024426.4(NP_077744.3):p.?",
         "to_test": True,
     },
     {
@@ -1592,12 +1376,7 @@ M2_TESTS = [
         ],
         # "input": "AB026906.1:c.1A>T", # yields TTG start codon
         "input": "NG_012337.1(NM_003002.2):c.1A>T",  # yields TTG start codon
-        "coding_protein_descriptions": {
-            (
-                "NG_012337.1(NM_003002.2):c.1A>T",
-                "NG_012337.1(NP_002993.1):p.?",
-            )
-        },
+        "protein_description": "NG_012337.1(NP_002993.1):p.?",
         "to_test": True,
     },
     {
@@ -1609,12 +1388,7 @@ M2_TESTS = [
             "To be implemented.",
         ],
         "input": "NM_024426.4:c.1C>A",  # yields ATG start codon
-        "coding_protein_descriptions": {
-            (
-                "NM_024426.4:c.1C>A",
-                "NM_024426.4(NP_077744.3):p.?",
-            )
-        },
+        "protein_description": "NM_024426.4(NP_077744.3):p.?",
         "to_test": True,
     },
     {
@@ -1628,12 +1402,7 @@ M2_TESTS = [
         # "input": "AB026906.1:c.1_4delinsTTGA", # yields TTG start codon
         "input": "NG_012337.1(NM_003002.2):c.1_4delinsTTGA",
         # yields TTG start codon
-        "coding_protein_descriptions": {
-            (
-                "NG_012337.1(NM_003002.2):c.[1A>T;4G>A]",
-                "NG_012337.1(NP_002993.1):p.?",
-            )
-        },
+        "protein_description": "NG_012337.1(NP_002993.1):p.?",
         "to_test": True,
     },
     {
@@ -1645,12 +1414,7 @@ M2_TESTS = [
             "To be implemented.",
         ],
         "input": "NM_024426.4:c.1_4delinsATGA",  # yields ATG start codon
-        "coding_protein_descriptions": {
-            (
-                "NM_024426.4:c.[1C>A;4C>A]",
-                "NM_024426.4(NP_077744.3):p.?",
-            )
-        },
+        "protein_description": "NM_024426.4(NP_077744.3):p.?",
         "to_test": True,
     },
     # test_legend_mrna_by_construction: No longer relevant?
@@ -1661,12 +1425,7 @@ M2_TESTS = [
             "downstream in the RNA should yield `ext*P` where P is a position.",
         ],
         "input": "NM_000143.3:c.1531T>G",
-        "coding_protein_descriptions": {
-            (
-                "NM_000143.3:c.1531T>G",
-                "NM_000143.3(NP_000134.2):p.(*511Glyext*3)",
-            )
-        },
+        "protein_description": "NM_000143.3(NP_000134.2):p.(*511Glyext*3)",
         "to_test": True,
     },
     {
@@ -2043,13 +1802,10 @@ M2_TESTS = [
                 "NG_007485.1(NM_058195.3):c.194-3579_194-3576dup",
                 "NG_007485.1(NP_478102.2):p.(=)",
             ),
-            (
-                "NG_007485.1(NM_000077.4):c.41_44dup",
-                "NG_007485.1(NP_000068.1):p.(Trp15*)",
-            ),
         },
         "noncoding": "NG_007485.1(NR_024274.1):n.616+7037_616+7040dup",
         # "noncoding": "NG_007485.1(NR_024274.1):n.*7033_*7036dup", # in M2
+        "protein_description": "NG_007485.1(NP_000068.1):p.(Trp15*)",
         "to_test": True,
     },
     {
@@ -2071,12 +1827,7 @@ M2_TESTS = [
     {
         "keywords": ["protein", "M2: similar to `accno_as_transcript_variant`"],
         "input": "NG_012337.1(NM_012459.2):c.4_5insGTA",
-        "coding_protein_descriptions": {
-            (
-                "NG_012337.1(NM_012459.2):c.5_6insTAG",
-                "NG_012337.1(NP_036591.2):p.(Arg2_Lys3insSer)",
-            ),
-        },
+        "protein_description": "NG_012337.1(NP_036591.2):p.(Arg2_Lys3insSer)",
         "to_test": True,
     },
     # All the IVS/EX tests are not any longer relevant.
@@ -2520,15 +2271,12 @@ TESTS = [
         "genomic": "NG_007485.1:g.5301_5302del",
         "coding_protein_descriptions": {
             (
-                "NG_007485.1(NM_058195.3):c.141_142del",
-                "NG_007485.1(NP_478102.2):p.(Met48Alafs*14)",
-            ),
-            (
                 "NG_007485.1(NM_000077.4):c.-19364_-19363del",
                 "NG_007485.1(NP_000068.1):p.(=)",
             ),
         },
         "noncoding": ["NG_007485.1(NR_024274.1):n.616+26436_616+26437del"],
+        "protein_description": "NG_007485.1(NP_478102.2):p.(Met48Alafs*14)",
         "to_test": True,
     },
     {
@@ -2635,14 +2383,11 @@ TESTS = [
                 "NG_009299.1(NP_002465.1):p.(Leu1432Arg)",
             ),
             (
-                "NG_009299.1(NM_017668.3):c.41A>C",
-                "NG_009299.1(NP_060138.1):p.(Gln14Profs*68)",
-            ),
-            (
                 "NG_009299.1(NM_001143979.2):c.41A>C",
                 "NG_009299.1(NP_001137451.1):p.(Gln14Profs*68)",
             ),
         },
+        "protein_description": "NG_009299.1(NP_060138.1):p.(Gln14Profs*68)",
         "to_test": True,
     },
     {
@@ -2674,23 +2419,13 @@ TESTS = [
     {
         "keywords": [],
         "input": "NG_012337.1(NM_012459.2):c.5_6delinsTAG",
-        "coding_protein_descriptions": {
-            (
-                "NG_012337.1(NM_012459.2):c.5_6delinsTAG",
-                "NG_012337.1(NP_036591.2):p.(Arg2Leufs*23)",
-            ),
-        },
+        "protein_description": "NG_012337.1(NP_036591.2):p.(Arg2Leufs*23)",
         "to_test": True,
     },
     {
         "keywords": [],
         "input": "NG_012337.1(NM_012459.2):c.4_6delinsGTA",
-        "coding_protein_descriptions": {
-            (
-                "NG_012337.1(NM_012459.2):c.4_6delinsGTA",
-                "NG_012337.1(NP_036591.2):p.(Arg2Val)",
-            ),
-        },
+        "protein_description": "NG_012337.1(NP_036591.2):p.(Arg2Val)",
         "to_test": True,
     },
     {
@@ -2743,12 +2478,6 @@ TESTS = [
         "input": "NG_012337.1(NM_003002.2):c.[274;600]",
         "normalized": "NG_012337.1(NM_003002.2):c.[274;*120]",
         "genomic": "NG_012337.1:g.[7125;13244]",
-        "coding_protein_descriptions": {
-            (
-                "NG_012337.1(NM_003002.2):c.[274;*120]",
-                "NG_012337.1(NP_002993.1):p.(=)",
-            ),
-        },
         "to_test": True,
     },
     {
@@ -2756,12 +2485,7 @@ TESTS = [
         "input": "NG_012337.1(NM_012459.2):c.297_*1del",
         "normalized": "NG_012337.1(NM_012459.2):c.297_*1del",
         "genomic": "NG_012337.1:g.3448_3449del",
-        "coding_protein_descriptions": {
-            (
-                "NG_012337.1(NM_012459.2):c.297_*1del",
-                "NG_012337.1(NP_036591.2):p.(*99Tyrext*6)",
-            ),
-        },
+        "protein_description": "NG_012337.1(NP_036591.2):p.(*99Tyrext*6)",
         "to_test": True,
     },
     {
@@ -2769,12 +2493,7 @@ TESTS = [
         "input": "NG_012337.1(NM_012459.2):c.-35_*1del",
         "normalized": "NG_012337.1(NM_012459.2):c.-35_*1del",
         "genomic": "NG_012337.1:g.3448_4957del",
-        "coding_protein_descriptions": {
-            (
-                "NG_012337.1(NM_012459.2):c.-35_*1del",
-                "NG_012337.1(NP_036591.2):p.?",
-            ),
-        },
+        "protein_description": "NG_012337.1(NP_036591.2):p.?",
         "to_test": True,
     },
     {
@@ -2782,12 +2501,7 @@ TESTS = [
         "input": "NG_012337.1(NM_012459.2):c.-1_*1del",
         "normalized": "NG_012337.1(NM_012459.2):c.1_*2del",
         "genomic": "NG_012337.1:g.3449_4924del",
-        "coding_protein_descriptions": {
-            (
-                "NG_012337.1(NM_012459.2):c.1_*2del",
-                "NG_012337.1(NP_036591.2):p.?",
-            ),
-        },
+        "protein_description": "NG_012337.1(NP_036591.2):p.?",
         "to_test": True,
     },
     {
@@ -2807,23 +2521,20 @@ TESTS = [
                 # TODO: Check if it should be '?'
             ),
             (
-                "NG_009299.1(NM_017668.3):c.[41A>C;*189del]",
-                "NG_009299.1(NP_060138.1):p.?",
-                # TODO: Check if it should not be '?'
-            ),
-            (
                 "NG_009299.1(NM_001143979.2):c.[41A>C;*189del]",
                 "NG_009299.1(NP_001137451.1):p.?",
                 # TODO: Check if it should not be '?'
             ),
         },
+        "protein_description": "NG_009299.1(NP_060138.1):p.?",
+        # TODO: Check if it should not be '?'
         "to_test": True,
     },
     {
         "keywords": ["reverse strand"],
         "input": "NG_009299.1(NM_017668.3):c.[250del;41A>C]",
         "normalized": "NG_009299.1(NM_017668.3):c.[41A>C;*189del]",
-        "infos": ["ISORTEDVARIANTS"],
+        "infos": ["ICORRECTEDPOINT", "ISORTEDVARIANTS"],
         "to_test": True,
     },
     {
@@ -2837,7 +2548,14 @@ TESTS = [
         "keywords": [],
         "input": "NM_003002.2:c.[274+20C>T;400_401insNM_003002.4:100_102]",
         "normalized": "NM_003002.2:c.[294C>T;399_401dup]",
-        "infos": ["ICORRECTEDCOORDINATESYSTEM"],
+        "infos": ["ICORRECTEDCOORDINATESYSTEM", "ICORRECTEDPOINT"],
+        "to_test": True,
+    },
+    {
+        "keywords": ["there should be no deleted sequence mismatch error"],
+        "input": "NG_012337.1(NM_003002.2):c.2740000T>T",
+        "infos": ["ICORRECTEDPOINT"],
+        "errors": ["EOUTOFBOUNDARY"],
         "to_test": True,
     },
     # {

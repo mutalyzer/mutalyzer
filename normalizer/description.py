@@ -489,42 +489,44 @@ class Description(object):
                     )
                 )
             ]
-
         for selector in yield_overlap_ids(self.references["reference"], l_min, l_max):
-            converted_model = to_hgvs_locations(
-                model=self.de_hgvs_internal_indexing_model,
-                references=self.references,
-                to_coordinate_system=None,
-                to_selector_id=selector["id"],
-                degenerate=True,
-            )
-            c_s = converted_model["coordinate_system"]
-            if not equivalent_descriptions.get(c_s):
-                equivalent_descriptions[c_s] = []
-
-            if converted_model["coordinate_system"] == "c":
-                protein_selector_model = get_protein_selector_model(
-                    self.references["reference"]["annotations"], selector["id"]
+            if selector["id"] != self._get_selector_id():
+                converted_model = to_hgvs_locations(
+                    model=self.de_hgvs_internal_indexing_model,
+                    references=self.references,
+                    to_coordinate_system=None,
+                    to_selector_id=selector["id"],
+                    degenerate=True,
                 )
-                if protein_selector_model:
-                    equivalent_descriptions[c_s].append(
-                        (
-                            model_to_string(converted_model),
-                            get_protein_description(
-                                variants_to_delins(
-                                    self.de_hgvs_internal_indexing_model["variants"]
-                                ),
-                                self.references,
-                                protein_selector_model,
-                            )[0],
-                        )
+                c_s = converted_model["coordinate_system"]
+                if not equivalent_descriptions.get(c_s):
+                    equivalent_descriptions[c_s] = []
+
+                if converted_model["coordinate_system"] == "c":
+                    protein_selector_model = get_protein_selector_model(
+                        self.references["reference"]["annotations"], selector["id"]
                     )
+                    if protein_selector_model:
+                        equivalent_descriptions[c_s].append(
+                            (
+                                model_to_string(converted_model),
+                                get_protein_description(
+                                    variants_to_delins(
+                                        self.de_hgvs_internal_indexing_model["variants"]
+                                    ),
+                                    self.references,
+                                    protein_selector_model,
+                                )[0],
+                            )
+                        )
+                    else:
+                        equivalent_descriptions[c_s].append(
+                            model_to_string(converted_model)
+                        )
                 else:
                     equivalent_descriptions[c_s].append(
                         model_to_string(converted_model)
                     )
-            else:
-                equivalent_descriptions[c_s].append(model_to_string(converted_model))
 
         if equivalent_descriptions:
             self.equivalent_descriptions = equivalent_descriptions
@@ -691,7 +693,7 @@ class Description(object):
                 return
             if self._is_inverted():
                 seq_ref = reverse_complement(seq_ref)
-            if seq_del != seq_ref:
+            if seq_del and seq_ref and seq_del != seq_ref:
                 self._add_error(errors.sequence_mismatch(seq_ref, seq_del, path))
 
     @check_errors
