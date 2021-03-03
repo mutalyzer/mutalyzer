@@ -51,6 +51,8 @@ class PositionConvert(object):
 
         self._convert()
 
+        self._add_overlapping()
+
         self.output = self.get_output()
 
     def _check_input_requirements(self):
@@ -132,14 +134,14 @@ class PositionConvert(object):
                     infos.to_coordinate_system_from_reference(self.to_coordinate_system)
                 )
             else:
-                self.errors.append(errors.no_to_selector())
+                self.errors.append(errors.no_to_selector(self.reference_id, self.to_selector_id))
 
         elif self.to_selector_id:
             if not is_selector_in_reference(
                 self.to_selector_id, self.description.references["reference"]
             ):
                 # TODO: update the error.
-                self.errors.append(errors.no_to_selector())
+                self.errors.append(errors.no_to_selector(self.reference_id, self.to_selector_id))
 
         if (self.to_selector_id == self.from_selector_id) and (
             self.to_coordinate_system == self.from_coordinate_system
@@ -156,7 +158,8 @@ class PositionConvert(object):
             degenerate=True,
         )
 
-    def add_overlapping(self):
+    @check_errors
+    def _add_overlapping(self):
         pass
 
     def get_output(self):
