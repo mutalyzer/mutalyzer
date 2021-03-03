@@ -194,6 +194,10 @@ def repeat_not_supported(variant, path):
     }
 
 
+def uncertain():
+    return {"code": "EUNCERTAIN", "details": "Uncertainties present in locations."}
+
+
 def overlap():
     return {"code": "EOVERLAP", "details": "Variant locations overlap."}
 

@@ -156,23 +156,22 @@ def yield_point_locations_all(model, path=[]):
                 yield from yield_point_locations_all(sub_model, path + [k, i])
 
 
-def yield_sub_model(model, keys, model_type, path=[]):
+def yield_sub_model(model, keys, types, path=[]):
     """
 
     :param model:
     :param keys:
-    :param model_type:
+    :param types:
     :param path:
     """
     if isinstance(model, dict):
         for k in model.keys():
-            if k in keys and model[k]["type"] == model_type:
+            if k in keys and model[k]["type"] in types:
                 yield model[k], path + [k]
-            else:
-                yield from yield_sub_model(model[k], keys, model_type, path + [k])
+            yield from yield_sub_model(model[k], keys, types, path + [k])
     elif isinstance(model, list):
         for i, sub_model in enumerate(model):
-            yield from yield_sub_model(sub_model, keys, model_type, path + [i])
+            yield from yield_sub_model(sub_model, keys, types, path + [i])
 
 
 def yield_view_nodes(model, path=[]):
@@ -229,21 +228,27 @@ def model_to_string(model, exclude_superfluous_selector=True):
         )
 
 
-def variants_to_description(variants, sequences=None):
+def variants_to_description(variants):
+    """
+    Convert a list of variant models to string.
+    :param variants: Variant models.
+    :return: Variants string representation.
+    """
     if isinstance(variants, list):
         variants_list = []
         for variant in variants:
-            variants_list.append(variant_to_description(variant, sequences))
+            variants_list.append(variant_to_description(variant))
         if len(variants_list) > 1:
             return "[{}]".format(";".join(variants_list))
         elif len(variants_list) == 1:
             return variants_list[0]
 
 
-def variant_to_description(variant, sequences=None):
+def variant_to_description(variant):
     """
     Convert the variant dictionary model to string.
-    :return: Equivalent variant string representation.
+    :param variant: Variant model.
+    :return: Variant model string representation.
     """
     deleted_location = deleted = inserted = ""
     if variant.get("location"):
@@ -265,11 +270,11 @@ def variant_to_description(variant, sequences=None):
             )
         ):
             inserted = "[{}]".format(inserted)
-    variant_type = variant.get("type")
 
     if variant.get("deleted"):
         deleted = inserted_to_description(variant["deleted"])
 
+    variant_type = variant.get("type")
     if variant_type == "substitution":
         variant_type = deleted + ">"
     elif variant_type == "deletion":
@@ -294,9 +299,9 @@ def variant_to_description(variant, sequences=None):
 
 def inserted_to_description(inserted):
     """
-    Convert the insertions dictionary model to string.
-    :param inserted: Insertions dictionary.
-    :return: Equivalent insertions string representation.
+    Convert the inserted dictionary model to string.
+    :param inserted: Inserted dictionary model.
+    :return: Inserted string representation.
     """
     descriptions = []
     for insert in inserted:
@@ -333,9 +338,10 @@ def location_to_description(location):
                 point_to_description(location.get("end")),
             )
         else:
-            start = location_to_description(location.get("start"))
-            end = location_to_description(location.get("end"))
-            return "{}_{}".format(start, end)
+            return "{}_{}".format(
+                location_to_description(location.get("start")),
+                location_to_description(location.get("end")),
+            )
 
 
 def point_to_description(point):
