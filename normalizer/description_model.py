@@ -229,23 +229,6 @@ def model_to_string(model, exclude_superfluous_selector=True):
         )
 
 
-def reference_to_description(reference):
-    """
-    Convert the reference dictionary model to string.
-    :param reference: Dictionary holding the reference model.
-    :return: Equivalent reference string representation.
-    """
-    version = ""
-    if isinstance(reference, dict):
-        if reference.get("type") == "genbank":
-            accession = reference.get("accession")
-            if reference.get("version"):
-                version = ".{}".format(reference["version"])
-        elif reference.get("type") == "lrg":
-            accession = reference.get("id")
-    return "{}{}".format(accession, version)
-
-
 def variants_to_description(variants, sequences=None):
     if isinstance(variants, list):
         variants_list = []
