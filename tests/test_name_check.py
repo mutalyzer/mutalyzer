@@ -48,11 +48,22 @@ def test_coding(input_description, coding):
 
 
 @pytest.mark.parametrize(
+    "input_description, protein_description",
+    get_tests(TESTS_ALL, "protein_description"),
+)
+def test_protein(input_description, protein_description):
+
+    normalized_output = name_check(input_description)
+    normalizer_protein = normalized_output["protein"]["description"]
+
+    assert normalizer_protein == protein_description
+
+
+@pytest.mark.parametrize(
     "input_description, coding_protein_descriptions",
     get_tests(TESTS_ALL, "coding_protein_descriptions"),
 )
-def test_protein(input_description, coding_protein_descriptions):
-
+def test_protein_equivalent(input_description, coding_protein_descriptions):
     normalized_output = name_check(input_description)
     normalizer_descriptions = set(normalized_output["equivalent_descriptions"]["c"])
 
@@ -61,11 +72,9 @@ def test_protein(input_description, coding_protein_descriptions):
 
 @pytest.mark.parametrize("input_description, codes", get_tests(TESTS_ALL, "errors"))
 def test_errors(input_description, codes):
-    for code in codes:
-        assert code_in(code, name_check(input_description)["errors"])
+    assert codes == [error["code"] for error in name_check(input_description)["errors"]]
 
 
 @pytest.mark.parametrize("input_description, codes", get_tests(TESTS_ALL, "infos"))
 def test_infos(input_description, codes):
-    for code in codes:
-        assert code_in(code, name_check(input_description)["infos"])
+    assert codes == [info["code"] for info in name_check(input_description)["infos"]]

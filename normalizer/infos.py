@@ -1,8 +1,4 @@
-from .description_model import (
-    location_to_description,
-    point_to_description,
-    variant_to_description,
-)
+from .description_model import point_to_description
 
 
 def corrected_reference_id(original_id, corrected_id, path):

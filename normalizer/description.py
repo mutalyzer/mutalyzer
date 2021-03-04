@@ -10,7 +10,7 @@ from mutalyzer_retriever.retriever import NoReferenceError, NoReferenceRetrieved
 import normalizer.errors as errors
 import normalizer.infos as infos
 
-from .checker import are_sorted, is_overlap
+from .checker import are_sorted, contains_uncertain_locations, is_overlap
 from .converter.extras import convert_selector_model
 from .converter.to_delins import to_delins, variants_to_delins
 from .converter.to_hgvs_coordinates import (
@@ -35,7 +35,6 @@ from .description_model import (
     yield_reference_selector_ids_coordinate_system,
     yield_sub_model,
 )
-from .position_check import contains_uncertain_locations
 from .protein import get_protein_description
 from .reference import (
     get_coordinate_system_from_reference,
@@ -376,11 +375,13 @@ class Description(object):
             self.corrected_model["coordinate_system"], self._get_selector_model()
         )
         crossmap_from = crossmap_to_hgvs_setup(
-            self.corrected_model["coordinate_system"], self._get_selector_model()
+            self.corrected_model["coordinate_system"],
+            self._get_selector_model(),
+            degenerate=True,
         )
 
         for point, path in yield_sub_model(
-            self.corrected_model, ["location", "start", "end"], "point"
+            self.corrected_model, ["location", "start", "end"], ["point"]
         ):
             internal = point_to_internal(point, crossmap_to)
             corrected = point_to_hgvs(internal, **crossmap_from)
@@ -417,24 +418,19 @@ class Description(object):
 
     @check_errors
     def _mutate(self):
-        if self.delins_model:
-            observed_sequence = mutate(
-                self._get_sequences(), self.delins_model["variants"]
-            )
-            self.references["observed"] = {"sequence": {"seq": observed_sequence}}
+        observed_sequence = mutate(self._get_sequences(), self.delins_model["variants"])
+        self.references["observed"] = {"sequence": {"seq": observed_sequence}}
 
     @check_errors
     def _extract(self):
-        de_variants = describe_dna(
-            self.references["reference"]["sequence"]["seq"],
-            self.references["observed"]["sequence"]["seq"],
-        )
-        if de_variants:
-            self.de_model = {
-                "reference": copy.deepcopy(self.internal_indexing_model["reference"]),
-                "coordinate_system": "i",
-                "variants": de_variants,
-            }
+        self.de_model = {
+            "reference": copy.deepcopy(self.internal_indexing_model["reference"]),
+            "coordinate_system": "i",
+            "variants": describe_dna(
+                self.references["reference"]["sequence"]["seq"],
+                self.references["observed"]["sequence"]["seq"],
+            ),
+        }
 
     @check_errors
     def _construct_de_hgvs_internal_indexing_model(self):
@@ -463,71 +459,80 @@ class Description(object):
         if self.de_hgvs_model:
             self.normalized_description = model_to_string(self.de_hgvs_model)
 
-    def _construct_equivalent_descriptions(self):
-        if not self.de_hgvs_internal_indexing_model:
+    def _construct_equivalent(self, other=None, as_description=True):
+        if other is not None:
+            from_model = other
+        elif self.de_hgvs_internal_indexing_model:
+            from_model = self.de_hgvs_internal_indexing_model
+        else:
             return
-        equivalent_descriptions = {}
-        l_min, l_max = get_locations_min_max(self.de_hgvs_internal_indexing_model)
-        if not (l_min and l_max):
-            return
-
-        l_min, l_max = overlap_min_max(self.references["reference"], l_min, l_max)
+        equivalent = {}
 
         if (
             get_coordinate_system_from_reference(self.references["reference"])
             == "g"
             != self.corrected_model["coordinate_system"]
         ):
-            equivalent_descriptions["g"] = [
-                model_to_string(
-                    to_hgvs_locations(
-                        model=self.de_hgvs_internal_indexing_model,
-                        references=self.references,
-                        to_coordinate_system="g",
-                        to_selector_id=None,
-                        degenerate=True,
-                    )
-                )
-            ]
-
-        for selector in yield_overlap_ids(self.references["reference"], l_min, l_max):
             converted_model = to_hgvs_locations(
-                model=self.de_hgvs_internal_indexing_model,
+                model=from_model,
                 references=self.references,
-                to_coordinate_system=None,
-                to_selector_id=selector["id"],
+                to_coordinate_system="g",
+                to_selector_id=None,
                 degenerate=True,
             )
-            c_s = converted_model["coordinate_system"]
-            if not equivalent_descriptions.get(c_s):
-                equivalent_descriptions[c_s] = []
-
-            if converted_model["coordinate_system"] == "c":
-                protein_selector_model = get_protein_selector_model(
-                    self.references["reference"]["annotations"], selector["id"]
-                )
-                if protein_selector_model:
-                    equivalent_descriptions[c_s].append(
-                        (
-                            model_to_string(converted_model),
-                            get_protein_description(
-                                variants_to_delins(
-                                    self.de_hgvs_internal_indexing_model["variants"]
-                                ),
-                                self.references,
-                                protein_selector_model,
-                            )[0],
-                        )
-                    )
-                else:
-                    equivalent_descriptions[c_s].append(
-                        model_to_string(converted_model)
-                    )
+            if as_description:
+                equivalent["g"] = [model_to_string(converted_model)]
             else:
-                equivalent_descriptions[c_s].append(model_to_string(converted_model))
+                equivalent["g"] = [converted_model]
+            if equivalent:
+                self.equivalent_descriptions = equivalent
 
-        if equivalent_descriptions:
-            self.equivalent_descriptions = equivalent_descriptions
+        l_min, l_max = get_locations_min_max(from_model)
+        if not (l_min and l_max):
+            return
+
+        l_min, l_max = overlap_min_max(self.references["reference"], l_min, l_max)
+        for selector in yield_overlap_ids(self.references["reference"], l_min, l_max):
+            if selector["id"] != self._get_selector_id():
+                converted_model = to_hgvs_locations(
+                    model=from_model,
+                    references=self.references,
+                    to_coordinate_system=None,
+                    to_selector_id=selector["id"],
+                    degenerate=True,
+                )
+                c_s = converted_model["coordinate_system"]
+                if not equivalent.get(c_s):
+                    equivalent[c_s] = []
+
+                if converted_model["coordinate_system"] == "c":
+                    protein_selector_model = get_protein_selector_model(
+                        self.references["reference"]["annotations"], selector["id"]
+                    )
+                    if protein_selector_model and as_description:
+                        equivalent[c_s].append(
+                            (
+                                model_to_string(converted_model),
+                                get_protein_description(
+                                    variants_to_delins(from_model["variants"]),
+                                    self.references,
+                                    protein_selector_model,
+                                )[0],
+                            )
+                        )
+                    else:
+                        if as_description:
+                            equivalent[c_s] = [model_to_string(converted_model)]
+                        else:
+                            equivalent[c_s] = [converted_model]
+                else:
+                    if as_description:
+                        equivalent[c_s] = [model_to_string(converted_model)]
+                    else:
+                        equivalent[c_s] = [converted_model]
+
+        if equivalent:
+            self.equivalent_descriptions = equivalent
 
     @check_errors
     def _construct_protein_description(self):
@@ -550,7 +555,7 @@ class Description(object):
 
     def _check_location_boundaries(self):
         for point, path in yield_sub_model(
-            self.internal_coordinates_model, ["location", "start", "end"], "point"
+            self.internal_coordinates_model, ["location", "start", "end"], ["point"]
         ):
             ref_id = "reference"
             for ins_or_del in ["inserted", "deleted"]:
@@ -588,16 +593,17 @@ class Description(object):
 
     def _check_location_range(self):
         for location, path in yield_sub_model(
-            self.internal_coordinates_model, ["location"], "range"
+            self.internal_coordinates_model, ["location"], ["range"]
         ):
-            if not location.get("uncertain") and get_start(location) > get_end(
-                location
-            ):
+            if (
+                not location["start"].get("uncertain")
+                and not location["end"].get("uncertain")
+            ) and get_start(location) > get_end(location):
                 self._add_error(errors.range_reversed(location, path))
 
     def _check_location_extras(self):
         for point, path in yield_sub_model(
-            self.corrected_model, ["location", "start", "end"], "point"
+            self.corrected_model, ["location", "start", "end"], ["point"]
         ):
             if point.get("offset") or point.get("outside_cds"):
                 c_s = self.corrected_model.get("coordinate_system")
@@ -691,7 +697,7 @@ class Description(object):
                 return
             if self._is_inverted():
                 seq_ref = reverse_complement(seq_ref)
-            if seq_del != seq_ref:
+            if seq_del and seq_ref and seq_del != seq_ref:
                 self._add_error(errors.sequence_mismatch(seq_ref, seq_del, path))
 
     @check_errors
@@ -719,6 +725,8 @@ class Description(object):
         self._check_coordinate_systems()
         self._check_coordinate_system_consistency()
         self._check_location_extras()
+        if contains_uncertain_locations(self.corrected_model):
+            self._add_error(errors.uncertain())
 
     def to_internal_indexing_model(self):
         self.retrieve_references()
@@ -747,9 +755,6 @@ class Description(object):
     def normalize(self):
         self.to_internal_indexing_model()
 
-        if contains_uncertain_locations(self.delins_model):
-            return
-
         self._correct_variants_type()
         self._correct_points()
 
@@ -759,17 +764,16 @@ class Description(object):
             self.de_hgvs_internal_indexing_model = self.internal_indexing_model
             self._construct_de_hgvs_coordinates_model()
             self._construct_normalized_description()
-            self._construct_equivalent_descriptions()
+            self._construct_equivalent()
         else:
             self._construct_delins_model()
             self._mutate()
             self._extract()
-            if self.de_model:
-                self._construct_de_hgvs_internal_indexing_model()
-                self._construct_de_hgvs_coordinates_model()
-                self._construct_normalized_description()
-                self._construct_protein_description()
-                self._construct_equivalent_descriptions()
+            self._construct_de_hgvs_internal_indexing_model()
+            self._construct_de_hgvs_coordinates_model()
+            self._construct_normalized_description()
+            self._construct_protein_description()
+            self._construct_equivalent()
 
         # self.print_models_summary()
 

@@ -63,10 +63,24 @@ args_reference_model.add_argument(
     required=False,
 )
 args_reference_model.add_argument(
-    "include_siblings",
-    type=bool,
-    help="Include also the siblings of the feature ID provided.",
+    "siblings",
+    type=inputs.boolean,
+    help="Include the feature siblings.",
     default=False,
+    required=False,
+)
+args_reference_model.add_argument(
+    "ancestors",
+    type=inputs.boolean,
+    help="Include the feature ancestors.",
+    default=True,
+    required=False,
+)
+args_reference_model.add_argument(
+    "descendants",
+    type=inputs.boolean,
+    help="Include the feature descendants.",
+    default=True,
     required=False,
 )
 

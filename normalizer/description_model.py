@@ -1,9 +1,11 @@
-import copy
-
-from .util import get_end, get_start, set_by_path
-
-
 def get_reference_id(model):
+    """
+    Get the reference ID from a description model (inserted can be
+    considered also as a description model input).
+
+    :param model: Description model (inserted works also).
+    :return: The ID of the reference, if found, otherwise None.
+    """
     if model.get("reference") and model["reference"].get("id"):
         return model["reference"]["id"]
     elif (
@@ -21,7 +23,7 @@ def get_selector_id(model):
     i.e., selector(selector(...)), is supported.
 
     :param model: Description model (inserted works also).
-    :return: The ID of the selector, if provided, otherwise None.
+    :return: The ID of the selector, if found, otherwise None.
     """
     if (
         model.get("reference")
@@ -156,44 +158,40 @@ def yield_point_locations_all(model, path=[]):
                 yield from yield_point_locations_all(sub_model, path + [k, i])
 
 
-def yield_sub_model(model, keys, model_type, path=[]):
+def yield_sub_model(model, keys, types, path=[]):
     """
 
     :param model:
     :param keys:
-    :param model_type:
+    :param types:
     :param path:
     """
     if isinstance(model, dict):
         for k in model.keys():
-            if k in keys and model[k]["type"] == model_type:
+            if k in keys and model[k]["type"] in types:
                 yield model[k], path + [k]
-            else:
-                yield from yield_sub_model(model[k], keys, model_type, path + [k])
+            yield from yield_sub_model(model[k], keys, types, path + [k])
     elif isinstance(model, list):
         for i, sub_model in enumerate(model):
-            yield from yield_sub_model(sub_model, keys, model_type, path + [i])
+            yield from yield_sub_model(sub_model, keys, types, path + [i])
 
 
-def yield_view_nodes(model, path=[]):
-    for k in model.keys():
-        if k in ["reference", "location", "start", "end", "selector"]:
-            yield from yield_view_nodes(model[k], path + [k])
-        elif k in ["variants", "inserted", "deleted"]:
-            for i, sub_model in enumerate(model[k]):
-                yield from yield_view_nodes(sub_model, path + [k, i])
-        elif k == "source" and isinstance(model[k], dict):
-            yield from yield_view_nodes(model[k], path + [k])
-        if k in ["position", "id", "coordinate_system"]:
-            yield model[k], path + [k]
-
-
-def get_view_model(model):
-    view_model = copy.deepcopy(model)
-    for view_value, path in yield_view_nodes(model):
-        set_by_path(view_model, path, {"view": view_value})
-
-    return view_model
+def get_locations_min_max(model):
+    """
+    Get the minimum and maximum positions from all the locations present in
+    the model.
+    :param model: Desription model.
+    :return: Minimum and maximum positions.
+    """
+    locations = [
+        x[0]["position"]
+        for x in yield_point_locations_for_main_reference_variants(model)
+        if x[0].get("position")
+    ]
+    if locations:
+        return min(locations), max(locations)
+    else:
+        return None, None
 
 
 def model_to_string(model, exclude_superfluous_selector=True):
@@ -229,38 +227,27 @@ def model_to_string(model, exclude_superfluous_selector=True):
         )
 
 
-def reference_to_description(reference):
+def variants_to_description(variants):
     """
-    Convert the reference dictionary model to string.
-    :param reference: Dictionary holding the reference model.
-    :return: Equivalent reference string representation.
+    Convert a list of variant models to string.
+    :param variants: Variant models.
+    :return: Variants string representation.
     """
-    version = ""
-    if isinstance(reference, dict):
-        if reference.get("type") == "genbank":
-            accession = reference.get("accession")
-            if reference.get("version"):
-                version = ".{}".format(reference["version"])
-        elif reference.get("type") == "lrg":
-            accession = reference.get("id")
-    return "{}{}".format(accession, version)
-
-
-def variants_to_description(variants, sequences=None):
     if isinstance(variants, list):
         variants_list = []
         for variant in variants:
-            variants_list.append(variant_to_description(variant, sequences))
+            variants_list.append(variant_to_description(variant))
         if len(variants_list) > 1:
             return "[{}]".format(";".join(variants_list))
         elif len(variants_list) == 1:
             return variants_list[0]
 
 
-def variant_to_description(variant, sequences=None):
+def variant_to_description(variant):
     """
     Convert the variant dictionary model to string.
-    :return: Equivalent variant string representation.
+    :param variant: Variant model.
+    :return: Variant model string representation.
     """
     deleted_location = deleted = inserted = ""
     if variant.get("location"):
@@ -282,11 +269,11 @@ def variant_to_description(variant, sequences=None):
             )
         ):
             inserted = "[{}]".format(inserted)
-    variant_type = variant.get("type")
 
     if variant.get("deleted"):
         deleted = inserted_to_description(variant["deleted"])
 
+    variant_type = variant.get("type")
     if variant_type == "substitution":
         variant_type = deleted + ">"
     elif variant_type == "deletion":
@@ -311,9 +298,9 @@ def variant_to_description(variant, sequences=None):
 
 def inserted_to_description(inserted):
     """
-    Convert the insertions dictionary model to string.
-    :param inserted: Insertions dictionary.
-    :return: Equivalent insertions string representation.
+    Convert the inserted dictionary model to string.
+    :param inserted: Inserted dictionary model.
+    :return: Inserted string representation.
     """
     descriptions = []
     for insert in inserted:
@@ -350,9 +337,10 @@ def location_to_description(location):
                 point_to_description(location.get("end")),
             )
         else:
-            start = location_to_description(location.get("start"))
-            end = location_to_description(location.get("end"))
-            return "{}_{}".format(start, end)
+            return "{}_{}".format(
+                location_to_description(location.get("start")),
+                location_to_description(location.get("end")),
+            )
 
 
 def point_to_description(point):
@@ -383,6 +371,11 @@ def point_to_description(point):
 
 
 def length_to_description(length):
+    """
+    Convert the length dictionary model to string.
+    :param length: Length dictionary model.
+    :return: Equivalent length string representation.
+    """
     if length["type"] == "point":
         if length.get("value"):
             return str(length["value"])
@@ -397,21 +390,3 @@ def length_to_description(length):
             return "({})".format(output)
         else:
             return output
-
-
-def get_locations_min_max(model):
-    """
-    Get the minimum and maximum positions from all the locations present in
-    the model.
-    :param model: Desription model.
-    :return: Minimum and maximum positions.
-    """
-    locations = [
-        x[0]["position"]
-        for x in yield_point_locations_for_main_reference_variants(model)
-        if x[0].get("position")
-    ]
-    if locations:
-        return min(locations), max(locations)
-    else:
-        return None, None

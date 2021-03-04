@@ -23,40 +23,61 @@ def get_reference_model(reference_id):
 
 
 def get_reference_model_segmented(
-    reference_id, feature_id=None, include_siblings=False
+    reference_id, feature_id=None, siblings=False, ancestors=True, descendants=True
 ):
     reference_model = get_reference_model(reference_id)
     if feature_id is not None:
         return extract_feature_model(
-            reference_model["annotations"], feature_id, include_siblings
+            reference_model["annotations"],
+            feature_id,
+            siblings,
+            ancestors,
+            descendants,
         )[0]
     return reference_model
 
 
-def extract_feature_model(feature, feature_id, include_siblings=False):
+def extract_feature_model(
+    feature, feature_id, siblings=False, ancestors=True, descendants=True
+):
     output_model = None
     just_found = False
     if feature.get("id") is not None and feature_id == feature["id"]:
-        return copy.deepcopy(feature), True
+        output_model = copy.deepcopy(feature)
+        if not descendants:
+            if output_model.get("features"):
+                output_model.pop("features")
+            return output_model, True, True
+        return output_model, True, False
     elif feature.get("features"):
         for f in feature["features"]:
-            out = extract_feature_model(f, feature_id, include_siblings)
-            output_model, just_found = out
+            output_model, just_found, propagate = extract_feature_model(
+                f, feature_id, siblings, ancestors, descendants
+            )
             if output_model:
                 break
-        if output_model and just_found and include_siblings:
-            output_model = copy.deepcopy(feature["features"])
+        if output_model and just_found:
+            if siblings:
+                output_model = copy.deepcopy(feature["features"])
+            if not ancestors:
+                return output_model, False, True
+        elif propagate:
+            return output_model, False, True
     if output_model is not None:
         if isinstance(output_model, dict):
             output_model = [output_model]
-        return {
-            **{
-                k: copy.deepcopy(feature[k])
-                for k in list(set(feature.keys()) - {"features"})
+        return (
+            {
+                **{
+                    k: copy.deepcopy(feature[k])
+                    for k in list(set(feature.keys()) - {"features"})
+                },
+                **{"features": output_model},
             },
-            **{"features": output_model},
-        }, False
-    return None, False
+            False,
+            False,
+        )
+    return None, False, False
 
 
 def is_feature_inverted(feature):

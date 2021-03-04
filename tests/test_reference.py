@@ -3,7 +3,23 @@ from normalizer.reference import get_reference_model_segmented
 from .commons import patch_retriever
 
 
-def test_get_reference_model_segmented_transcript_no_siblings():
+def test_get_reference_model_segmented_record_no_siblings_ancestors_no_descendants():
+    feature_model = {
+        "id": "NG_012337.1",
+        "type": "record",
+        "location": {
+            "type": "range",
+            "start": {"type": "point", "position": 0},
+            "end": {"type": "point", "position": 15948},
+        },
+        "qualifiers": {"name": "11", "mol_type": "genomic DNA"},
+    }
+    assert feature_model == get_reference_model_segmented(
+        "NG_012337.1", "NG_012337.1", False, True, False
+    )
+
+
+def test_get_reference_model_segmented_transcript_no_siblings_ancestors_descendants():
     feature_model = {
         "id": "NG_012337.1",
         "type": "record",
@@ -72,6 +88,111 @@ def test_get_reference_model_segmented_transcript_no_siblings():
         ],
     }
     assert feature_model == get_reference_model_segmented("NG_012337.1", "NM_018195.3")
+
+
+def test_get_reference_model_segmented_transcript_no_siblings_ancestors_no_descendants():
+    feature_model = {
+        "id": "NG_012337.1",
+        "type": "record",
+        "location": {
+            "type": "range",
+            "start": {"type": "point", "position": 0},
+            "end": {"type": "point", "position": 15948},
+        },
+        "qualifiers": {"name": "11", "mol_type": "genomic DNA"},
+        "features": [
+            {
+                "id": "C11orf57",
+                "type": "gene",
+                "location": {
+                    "type": "range",
+                    "start": {"type": "point", "position": 0},
+                    "end": {"type": "point", "position": 3304},
+                    "strand": 1,
+                },
+                "qualifiers": {"name": "C11orf57", "HGNC": "25569"},
+                "features": [
+                    {
+                        "id": "NM_018195.3",
+                        "type": "mRNA",
+                        "location": {
+                            "type": "range",
+                            "start": {"type": "point", "position": 135},
+                            "end": {"type": "point", "position": 3304},
+                            "strand": 1,
+                        },
+                    },
+                ],
+            },
+        ],
+    }
+    assert feature_model == get_reference_model_segmented(
+        "NG_012337.1", "NM_018195.3", False, True, False
+    )
+
+
+def test_get_reference_model_segmented_transcript_no_siblings_no_ancestors_descendants():
+    feature_model = {
+        "id": "NM_018195.3",
+        "type": "mRNA",
+        "location": {
+            "type": "range",
+            "start": {"type": "point", "position": 135},
+            "end": {"type": "point", "position": 3304},
+            "strand": 1,
+        },
+        "features": [
+            {
+                "id": "exon-NM_018195.3-1",
+                "type": "exon",
+                "location": {
+                    "type": "range",
+                    "start": {"type": "point", "position": 135},
+                    "end": {"type": "point", "position": 189},
+                    "strand": 1,
+                },
+            },
+            {
+                "id": "exon-NM_018195.3-2",
+                "type": "exon",
+                "location": {
+                    "type": "range",
+                    "start": {"type": "point", "position": 618},
+                    "end": {"type": "point", "position": 3304},
+                    "strand": 1,
+                },
+            },
+            {
+                "id": "NP_060665.3",
+                "type": "CDS",
+                "location": {
+                    "type": "range",
+                    "start": {"type": "point", "position": 135},
+                    "end": {"type": "point", "position": 1126},
+                    "strand": 1,
+                },
+            },
+        ],
+    }
+    assert feature_model == get_reference_model_segmented(
+        "NG_012337.1", "NM_018195.3", False, False, True
+    )
+
+
+def test_get_reference_model_segmented_transcript_no_siblings_no_descendants_no_ancestors():
+    feature_model = {
+        "id": "NM_018195.3",
+        "type": "mRNA",
+        "location": {
+            "type": "range",
+            "start": {"type": "point", "position": 135},
+            "end": {"type": "point", "position": 3304},
+            "strand": 1,
+        },
+    }
+    assert feature_model == get_reference_model_segmented(
+        "NG_012337.1", "NM_018195.3", False, False, False
+    )
 
 
 def test_get_reference_model_segmented_transcript_include_siblings():
@@ -345,6 +466,4 @@ def test_get_reference_model_segmented_gene_no_siblings():
         ],
     }
 
-    assert feature_model == get_reference_model_segmented(
-        "NG_012337.1", "SDHD", False
-    )
+    assert feature_model == get_reference_model_segmented("NG_012337.1", "SDHD", False)

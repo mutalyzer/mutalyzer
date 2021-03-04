@@ -22,7 +22,9 @@ def is_overlap(variants):
     """
     sorted_variants = sort_variants(variants)
     positions = []
-    for point, path in yield_sub_model(variants, ["location", "start", "end"], "point"):
+    for point, path in yield_sub_model(
+        variants, ["location", "start", "end"], ["point"]
+    ):
         if point.get("position") is not None:
             positions.append(point["position"])
     min_position = min(positions) - 1
@@ -31,4 +33,22 @@ def is_overlap(variants):
             return True
         else:
             min_position = get_end(variant["location"])
+    return False
+
+
+def contains_uncertain_locations(model):
+    """
+    Goes through model locations to see if any is uncertain.
+
+    :param model: description model
+    :return: True when the first uncertain location if encountered
+             and False if none is encountered.
+    """
+    for location, path in yield_sub_model(
+        model, ["location", "start", "end"], ["point", "range"]
+    ):
+        if location.get("uncertain") or (
+            location.get("offset") and location["offset"].get("uncertain")
+        ):
+            return True
     return False

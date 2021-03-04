@@ -78,15 +78,3 @@ def get_tests(tests, code_type):
         if test.get("to_test") and test.get(code_type):
             output.append((test["input"], test[code_type]))
     return output
-
-
-@pytest.mark.parametrize("input_description, codes", get_tests(TESTS_ALL, "errors"))
-def test_errors_from_variants_set(input_description, codes):
-    for code in codes:
-        assert code_in(code, name_check(input_description)["errors"])
-
-
-@pytest.mark.parametrize("input_description, codes", get_tests(TESTS_ALL, "infos"))
-def test_infos_from_variants_set(input_description, codes):
-    for code in codes:
-        assert code_in(code, name_check(input_description)["infos"])

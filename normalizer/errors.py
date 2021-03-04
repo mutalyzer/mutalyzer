@@ -194,6 +194,10 @@ def repeat_not_supported(variant, path):
     }
 
 
+def uncertain():
+    return {"code": "EUNCERTAIN", "details": "Uncertainties present in locations."}
+
+
 def overlap():
     return {"code": "EOVERLAP", "details": "Variant locations overlap."}
 
@@ -226,5 +230,10 @@ def no_inputs_other():
     return {"code": "ENOINPUTSOTHER"}
 
 
-def no_to_selector():
-    return {"code": "ENOTOSELECTOR"}
+def no_to_selector(reference_id, selector_id):
+    return {
+        "code": "ENOTOSELECTOR",
+        "details": "No {} selector found in reference {}.".format(
+            selector_id, reference_id
+        ),
+    }
