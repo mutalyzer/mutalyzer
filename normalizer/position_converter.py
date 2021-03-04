@@ -42,6 +42,7 @@ class PositionConvert(object):
 
         self.internal_model = {}
         self.converted_model = {}
+        self.overlap = []
 
         self._check_input_requirements()
 
@@ -134,14 +135,18 @@ class PositionConvert(object):
                     infos.to_coordinate_system_from_reference(self.to_coordinate_system)
                 )
             else:
-                self.errors.append(errors.no_to_selector(self.reference_id, self.to_selector_id))
+                self.errors.append(
+                    errors.no_to_selector(self.reference_id, self.to_selector_id)
+                )
 
         elif self.to_selector_id:
             if not is_selector_in_reference(
                 self.to_selector_id, self.description.references["reference"]
             ):
                 # TODO: update the error.
-                self.errors.append(errors.no_to_selector(self.reference_id, self.to_selector_id))
+                self.errors.append(
+                    errors.no_to_selector(self.reference_id, self.to_selector_id)
+                )
 
         if (self.to_selector_id == self.from_selector_id) and (
             self.to_coordinate_system == self.from_coordinate_system
@@ -160,7 +165,22 @@ class PositionConvert(object):
 
     @check_errors
     def _add_overlapping(self):
-        pass
+        if self.include_overlapping:
+            self.description._construct_equivalent(
+                self.description.internal_indexing_model, False
+            )
+            overlap = {}
+            for k in self.description.equivalent_descriptions:
+                if k != "g":
+                    for equivalent in self.description.equivalent_descriptions[k]:
+                        if equivalent["reference"]["selector"]["id"] not in [
+                            self.to_selector_id,
+                            self.from_selector_id,
+                        ]:
+                            if overlap.get(k) is None:
+                                overlap[k] = []
+                            overlap[k].append(equivalent)
+            self.overlap = overlap
 
     def get_output(self):
         output = {}
@@ -170,6 +190,8 @@ class PositionConvert(object):
             output["internal_model"] = self.internal_model
         if self.converted_model:
             output["converted_model"] = self.converted_model
+        if self.overlap:
+            output["overlap"] = self.overlap
         if self.errors:
             output["errors"] = self.errors
         if self.infos:

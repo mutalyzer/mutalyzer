@@ -375,7 +375,9 @@ class Description(object):
             self.corrected_model["coordinate_system"], self._get_selector_model()
         )
         crossmap_from = crossmap_to_hgvs_setup(
-            self.corrected_model["coordinate_system"], self._get_selector_model()
+            self.corrected_model["coordinate_system"],
+            self._get_selector_model(),
+            degenerate=True,
         )
 
         for point, path in yield_sub_model(
@@ -457,31 +459,35 @@ class Description(object):
         if self.de_hgvs_model:
             self.normalized_description = model_to_string(self.de_hgvs_model)
 
-    def _construct_equivalent_descriptions(self):
-        if not self.de_hgvs_internal_indexing_model:
+    def _construct_equivalent(self, other=None, as_description=True):
+        if other is not None:
+            from_model = other
+        elif self.de_hgvs_internal_indexing_model:
+            from_model = self.de_hgvs_internal_indexing_model
+        else:
             return
-        equivalent_descriptions = {}
+        equivalent = {}
 
         if (
             get_coordinate_system_from_reference(self.references["reference"])
             == "g"
             != self.corrected_model["coordinate_system"]
         ):
-            equivalent_descriptions["g"] = [
-                model_to_string(
-                    to_hgvs_locations(
-                        model=self.de_hgvs_internal_indexing_model,
-                        references=self.references,
-                        to_coordinate_system="g",
-                        to_selector_id=None,
-                        degenerate=True,
-                    )
-                )
-            ]
-            if equivalent_descriptions:
-                self.equivalent_descriptions = equivalent_descriptions
+            converted_model = to_hgvs_locations(
+                model=from_model,
+                references=self.references,
+                to_coordinate_system="g",
+                to_selector_id=None,
+                degenerate=True,
+            )
+            if as_description:
+                equivalent["g"] = [model_to_string(converted_model)]
+            else:
+                equivalent["g"] = [converted_model]
+            if equivalent:
+                self.equivalent_descriptions = equivalent
 
-        l_min, l_max = get_locations_min_max(self.de_hgvs_internal_indexing_model)
+        l_min, l_max = get_locations_min_max(from_model)
         if not (l_min and l_max):
             return
 
@@ -489,44 +495,44 @@ class Description(object):
         for selector in yield_overlap_ids(self.references["reference"], l_min, l_max):
             if selector["id"] != self._get_selector_id():
                 converted_model = to_hgvs_locations(
-                    model=self.de_hgvs_internal_indexing_model,
+                    model=from_model,
                     references=self.references,
                     to_coordinate_system=None,
                     to_selector_id=selector["id"],
                     degenerate=True,
                 )
                 c_s = converted_model["coordinate_system"]
-                if not equivalent_descriptions.get(c_s):
-                    equivalent_descriptions[c_s] = []
+                if not equivalent.get(c_s):
+                    equivalent[c_s] = []
 
                 if converted_model["coordinate_system"] == "c":
                     protein_selector_model = get_protein_selector_model(
                         self.references["reference"]["annotations"], selector["id"]
                     )
-                    if protein_selector_model:
-                        equivalent_descriptions[c_s].append(
+                    if protein_selector_model and as_description:
+                        equivalent[c_s].append(
                             (
                                 model_to_string(converted_model),
                                 get_protein_description(
-                                    variants_to_delins(
-                                        self.de_hgvs_internal_indexing_model["variants"]
-                                    ),
+                                    variants_to_delins(from_model["variants"]),
                                     self.references,
                                     protein_selector_model,
                                 )[0],
                             )
                         )
                     else:
-                        equivalent_descriptions[c_s].append(
-                            model_to_string(converted_model)
-                        )
+                        if as_description:
+                            equivalent[c_s] = [model_to_string(converted_model)]
+                        else:
+                            equivalent[c_s] = [converted_model]
                 else:
-                    equivalent_descriptions[c_s].append(
-                        model_to_string(converted_model)
-                    )
+                    if as_description:
+                        equivalent[c_s] = [model_to_string(converted_model)]
+                    else:
+                        equivalent[c_s] = [converted_model]
 
-        if equivalent_descriptions:
-            self.equivalent_descriptions = equivalent_descriptions
+        if equivalent:
+            self.equivalent_descriptions = equivalent
 
     @check_errors
     def _construct_protein_description(self):
@@ -758,7 +764,7 @@ class Description(object):
             self.de_hgvs_internal_indexing_model = self.internal_indexing_model
             self._construct_de_hgvs_coordinates_model()
             self._construct_normalized_description()
-            self._construct_equivalent_descriptions()
+            self._construct_equivalent()
         else:
             self._construct_delins_model()
             self._mutate()
@@ -767,7 +773,7 @@ class Description(object):
             self._construct_de_hgvs_coordinates_model()
             self._construct_normalized_description()
             self._construct_protein_description()
-            self._construct_equivalent_descriptions()
+            self._construct_equivalent()
 
         # self.print_models_summary()
 
