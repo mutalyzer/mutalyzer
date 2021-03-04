@@ -1,9 +1,11 @@
-import copy
-
-from .util import get_end, get_start, set_by_path
-
-
 def get_reference_id(model):
+    """
+    Get the reference ID from a description model (inserted can be
+    considered also as a description model input).
+
+    :param model: Description model (inserted works also).
+    :return: The ID of the reference, if found, otherwise None.
+    """
     if model.get("reference") and model["reference"].get("id"):
         return model["reference"]["id"]
     elif (
@@ -21,7 +23,7 @@ def get_selector_id(model):
     i.e., selector(selector(...)), is supported.
 
     :param model: Description model (inserted works also).
-    :return: The ID of the selector, if provided, otherwise None.
+    :return: The ID of the selector, if found, otherwise None.
     """
     if (
         model.get("reference")
@@ -174,25 +176,22 @@ def yield_sub_model(model, keys, types, path=[]):
             yield from yield_sub_model(sub_model, keys, types, path + [i])
 
 
-def yield_view_nodes(model, path=[]):
-    for k in model.keys():
-        if k in ["reference", "location", "start", "end", "selector"]:
-            yield from yield_view_nodes(model[k], path + [k])
-        elif k in ["variants", "inserted", "deleted"]:
-            for i, sub_model in enumerate(model[k]):
-                yield from yield_view_nodes(sub_model, path + [k, i])
-        elif k == "source" and isinstance(model[k], dict):
-            yield from yield_view_nodes(model[k], path + [k])
-        if k in ["position", "id", "coordinate_system"]:
-            yield model[k], path + [k]
-
-
-def get_view_model(model):
-    view_model = copy.deepcopy(model)
-    for view_value, path in yield_view_nodes(model):
-        set_by_path(view_model, path, {"view": view_value})
-
-    return view_model
+def get_locations_min_max(model):
+    """
+    Get the minimum and maximum positions from all the locations present in
+    the model.
+    :param model: Desription model.
+    :return: Minimum and maximum positions.
+    """
+    locations = [
+        x[0]["position"]
+        for x in yield_point_locations_for_main_reference_variants(model)
+        if x[0].get("position")
+    ]
+    if locations:
+        return min(locations), max(locations)
+    else:
+        return None, None
 
 
 def model_to_string(model, exclude_superfluous_selector=True):
@@ -372,6 +371,11 @@ def point_to_description(point):
 
 
 def length_to_description(length):
+    """
+    Convert the length dictionary model to string.
+    :param length: Length dictionary model.
+    :return: Equivalent length string representation.
+    """
     if length["type"] == "point":
         if length.get("value"):
             return str(length["value"])
@@ -386,21 +390,3 @@ def length_to_description(length):
             return "({})".format(output)
         else:
             return output
-
-
-def get_locations_min_max(model):
-    """
-    Get the minimum and maximum positions from all the locations present in
-    the model.
-    :param model: Desription model.
-    :return: Minimum and maximum positions.
-    """
-    locations = [
-        x[0]["position"]
-        for x in yield_point_locations_for_main_reference_variants(model)
-        if x[0].get("position")
-    ]
-    if locations:
-        return min(locations), max(locations)
-    else:
-        return None, None
