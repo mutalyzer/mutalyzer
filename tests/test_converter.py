@@ -1,6 +1,6 @@
 import pytest
 from mutalyzer_crossmapper import Coding, Genomic, NonCoding
-from mutalyzer_hgvs_parser import parse_description_to_model
+from mutalyzer_hgvs_parser import to_model
 
 from normalizer.converter.to_hgvs_coordinates import to_hgvs_locations
 from normalizer.converter.to_internal_coordinates import (
@@ -378,7 +378,7 @@ def generate_to_internal_locations_tests(tests_set):
     generate_to_internal_locations_tests(TESTS_SET),
 )
 def test_to_internal_locations(description_in, description_expected, references):
-    description_model = parse_description_to_model(description_in)
+    description_model = to_model(description_in)
     description_out = model_to_string(
         to_internal_indexing(to_internal_coordinates(description_model, references))
     )
@@ -445,8 +445,8 @@ def generate_to_hgvs_locations_tests(tests_set):
     generate_to_hgvs_locations_tests(TESTS_SET),
 )
 def test_to_hgvs_locations(description_in, description_expected, references):
-    model_internal_indexing = parse_description_to_model(description_in)
-    model_hgvs = parse_description_to_model(description_expected)
+    model_internal_indexing = to_model(description_in)
+    model_hgvs = to_model(description_expected)
     if model_hgvs["coordinate_system"] in ["c", "n"]:
         to_selector_id = model_hgvs["reference"]["selector"]["id"]
     else:
@@ -526,7 +526,7 @@ TO_INTERNAL_ONLY = [
     EQUIVALENT_DESCRIPTIONS + TO_INTERNAL_ONLY,
 )
 def test_to_internal_coordinates_simple(hgvs, hgvs_internal_indexing):
-    d_m = parse_description_to_model(hgvs)
+    d_m = to_model(hgvs)
     r_model = generate_references(
         {
             "id": "t1",
@@ -576,8 +576,8 @@ def test_to_hgvs_locations_simple(hgvs, hgvs_internal_indexing):
             "exon": [(3, 6), (8, 13), (16, 21), (24, 26)],
         },
     )
-    model_internal_indexing = parse_description_to_model(hgvs_internal_indexing)
-    model_hgvs = parse_description_to_model(hgvs)
+    model_internal_indexing = to_model(hgvs_internal_indexing)
+    model_hgvs = to_model(hgvs)
     if model_hgvs["coordinate_system"] in ["c", "n"]:
         to_selector_id = model_hgvs["reference"]["selector"]["id"]
     else:

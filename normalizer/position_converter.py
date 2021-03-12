@@ -1,4 +1,4 @@
-from mutalyzer_hgvs_parser import parse_description_to_model
+from mutalyzer_hgvs_parser import to_model
 from mutalyzer_hgvs_parser.exceptions import UnexpectedCharacter, UnexpectedEnd
 
 import normalizer.errors as errors
@@ -113,9 +113,7 @@ class PositionConvert(object):
             description_model["coordinate_system"] = self.from_coordinate_system
 
         try:
-            location_model = parse_description_to_model(
-                self.position, start_rule="location"
-            )
+            location_model = to_model(self.position, start_rule="location")
             description_model["variants"] = [{"location": location_model}]
         except UnexpectedCharacter as e:
             self.errors.append(errors.position_syntax("Unexpected character.", e))
@@ -170,9 +168,9 @@ class PositionConvert(object):
                 self.description.internal_indexing_model, False
             )
             overlap = {}
-            for k in self.description.equivalent_descriptions:
+            for k in self.description.equivalent:
                 if k != "g":
-                    for equivalent in self.description.equivalent_descriptions[k]:
+                    for equivalent in self.description.equivalent[k]:
                         if equivalent["reference"]["selector"]["id"] not in [
                             self.to_selector_id,
                             self.from_selector_id,

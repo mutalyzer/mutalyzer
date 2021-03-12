@@ -12,7 +12,13 @@ def test_get_reference_model_segmented_record_no_siblings_ancestors_no_descendan
             "start": {"type": "point", "position": 0},
             "end": {"type": "point", "position": 15948},
         },
-        "qualifiers": {"name": "11", "mol_type": "genomic DNA"},
+        "qualifiers": {
+            "mol_type": "genomic DNA",
+            "chromosome": "11",
+            "dbxref": "taxon:9606",
+            "map": "11q23",
+            "name": "11",
+        },
     }
     assert feature_model == get_reference_model_segmented(
         "NG_012337.1", "NG_012337.1", False, True, False
@@ -28,7 +34,13 @@ def test_get_reference_model_segmented_transcript_no_siblings_ancestors_descenda
             "start": {"type": "point", "position": 0},
             "end": {"type": "point", "position": 15948},
         },
-        "qualifiers": {"name": "11", "mol_type": "genomic DNA"},
+        "qualifiers": {
+            "mol_type": "genomic DNA",
+            "chromosome": "11",
+            "dbxref": "taxon:9606",
+            "map": "11q23",
+            "name": "11",
+        },
         "features": [
             {
                 "id": "C11orf57",
@@ -99,7 +111,13 @@ def test_get_reference_model_segmented_transcript_no_siblings_ancestors_no_desce
             "start": {"type": "point", "position": 0},
             "end": {"type": "point", "position": 15948},
         },
-        "qualifiers": {"name": "11", "mol_type": "genomic DNA"},
+        "qualifiers": {
+            "mol_type": "genomic DNA",
+            "chromosome": "11",
+            "dbxref": "taxon:9606",
+            "map": "11q23",
+            "name": "11",
+        },
         "features": [
             {
                 "id": "C11orf57",
@@ -204,7 +222,13 @@ def test_get_reference_model_segmented_transcript_include_siblings():
             "start": {"type": "point", "position": 0},
             "end": {"type": "point", "position": 15948},
         },
-        "qualifiers": {"name": "11", "mol_type": "genomic DNA"},
+        "qualifiers": {
+            "mol_type": "genomic DNA",
+            "chromosome": "11",
+            "dbxref": "taxon:9606",
+            "map": "11q23",
+            "name": "11",
+        },
         "features": [
             {
                 "id": "SDHD",
@@ -342,7 +366,13 @@ def test_get_reference_model_segmented_gene_no_siblings():
             "start": {"type": "point", "position": 0},
             "end": {"type": "point", "position": 15948},
         },
-        "qualifiers": {"name": "11", "mol_type": "genomic DNA"},
+        "qualifiers": {
+            "mol_type": "genomic DNA",
+            "chromosome": "11",
+            "dbxref": "taxon:9606",
+            "map": "11q23",
+            "name": "11",
+        },
         "features": [
             {
                 "id": "SDHD",

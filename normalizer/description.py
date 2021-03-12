@@ -1,7 +1,7 @@
 import copy
 
 from extractor import describe_dna
-from mutalyzer_hgvs_parser import parse_description_to_model
+from mutalyzer_hgvs_parser import to_model
 from mutalyzer_hgvs_parser.exceptions import UnexpectedCharacter, UnexpectedEnd
 from mutalyzer_mutator import mutate
 from mutalyzer_mutator.util import reverse_complement
@@ -94,8 +94,7 @@ class Description(object):
 
         self.references = {}
 
-        self.equivalent_descriptions = None
-        self.protein_descriptions = None
+        self.equivalent = []
 
     def _check_input(self):
         if self.input_description and not self.input_model:
@@ -139,7 +138,7 @@ class Description(object):
     @check_errors
     def _convert_description_to_model(self):
         try:
-            self.input_model = parse_description_to_model(self.input_description)
+            self.input_model = to_model(self.input_description)
         except UnexpectedCharacter as e:
             self._add_error(errors.syntax_uc(e))
         except UnexpectedEnd as e:
@@ -485,7 +484,7 @@ class Description(object):
             else:
                 equivalent["g"] = [converted_model]
             if equivalent:
-                self.equivalent_descriptions = equivalent
+                self.equivalent = equivalent
 
         l_min, l_max = get_locations_min_max(from_model)
         if not (l_min and l_max):
@@ -532,7 +531,7 @@ class Description(object):
                         equivalent[c_s] = [converted_model]
 
         if equivalent:
-            self.equivalent_descriptions = equivalent
+            self.equivalent = equivalent
 
     @check_errors
     def _construct_protein_description(self):
@@ -790,8 +789,8 @@ class Description(object):
 
         if self.protein:
             output["protein"] = self.protein
-        if self.equivalent_descriptions is not None:
-            output["equivalent_descriptions"] = self.equivalent_descriptions
+        if self.equivalent:
+            output["equivalent_descriptions"] = self.equivalent
         if self.errors:
             output["errors"] = self.errors
         if self.infos:

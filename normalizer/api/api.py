@@ -2,7 +2,7 @@ import logging
 
 from flask import Blueprint
 from flask_restx import Api, Resource, fields, inputs, reqparse
-from mutalyzer_hgvs_parser import parse_description, parse_description_to_model
+from mutalyzer_hgvs_parser import parse, to_model
 
 from normalizer.description_extractor import description_extractor
 from normalizer.name_checker import name_check
@@ -29,7 +29,7 @@ class SyntaxCheck(Resource):
     def get(self, hgvs_description):
         """Check the syntax correctness of a variant description."""
         try:
-            parse_description(hgvs_description)
+            parse(hgvs_description)
         except Exception:
             return "Some error occurred."
         else:
@@ -41,7 +41,7 @@ class DescriptionToModel(Resource):
     def get(self, hgvs_description):
         """Convert a variant description to its dictionary model."""
         try:
-            model = parse_description_to_model(hgvs_description)
+            model = to_model(hgvs_description)
         except Exception:
             model = {"errors": "Some unexpected parsing error occured."}
         return model

@@ -1,4 +1,4 @@
-from mutalyzer_hgvs_parser import parse_description_to_model
+from mutalyzer_hgvs_parser import to_model
 
 from normalizer.description_model import model_to_string
 from normalizer.position_converter import position_convert
@@ -143,7 +143,7 @@ def test_outside_cds_description():
 
 def test_outside_cds_description_model():
     p_c = position_convert(
-        description_model=parse_description_to_model("NG_012337.1:27"),
+        description_model=to_model("NG_012337.1:27"),
         to_selector_id="NM_003002.2",
     )
     assert model_to_string(p_c["converted_model"]) == "NG_012337.1(NM_003002.2):c.-5035"
@@ -153,7 +153,7 @@ def test_point_shift_from_positive_strand_to_negative_strand():
     """
     NM_012459.2 is on the negative strand on NG_012337.1
     """
-    model = parse_description_to_model("NG_012337.1:1005")
+    model = to_model("NG_012337.1:1005")
     model["variants"][0]["location"]["shift"] = 4
     p_c = position_convert(
         description_model=model,
@@ -163,7 +163,7 @@ def test_point_shift_from_positive_strand_to_negative_strand():
 
 
 def test_point_shift_from_positive_strand_ro_positive_strand():
-    model = parse_description_to_model("NG_012337.1:1005")
+    model = to_model("NG_012337.1:1005")
     model["variants"][0]["location"]["shift"] = 4
     p_c = position_convert(
         description_model=model,
@@ -176,7 +176,7 @@ def test_range_shift_from_positive_strand_to_negative_strand():
     """
     NM_012459.2 is on the negative strand on NG_012337.1
     """
-    model = parse_description_to_model("NG_012337.1:1004_1005")
+    model = to_model("NG_012337.1:1004_1005")
     model["variants"][0]["location"]["start"]["shift"] = 3
     model["variants"][0]["location"]["end"]["shift"] = 3
     p_c = position_convert(

@@ -1,5 +1,5 @@
 import pytest
-from mutalyzer_hgvs_parser import parse_description_to_model
+from mutalyzer_hgvs_parser import to_model
 
 from normalizer.description_model import model_to_string
 
@@ -144,4 +144,4 @@ def test_description_to_model_to_description(description):
     Check if the parsed model of a description is converted back to
     the initial description.
     """
-    assert model_to_string(parse_description_to_model(description)) == description
+    assert model_to_string(to_model(description)) == description
