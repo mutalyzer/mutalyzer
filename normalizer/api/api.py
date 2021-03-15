@@ -1,7 +1,7 @@
 import logging
 
-from flask import Blueprint
-from flask_restx import Api, Resource, fields, inputs, reqparse
+from flask import Blueprint, url_for
+from flask_restx import Api, Resource, fields, inputs, reqparse, apidoc
 from mutalyzer_hgvs_parser import parse, to_model
 
 from normalizer.description_extractor import description_extractor
@@ -17,9 +17,28 @@ from ..util import log_dir
 
 logging.basicConfig(level=logging.INFO, filename=log_dir())
 
+
+# Trick to make the swagger files available under "/api".
+class PatchedApi(Api):
+    def _register_apidoc(self, app):
+        patched_api = apidoc.Apidoc(
+            'restx_doc',
+            'flask_restx.apidoc',
+            template_folder='templates',
+            static_folder='static',
+            static_url_path='/api'
+        )
+
+        @patched_api.add_app_template_global
+        def swagger_static(filename):
+            return url_for('restx_doc.static', filename=filename)
+
+        app.register_blueprint(patched_api)
+
+
 blueprint = Blueprint("api", __name__)
 
-api = Api(blueprint, version="1.0", title="Mutalyzer3 API")
+api = PatchedApi(blueprint, version="1.0", title="Mutalyzer3 API")
 
 ns = api.namespace("/")
 
