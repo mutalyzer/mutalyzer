@@ -735,6 +735,14 @@ class Description(object):
         self._construct_internal_coordinate_model()
         self._construct_internal_indexing_model()
 
+    def _remove_superfluous_selector(self):
+        if (
+            self.de_hgvs_model and
+            self.de_hgvs_model["reference"].get("selector") and
+            self.de_hgvs_model["reference"]["selector"]["id"] == self.de_hgvs_model["reference"]["id"]
+        ):
+            self.de_hgvs_model["reference"].pop("selector")
+
     @check_errors
     def _only_equals(self):
         for variant in self.internal_coordinates_model["variants"]:
@@ -773,6 +781,7 @@ class Description(object):
             self._construct_normalized_description()
             self._construct_protein_description()
             self._construct_equivalent()
+        self._remove_superfluous_selector()
 
         # self.print_models_summary()
 
