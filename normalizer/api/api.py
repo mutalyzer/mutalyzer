@@ -1,10 +1,11 @@
 import logging
 
 from flask import Blueprint, url_for
-from flask_restx import Api, Resource, fields, inputs, reqparse, apidoc
+from flask_restx import Api, Resource, apidoc, fields, inputs, reqparse
 from mutalyzer_hgvs_parser import parse, to_model
 
 from normalizer.description_extractor import description_extractor
+from normalizer.lifter import lift
 from normalizer.name_checker import name_check
 from normalizer.position_converter import position_convert
 from normalizer.reference import (
@@ -22,16 +23,16 @@ logging.basicConfig(level=logging.INFO, filename=log_dir())
 class PatchedApi(Api):
     def _register_apidoc(self, app):
         patched_api = apidoc.Apidoc(
-            'restx_doc',
-            'flask_restx.apidoc',
-            template_folder='templates',
-            static_folder='static',
-            static_url_path='/api'
+            "restx_doc",
+            "flask_restx.apidoc",
+            template_folder="templates",
+            static_folder="static",
+            static_url_path="/api",
         )
 
         @patched_api.add_app_template_global
         def swagger_static(filename):
-            return url_for('restx_doc.static', filename=filename)
+            return url_for("restx_doc.static", filename=filename)
 
         app.register_blueprint(patched_api)
 
@@ -233,3 +234,29 @@ class GetSelectors(Resource):
             selectors = get_selectors_ids(reference_model["annotations"])
             return {"reference": reference_id, "selectors": selectors}
         return {"errors": [{"code": "ERETR"}]}
+
+
+lo_parser = reqparse.RequestParser()
+lo_parser.add_argument(
+    "description",
+    type=str,
+    help="Description to be lifted.",
+    default="NM_003002.2:c.274G>T",
+    required=True,
+)
+lo_parser.add_argument(
+    "reference_id",
+    type=str,
+    help="Reference to which the description should be lifted.",
+    default="NM_003002.4",
+    required=True,
+)
+
+
+@ns.route("/lift/")
+class Lift(Resource):
+    @api.expect(lo_parser)
+    def get(self):
+        """Lift a description to another reference."""
+        args = lo_parser.parse_args()
+        return lift(**args)
