@@ -1,9 +1,9 @@
 from .description import Description
 
 
-def name_check(description_to_normalize):
-    description = Description(description_to_normalize)
+def name_check(description):
+    d = Description(description)
 
-    description.normalize()
+    d.normalize()
 
-    return description.output()
+    return d.output()
