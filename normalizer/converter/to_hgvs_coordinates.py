@@ -148,16 +148,17 @@ def to_hgvs_locations(
     to_coordinate_system=None,
     to_selector_id=None,
     degenerate=False,
+    selector_model=None,
 ):
     reference_id = get_reference_id(model)
 
-    selector_model = (
-        get_selector_model(
+    if to_selector_id or selector_model is None:
+        selector_model = get_selector_model(
             references[reference_id]["annotations"], to_selector_id, True
         )
-        if to_selector_id
-        else None
-    )
+    if to_selector_id is None and selector_model:
+        to_selector_id = selector_model["id"]
+
     if not to_coordinate_system and selector_model:
         to_coordinate_system = get_coordinate_system_from_selector_id(
             references[reference_id], to_selector_id

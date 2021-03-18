@@ -22,6 +22,13 @@ _args.add_argument(
     required=True,
 )
 
+_args.add_argument(
+    "selector_id",
+    type=str,
+    help="Selector Id to which the description should be lifted.",
+    required=False,
+)
+
 
 @ns.route("/lift/")
 class Lift(Resource):
