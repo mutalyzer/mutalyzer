@@ -1,6 +1,6 @@
 from flask_restx import Namespace, Resource, inputs, reqparse
 
-from normalizer.lifter import lift
+from normalizer.mapper import map_description
 
 ns = Namespace("/")
 
@@ -32,15 +32,15 @@ _args.add_argument(
 _args.add_argument(
     "clean",
     type=inputs.boolean,
-    help="Do not include the variants that appear due to the sequences differences.",
+    help="Filter variants that appear due to the sequences differences.",
     default=False,
     required=False,
 )
 
 
-@ns.route("/lift/")
-class Lift(Resource):
+@ns.route("/map/")
+class Map(Resource):
     @ns.expect(_args)
     def get(self):
-        """Lift a description to another reference."""
-        return lift(**_args.parse_args())
+        """Map a description to another reference."""
+        return map_description(**_args.parse_args())

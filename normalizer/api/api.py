@@ -7,7 +7,7 @@ from ..util import log_dir
 from .description_extract import ns as ns_description_extract
 from .description_to_model import ns as ns_description_to_mdel
 from .get_selectors import ns as ns_get_selectors
-from .lift import ns as ns_lift
+from .map import ns as ns_map
 from .name_check import ns as ns_name_check
 from .position_convert import ns as ns_position_convert
 from .reference_model import ns as ns_reference_model
@@ -38,7 +38,7 @@ blueprint = Blueprint("api", __name__)
 
 api = PatchedApi(blueprint, version="1.0", title="Mutalyzer3 API")
 
-api.add_namespace(ns_lift)
+api.add_namespace(ns_map)
 api.add_namespace(ns_syntax_check)
 api.add_namespace(ns_name_check)
 api.add_namespace(ns_description_to_mdel)

@@ -42,7 +42,7 @@ def _convert_selector_locations(s_model):
     return output
 
 
-def lift(description, reference_id, selector_id=None, clean=False):
+def map_description(description, reference_id, selector_id=None, clean=False):
     d = Description(description)
     d.normalize()
     if d.errors:
