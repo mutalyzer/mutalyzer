@@ -570,12 +570,13 @@ class Description(object):
             len_seq = get_sequence_length(self.references, ref_id)
             if not point.get("uncertain") and point.get("position"):
                 point = point["position"]
-                if len_seq < point:
+                if len_seq <= point:
                     if self._is_inverted():
                         path = reverse_path(self.internal_coordinates_model, path)
                     self._add_error(
                         errors.out_of_boundary_greater(
                             get_submodel_by_path(self.corrected_model, path),
+                            point - len_seq + 1,
                             len_seq,
                             path,
                         )
@@ -586,6 +587,7 @@ class Description(object):
                     self._add_error(
                         errors.out_of_boundary_lesser(
                             get_submodel_by_path(self.corrected_model, path),
+                            -point,
                             path,
                         )
                     )

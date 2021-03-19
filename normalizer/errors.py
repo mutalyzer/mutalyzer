@@ -88,21 +88,24 @@ def outside_cds(location, path):
     }
 
 
-def out_of_boundary_lesser(position, path):
+def out_of_boundary_lesser(position, shift, path):
+    plural = "s" if shift > 1 else ""
     return {
         "code": "EOUTOFBOUNDARY",
-        "details": "Position {} is lesser than 1.".format(
-            point_to_description(position)
+        "details": "Position {} is {} nucleotide{} before the sequence start.".format(
+            point_to_description(position), shift, plural
         ),
         "paths": [path],
     }
 
 
-def out_of_boundary_greater(point, sequence_length, path):
+def out_of_boundary_greater(point, shift, sequence_length, path):
+    plural = "s" if shift > 1 else ""
     return {
         "code": "EOUTOFBOUNDARY",
-        "details": "Position {} is greater than the sequence {} length.".format(
-            point_to_description(point), sequence_length
+        "details": "Position {} is {} nucleotide{} after the sequence end "
+        "(the sequence has a length of {} nucleotides).".format(
+            point_to_description(point), shift, plural, sequence_length
         ),
         "paths": [path],
     }
