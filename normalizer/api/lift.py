@@ -1,4 +1,4 @@
-from flask_restx import Namespace, Resource, reqparse
+from flask_restx import Namespace, Resource, inputs, reqparse
 
 from normalizer.lifter import lift
 
@@ -26,6 +26,14 @@ _args.add_argument(
     "selector_id",
     type=str,
     help="Selector Id to which the description should be lifted.",
+    required=False,
+)
+
+_args.add_argument(
+    "clean",
+    type=inputs.boolean,
+    help="Do not include the variants that appear due to the sequences differences.",
+    default=False,
     required=False,
 )
 

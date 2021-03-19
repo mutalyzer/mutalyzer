@@ -42,7 +42,7 @@ def _convert_selector_locations(s_model):
     return output
 
 
-def lift(description, reference_id, selector_id=None):
+def lift(description, reference_id, selector_id=None, clean=False):
     d = Description(description)
     d.normalize()
     if d.errors:
@@ -68,6 +68,20 @@ def lift(description, reference_id, selector_id=None):
             extractor.describe_dna(ref_seq, obs_seq),
             {"reference": ref_seq, "observed": obs_seq},
         )
+
+        if clean:
+            raw_de_hgvs_variants = de_to_hgvs(
+                extractor.describe_dna(
+                    ref_seq, d.references["reference"]["sequence"]["seq"]
+                ),
+                {
+                    "reference": ref_seq,
+                    "observed": d.references["reference"]["sequence"]["seq"],
+                },
+            )
+            de_hgvs_variants = [
+                v for v in de_hgvs_variants if v not in raw_de_hgvs_variants
+            ]
 
         if get_reference_mol_type(r_model) in ["mRNA"]:
             return model_to_string(
@@ -125,3 +139,5 @@ def lift(description, reference_id, selector_id=None):
                     "variants": hgvs_variants["variants"],
                 }
             )
+    else:
+        return {"errors": [{"details": "No observed sequence or other error occured."}]}
