@@ -2558,6 +2558,18 @@ TESTS = [
         "errors": ["EOUTOFBOUNDARY"],
         "to_test": True,
     },
+    {
+        "keywords": ["no operation (equal)"],
+        "input": "NM_002001.2:c.=",
+        "normalized": "NM_002001.2:c.=",
+        "to_test": True,
+    },
+    {
+        "keywords": ["no operation with selector (equal)"],
+        "input": "NG_012337.1(NM_003002.2):c.=",
+        "normalized": "NG_012337.1(NM_003002.2):c.=",
+        "to_test": True,
+    },
     # {
     #     "keywords": [
     #

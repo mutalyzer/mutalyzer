@@ -217,7 +217,7 @@ def model_to_string(model, exclude_superfluous_selector=True):
         coordinate_system = model.get("coordinate_system") + "."
     else:
         coordinate_system = ""
-    if model.get("variants"):
+    if isinstance(model.get("variants"), list):
         return "{}:{}{}".format(
             reference, coordinate_system, variants_to_description(model.get("variants"))
         )
@@ -234,6 +234,8 @@ def variants_to_description(variants):
     :return: Variants string representation.
     """
     if isinstance(variants, list):
+        if len(variants) == 0:
+            return "="
         variants_list = []
         for variant in variants:
             variants_list.append(variant_to_description(variant))

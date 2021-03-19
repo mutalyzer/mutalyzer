@@ -737,9 +737,10 @@ class Description(object):
 
     def _remove_superfluous_selector(self):
         if (
-            self.de_hgvs_model and
-            self.de_hgvs_model["reference"].get("selector") and
-            self.de_hgvs_model["reference"]["selector"]["id"] == self.de_hgvs_model["reference"]["id"]
+            self.de_hgvs_model
+            and self.de_hgvs_model["reference"].get("selector")
+            and self.de_hgvs_model["reference"]["selector"]["id"]
+            == self.de_hgvs_model["reference"]["id"]
         ):
             self.de_hgvs_model["reference"].pop("selector")
 
@@ -769,6 +770,9 @@ class Description(object):
 
         if self._only_equals() or self._no_operation():
             self.de_hgvs_internal_indexing_model = self.internal_indexing_model
+            self.references["observed"] = {
+                "sequence": {"seq": self.references["reference"]["sequence"]["seq"]}
+            }
             self._construct_de_hgvs_coordinates_model()
             self._construct_normalized_description()
             self._construct_equivalent()
