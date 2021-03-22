@@ -120,7 +120,7 @@ def is_repeat(variant, sequences):
     """
     inserted_sequence = get_inserted_sequence(variant, sequences)
     repeat_seq, repeat_number = seq_present_before(
-        sequences["observed"],
+        sequences["reference"],
         inserted_sequence,
         get_start(variant["location"]),
         get_end(variant["location"]),
@@ -165,7 +165,7 @@ def delins_to_repeat(variant, sequences):
     new_variant = copy.deepcopy(variant)
     inserted_sequence = get_inserted_sequence(variant, sequences)
     repeat_seq, repeat_number = seq_present_before(
-        sequences["observed"],
+        sequences["reference"],
         inserted_sequence,
         get_start(variant["location"]),
         get_end(variant["location"]),
@@ -234,7 +234,6 @@ def de_to_hgvs(variants, sequences=None):
         return [new_variant]
 
     new_variants = []
-
     for variant in de_variants_clean(variants, sequences):
         if variant.get("type") == "inversion":
             new_variants.append(copy.deepcopy(variant))

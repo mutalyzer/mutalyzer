@@ -2438,7 +2438,7 @@ TESTS = [
     {
         "keywords": [],
         "input": "LRG_303:g.[105_106del;6681G>C;6883_6884insTTTCGCCCCTTTCGCCCC]",
-        "normalized": "LRG_303:g.[108_109del;6681G>C;6883_6884insTTTCGCCCCTTTCGCCCC]",
+        "normalized": "LRG_303:g.[108_109del;6681G>C;6875_6883TTTCGCCCC[3]]",
         "to_test": True,
     },
     {
