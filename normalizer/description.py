@@ -351,7 +351,7 @@ class Description(object):
     def _correct_variants_type(self):
         for i, v in enumerate(self.internal_indexing_model["variants"]):
             if v.get("type") == "substitution":
-                if len(construct_sequence(v["inserted"], self._get_sequences())) > 1:
+                if len(construct_sequence(v["inserted"], self.get_sequences())) > 1:
                     path = ["variants", i, "type"]
                     if self._is_inverted():
                         path = reverse_path(self.corrected_model, path)
@@ -407,7 +407,7 @@ class Description(object):
             self.delins_model["variants"] = sort_variants(self.delins_model["variants"])
             self._add_info(infos.sorted_variants())
 
-    def _get_sequences(self):
+    def get_sequences(self):
         """
         Retrieves a dictionary from the references with reference ids as
         keys and their corresponding sequences as values.
@@ -417,7 +417,7 @@ class Description(object):
 
     @check_errors
     def _mutate(self):
-        observed_sequence = mutate(self._get_sequences(), self.delins_model["variants"])
+        observed_sequence = mutate(self.get_sequences(), self.delins_model["variants"])
         self.references["observed"] = {"sequence": {"seq": observed_sequence}}
 
     @check_errors
@@ -439,7 +439,7 @@ class Description(object):
                 "coordinate_system": "i",
                 "variants": de_to_hgvs(
                     self.de_model["variants"],
-                    self._get_sequences(),
+                    self.get_sequences(),
                 ),
             }
 
@@ -680,7 +680,7 @@ class Description(object):
         """
         v_i = self.internal_indexing_model["variants"][path[1]]
         ins_or_del = path[-1]
-        sequences = self._get_sequences()
+        sequences = self.get_sequences()
         if (
             len(v_i[ins_or_del]) == 1
             and v_i[ins_or_del][0].get("length")
