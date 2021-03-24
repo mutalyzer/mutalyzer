@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 
 from _collections import OrderedDict
+from mutalyzer_mutator.util import reverse_complement
 
 
 def create_exact_point_model(point):
@@ -242,11 +243,17 @@ def construct_sequence(slices, sequences):
     seq = ""
     for slice in slices:
         if slice.get("sequence"):
-            seq += slice["sequence"]
+            slice_seq = slice["sequence"]
         elif slice.get("location"):
-            seq += slice_sequence(slice["location"], sequences[slice["source"]])
+            slice_seq = slice_sequence(slice["location"], sequences[slice["source"]])
         else:
             raise Exception("Unrecognized slice.")
+        if slice.get("repeat_number") and slice["repeat_number"].get("type") == "point":
+            slice_seq = slice_seq * slice["repeat_number"]["value"]
+        if slice.get("inverted"):
+            slice_seq = reverse_complement(slice_seq)
+        seq += slice_seq
+
     return seq
 
 

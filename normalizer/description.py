@@ -125,7 +125,7 @@ class Description(object):
                 self.references["reference"]["annotations"], selector_id, True
             )
 
-    def _is_inverted(self):
+    def is_inverted(self):
         selector_model = self._get_selector_model()
         if (
             selector_model
@@ -353,7 +353,7 @@ class Description(object):
             if v.get("type") == "substitution":
                 if len(construct_sequence(v["inserted"], self.get_sequences())) > 1:
                     path = ["variants", i, "type"]
-                    if self._is_inverted():
+                    if self.is_inverted():
                         path = reverse_path(self.corrected_model, path)
                     set_by_path(self.corrected_model, path, "deletion_insertion")
                     set_by_path(
@@ -571,7 +571,7 @@ class Description(object):
             if not point.get("uncertain") and point.get("position"):
                 point = point["position"]
                 if len_seq <= point:
-                    if self._is_inverted():
+                    if self.is_inverted():
                         path = reverse_path(self.internal_coordinates_model, path)
                     self._add_error(
                         errors.out_of_boundary_greater(
@@ -582,7 +582,7 @@ class Description(object):
                         )
                     )
                 elif point < 0:
-                    if self._is_inverted():
+                    if self.is_inverted():
                         path = reverse_path(self.internal_coordinates_model, path)
                     self._add_error(
                         errors.out_of_boundary_lesser(
@@ -696,8 +696,6 @@ class Description(object):
             if not is_dna(seq_del):
                 self._add_error(errors.no_dna(seq_del, path))
                 return
-            if self._is_inverted():
-                seq_ref = reverse_complement(seq_ref)
             if seq_del and seq_ref and seq_del != seq_ref:
                 self._add_error(errors.sequence_mismatch(seq_ref, seq_del, path))
 
@@ -869,6 +867,9 @@ class Description(object):
         else:
             print("- No de hgvs model")
         print("------")
+
+        if self.errors:
+            print(self.errors)
 
     def get_reference_summary(self):
         return {
