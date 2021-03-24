@@ -1,6 +1,6 @@
 import copy
 
-from normalizer.util import set_start, get_end, get_location_length
+from normalizer.util import get_end, get_location_length, set_start
 
 
 def substitution_to_delins(variant):
@@ -71,6 +71,31 @@ def equal_to_delins(variant):
     return new_variant
 
 
+def variant_to_delins(variant):
+    """
+    Convert the variant to its deletion insertion only equivalent.
+    It considers that internal indexing is employed.
+    """
+    if variant.get("type") == "substitution":
+        return substitution_to_delins(variant)
+    elif variant.get("type") == "deletion":
+        return deletion_to_delins(variant)
+    elif variant.get("type") == "duplication":
+        return duplication_to_delins(variant)
+    elif variant.get("type") == "insertion":
+        return insertion_to_delins(variant)
+    elif variant.get("type") == "inversion":
+        return inversion_to_delins(variant)
+    elif variant.get("type") == "deletion_insertion":
+        return deletion_insertion_to_delins(variant)
+    elif variant.get("type") == "equal":
+        return equal_to_delins(variant)
+    elif variant.get("type") == "repeat":
+        return repeat_to_delins(variant)
+    # TODO: Add error?
+    print("No variant or not supported variant type.")
+
+
 def variants_to_delins(variants):
     """
     Convert the variants list to its deletion insertion only
@@ -78,25 +103,9 @@ def variants_to_delins(variants):
     """
     new_variants = []
     for variant in variants:
-        if variant.get("type") == "substitution":
-            new_variants.append(substitution_to_delins(variant))
-        elif variant.get("type") == "deletion":
-            new_variants.append(deletion_to_delins(variant))
-        elif variant.get("type") == "duplication":
-            new_variants.append(duplication_to_delins(variant))
-        elif variant.get("type") == "insertion":
-            new_variants.append(insertion_to_delins(variant))
-        elif variant.get("type") == "inversion":
-            new_variants.append(inversion_to_delins(variant))
-        elif variant.get("type") == "deletion_insertion":
-            new_variants.append(deletion_insertion_to_delins(variant))
-        elif variant.get("type") == "equal":
-            new_variants.append(equal_to_delins(variant))
-        elif variant.get("type") == "repeat":
-            new_variants.append(repeat_to_delins(variant))
-        else:
-            # TODO: Add error.
-            print("no supported variant type")
+        new_variant = variant_to_delins(variant)
+        if new_variant:
+            new_variants.append(new_variant)
 
     return new_variants
 
