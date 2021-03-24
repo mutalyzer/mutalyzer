@@ -38,6 +38,7 @@ def view_variants(description, left=20, right=20):
         seq_right = sequences["reference"][v_end : v_end + right]
         details = {
             "description": variant_to_description(d.corrected_model["variants"][i]),
+            "seq_length": len(sequences["reference"]),
         }
         if d.is_inverted():
             seq_left, seq_right = reverse_complement(seq_right), reverse_complement(
