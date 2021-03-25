@@ -30,6 +30,13 @@ _args.add_argument(
 )
 
 _args.add_argument(
+    "slice_to",
+    type=str,
+    help="Slice the sequence according to the transcript or the gene locations.",
+    required=False,
+)
+
+_args.add_argument(
     "clean",
     type=inputs.boolean,
     help="Filter variants that appear due to the sequences differences.",

@@ -21,10 +21,12 @@ from .reference import (
     get_reference_model,
     get_reference_mol_type,
     get_selector_model,
+    extract_feature_model,
+    get_feature,
 )
 
 
-def _extract_seq(seq, slices):
+def _slice_seq(seq, slices):
     output = ""
     for slice in slices:
         output += seq[slice[0] : slice[1]]
@@ -42,102 +44,150 @@ def _convert_selector_locations(s_model):
     return output
 
 
-def map_description(description, reference_id, selector_id=None, clean=False):
+def _get_gene_locations(r_model):
+    g_l = r_model["annotations"]["features"][0]["location"]
+    return g_l["start"]["position"], g_l["end"]["position"]
+
+
+def _yield_locations(r_model, selector_id):
+    for feature in get_feature(r_model["annotations"], selector_id)["features"]:
+        if feature.get("location"):
+            yield feature["location"]
+
+
+def _get_reference_model(r_model, selector_id=None, slice_to=None):
+    """
+    Modify the reference model based on the `selector_id`
+    and the `slice_to` parameters.
+
+    :param r_model:
+    :param selector_id:
+    :param slice_to:
+    :return:
+    """
+    new_r_model = deepcopy(r_model)
+    if selector_id is None:
+        print(get_selector_model(new_r_model["annotations"], r_model["annotations"]["id"], True))
+        return new_r_model
+
+    new_r_model["annotations"] = extract_feature_model(new_r_model["annotations"], selector_id)[0]
+
+    s_model = get_selector_model(new_r_model["annotations"], selector_id, True)
+    print(s_model)
+
+    if slice_to == 'transcript':
+        new_r_model["sequence"]["seq"] = _slice_seq(new_r_model["sequence"]["seq"], s_model["exon"])
+        x = NonCoding(s_model["exon"],
+                      s_model["inverted"]).coordinate_to_noncoding
+    if slice_to == "gene":
+        g_l = _get_gene_locations(new_r_model)
+        new_r_model["sequence"]["seq"] = _slice_seq(new_r_model["sequence"]["seq"], [g_l])
+        x = NonCoding([g_l]).coordinate_to_noncoding
+
+    for loc in _yield_locations(new_r_model, selector_id):
+        loc["start"]["position"] = x(loc["start"]["position"])[0] - 1
+        loc["end"]["position"] = x(loc["end"]["position"])[0]
+    print(_convert_selector_locations(s_model))
+    print(get_selector_model(new_r_model["annotations"], selector_id, True))
+    return new_r_model
+
+
+def _get_ref_seq(r_model, selector_id=None):
+    """
+
+    :param r_model:
+    :param selector_id:
+    :param slice_to:
+    :return:
+    """
+    ref_seq = r_model["sequence"]["seq"]
+    if selector_id:
+        s_model = get_selector_model(r_model, selector_id, True)
+        if s_model["inverted"]:
+            ref_seq = reverse_complement(ref_seq)
+    return ref_seq
+
+
+def _extract_description(obs_seq, r_model, selector_id=None):
+    ref_seq = r_model["sequence"]["seq"]
+    de_variants = extractor.describe_dna(ref_seq, obs_seq)
+    reference = {"id": r_model["annotations"]["id"]}
+    if selector_id:
+        reference["selector"] = {"id": selector_id}
+        c_s = get_coordinate_system_from_selector_id(r_model, selector_id)
+    else:
+        c_s = get_coordinate_system_from_reference(r_model)
+        if c_s in ["c", "n"]:
+            selector_id = r_model["annotations"]["id"]
+
+    de_hgvs_internal_indexing_model = {
+        "reference": reference,
+        "coordinate_system": "i",
+        "variants": de_to_hgvs(
+            de_variants,
+            {"reference": ref_seq, "observed": obs_seq},
+        ),
+    }
+    # print(variants_to_description(de_variants))
+    # print(model_to_string(de_hgvs_internal_indexing_model))
+    # print(c_s)
+    # print(selector_id)
+    de_hgvs_model = to_hgvs_locations(
+        de_hgvs_internal_indexing_model,
+        {"reference": r_model, r_model["annotations"]["id"]: r_model},
+        c_s,
+        selector_id,
+        True,
+    )
+    return model_to_string(de_hgvs_model)
+
+
+def map_description(description, reference_id, selector_id=None, slice_to=None, clean=False,):
+    print('------')
+    # Get the observed sequence
     d = Description(description)
     d.normalize()
     if d.errors:
         return {"errors": d.errors}
-    if d.references and d.references.get("observed"):
-        try:
-            r_model = get_reference_model(reference_id)
-        except (NoReferenceError, NoReferenceRetrieved):
-            return {"errors": [reference_not_retrieved(reference_id, [])]}
+    if not d.references and not d.references.get("observed"):
+        return {"errors": [
+            {"details": "No observed sequence or other error occured."}]}
+    obs_seq = d.references["observed"]["sequence"]["seq"]
 
-        if selector_id:
-            s_model = get_selector_model(r_model["annotations"], selector_id, True)
-            if s_model is None:
-                return {"errors": [no_selector_found(reference_id, selector_id, [])]}
-            ref_seq = _extract_seq(r_model["sequence"]["seq"], s_model["exon"])
-            if s_model["inverted"]:
-                ref_seq = reverse_complement(ref_seq)
-        else:
-            ref_seq = r_model["sequence"]["seq"]
-        obs_seq = d.references["observed"]["sequence"]["seq"]
+    # Get the reference_model
+    try:
+        r_model = get_reference_model(reference_id)
+    except (NoReferenceError, NoReferenceRetrieved):
+        return {"errors": [reference_not_retrieved(reference_id, [])]}
 
-        de_hgvs_variants = de_to_hgvs(
-            extractor.describe_dna(ref_seq, obs_seq),
-            {"reference": ref_seq, "observed": obs_seq},
+    if selector_id:
+        s_model = get_selector_model(r_model["annotations"], selector_id, True)
+        if s_model is None:
+            return {"errors": [no_selector_found(reference_id, selector_id, [])]}
+
+    r_model = _get_reference_model(r_model, selector_id, slice_to)
+
+    return _extract_description(obs_seq, r_model, selector_id)
+
+
+    if clean:
+        print('---')
+        raw_de_variants = extractor.describe_dna(
+                ref_seq, d.references["reference"]["sequence"]["seq"]
+            )
+        print(variants_to_description(raw_de_variants))
+        raw_de_hgvs_variants = de_to_hgvs(
+            raw_de_variants,
+            {
+                "reference": ref_seq,
+                "observed": d.references["reference"]["sequence"]["seq"],
+            },
         )
-
-        if clean:
-            raw_de_hgvs_variants = de_to_hgvs(
-                extractor.describe_dna(
-                    ref_seq, d.references["reference"]["sequence"]["seq"]
-                ),
-                {
-                    "reference": ref_seq,
-                    "observed": d.references["reference"]["sequence"]["seq"],
-                },
-            )
-            de_hgvs_variants = [
-                v for v in de_hgvs_variants if v not in raw_de_hgvs_variants
-            ]
-
-        if get_reference_mol_type(r_model) in ["mRNA"]:
-            return model_to_string(
-                to_hgvs_locations(
-                    model={
-                        "reference": {"id": reference_id},
-                        "variants": de_hgvs_variants,
-                    },
-                    references={"reference": r_model, reference_id: r_model},
-                    to_coordinate_system="c",
-                    to_selector_id=reference_id,
-                    degenerate=True,
-                )
-            )
-        elif selector_id:
-            s_model = _convert_selector_locations(s_model)
-            return model_to_string(
-                to_hgvs_locations(
-                    model={
-                        "reference": {
-                            "id": reference_id,
-                            "selector": {"id": selector_id},
-                        },
-                        "variants": de_hgvs_variants,
-                    },
-                    to_coordinate_system="c",
-                    references={"reference": r_model, reference_id: r_model},
-                    degenerate=True,
-                    selector_model=s_model,
-                )
-            )
-        elif get_coordinate_system_from_reference(r_model) == "n":
-            return model_to_string(
-                to_hgvs_locations(
-                    model={
-                        "reference": {"id": reference_id},
-                        "variants": de_hgvs_variants,
-                    },
-                    references={"reference": r_model, reference_id: r_model},
-                    to_selector_id=reference_id,
-                    degenerate=True,
-                )
-            )
-        else:
-            hgvs_indexing_variants = variants_to_internal_indexing(de_hgvs_variants)
-            c_s = get_coordinate_system_from_selector_id(r_model, reference_id)
-            crossmap = crossmap_to_hgvs_setup(c_s)
-            hgvs_variants = locations_to_hgvs_locations(
-                {"variants": hgvs_indexing_variants}, crossmap
-            )
-            return model_to_string(
-                {
-                    "reference": {"id": reference_id},
-                    "coordinate_system": c_s,
-                    "variants": hgvs_variants["variants"],
-                }
-            )
-    else:
-        return {"errors": [{"details": "No observed sequence or other error occured."}]}
+        print(variants_to_description(raw_de_hgvs_variants))
+        de_hgvs_variants_ = [
+            v for v in de_hgvs_variants if v not in raw_de_hgvs_variants
+        ]
+        raw_de_hgvs_variants_ = [
+            v for v in raw_de_hgvs_variants if v not in de_hgvs_variants
+        ]
+        de_hgvs_variants = de_hgvs_variants_ + raw_de_hgvs_variants_
