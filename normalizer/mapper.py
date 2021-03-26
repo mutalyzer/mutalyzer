@@ -6,12 +6,7 @@ from mutalyzer_mutator.util import reverse_complement
 from mutalyzer_retriever.retriever import NoReferenceError, NoReferenceRetrieved
 
 from .converter import de_to_hgvs
-from .converter.to_hgvs_coordinates import (
-    crossmap_to_hgvs_setup,
-    locations_to_hgvs_locations,
-    to_hgvs_locations,
-)
-from .converter.to_hgvs_indexing import variants_to_internal_indexing
+from .converter.to_hgvs_coordinates import to_hgvs_locations
 from .description import Description
 from .description_model import model_to_string, variants_to_description
 from .errors import no_selector_found, reference_not_retrieved
@@ -21,7 +16,6 @@ from .reference import (
     get_coordinate_system_from_selector_id,
     get_feature,
     get_reference_model,
-    get_reference_mol_type,
     get_selector_model,
 )
 
@@ -114,9 +108,13 @@ def _get_ref_seq(r_model, selector_id=None):
     return ref_seq
 
 
-def _extract_description(obs_seq, r_model, selector_id=None):
+def _clean(de_variants, ref_seq1, ref_seq2):
+    raw_de_variants = extractor.describe_dna(ref_seq1, ref_seq2)
+    return [v for v in de_variants if v not in raw_de_variants]
+
+
+def _extract_description(de_variants, obs_seq, r_model, selector_id=None):
     ref_seq = r_model["sequence"]["seq"]
-    de_variants = extractor.describe_dna(ref_seq, obs_seq)
     reference = {"id": r_model["annotations"]["id"]}
     if selector_id:
         reference["selector"] = {"id": selector_id}
@@ -173,26 +171,12 @@ def map_description(
 
     r_model = _get_reference_model(r_model, selector_id, slice_to)
 
-    return _extract_description(obs_seq, r_model, selector_id)
-
+    de_variants = extractor.describe_dna(r_model["sequence"]["seq"], obs_seq)
     if clean:
-        print("---")
-        raw_de_variants = extractor.describe_dna(
-            ref_seq, d.references["reference"]["sequence"]["seq"]
+        de_variants = _clean(
+            de_variants,
+            r_model["sequence"]["seq"],
+            d.references["reference"]["sequence"]["seq"],
         )
-        print(variants_to_description(raw_de_variants))
-        raw_de_hgvs_variants = de_to_hgvs(
-            raw_de_variants,
-            {
-                "reference": ref_seq,
-                "observed": d.references["reference"]["sequence"]["seq"],
-            },
-        )
-        print(variants_to_description(raw_de_hgvs_variants))
-        de_hgvs_variants_ = [
-            v for v in de_hgvs_variants if v not in raw_de_hgvs_variants
-        ]
-        raw_de_hgvs_variants_ = [
-            v for v in raw_de_hgvs_variants if v not in de_hgvs_variants
-        ]
-        de_hgvs_variants = de_hgvs_variants_ + raw_de_hgvs_variants_
+
+    return _extract_description(de_variants, obs_seq, r_model, selector_id)
