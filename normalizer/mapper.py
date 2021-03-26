@@ -16,13 +16,13 @@ from .description import Description
 from .description_model import model_to_string, variants_to_description
 from .errors import no_selector_found, reference_not_retrieved
 from .reference import (
+    extract_feature_model,
     get_coordinate_system_from_reference,
     get_coordinate_system_from_selector_id,
+    get_feature,
     get_reference_model,
     get_reference_mol_type,
     get_selector_model,
-    extract_feature_model,
-    get_feature,
 )
 
 
@@ -52,7 +52,7 @@ def _get_gene_locations(r_model):
 def _yield_locations(r_model, selector_id):
     for feature in get_feature(r_model["annotations"], selector_id)["features"]:
         if feature.get("location"):
-            yield feature["location"]
+            yield feature["location"], feature["type"]
 
 
 def _get_reference_model(r_model, selector_id=None, slice_to=None):
@@ -67,28 +67,39 @@ def _get_reference_model(r_model, selector_id=None, slice_to=None):
     """
     new_r_model = deepcopy(r_model)
     if selector_id is None:
-        print(get_selector_model(new_r_model["annotations"], r_model["annotations"]["id"], True))
+        print(
+            get_selector_model(
+                new_r_model["annotations"], r_model["annotations"]["id"], True
+            )
+        )
         return new_r_model
 
-    new_r_model["annotations"] = extract_feature_model(new_r_model["annotations"], selector_id)[0]
+    new_r_model["annotations"] = extract_feature_model(
+        new_r_model["annotations"], selector_id
+    )[0]
 
     s_model = get_selector_model(new_r_model["annotations"], selector_id, True)
-    print(s_model)
 
-    if slice_to == 'transcript':
-        new_r_model["sequence"]["seq"] = _slice_seq(new_r_model["sequence"]["seq"], s_model["exon"])
-        x = NonCoding(s_model["exon"],
-                      s_model["inverted"]).coordinate_to_noncoding
+    if slice_to == "transcript":
+        new_r_model["sequence"]["seq"] = _slice_seq(
+            new_r_model["sequence"]["seq"], s_model["exon"]
+        )
+        x = NonCoding(s_model["exon"], s_model["inverted"]).coordinate_to_noncoding
+        exon_end = [s_model[exon][1] for exon in s_model["exons"]]
     if slice_to == "gene":
         g_l = _get_gene_locations(new_r_model)
-        new_r_model["sequence"]["seq"] = _slice_seq(new_r_model["sequence"]["seq"], [g_l])
+        new_r_model["sequence"]["seq"] = _slice_seq(
+            new_r_model["sequence"]["seq"], [g_l]
+        )
         x = NonCoding([g_l]).coordinate_to_noncoding
+        exon_end = [g_l[1]]
 
-    for loc in _yield_locations(new_r_model, selector_id):
+    for loc, feature_type in _yield_locations(new_r_model, selector_id):
         loc["start"]["position"] = x(loc["start"]["position"])[0] - 1
-        loc["end"]["position"] = x(loc["end"]["position"])[0]
-    print(_convert_selector_locations(s_model))
-    print(get_selector_model(new_r_model["annotations"], selector_id, True))
+        if feature_type == "exon" and loc["end"]["position"] in exon_end:
+            loc["end"]["position"] = x(loc["end"]["position"])[0]
+        else:
+            loc["end"]["position"] = x(loc["end"]["position"])[0] - 1
     return new_r_model
 
 
@@ -142,16 +153,21 @@ def _extract_description(obs_seq, r_model, selector_id=None):
     return model_to_string(de_hgvs_model)
 
 
-def map_description(description, reference_id, selector_id=None, slice_to=None, clean=False,):
-    print('------')
+def map_description(
+    description,
+    reference_id,
+    selector_id=None,
+    slice_to=None,
+    clean=False,
+):
+    print("------")
     # Get the observed sequence
     d = Description(description)
     d.normalize()
     if d.errors:
         return {"errors": d.errors}
     if not d.references and not d.references.get("observed"):
-        return {"errors": [
-            {"details": "No observed sequence or other error occured."}]}
+        return {"errors": [{"details": "No observed sequence or other error occured."}]}
     obs_seq = d.references["observed"]["sequence"]["seq"]
 
     # Get the reference_model
@@ -169,12 +185,11 @@ def map_description(description, reference_id, selector_id=None, slice_to=None, 
 
     return _extract_description(obs_seq, r_model, selector_id)
 
-
     if clean:
-        print('---')
+        print("---")
         raw_de_variants = extractor.describe_dna(
-                ref_seq, d.references["reference"]["sequence"]["seq"]
-            )
+            ref_seq, d.references["reference"]["sequence"]["seq"]
+        )
         print(variants_to_description(raw_de_variants))
         raw_de_hgvs_variants = de_to_hgvs(
             raw_de_variants,
