@@ -65,32 +65,27 @@ def _get_reference_model(r_model, selector_id=None, slice_to=None):
     :param slice_to:
     :return:
     """
-    new_r_model = deepcopy(r_model)
     if selector_id is None:
-        print(
-            get_selector_model(
-                new_r_model["annotations"], r_model["annotations"]["id"], True
-            )
-        )
-        return new_r_model
+        return r_model
 
-    new_r_model["annotations"] = extract_feature_model(
-        new_r_model["annotations"], selector_id
-    )[0]
+    new_r_model = {
+        "annotations": deepcopy(
+            extract_feature_model(r_model["annotations"], selector_id)[0]
+        )
+    }
+    ref_seq = r_model["sequence"]["seq"]
 
     s_model = get_selector_model(new_r_model["annotations"], selector_id, True)
 
     if slice_to == "transcript":
-        new_r_model["sequence"]["seq"] = _slice_seq(
-            new_r_model["sequence"]["seq"], s_model["exon"]
-        )
+        new_r_model["sequence"] = {
+            "seq": _slice_seq(r_model["sequence"]["seq"], s_model["exon"])
+        }
         x = NonCoding(s_model["exon"], s_model["inverted"]).coordinate_to_noncoding
-        exon_end = [s_model[exon][1] for exon in s_model["exons"]]
+        exon_end = [exon[1] for exon in s_model["exon"]]
     if slice_to == "gene":
         g_l = _get_gene_locations(new_r_model)
-        new_r_model["sequence"]["seq"] = _slice_seq(
-            new_r_model["sequence"]["seq"], [g_l]
-        )
+        new_r_model["sequence"] = {"seq": _slice_seq(r_model["sequence"]["seq"], [g_l])}
         x = NonCoding([g_l]).coordinate_to_noncoding
         exon_end = [g_l[1]]
 
@@ -139,10 +134,6 @@ def _extract_description(obs_seq, r_model, selector_id=None):
             {"reference": ref_seq, "observed": obs_seq},
         ),
     }
-    # print(variants_to_description(de_variants))
-    # print(model_to_string(de_hgvs_internal_indexing_model))
-    # print(c_s)
-    # print(selector_id)
     de_hgvs_model = to_hgvs_locations(
         de_hgvs_internal_indexing_model,
         {"reference": r_model, r_model["annotations"]["id"]: r_model},
@@ -160,7 +151,6 @@ def map_description(
     slice_to=None,
     clean=False,
 ):
-    print("------")
     # Get the observed sequence
     d = Description(description)
     d.normalize()
