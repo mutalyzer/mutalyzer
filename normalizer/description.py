@@ -62,6 +62,7 @@ from .util import (
     get_start,
     get_submodel_by_path,
     is_dna,
+    point_in_insertion,
     reverse_path,
     set_by_path,
     slice_sequence,
@@ -568,20 +569,29 @@ class Description(object):
                     if ins_or_del_ref:
                         ref_id = ins_or_del_ref
             len_seq = get_sequence_length(self.references, ref_id)
+            if point_in_insertion(self.internal_coordinates_model, path):
+                print("Yes")
+                left_boundary = -1
+                right_boundary = len_seq + 1
+            else:
+                left_boundary = 0
+                right_boundary = len_seq
+
+            print(point)
             if not point.get("uncertain") and point.get("position"):
                 point = point["position"]
-                if len_seq <= point:
+                if right_boundary <= point:
                     if self.is_inverted():
                         path = reverse_path(self.internal_coordinates_model, path)
                     self._add_error(
                         errors.out_of_boundary_greater(
                             get_submodel_by_path(self.corrected_model, path),
-                            point - len_seq + 1,
-                            len_seq,
+                            point - right_boundary + 1,
+                            right_boundary,
                             path,
                         )
                     )
-                elif point < 0:
+                elif point < left_boundary:
                     if self.is_inverted():
                         path = reverse_path(self.internal_coordinates_model, path)
                     self._add_error(
