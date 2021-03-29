@@ -152,7 +152,7 @@ def to_hgvs_locations(
 ):
     reference_id = get_reference_id(model)
 
-    if to_selector_id or selector_model is None:
+    if to_selector_id and selector_model is None:
         selector_model = get_selector_model(
             references[reference_id]["annotations"], to_selector_id, True
         )

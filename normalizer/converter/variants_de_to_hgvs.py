@@ -38,11 +38,17 @@ def is_deletion(delins_variant):
 
 
 def update_inserted_with_sequences(inserted, sequences):
+    new_inserted = []
     for insert in inserted:
         if insert["source"] == "observed":
-            insert["sequence"] = sequences["observed"][
+            seq = sequences["observed"][
                 get_start(insert["location"]) : get_end(insert["location"])
             ]
+            if seq:
+                new_inserted.append({"sequence": seq, "source": "description"})
+        else:
+            new_inserted.append(insert)
+    return new_inserted
 
 
 def de_variants_clean(variants, sequences=None):
@@ -55,7 +61,9 @@ def de_variants_clean(variants, sequences=None):
         if variant.get("type") == "inversion":
             new_variants.append(copy.deepcopy(variant))
         elif variant.get("type") == "deletion_insertion":
-            update_inserted_with_sequences(variant["inserted"], sequences)
+            variant["inserted"] = update_inserted_with_sequences(
+                variant["inserted"], sequences
+            )
             inserted_sequence = get_inserted_sequence(variant, sequences)
             new_variant = copy.deepcopy(variant)
             shift3 = 0

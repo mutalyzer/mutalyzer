@@ -68,18 +68,17 @@ def _get_reference_model(r_model, selector_id=None, slice_to=None):
         )
     }
     ref_seq = r_model["sequence"]["seq"]
-
     s_model = get_selector_model(new_r_model["annotations"], selector_id, True)
 
     if slice_to == "transcript":
-        new_r_model["sequence"] = {
-            "seq": _slice_seq(r_model["sequence"]["seq"], s_model["exon"])
-        }
-        x = NonCoding(s_model["exon"], s_model["inverted"]).coordinate_to_noncoding
+        ref_seq = _slice_seq(ref_seq, s_model["exon"])
+        new_r_model["sequence"] = {"seq": ref_seq}
+        x = NonCoding(s_model["exon"]).coordinate_to_noncoding
         exon_end = [exon[1] for exon in s_model["exon"]]
     if slice_to == "gene":
         g_l = _get_gene_locations(new_r_model)
-        new_r_model["sequence"] = {"seq": _slice_seq(r_model["sequence"]["seq"], [g_l])}
+        ref_seq = _slice_seq(ref_seq, [g_l])
+        new_r_model["sequence"] = {"seq": ref_seq}
         x = NonCoding([g_l]).coordinate_to_noncoding
         exon_end = [g_l[1]]
 
@@ -108,13 +107,7 @@ def _get_ref_seq(r_model, selector_id=None):
     return ref_seq
 
 
-def _clean(de_variants, ref_seq1, ref_seq2):
-    raw_de_variants = extractor.describe_dna(ref_seq1, ref_seq2)
-    return [v for v in de_variants if v not in raw_de_variants]
-
-
-def _extract_description(de_variants, obs_seq, r_model, selector_id=None):
-    ref_seq = r_model["sequence"]["seq"]
+def _get_description(de_hgvs_internal_indexing_variants, r_model, selector_id=None):
     reference = {"id": r_model["annotations"]["id"]}
     if selector_id:
         reference["selector"] = {"id": selector_id}
@@ -124,22 +117,37 @@ def _extract_description(de_variants, obs_seq, r_model, selector_id=None):
         if c_s in ["c", "n"]:
             selector_id = r_model["annotations"]["id"]
 
-    de_hgvs_internal_indexing_model = {
-        "reference": reference,
-        "coordinate_system": "i",
-        "variants": de_to_hgvs(
-            de_variants,
-            {"reference": ref_seq, "observed": obs_seq},
-        ),
-    }
     de_hgvs_model = to_hgvs_locations(
-        de_hgvs_internal_indexing_model,
+        {
+            "reference": reference,
+            "coordinate_system": "i",
+            "variants": de_hgvs_internal_indexing_variants,
+        },
         {"reference": r_model, r_model["annotations"]["id"]: r_model},
         c_s,
         selector_id,
         True,
     )
     return model_to_string(de_hgvs_model)
+
+
+def _extract_hgvs_internal_model(obs_seq, r_model):
+    ref_seq = r_model["sequence"]["seq"]
+    de_variants = extractor.describe_dna(ref_seq, obs_seq)
+
+    return de_to_hgvs(
+        de_variants,
+        {"reference": ref_seq, "observed": obs_seq},
+    )
+
+
+def _filter(variants, ref_seq1, ref_seq2):
+    raw_de_variants = extractor.describe_dna(ref_seq1, ref_seq2)
+    seq_variants = de_to_hgvs(
+        raw_de_variants,
+        {"reference": ref_seq1, "observed": ref_seq2},
+    )
+    return [v for v in variants if v not in seq_variants]
 
 
 def map_description(
@@ -164,19 +172,34 @@ def map_description(
     except (NoReferenceError, NoReferenceRetrieved):
         return {"errors": [reference_not_retrieved(reference_id, [])]}
 
+    ref_seq2 = d.references["reference"]["sequence"]["seq"]
+
     if selector_id:
         s_model = get_selector_model(r_model["annotations"], selector_id, True)
         if s_model is None:
             return {"errors": [no_selector_found(reference_id, selector_id, [])]}
+        if s_model["inverted"]:
+            obs_seq = reverse_complement(obs_seq)
+            ref_seq2 = reverse_complement(ref_seq2)
 
-    r_model = _get_reference_model(r_model, selector_id, slice_to)
+    if slice_to:
+        r_model = _get_reference_model(r_model, selector_id, slice_to)
 
-    de_variants = extractor.describe_dna(r_model["sequence"]["seq"], obs_seq)
+    ref_seq1 = r_model["sequence"]["seq"]
+
+    # Get the description extractor hgvs internal indexing variants
+    variants = _extract_hgvs_internal_model(obs_seq, r_model)
+
     if clean:
-        de_variants = _clean(
-            de_variants,
-            r_model["sequence"]["seq"],
-            d.references["reference"]["sequence"]["seq"],
+        raw_de_variants = extractor.describe_dna(ref_seq1, ref_seq2)
+        seq_variants = de_to_hgvs(
+            raw_de_variants,
+            {"reference": ref_seq1, "observed": ref_seq2},
         )
+        if [v for v in seq_variants if v not in variants]:
+            return {
+                "errors": [{"code": "EMAPFILTER", "details": "Unsuccessful filtering."}]
+            }
+        variants = [v for v in variants if v not in seq_variants]
 
-    return _extract_description(de_variants, obs_seq, r_model, selector_id)
+    return _get_description(variants, r_model, selector_id)
