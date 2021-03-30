@@ -1,0 +1,9 @@
+##sequence-region NM_012459.2 1 823
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=9606
+NM_012459.2	RefSeq	region	1	823	.	+	.	ID=NM_012459.2:1..823;Dbxref=taxon:9606;Name=11;chromosome=11;gbkey=Src;genome=genomic;map=11q23.1;mol_type=mRNA
+NM_012459.2	RefSeq	gene	1	823	.	+	.	ID=gene-TIMM8B;Dbxref=GeneID:26521,HGNC:HGNC:11818,MIM:606659;Name=TIMM8B;description=translocase of inner mitochondrial membrane 8 homolog B;gbkey=Gene;gene=TIMM8B;gene_synonym=DDP2,TIM8B
+NM_012459.2	RefSeq	CDS	31	327	.	+	0	ID=cds-NP_036591.2;Parent=gene-TIMM8B;Dbxref=CCDS:CCDS8357.2,Genbank:NP_036591.2,GeneID:26521,HGNC:HGNC:11818,MIM:606659;Name=NP_036591.2;gbkey=CDS;gene=TIMM8B;product=mitochondrial import inner membrane translocase subunit Tim8 B;protein_id=NP_036591.2
+NM_012459.2	RefSeq	exon	1	159	.	+	.	ID=id-TIMM8B;Parent=gene-TIMM8B;Dbxref=GeneID:26521,HGNC:HGNC:11818,MIM:606659;gbkey=exon;gene=TIMM8B;inference=alignment:Splign:2.1.0
+NM_012459.2	RefSeq	exon	160	822	.	+	.	ID=id-TIMM8B-2;Parent=gene-TIMM8B;Dbxref=GeneID:26521,HGNC:HGNC:11818,MIM:606659;gbkey=exon;gene=TIMM8B;inference=alignment:Splign:2.1.0
+
+
