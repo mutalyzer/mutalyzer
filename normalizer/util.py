@@ -217,7 +217,7 @@ def reverse_path(model, path):
         if isinstance(p, int):
             new_path.append(len(get_submodel_by_path(model, path[:i])) - 1 - p)
         elif p == "start":
-            new_path.append("'end")
+            new_path.append("end")
         elif p == "end":
             new_path.append("start")
         else:
