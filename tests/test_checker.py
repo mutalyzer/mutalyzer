@@ -27,6 +27,7 @@ TESTS_ERROR = [
         "NG_012337.1(NM_012459.2):c.1_2ins[LRG_1:g.100000;AAA]",
         "EOUTOFBOUNDARY",
     ),
+    ("NG_012337.1(NM_012459.2):c.-11025_11020inv", "EOUTOFBOUNDARY"),
     ("NG_007485.1:g.40_42insT", "EINSERTIONRANGE"),
     ("NG_007485.1(NM_000077.4):c.40_42insT", "EINSERTIONRANGE"),
     # Different exons positive strand.
