@@ -2547,7 +2547,7 @@ TESTS = [
     {
         "keywords": [],
         "input": "NM_003002.2:c.[274+20C>T;400_401insNM_003002.4:100_102]",
-        "normalized": "NM_003002.2:c.[294C>T;399_401dup]",
+        "normalized": "NM_003002.2:c.[294C>T;399_401T[6]]",
         "infos": ["ICORRECTEDCOORDINATESYSTEM", "ICORRECTEDPOINT"],
         "to_test": True,
     },

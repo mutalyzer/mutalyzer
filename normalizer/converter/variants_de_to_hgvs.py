@@ -133,7 +133,7 @@ def is_repeat(variant, sequences):
         get_start(variant["location"]),
         get_end(variant["location"]),
     )
-    if len(repeat_seq) > 0:
+    if repeat_number > 1:
         return True
     return False
 
@@ -253,10 +253,10 @@ def de_to_hgvs(variants, sequences=None):
                 get_location_length(variant["location"]) == len(inserted_sequence) == 1
             ):
                 new_variants.append(delins_to_substitution(variant, sequences))
-            elif is_duplication(variant, sequences):
-                new_variants.append(delins_to_duplication(variant, sequences))
             elif is_repeat(variant, sequences):
                 new_variants.append(delins_to_repeat(variant, sequences))
+            elif is_duplication(variant, sequences):
+                new_variants.append(delins_to_duplication(variant, sequences))
             elif get_start(variant["location"]) == get_end(variant["location"]):
                 new_variants.append(delins_to_insertion(variant))
             else:
