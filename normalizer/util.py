@@ -247,7 +247,7 @@ def construct_sequence(slices, sequences):
         elif slice.get("location"):
             slice_seq = slice_sequence(slice["location"], sequences[slice["source"]])
         else:
-            raise Exception("Unrecognized slice.")
+            raise Exception("Unrecognized slice", slice)
         if slice.get("repeat_number") and slice["repeat_number"].get("type") == "point":
             slice_seq = slice_seq * slice["repeat_number"]["value"]
         if slice.get("inverted"):

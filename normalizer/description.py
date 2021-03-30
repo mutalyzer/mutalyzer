@@ -10,7 +10,12 @@ from mutalyzer_retriever.retriever import NoReferenceError, NoReferenceRetrieved
 import normalizer.errors as errors
 import normalizer.infos as infos
 
-from .checker import are_sorted, contains_uncertain_locations, is_overlap
+from .checker import (
+    are_sorted,
+    contains_insert_length,
+    contains_uncertain_locations,
+    is_overlap,
+)
 from .converter.extras import convert_selector_model
 from .converter.to_delins import to_delins, variants_to_delins
 from .converter.to_hgvs_coordinates import (
@@ -570,14 +575,11 @@ class Description(object):
                         ref_id = ins_or_del_ref
             len_seq = get_sequence_length(self.references, ref_id)
             if point_in_insertion(self.internal_coordinates_model, path):
-                print("Yes")
                 left_boundary = -1
                 right_boundary = len_seq + 1
             else:
                 left_boundary = 0
                 right_boundary = len_seq
-
-            print(point)
             if not point.get("uncertain") and point.get("position"):
                 point = point["position"]
                 if right_boundary <= point:
@@ -736,6 +738,8 @@ class Description(object):
         self._check_location_extras()
         if contains_uncertain_locations(self.corrected_model):
             self._add_error(errors.uncertain())
+        if contains_insert_length(self.corrected_model):
+            self._add_error(errors.inserted_length())
 
     def to_internal_indexing_model(self):
         self.retrieve_references()

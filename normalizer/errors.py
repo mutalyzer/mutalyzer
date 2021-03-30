@@ -201,6 +201,13 @@ def uncertain():
     return {"code": "EUNCERTAIN", "details": "Uncertainties present in locations."}
 
 
+def inserted_length():
+    return {
+        "code": "EINSERTEDLENGTH",
+        "details": "Length not supported in the inserted part.",
+    }
+
+
 def overlap():
     return {"code": "EOVERLAP", "details": "Variant locations overlap."}
 

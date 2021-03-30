@@ -48,6 +48,17 @@ TESTS_ERROR = [
     ("NG_012337.1:g.4_5+3del", "EOFFSET"),
     ("NG_012337.1:g.5+3_7del", "EOFFSET"),
     ("NG_012337.1:g.10_11insLRG_24:g.2+5", "EOFFSET"),
+    ("NG_012337.1:g.274dup[1;A]", "EINSERTEDLENGTH"),
+    ("NG_012337.1:g.20_21ins[(123);30_40]", "EINSERTEDLENGTH"),
+    ("NG_012337.1:g.20_21ins[123;30_40]", "EINSERTEDLENGTH"),
+    ("NG_012337.1:g.20_21ins[30_40;123]", "EINSERTEDLENGTH"),
+    ("NG_012337.1:g.20_21ins[?]", "EINSERTEDLENGTH"),
+    ("NG_012337.1:g.20_21ins[30_40;?]", "EINSERTEDLENGTH"),
+    ("NG_012337.1:g.20>60", "EINSERTEDLENGTH"),
+    ("NG_012337.1:g.20_21ins[30_?]", "EUNCERTAIN"),
+    ("NG_012337.1:g.20_21ins[?_40]", "EUNCERTAIN"),
+    ("NG_012337.1:g.20_21ins[30_40;50_?]", "EUNCERTAIN"),
+    ("NG_012337.1:g.20_21ins[30_40;?_60]", "EUNCERTAIN"),
 ]
 
 TESTS_NO_ERROR = [
@@ -66,6 +77,8 @@ TESTS_NO_ERROR = [
     "NG_012337.1(NM_003002.2):c.-5061G>T",
     "NG_012337.1:g.0_1insAAA",
     "NG_012337.1:g.15948_15949insAAA",
+    "NG_012337.1:g.274dup1",
+    "NG_012337.1:g.274dupT",
 ]
 
 
