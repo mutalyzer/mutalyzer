@@ -88,6 +88,16 @@ def outside_cds(location, path):
     }
 
 
+def intronic(location, path):
+    return {
+        "code": "EINTRONIC",
+        "details": 'Intronic position ("{}") given for a non-genomic '
+        "reference sequence. Tip: make use of a genomic reference "
+        "sequence like NC_*(NM_*).".format(location_to_description(location)),
+        "paths": [path],
+    }
+
+
 def out_of_boundary_lesser(position, shift, path):
     plural = "s" if shift > 1 else ""
     return {

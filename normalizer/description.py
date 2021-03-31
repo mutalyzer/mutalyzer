@@ -311,10 +311,10 @@ class Description(object):
             return
         self._add_error(errors.no_coordinate_system(c_s_path))
 
-    def _correct_selector_id_from_coordinate_system(self, r_id_path, selector_id):
+    def _correct_selector_id_from_coordinate_system(self, r_id, r_id_path, selector_id):
         path = tuple(list(r_id_path[:-1]) + ["selector"])
         set_by_path(self.corrected_model, path, {"id": selector_id})
-        if get_reference_mol_type(self.references["reference"]) != "mRNA":
+        if get_reference_mol_type(self.references[r_id]) != "mRNA":
             self._add_info(
                 infos.corrected_selector_id("", selector_id, "coordinate system", path)
             )
@@ -344,7 +344,9 @@ class Description(object):
                 if not ((r_c_s == c_s) and (c_s in ["g", "m"])):
                     if is_only_one_selector(self.references[r_id], c_s):
                         self._correct_selector_id_from_coordinate_system(
-                            r_path, get_only_selector_id(self.references[r_id], c_s)
+                            r_id,
+                            r_path,
+                            get_only_selector_id(self.references[r_id], c_s),
                         )
                     else:
                         self._add_error(
@@ -614,25 +616,50 @@ class Description(object):
             ) and get_start(location) > get_end(location):
                 self._add_error(errors.range_reversed(location, path))
 
+    def _check_genomic_point(self, point, path):
+        if point.get("offset") or point.get("outside_cds"):
+            c_s = self.corrected_model.get("coordinate_system")
+            for ins_or_del in ["inserted", "deleted"]:
+                if ins_or_del in path:
+                    ins_or_del_c_s = get_submodel_by_path(
+                        self.corrected_model,
+                        path[: path.index(ins_or_del) + 2],
+                    ).get("coordinate_system")
+                    if ins_or_del_c_s:
+                        c_s = ins_or_del_c_s
+            if c_s == "g":
+                if point.get("offset"):
+                    self._add_error(errors.offset(point, path))
+                if point.get("outside_cds"):
+                    self._add_error(errors.outside_cds(point, path))
+
+    def _check_intronic_point(self, point, path):
+        if point.get("offset"):
+            ref_id = self.corrected_model["reference"]["id"]
+            for ins_or_del in ["inserted", "deleted"]:
+                if ins_or_del in path:
+                    ins_or_del_ref_id = get_reference_id(
+                        get_submodel_by_path(
+                            self.corrected_model,
+                            path[: path.index(ins_or_del) + 2],
+                        )
+                    )
+                    if ins_or_del_ref_id:
+                        ref_id = ins_or_del_ref_id
+            if get_reference_mol_type(self.references[ref_id]) in [
+                "mRNA",
+                "ncRNA",
+                "transcribed RNA",
+            ]:
+                if point.get("offset"):
+                    self._add_error(errors.intronic(point, path))
+
     def _check_location_extras(self):
         for point, path in yield_sub_model(
             self.corrected_model, ["location", "start", "end"], ["point"]
         ):
-            if point.get("offset") or point.get("outside_cds"):
-                c_s = self.corrected_model.get("coordinate_system")
-                for ins_or_del in ["inserted", "deleted"]:
-                    if ins_or_del in path:
-                        ins_or_del_c_s = get_submodel_by_path(
-                            self.corrected_model,
-                            path[: path.index(ins_or_del) + 2],
-                        ).get("coordinate_system")
-                        if ins_or_del_c_s:
-                            c_s = ins_or_del_c_s
-                if c_s == "g":
-                    if point.get("offset"):
-                        self._add_error(errors.offset(point, path))
-                    if point.get("outside_cds"):
-                        self._add_error(errors.outside_cds(point, path))
+            self._check_genomic_point(point, path)
+            self._check_intronic_point(point, path)
 
     def _check_insertion_location(self, path):
         """

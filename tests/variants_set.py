@@ -2546,8 +2546,8 @@ TESTS = [
     },
     {
         "keywords": [],
-        "input": "NM_003002.2:c.[274+20C>T;400_401insNM_003002.4:100_102]",
-        "normalized": "NM_003002.2:c.[294C>T;399_401T[6]]",
+        "input": "NG_012337.1(NM_003002.2):c.[274+20C>T;400_401insNM_003002.4:100_102]",
+        "normalized": "NG_012337.1(NM_003002.2):c.[294C>T;399_401T[6]]",
         "infos": ["ICORRECTEDCOORDINATESYSTEM", "ICORRECTEDPOINT"],
         "to_test": True,
     },
@@ -2568,6 +2568,37 @@ TESTS = [
         "keywords": ["no operation with selector (equal)"],
         "input": "NG_012337.1(NM_003002.2):c.=",
         "normalized": "NG_012337.1(NM_003002.2):c.=",
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NM_003002.2:c.274+20C>T",
+        "errors": ["EINTRONIC"],
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NM_003002.2:c.[100del;274+20C>T]",
+        "errors": ["EINTRONIC"],
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NM_003002.2:c.[274+20C>T;300del]",
+        "errors": ["EINTRONIC"],
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NM_003002.2:c.[100del;200_201insNM_003002.2:274+20]",
+        "infos": ["ICORRECTEDCOORDINATESYSTEM"],
+        "errors": ["EINTRONIC"],
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NR_038420.1:n.100+10del",
+        "errors": ["EINTRONIC"],
         "to_test": True,
     },
     # {

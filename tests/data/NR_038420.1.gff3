@@ -1,0 +1,11 @@
+##sequence-region NR_038420.1 1 1678
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=9606
+NR_038420.1	RefSeq	region	1	1678	.	+	.	ID=NR_038420.1:1..1678;Dbxref=taxon:9606;Name=1;chromosome=1;gbkey=Src;genome=genomic;map=1p31.1;mol_type=transcribed RNA
+NR_038420.1	RefSeq	gene	1	1678	.	+	.	ID=gene-ZRANB2-AS1;Dbxref=GeneID:100132618,HGNC:HGNC:43594;Name=ZRANB2-AS1;description=ZRANB2 antisense RNA 1;gbkey=Gene;gene=ZRANB2-AS1
+NR_038420.1	RefSeq	exon	1	1084	.	+	.	ID=id-ZRANB2-AS1;Parent=gene-ZRANB2-AS1;Dbxref=GeneID:100132618,HGNC:HGNC:43594;gbkey=exon;gene=ZRANB2-AS1;inference=alignment:Splign:2.1.0
+NR_038420.1	RefSeq	exon	1085	1259	.	+	.	ID=id-ZRANB2-AS1-2;Parent=gene-ZRANB2-AS1;Dbxref=GeneID:100132618,HGNC:HGNC:43594;gbkey=exon;gene=ZRANB2-AS1;inference=alignment:Splign:2.1.0
+NR_038420.1	RefSeq	exon	1260	1678	.	+	.	ID=id-ZRANB2-AS1-3;Parent=gene-ZRANB2-AS1;Dbxref=GeneID:100132618,HGNC:HGNC:43594;gbkey=exon;gene=ZRANB2-AS1;inference=alignment:Splign:2.1.0
+NR_038420.1	RefSeq	lnc_RNA	1	1678	.	+	.	ID=rna-ZRANB2-AS1;Parent=gene-ZRANB2-AS1;Dbxref=GeneID:100132618,HGNC:HGNC:43594;gbkey=ncRNA;gene=ZRANB2-AS1;product=ZRANB2 antisense RNA 1
+NR_038420.1	RefSeq	exon	1	1678	.	+	.	ID=exon-ZRANB2-AS1-1;Parent=rna-ZRANB2-AS1;Dbxref=GeneID:100132618,HGNC:HGNC:43594;gbkey=ncRNA;gene=ZRANB2-AS1;product=ZRANB2 antisense RNA 1
+
+
