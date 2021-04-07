@@ -2341,6 +2341,20 @@ TESTS = [
         "to_test": True,
     },
     {
+        "keywords": ["repeat", "reverse_strand"],
+        "input": "NG_009299.1(NM_017668.3):c.*16_*18T[8]",
+        "normalized": "NG_009299.1(NM_017668.3):c.*16_*19T[9]",
+        "genomic": "NG_009299.1:g.137761_137764A[9]",
+        "to_test": True,
+    },
+    {
+        "keywords": ["repeat", "reverse_strand"],
+        "input": "NG_009299.1(NM_017668.3):c.33_35CAA[5]",
+        "normalized": "NG_009299.1(NM_017668.3):c.34_39AAC[6]",
+        "genomic": "NG_009299.1:g.137803_137808TTG[6]",
+        "to_test": True,
+    },
+    {
         "keywords": ["issue #25"],
         "input": "NG_012337.1:g.[7109T>A;7110del]",
         "normalized": "NG_012337.1:g.7109_7110delinsA",

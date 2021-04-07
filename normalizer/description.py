@@ -5,6 +5,7 @@ from mutalyzer_hgvs_parser import to_model
 from mutalyzer_hgvs_parser.exceptions import UnexpectedCharacter, UnexpectedEnd
 from mutalyzer_mutator import mutate
 from mutalyzer_mutator.util import reverse_complement
+from .description_model import variant_to_description, variants_to_description
 from mutalyzer_retriever.retriever import NoReferenceError, NoReferenceRetrieved
 
 import normalizer.errors as errors
@@ -682,10 +683,14 @@ class Description(object):
                 self._add_error(errors.insertion_range(v_r["location"], path))
 
     def _check_repeat(self, path):
-        v = self.input_model["variants"][path[1]]
+        if self.is_inverted():
+            path_i = reverse_path(self.internal_indexing_model, path)
+        else:
+            path_i = path
+        v = self.input_model["variants"][path_i[1]]
         v_i = self.internal_indexing_model["variants"][path[1]]
-        if v.get("inserted") and len(v.get("inserted")) == 1:
-            inserted = v["inserted"][0]
+        if v_i.get("inserted") and len(v_i.get("inserted")) == 1:
+            inserted = v_i["inserted"][0]
             if inserted.get("sequence") and inserted.get("source") == "description":
                 repeat_seq = inserted["sequence"]
             # TODO: get the sequence from a reference slice
@@ -696,6 +701,8 @@ class Description(object):
             ref_seq = self.references["reference"]["sequence"]["seq"][
                 get_start(v_i) : get_end(v_i)
             ]
+            if self.is_inverted():
+                ref_seq = reverse_complement(ref_seq)
 
             if len(ref_seq) % len(repeat_seq) != 0:
                 self._add_error(errors.repeat_reference_sequence_length(path))
@@ -736,6 +743,10 @@ class Description(object):
                 self._add_error(errors.no_dna(seq_del, path))
                 return
             if seq_del and seq_ref and seq_del != seq_ref:
+                if self.is_inverted():
+                    seq_del = reverse_complement(seq_del)
+                    seq_ref = reverse_complement(seq_ref)
+                    path = reverse_path(self.internal_coordinates_model, path)
                 self._add_error(errors.sequence_mismatch(seq_ref, seq_del, path))
 
     @check_errors
@@ -743,7 +754,6 @@ class Description(object):
         self._check_location_boundaries()
         self._check_location_range()
         for i, v in enumerate(self.internal_coordinates_model["variants"]):
-
             if v.get("deleted"):
                 self._check_superfluous(["variants", i, "deleted"])
 
@@ -758,6 +768,7 @@ class Description(object):
         if is_overlap(self.internal_indexing_model["variants"]):
             self._add_error(errors.overlap())
 
+    @check_errors
     def pre_conversion_checks(self):
         self._check_selectors_in_references()
         self._check_coordinate_systems()
@@ -828,7 +839,7 @@ class Description(object):
             self._construct_equivalent()
         self._remove_superfluous_selector()
 
-        # self.print_models_summary()
+        self.print_models_summary()
 
     def output(self):
         output = {

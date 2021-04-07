@@ -203,6 +203,10 @@ def delins_to_repeat(variant, sequences):
             "repeat_number": {"value": repeat_number},
         }
     ]
+    if new_variant["location"]["start"].get("shift"):
+        new_variant["location"]["start"]["shift"] -= shift_left
+    if new_variant["location"]["end"].get("shift"):
+        new_variant["location"]["end"]["shift"] -= shift_left
     return new_variant
 
 

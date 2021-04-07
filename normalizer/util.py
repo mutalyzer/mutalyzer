@@ -275,7 +275,7 @@ def point_in_insertion(model, path):
     if (
         len(path) == 4
         and path[0] == "variants"
-        and model["variants"][path[1]]["type"] == "insertion"
+        and model["variants"][path[1]].get("type") == "insertion"
         and path[2] == "location"
     ):
         return True
