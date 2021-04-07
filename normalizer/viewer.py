@@ -1,3 +1,5 @@
+import copy
+
 from mutalyzer_mutator.mutator import reverse_complement
 
 from .converter.to_delins import variant_to_delins
@@ -25,6 +27,8 @@ def view_variants(description, left=20, right=20):
     output = []
     for i, variant in enumerate(d.internal_indexing_model["variants"]):
         delins_variant = variant_to_delins(variant)
+        if delins_variant is None:
+            delins_variant = copy.deepcopy(variant)
         if delins_variant.get("location"):
             seq_del = slice_sequence(delins_variant["location"], sequences["reference"])
         else:
@@ -56,7 +60,7 @@ def view_variants(description, left=20, right=20):
                 else len(sequences["reference"]) - 1
             )
 
-        if variant.get("type") == "equal":
+        if variant.get("type") in [None, "equal"]:
             details.update(
                 {
                     "left": seq_left,
