@@ -530,14 +530,14 @@ class Description(object):
                         )
                     else:
                         if as_description:
-                            equivalent[c_s] = [model_to_string(converted_model)]
+                            equivalent[c_s].append(model_to_string(converted_model))
                         else:
-                            equivalent[c_s] = [converted_model]
+                            equivalent[c_s].append(converted_model)
                 else:
                     if as_description:
-                        equivalent[c_s] = [model_to_string(converted_model)]
+                        equivalent[c_s].append(model_to_string(converted_model))
                     else:
-                        equivalent[c_s] = [converted_model]
+                        equivalent[c_s].append(converted_model)
 
         if equivalent:
             self.equivalent = equivalent
