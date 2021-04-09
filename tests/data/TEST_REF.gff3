@@ -1,0 +1,26 @@
+##sequence-region TEST_REF 1 1400
+TEST_REF	TestSeq	region	1	1400	.	+	.	ID=TEST_REF:1..1400;Name=TEST_REF;chromosome=TEST_CHR;gbkey=Src;mol_type=genomic DNA
+TEST_REF	TestSeq	gene	100	1200	.	+	.	ID=gene-PLUS;Name=PLUS
+TEST_REF	TestSeq	mRNA	136	1200	.	+	.	ID=rna-NM_PLUS;Parent=gene-PLUS;transcript_id=NM_PLUS
+TEST_REF	TestSeq	exon	136	189	.	+	.	ID=exon-NM_PLUS-1;Parent=rna-NM_PLUS;transcript_id=NM_PLUS
+TEST_REF	TestSeq	exon	619	1200	.	+	.	ID=exon-NM_PLUS-2;Parent=rna-NM_PLUS;transcript_id=NM_PLUS
+TEST_REF	TestSeq	CDS	136	189	.	+	1	ID=cds-NP_PLUS;Parent=rna-NM_PLUS;protein_id=NP_PLUS
+TEST_REF	TestSeq	CDS	619	1126	.	+	1	ID=cds-NP_PLUS;Parent=rna-NM_PLUS;protein_id=NP_PLUS
+TEST_REF	TestSeq	lnc_RNA	100	900	.	+	.	ID=rna-NR_PLUS;Parent=gene-PLUS;transcript_id=NR_PLUS
+TEST_REF	TestSeq	exon	100	200	.	+	.	ID=exon-NR_PLUS-1;Parent=rna-NR_PLUS;transcript_id=NR_PLUS
+TEST_REF	TestSeq	exon	300	400	.	+	.	ID=exon-NR_PLUS-2;Parent=rna-NR_PLUS;transcript_id=NR_PLUS
+TEST_REF	TestSeq	exon	600	900	.	+	.	ID=exon-NR_PLUS-2;Parent=rna-NR_PLUS;transcript_id=NR_PLUS
+TEST_REF	TestSeq	gene	50	1350	.	-	.	ID=gene-MINUS;Name=MINUS
+TEST_REF	TestSeq	mRNA	50	1350	.	-	.	ID=rna-NM_MINUS;Parent=gene-MINUS;transcript_id=NM_MINUS
+TEST_REF	TestSeq	exon	1000	1350	.	-	.	ID=exon-NM_MINUS-1;Parent=rna-NM_MINUS;transcript_id=NM_MINUS
+TEST_REF	TestSeq	exon	800	900	.	-	.	ID=exon-NM_MINUS-2;Parent=rna-NM_MINUS;transcript_id=NM_MINUS
+TEST_REF	TestSeq	exon	350	650	.	-	.	ID=exon-NM_MINUS-3;Parent=rna-NM_MINUS;transcript_id=NM_MINUS
+TEST_REF	TestSeq	exon	50	250	.	-	.	ID=exon-NM_MINUS-4;Parent=rna-NM_MINUS;transcript_id=NM_MINUS
+TEST_REF	TestSeq	CDS	1000	1250	.	-	0	ID=cds-NP_MINUS;Parent=rna-NM_MINUS;protein_id=NP_MINUS
+TEST_REF	TestSeq	CDS	800	900	.	-	0	ID=cds-NP_MINUS;Parent=rna-NM_MINUS;protein_id=NP_MINUS
+TEST_REF	TestSeq	CDS	350	650	.	-	0	ID=cds-NP_MINUS;Parent=rna-NM_MINUS;protein_id=NP_MINUS
+TEST_REF	TestSeq	CDS	175	250	.	-	0	ID=cds-NP_MINUS;Parent=rna-NM_MINUS;protein_id=NP_MINUS
+TEST_REF	TestSeq	lnc_RNA	60	1350	.	-	.	ID=rna-NR_MINUS;Parent=gene-MINUS;transcript_id=NR_MINUS
+TEST_REF	TestSeq	exon	900	1350	.	-	.	ID=exon-NR_MINUS-1;Parent=rna-NR_MINUS;transcript_id=NR_MINUS
+TEST_REF	TestSeq	exon	350	700	.	-	.	ID=exon-NR_MINUS-2;Parent=rna-NR_MINUS;transcript_id=NR_MINUS
+TEST_REF	TestSeq	exon	60	250	.	-	.	ID=exon-NR_MINUS-3;Parent=rna-NR_MINUS;transcript_id=NR_MINUS
