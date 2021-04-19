@@ -5,7 +5,9 @@ from pathlib import Path
 
 from mutalyzer_retriever import retrieve_model
 
-from .util import cache_dir, get_end, get_start
+from .util import cache_dir, get_end, get_start, get_submodel_by_path
+
+from mutalyzer_retriever.retriever import NoReferenceError, NoReferenceRetrieved
 
 SELECTOR_MOL_TYPES_TYPES = ["mRNA", "ncRNA"]
 COORDINATE_C_MOL_TYPES_TYPES = ["mRNA"]
@@ -14,18 +16,97 @@ COORDINATE_G_MOL_TYPES_TYPES = ["dna", "genomic DNA", "DNA"]
 
 
 @lru_cache(maxsize=32)
-def get_reference_model(reference_id):
+def get_reference_model(r_id):
     cache = cache_dir()
-    if cache and (Path(cache) / reference_id).is_file():
-        with open(Path(cache) / reference_id) as json_file:
+    if cache and (Path(cache) / r_id).is_file():
+        with open(Path(cache) / r_id) as json_file:
             return json.load(json_file)
-    return retrieve_model(reference_id, timeout=10)
+    return retrieve_model(r_id, timeout=10)
+
+
+def _update_ensembl_ids(r_m):
+    """
+    Add the version in the id.
+    """
+    if r_m.get("id") and r_m.get("qualifiers") and r_m["qualifiers"].get("version"):
+        r_m["id"] = r_m["id"] + "." + r_m["qualifiers"]["version"]
+    if r_m.get("features"):
+        for feature in r_m["features"]:
+            _update_ensembl_ids(feature)
+
+
+def _update_ensembl_locations(r_m, shift):
+    if r_m.get("location"):
+        if r_m["location"].get("start") and r_m["location"]["start"].get("position"):
+            r_m["location"]["start"]["position"] -= shift
+        if r_m["location"].get("end") and r_m["location"]["end"].get("position"):
+            r_m["location"]["end"]["position"] -= shift
+    if r_m.get("features"):
+        for feature in r_m["features"]:
+            _update_ensembl_locations(feature, shift)
+
+
+def _fix_ensembl(r_m, r_id):
+    f_m = extract_feature_model(r_m["annotations"], r_id, ancestors=False)[0]
+    f_id = f_m["id"] + "." + f_m["qualifiers"]["version"]
+    if f_m["type"] == "mRNA":
+        f_p = get_feature_path(r_m["annotations"], r_id)
+        gene_model = get_submodel_by_path(r_m["annotations"], f_p[:-2])
+        gene_model["features"] = [f_m]
+        f_m = gene_model
+    _update_ensembl_ids(f_m)
+    r_m["annotations"]["features"] = [f_m]
+    r_m["annotations"]["id"] = f_id
+    if r_m["annotations"].get("qualifiers") is None:
+        r_m["annotations"]["qualifiers"] = {}
+    r_m["annotations"]["qualifiers"]["mol_type"] = "genomic DNA"
+    _update_ensembl_locations(
+        r_m["annotations"], r_m["annotations"]["location"]["start"]["position"]
+    )
+    return r_m
+
+
+def _try_ensembl_retriever(r_id):
+    """ "
+    If the reference_id is from ensembl try to retrieve the model.
+    """
+    if _is_ensembl_with_version(r_id):
+        feature_id = r_id.split(".")[0]
+        try:
+            reference_model = get_reference_model(feature_id)
+        except (NoReferenceError, NoReferenceRetrieved):
+            reference_model = None
+        if reference_model and reference_model["annotations"]["id"] != r_id:
+            return _fix_ensembl(copy.deepcopy(reference_model), feature_id)
+
+
+def _is_ensembl_with_version(r_id):
+    if (
+        r_id.startswith("ENS")
+        and "." in r_id
+        and len(r_id.split(".")) == 2
+        and r_id.split(".")[1].isdigit()
+    ):
+        return True
+    return False
+
+
+def retrieve_reference(reference_id):
+    try:
+        r_m = get_reference_model(reference_id)
+    except (NoReferenceError, NoReferenceRetrieved):
+        r_m = None
+    if r_m is None:
+        r_m = _try_ensembl_retriever(reference_id)
+    elif reference_id.startswith("ENS"):
+        r_m = _fix_ensembl(copy.deepcopy(r_m), reference_id)
+    return r_m
 
 
 def get_reference_model_segmented(
     reference_id, feature_id=None, siblings=False, ancestors=True, descendants=True
 ):
-    reference_model = get_reference_model(reference_id)
+    reference_model = retrieve_reference(reference_id)
     if feature_id is not None:
         return extract_feature_model(
             reference_model["annotations"],
@@ -78,6 +159,18 @@ def extract_feature_model(
             False,
         )
     return None, False, False
+
+
+def get_feature_path(r_m, f_id, path=[]):
+    r = None
+    if r_m.get("id") == f_id:
+        return path
+    if r_m.get("features"):
+        for i, f in enumerate(r_m["features"]):
+            r = get_feature_path(f, f_id, path + ["features", i])
+            if r:
+                break
+    return r
 
 
 def is_feature_inverted(feature):

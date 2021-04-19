@@ -2615,6 +2615,25 @@ TESTS = [
         "errors": ["EINTRONIC"],
         "to_test": True,
     },
+    {
+        "keywords": ["ensembl"],
+        "input": "ENST00000375549:c.100del",
+        "normalized": "ENST00000375549.8:c.102del",
+        "to_test": True,
+    },
+    {
+        "keywords": ["ensembl"],
+        "input": "ENST00000375549.8:c.100del",
+        "normalized": "ENST00000375549.8:c.102del",
+        "to_test": True,
+    },
+    {
+        "keywords": ["ensembl"],
+        "input": "ENST00000375549.7:c.100del",
+        "normalized": "ENST00000375549.8:c.102del",
+        "to_test": True,
+    },
+
     # {
     #     "keywords": [
     #

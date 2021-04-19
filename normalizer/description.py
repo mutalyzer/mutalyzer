@@ -59,6 +59,7 @@ from .reference import (
     is_selector_in_reference,
     overlap_min_max,
     yield_overlap_ids,
+    retrieve_reference
 )
 from .util import (
     check_errors,
@@ -174,17 +175,6 @@ class Description(object):
                     "selector": {"id": "t" + lrg_split[1]},
                 }
 
-    @staticmethod
-    def _retrieve_reference(reference_id):
-        try:
-            reference_model = get_reference_model(reference_id)
-            # print(get_reference_model.cache_info())
-        except NoReferenceError:
-            return None, "NoReference"
-        except NoReferenceRetrieved:
-            return None, "NoReferenceRetrieved"
-        return reference_model, "OK"
-
     @check_errors
     def retrieve_references(self):
         """
@@ -193,15 +183,15 @@ class Description(object):
         if not self.corrected_model:
             return
         for reference_id, path in yield_reference_ids(self.input_model):
-            reference_model, status = self._retrieve_reference(reference_id)
-            if not reference_model and status == "NoReference":
+            reference_model = retrieve_reference(reference_id)
+            if reference_model is None:
                 lrg = self._check_if_lrg_reference(reference_id)
                 if lrg:
-                    reference_model, status = self._retrieve_reference(lrg["id"])
+                    reference_model = retrieve_reference(lrg["id"])
                     if reference_model:
                         self._correct_lrg_reference_id(reference_id, lrg, path)
                         reference_id = lrg["id"]
-            if status in ["NoReferenceRetrieved", "NoReference"]:
+            if reference_model is None:
                 self._add_error(errors.reference_not_retrieved(reference_id, [path]))
             else:
                 reference_id_in_model = get_reference_id_from_model(reference_model)
@@ -839,7 +829,7 @@ class Description(object):
             self._construct_equivalent()
         self._remove_superfluous_selector()
 
-        self.print_models_summary()
+        # self.print_models_summary()
 
     def output(self):
         output = {
