@@ -17,6 +17,7 @@ from .reference import (
     get_feature,
     get_reference_model,
     get_selector_model,
+    retrieve_reference
 )
 
 
@@ -166,10 +167,8 @@ def map_description(
         return {"errors": [{"details": "No observed sequence or other error occured."}]}
     obs_seq = d.references["observed"]["sequence"]["seq"]
 
-    # Get the reference_model
-    try:
-        r_model = get_reference_model(reference_id)
-    except (NoReferenceError, NoReferenceRetrieved):
+    r_model = retrieve_reference(reference_id)
+    if r_model is None:
         return {"errors": [reference_not_retrieved(reference_id, [])]}
 
     ref_seq2 = d.references["reference"]["sequence"]["seq"]
