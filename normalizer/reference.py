@@ -3,11 +3,11 @@ import json
 from functools import lru_cache
 from pathlib import Path
 
+from mutalyzer_mutator.util import reverse_complement
 from mutalyzer_retriever import retrieve_model
+from mutalyzer_retriever.retriever import NoReferenceError, NoReferenceRetrieved
 
 from .util import cache_dir, get_end, get_start, get_submodel_by_path
-
-from mutalyzer_retriever.retriever import NoReferenceError, NoReferenceRetrieved
 
 SELECTOR_MOL_TYPES_TYPES = ["mRNA", "ncRNA"]
 COORDINATE_C_MOL_TYPES_TYPES = ["mRNA"]
@@ -50,6 +50,8 @@ def _fix_ensembl(r_m, r_id):
     f_m = extract_feature_model(r_m["annotations"], r_id, ancestors=False)[0]
     f_id = f_m["id"] + "." + f_m["qualifiers"]["version"]
     if f_m["type"] == "mRNA":
+        if f_m["location"]["strand"] == -1:
+            r_m["sequence"]["seq"] = reverse_complement(r_m["sequence"]["seq"])
         f_p = get_feature_path(r_m["annotations"], r_id)
         gene_model = get_submodel_by_path(r_m["annotations"], f_p[:-2])
         gene_model["features"] = [f_m]
