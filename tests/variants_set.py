@@ -2615,6 +2615,42 @@ TESTS = [
         "errors": ["EINTRONIC"],
         "to_test": True,
     },
+    {
+        "keywords": ["ensembl", "plus strand"],
+        "input": "ENST00000375549:c.100del",
+        "normalized": "ENST00000375549.8:c.102del",
+        "to_test": True,
+    },
+    {
+        "keywords": ["ensembl", "plus strand"],
+        "input": "ENST00000375549.8:c.100del",
+        "normalized": "ENST00000375549.8:c.102del",
+        "to_test": True,
+    },
+    {
+        "keywords": ["ensembl", "plus strand"],
+        "input": "ENSG00000204370.13(ENST00000375549.8):c.100del",
+        "normalized": "ENSG00000204370.13(ENST00000375549.8):c.102del",
+        "to_test": True,
+    },
+    {
+        "keywords": ["ensembl"],
+        "input": "ENST00000375549.7:c.100del",
+        "errors": ["ERETR"],
+        "to_test": True,
+    },
+    {
+        "keywords": ["ensembl", "minus strand"],
+        "input": "ENST00000452863.10:c.9del",
+        "normalized": "ENST00000452863.10:c.10del",
+        "to_test": True,
+    },
+    {
+        "keywords": ["ensembl", "minus strand"],
+        "input": "ENSG00000184937.16(ENST00000452863.10):c.9del",
+        "normalized": "ENSG00000184937.16(ENST00000452863.10):c.10del",
+        "to_test": True,
+    },
     # {
     #     "keywords": [
     #

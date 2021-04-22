@@ -1,0 +1,21 @@
+##sequence-region NM_024426.6 1 3031
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=9606
+NM_024426.6	RefSeq	region	1	3031	.	+	.	ID=NM_024426.6:1..3031;Dbxref=taxon:9606;Name=11;chromosome=11;gbkey=Src;genome=genomic;map=11p13;mol_type=mRNA
+NM_024426.6	RefSeq	gene	1	3031	.	+	.	ID=gene-WT1;Dbxref=GeneID:7490,HGNC:HGNC:12796,MIM:607102;Name=WT1;description=WT1 transcription factor;gbkey=Gene;gene=WT1;gene_synonym=AWT1,GUD,NPHS4,WAGR,WIT-2,WT33
+NM_024426.6	RefSeq	CDS	180	1748	.	+	0	ID=cds-NP_077744.4;Parent=gene-WT1;Dbxref=CCDS:CCDS7878.2,Genbank:NP_077744.4,GeneID:7490,HGNC:HGNC:12796,MIM:607102;Name=NP_077744.4;Note=isoform D is encoded by transcript variant D%3B non-AUG (CUG) translation initiation codon;gbkey=CDS;gene=WT1;product=Wilms tumor protein isoform D;protein_id=NP_077744.4
+NM_024426.6	RefSeq	exon	1	840	.	+	.	ID=id-WT1;Parent=gene-WT1;Dbxref=GeneID:7490,HGNC:HGNC:12796,MIM:607102;gbkey=exon;gene=WT1;inference=alignment:Splign:2.1.0
+NM_024426.6	RefSeq	exon	841	963	.	+	.	ID=id-WT1-2;Parent=gene-WT1;Dbxref=GeneID:7490,HGNC:HGNC:12796,MIM:607102;gbkey=exon;gene=WT1;inference=alignment:Splign:2.1.0
+NM_024426.6	RefSeq	exon	964	1066	.	+	.	ID=id-WT1-3;Parent=gene-WT1;Dbxref=GeneID:7490,HGNC:HGNC:12796,MIM:607102;gbkey=exon;gene=WT1;inference=alignment:Splign:2.1.0
+NM_024426.6	RefSeq	exon	1067	1144	.	+	.	ID=id-WT1-4;Parent=gene-WT1;Dbxref=GeneID:7490,HGNC:HGNC:12796,MIM:607102;gbkey=exon;gene=WT1;inference=alignment:Splign:2.1.0
+NM_024426.6	RefSeq	exon	1145	1195	.	+	.	ID=id-WT1-5;Parent=gene-WT1;Dbxref=GeneID:7490,HGNC:HGNC:12796,MIM:607102;gbkey=exon;gene=WT1;inference=alignment:Splign:2.1.0
+NM_024426.6	RefSeq	exon	1196	1292	.	+	.	ID=id-WT1-6;Parent=gene-WT1;Dbxref=GeneID:7490,HGNC:HGNC:12796,MIM:607102;gbkey=exon;gene=WT1;inference=alignment:Splign:2.1.0
+NM_024426.6	RefSeq	exon	1293	1443	.	+	.	ID=id-WT1-7;Parent=gene-WT1;Dbxref=GeneID:7490,HGNC:HGNC:12796,MIM:607102;gbkey=exon;gene=WT1;inference=alignment:Splign:2.1.0
+NM_024426.6	RefSeq	exon	1444	1533	.	+	.	ID=id-WT1-8;Parent=gene-WT1;Dbxref=GeneID:7490,HGNC:HGNC:12796,MIM:607102;gbkey=exon;gene=WT1;inference=alignment:Splign:2.1.0
+NM_024426.6	RefSeq	exon	1534	1626	.	+	.	ID=id-WT1-9;Parent=gene-WT1;Dbxref=GeneID:7490,HGNC:HGNC:12796,MIM:607102;gbkey=exon;gene=WT1;inference=alignment:Splign:2.1.0
+NM_024426.6	RefSeq	exon	1627	3031	.	+	.	ID=id-WT1-10;Parent=gene-WT1;Dbxref=GeneID:7490,HGNC:HGNC:12796,MIM:607102;gbkey=exon;gene=WT1;inference=alignment:Splign:2.1.0
+NM_024426.6	RefSeq	sequence_feature	399	401	.	+	.	ID=id-WT1-11;Dbxref=GeneID:7490,HGNC:HGNC:12796,MIM:607102;Note=Region: alternative AUG translation intiation site;gbkey=misc_feature;gene=WT1
+NM_024426.6	RefSeq	sequence_feature	1240	1240	.	+	.	ID=id-WT1-12;Dbxref=GeneID:7490,HGNC:HGNC:12796,MIM:607102;Note='U' is modified by RNA editing to a 'C'%2C resulting in Leu354Pro;gbkey=misc_feature;gene=WT1
+NM_024426.6	RefSeq	polyA_site	3031	3031	.	+	.	ID=id-WT1-13;Parent=gene-WT1;Dbxref=GeneID:7490,HGNC:HGNC:12796,MIM:607102;Note=major polyA site;gbkey=polyA_site;gene=WT1
+NM_024426.6	RefSeq	polyA_signal_sequence	3009	3014	.	+	.	ID=id-WT1-14;Parent=gene-WT1;Dbxref=GeneID:7490,HGNC:HGNC:12796,MIM:607102;Note=hexamer: ATTAAA;gbkey=regulatory;gene=WT1;regulatory_class=polyA_signal_sequence
+
+
