@@ -47,11 +47,13 @@ def _update_ensembl_locations(r_m, shift):
 
 
 def _fix_ensembl(r_m, r_id):
+    if "." in r_id:
+        r_id = r_id.split(".")[0]
     f_m = extract_feature_model(r_m["annotations"], r_id, ancestors=False)[0]
+    if f_m["location"]["strand"] == -1:
+        r_m["sequence"]["seq"] = reverse_complement(r_m["sequence"]["seq"])
     f_id = f_m["id"] + "." + f_m["qualifiers"]["version"]
     if f_m["type"] == "mRNA":
-        if f_m["location"]["strand"] == -1:
-            r_m["sequence"]["seq"] = reverse_complement(r_m["sequence"]["seq"])
         f_p = get_feature_path(r_m["annotations"], r_id)
         gene_model = get_submodel_by_path(r_m["annotations"], f_p[:-2])
         gene_model["features"] = [f_m]
@@ -68,39 +70,12 @@ def _fix_ensembl(r_m, r_id):
     return r_m
 
 
-def _try_ensembl_retriever(r_id):
-    """ "
-    If the reference_id is from ensembl try to retrieve the model.
-    """
-    if _is_ensembl_with_version(r_id):
-        feature_id = r_id.split(".")[0]
-        try:
-            reference_model = get_reference_model(feature_id)
-        except (NoReferenceError, NoReferenceRetrieved):
-            reference_model = None
-        if reference_model and reference_model["annotations"]["id"] != r_id:
-            return _fix_ensembl(copy.deepcopy(reference_model), feature_id)
-
-
-def _is_ensembl_with_version(r_id):
-    if (
-        r_id.startswith("ENS")
-        and "." in r_id
-        and len(r_id.split(".")) == 2
-        and r_id.split(".")[1].isdigit()
-    ):
-        return True
-    return False
-
-
 def retrieve_reference(reference_id):
     try:
         r_m = get_reference_model(reference_id)
     except (NoReferenceError, NoReferenceRetrieved):
-        r_m = None
-    if r_m is None:
-        r_m = _try_ensembl_retriever(reference_id)
-    elif reference_id.startswith("ENS"):
+        return None
+    if reference_id.startswith("ENS"):
         r_m = _fix_ensembl(copy.deepcopy(r_m), reference_id)
     return r_m
 
@@ -490,3 +465,14 @@ def get_reference_mol_type(model):
 def get_coordinate_system_from_reference(reference):
     mol_type = get_reference_mol_type(reference)
     return coordinate_system_from_mol_type(mol_type)
+
+
+def slice_to_selector(model, selector_id, strand=False):
+    s_m = get_selector_model(model["annotations"], selector_id)
+    output = ""
+    for slice in s_m["exon"]:
+        output += model["sequence"]["seq"][slice[0] : slice[1]]
+    print(s_m)
+    if strand and s_m["inverted"]:
+        output = reverse_complement(output)
+    return output

@@ -78,12 +78,3 @@ def test_errors(input_description, codes):
 @pytest.mark.parametrize("input_description, codes", get_tests(TESTS_ALL, "infos"))
 def test_infos(input_description, codes):
     assert codes == [info["code"] for info in name_check(input_description)["infos"]]
-
-
-
-@pytest.mark.parametrize(
-    "input_description, normalized", get_tests([t for t in TESTS_ALL if "ensembl" in t["keywords"]], "normalized")
-)
-def test_ensembl(input_description, normalized):
-    d = name_check(input_description)
-    assert d["normalized_description"] == normalized
