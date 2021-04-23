@@ -59,7 +59,7 @@ from .reference import (
     is_selector_in_reference,
     overlap_min_max,
     yield_overlap_ids,
-    retrieve_reference
+    retrieve_reference,
 )
 from .util import (
     check_errors,
@@ -305,7 +305,7 @@ class Description(object):
     def _correct_selector_id_from_coordinate_system(self, r_id, r_id_path, selector_id):
         path = tuple(list(r_id_path[:-1]) + ["selector"])
         set_by_path(self.corrected_model, path, {"id": selector_id})
-        if get_reference_mol_type(self.references[r_id]) != "mRNA":
+        if r_id != selector_id:
             self._add_info(
                 infos.corrected_selector_id("", selector_id, "coordinate system", path)
             )
@@ -323,12 +323,12 @@ class Description(object):
             copy.deepcopy(self.corrected_model)
         ):
             if s_id:
-                s_c_s = get_coordinate_system_from_selector_id(
+                c_s_s = get_coordinate_system_from_selector_id(
                     self.references[r_id], s_id
                 )
-                if s_c_s != c_s:
+                if c_s_s != c_s and not (c_s_s == "c" and c_s == "r"):
                     self._add_error(
-                        errors.coordinate_system_mismatch(c_s, s_id, s_c_s, c_s_path)
+                        errors.coordinate_system_mismatch(c_s, s_id, c_s_s, c_s_path)
                     )
             else:
                 r_c_s = get_coordinate_system_from_reference(self.references[r_id])
