@@ -26,7 +26,11 @@ def test_ensembl(input_description, normalized):
 
 @pytest.mark.parametrize(
     "id_ncbi, id_ensembl",
-    [("NM_003002.4", "ENST00000375549.8"), ("NM_024426.6", "ENST00000452863.10")],
+    [
+        ("NM_003002.4", "ENST00000375549.8"),
+        ("NM_024426.6", "ENST00000452863.10"),
+        ("NM_003002.4", "ENST00000375549.8"),
+    ],
 )
 def test_ensembl_mane_transcript(id_ncbi, id_ensembl):
 
