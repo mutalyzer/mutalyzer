@@ -158,7 +158,7 @@ def yield_point_locations_all(model, path=[]):
                 yield from yield_point_locations_all(sub_model, path + [k, i])
 
 
-def yield_sub_model(model, keys, types, path=[]):
+def yield_sub_model(model, keys, types=None, path=[]):
     """
 
     :param model:
@@ -168,7 +168,9 @@ def yield_sub_model(model, keys, types, path=[]):
     """
     if isinstance(model, dict):
         for k in model.keys():
-            if k in keys and model[k]["type"] in types:
+            if (k in keys and not types) or (
+                k in keys and types and model[k]["type"] in types
+            ):
                 yield model[k], path + [k]
             yield from yield_sub_model(model[k], keys, types, path + [k])
     elif isinstance(model, list):

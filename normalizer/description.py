@@ -5,7 +5,6 @@ from mutalyzer_hgvs_parser import to_model
 from mutalyzer_hgvs_parser.exceptions import UnexpectedCharacter, UnexpectedEnd
 from mutalyzer_mutator import mutate
 from mutalyzer_mutator.util import reverse_complement
-from .description_model import variant_to_description, variants_to_description
 from mutalyzer_retriever.retriever import NoReferenceError, NoReferenceRetrieved
 
 import normalizer.errors as errors
@@ -36,6 +35,8 @@ from .description_model import (
     get_reference_id,
     get_selector_id,
     model_to_string,
+    variant_to_description,
+    variants_to_description,
     yield_reference_ids,
     yield_reference_selector_ids,
     yield_reference_selector_ids_coordinate_system,
@@ -58,8 +59,8 @@ from .reference import (
     is_only_one_selector,
     is_selector_in_reference,
     overlap_min_max,
-    yield_overlap_ids,
     retrieve_reference,
+    yield_overlap_ids,
 )
 from .util import (
     check_errors,
@@ -729,15 +730,23 @@ class Description(object):
         else:
             seq_ref = slice_sequence(v_i["location"], sequences["reference"])
             seq_del = construct_sequence(v_i[ins_or_del], sequences)
-            if not is_dna(seq_del):
-                self._add_error(errors.no_dna(seq_del, path))
-                return
             if seq_del and seq_ref and seq_del != seq_ref:
                 if self.is_inverted():
                     seq_del = reverse_complement(seq_del)
                     seq_ref = reverse_complement(seq_ref)
                     path = reverse_path(self.internal_coordinates_model, path)
                 self._add_error(errors.sequence_mismatch(seq_ref, seq_del, path))
+
+    def _check_and_correct_sequences(self):
+        for seq, path in yield_sub_model(self.corrected_model, ["sequence"]):
+            print(seq, path)
+            if seq.upper() != seq:
+                self._add_info(infos.corrected_sequence(seq, seq.upper()))
+                set_by_path(self.corrected_model, path, seq.upper())
+                set_by_path(self.internal_coordinates_model, path, seq.upper())
+                set_by_path(self.internal_indexing_model, path, seq.upper())
+            if not is_dna(seq.upper()):
+                self._add_error(errors.no_dna(seq.upper(), path))
 
     @check_errors
     def check(self):
@@ -807,6 +816,7 @@ class Description(object):
 
         self._correct_variants_type()
         self._correct_points()
+        self._check_and_correct_sequences()
 
         self.check()
 

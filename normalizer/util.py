@@ -265,7 +265,15 @@ def get_inserted_sequence(variant, sequences):
 
 def is_dna(sequence):
     for s in sequence:
-        if s not in "ATCG":
+        if s not in "ATCGBDHKMNRSVWY":
+            return False
+
+    return True
+
+
+def is_rna(sequence):
+    for s in sequence:
+        if s not in "acgubdhkmnrsvwy":
             return False
 
     return True

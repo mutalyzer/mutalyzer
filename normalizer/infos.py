@@ -80,3 +80,10 @@ def sorted_variants():
         "code": "ISORTEDVARIANTS",
         "details": "Variants were sorted according to their locations.",
     }
+
+
+def corrected_sequence(original, corrected):
+    return {
+        "code": "CORRECTEDSEQUENCE",
+        "details": f'Sequence "{original}" corrected to "{corrected}".',
+    }
