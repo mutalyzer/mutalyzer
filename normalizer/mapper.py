@@ -17,25 +17,14 @@ from .reference import (
     get_feature,
     get_reference_model,
     get_selector_model,
-    retrieve_reference
+    retrieve_reference,
 )
 
 
 def _slice_seq(seq, slices):
     output = ""
-    for slice in slices:
-        output += seq[slice[0] : slice[1]]
-    return output
-
-
-def _convert_selector_locations(s_model):
-    output = deepcopy(s_model)
-    exon = []
-    x = NonCoding(s_model["exon"], s_model["inverted"]).coordinate_to_noncoding
-    for e in s_model["exon"]:
-        exon.append((x(e[0])[0] - 1, x(e[1])[0]))
-    output["exon"] = exon
-    output["cds"] = [(x(s_model["cds"][0][0])[0] - 1, x(s_model["cds"][0][1])[0])]
+    for s in slices:
+        output += seq[s[0] : s[1]]
     return output
 
 

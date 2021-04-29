@@ -1,12 +1,49 @@
 import bisect
-import copy
+from copy import deepcopy
 
 from mutalyzer_crossmapper import Coding, Genomic
 from mutalyzer_mutator.util import reverse_complement
 
 from normalizer.util import get_end, get_start
 
+from ..reference import (
+    extract_feature_model,
+    get_feature,
+    get_selector_model,
+    slice_to_selector,
+    update_locations,
+)
 from .to_hgvs_coordinates import genomic_to_point, reverse_strand_shift
+
+
+def yield_locations(r_model, selector_id):
+    for feature in get_feature(r_model["annotations"], selector_id)["features"]:
+        if feature.get("location"):
+            yield feature["location"], feature["type"]
+
+
+def to_rna_reference_model(r_model, selector_id):
+    """
+    Modify the reference model based on the selector.
+
+    :param r_model:
+    :param selector_id:
+    :return:
+    """
+    new_r_model = {
+        "annotations": deepcopy(
+            extract_feature_model(r_model["annotations"], selector_id)[0]
+        )
+    }
+    ref_seq = r_model["sequence"]["seq"]
+    s_model = get_selector_model(new_r_model["annotations"], selector_id, True)
+    slice_to_selector(r_model, selector_id, False, True)
+
+    if s_model.get("CDS"):
+        shift = s_model["CDS"][0][0]
+    else:
+        shift = s_model["exon"][0][0]
+    update_locations(new_r_model["annotations"], shift)
 
 
 def _point_to_cds_coordinate(point, selector_model, crossmap):
@@ -22,7 +59,11 @@ def _point_to_cds_coordinate(point, selector_model, crossmap):
 
 
 def get_inserted_sequence(insertion, sequences):
-    return sequences[insertion["source"]][
+    if isinstance(insertion["source"], str):
+        source = insertion["source"]
+    elif isinstance(insertion["source"], dict):
+        source = insertion["source"]["id"]
+    return sequences[source][
         get_start(insertion["location"]) : get_end(insertion["location"])
     ]
 
@@ -41,7 +82,7 @@ def merge_inserted_to_string(inserted, sequences):
 
 
 def variant_to_cds_coordinate(variant, sequences, selector_model, crossmap):
-    new_variant = copy.deepcopy(variant)
+    new_variant = deepcopy(variant)
 
     location = new_variant["location"]
 
@@ -113,7 +154,7 @@ def to_exon_positions(variants, exons, cds):
             and not _location_in_same_intron(variant["location"], exons)
             and not (get_start(variant) <= exons[0] and get_end(variant) <= exons[0])
         ):
-            n_v = copy.deepcopy(variant)
+            n_v = deepcopy(variant)
             exon_s = bisect.bisect(exons, get_start(n_v))
             if exon_s % 2 == 0 and exon_s < len(exons):
                 n_v["location"]["start"]["position"] = exons[exon_s]
@@ -142,19 +183,20 @@ def _get_splice_site_hits(variants, exons, cds):
 
 
 def reverse_variants(variants, sequences):
-    reversed_variants = copy.deepcopy(variants)
+    reversed_variants = deepcopy(variants)
     reverse_strand_shift(reversed_variants, sequences["reference"])
     reverse_start_end(reversed_variants)
     return reversed_variants
 
 
-def to_cds_coordinate(variants, sequences, selector_model):
+def to_rna_coordinates(variants, sequences, selector_model):
     """
     Converts the locations to cds equivalent.
 
     :param variants: Variants with locations in the coordinate system.
-    :param selector_model:
-    :param crossmap:
+    :param sequences: Sequences with their ids as keys.
+    :param selector_model: Selector model according to which
+                           the conversion is performed.
     """
     exons, cds = _get_exons_and_cds(selector_model)
     crossmap = Coding(selector_model["exon"], cds, selector_model["inverted"])

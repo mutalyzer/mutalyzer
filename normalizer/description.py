@@ -1,11 +1,11 @@
 import copy
 
+from Bio.Seq import Seq
 from extractor import describe_dna
 from mutalyzer_hgvs_parser import to_model
 from mutalyzer_hgvs_parser.exceptions import UnexpectedCharacter, UnexpectedEnd
 from mutalyzer_mutator import mutate
 from mutalyzer_mutator.util import reverse_complement
-from mutalyzer_retriever.retriever import NoReferenceError, NoReferenceRetrieved
 
 import normalizer.errors as errors
 import normalizer.infos as infos
@@ -25,18 +25,18 @@ from .converter.to_hgvs_coordinates import (
 )
 from .converter.to_internal_coordinates import (
     crossmap_to_internal_setup,
+    get_coordinate_system,
     point_to_internal,
     to_internal_coordinates,
 )
 from .converter.to_internal_indexing import to_internal_indexing
+from .converter.to_rna import to_rna_coordinates, to_rna_reference_model
 from .converter.variants_de_to_hgvs import de_to_hgvs
 from .description_model import (
     get_locations_min_max,
     get_reference_id,
     get_selector_id,
     model_to_string,
-    variant_to_description,
-    variants_to_description,
     yield_reference_ids,
     yield_reference_selector_ids,
     yield_reference_selector_ids_coordinate_system,
@@ -51,7 +51,6 @@ from .reference import (
     get_only_selector_id,
     get_protein_selector_model,
     get_reference_id_from_model,
-    get_reference_model,
     get_reference_mol_type,
     get_selector_model,
     get_selectors_ids,
@@ -70,6 +69,7 @@ from .util import (
     get_start,
     get_submodel_by_path,
     is_dna,
+    is_rna,
     point_in_insertion,
     reverse_path,
     set_by_path,
@@ -370,11 +370,10 @@ class Description(object):
 
     @check_errors
     def _correct_points(self):
-        crossmap_to = crossmap_to_internal_setup(
-            self.corrected_model["coordinate_system"], self._get_selector_model()
-        )
+        c_s = get_coordinate_system(self.corrected_model, self.references)
+        crossmap_to = crossmap_to_internal_setup(c_s, self._get_selector_model())
         crossmap_from = crossmap_to_hgvs_setup(
-            self.corrected_model["coordinate_system"],
+            c_s,
             self._get_selector_model(),
             degenerate=True,
         )
@@ -730,6 +729,8 @@ class Description(object):
         else:
             seq_ref = slice_sequence(v_i["location"], sequences["reference"])
             seq_del = construct_sequence(v_i[ins_or_del], sequences)
+            if self.corrected_model["coordinate_system"] == "r":
+                seq_del = Seq(seq_del).back_transcribe().upper()
             if seq_del and seq_ref and seq_del != seq_ref:
                 if self.is_inverted():
                     seq_del = reverse_complement(seq_del)
@@ -737,16 +738,26 @@ class Description(object):
                     path = reverse_path(self.internal_coordinates_model, path)
                 self._add_error(errors.sequence_mismatch(seq_ref, seq_del, path))
 
+    @check_errors
     def _check_and_correct_sequences(self):
         for seq, path in yield_sub_model(self.corrected_model, ["sequence"]):
-            print(seq, path)
-            if seq.upper() != seq:
-                self._add_info(infos.corrected_sequence(seq, seq.upper()))
-                set_by_path(self.corrected_model, path, seq.upper())
-                set_by_path(self.internal_coordinates_model, path, seq.upper())
-                set_by_path(self.internal_indexing_model, path, seq.upper())
-            if not is_dna(seq.upper()):
-                self._add_error(errors.no_dna(seq.upper(), path))
+            if self.corrected_model["coordinate_system"] in ["g", "c", "n"]:
+                if seq.upper() != seq:
+                    self._add_info(infos.corrected_sequence(seq, seq.upper()))
+                    set_by_path(self.corrected_model, path, seq.upper())
+                    set_by_path(self.internal_coordinates_model, path, seq.upper())
+                    set_by_path(self.internal_indexing_model, path, seq.upper())
+                if not is_dna(seq.upper()):
+                    self._add_error(errors.no_dna(seq.upper(), path))
+            elif self.corrected_model["coordinate_system"] == "r":
+                seq_lower = seq.lower()
+                if seq_lower != seq:
+                    self._add_info(infos.corrected_sequence(seq, seq_lower))
+                    set_by_path(self.corrected_model, path, seq_lower)
+                    set_by_path(self.internal_coordinates_model, path, seq_lower)
+                    set_by_path(self.internal_indexing_model, path, seq_lower)
+                if not is_rna(seq_lower):
+                    self._add_error(errors.no_dna(seq_lower, path))
 
     @check_errors
     def check(self):
@@ -811,6 +822,18 @@ class Description(object):
                 return False
         return True
 
+    @check_errors
+    def _rna(self):
+        if self.corrected_model["coordinate_system"] == "r":
+            variants = to_rna_coordinates(
+                self.delins_model["variants"],
+                self.get_sequences(),
+                self._get_selector_model(),
+            )
+            to_rna_reference_model(
+                self.references["reference"], self._get_selector_id()
+            )
+
     def normalize(self):
         self.to_internal_indexing_model()
 
@@ -830,6 +853,7 @@ class Description(object):
             self._construct_equivalent()
         else:
             self._construct_delins_model()
+            self._rna()
             self._mutate()
             self._extract()
             self._construct_de_hgvs_internal_indexing_model()

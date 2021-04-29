@@ -11,6 +11,7 @@ from ..description_model import (
 from ..reference import get_coordinate_system_from_selector_id, get_selector_model
 from ..util import get_start, set_by_path
 from .to_hgvs_indexing import to_hgvs_indexing
+from .to_internal_coordinates import get_coordinate_system
 
 
 def genomic_to_point(genomic):
@@ -166,6 +167,7 @@ def to_hgvs_locations(
 
     hgvs_model = initialize_hgvs_model(model, to_coordinate_system, to_selector_id)
 
+    to_coordinate_system = get_coordinate_system(hgvs_model, references)
     crossmap = crossmap_to_hgvs_setup(to_coordinate_system, selector_model, degenerate)
 
     if selector_model and selector_model.get("inverted"):

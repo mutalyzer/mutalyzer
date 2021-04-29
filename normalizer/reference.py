@@ -1,3 +1,4 @@
+import bisect
 import copy
 import json
 from functools import lru_cache
@@ -35,15 +36,23 @@ def _update_ensembl_ids(r_m):
             _update_ensembl_ids(feature)
 
 
-def _update_ensembl_locations(r_m, shift):
+def update_locations(r_m, shift):
+    """
+    Update the locations of all the features in the model by subtracting
+    the shift value.
+
+    :param r_m: Reference model.
+    :param shift: Value to be subtracted from locations.
+    """
     if r_m.get("location"):
+        print("yes")
         if r_m["location"].get("start") and r_m["location"]["start"].get("position"):
             r_m["location"]["start"]["position"] -= shift
         if r_m["location"].get("end") and r_m["location"]["end"].get("position"):
             r_m["location"]["end"]["position"] -= shift
     if r_m.get("features"):
         for feature in r_m["features"]:
-            _update_ensembl_locations(feature, shift)
+            update_locations(feature, shift)
 
 
 def _fix_ensembl(r_m, r_id):
@@ -64,7 +73,7 @@ def _fix_ensembl(r_m, r_id):
     if r_m["annotations"].get("qualifiers") is None:
         r_m["annotations"]["qualifiers"] = {}
     r_m["annotations"]["qualifiers"]["mol_type"] = "genomic DNA"
-    _update_ensembl_locations(
+    update_locations(
         r_m["annotations"], r_m["annotations"]["location"]["start"]["position"]
     )
     return r_m
@@ -263,27 +272,6 @@ def get_protein_selector_model(reference, selector_id):
         return selector_model
 
 
-def get_protein_selector_models(reference):
-    """
-
-    :param reference: Reference annotations model (not the sequence).
-    :return:
-    """
-    selector_ids = get_selectors_ids(reference, "c")
-    for selector_id in selector_ids[:20]:
-        selector_model = get_selector_model(reference, selector_id, True)
-        mrna = get_feature(reference, selector_id)
-        protein_ids = []
-        if mrna.get("features"):
-            for feature in mrna["features"]:
-                if feature["type"] == "CDS":
-                    protein_ids.append(feature["id"])
-        if len(protein_ids) == 1:
-            selector_model["protein_id"] = protein_ids[0]
-            selector_model["transcript_id"] = selector_id
-            yield selector_model
-
-
 def extract_reference_id(references):
     if (
         references.get("reference")
@@ -467,10 +455,28 @@ def get_coordinate_system_from_reference(reference):
     return coordinate_system_from_mol_type(mol_type)
 
 
-def slice_to_selector(model, selector_id, strand=False):
+def _get_cds_into_exons(exons, cds):
+    l_index = bisect.bisect_right(exons, cds[0])
+    r_index = bisect.bisect_left(exons, cds[1])
+    return [cds[0]] + exons[l_index:r_index] + [cds[1]]
+
+
+def slice_to_selector(model, selector_id, strand=False, include_cds=False):
+    """
+    Slice the reference model sequence according to the exons and cds
+    locations of the selector with the provided id.
+
+    :param model: Reference model.
+    :param selector_id: Id of the selector containing the slice locations.
+    :param strand: Reverse complement the sequence if selector is inverted.
+    :return: Sequence slice.
+    """
     s_m = get_selector_model(model["annotations"], selector_id)
     output = ""
-    for slice in s_m["exon"]:
+    slices = s_m["exon"]
+    if include_cds and s_m.get("CDS"):
+        print(_get_cds_into_exons(s_m["exons"], s_m["cds"]))
+    for slice in slices:
         output += model["sequence"]["seq"][slice[0] : slice[1]]
     print(s_m)
     if strand and s_m["inverted"]:
