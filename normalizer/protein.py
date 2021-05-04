@@ -3,7 +3,7 @@ from Bio.SeqUtils import seq3
 from mutalyzer_mutator import mutate
 from mutalyzer_mutator.util import reverse_complement
 
-from .converter import to_rna_coordinates
+from .converter import to_rna_protein_coordinates
 from .reference import extract_sequences
 
 
@@ -336,7 +336,7 @@ def get_protein_description(variants, references, selector_model):
 
     p_ref_seq = str(Seq(cds_seq).translate())
 
-    cds_variants, splice_site_hits = to_rna_coordinates(
+    cds_variants, splice_site_hits = to_rna_protein_coordinates(
         variants, sequences, selector_model
     )
 

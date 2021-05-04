@@ -30,7 +30,7 @@ from .converter.to_internal_coordinates import (
     to_internal_coordinates,
 )
 from .converter.to_internal_indexing import to_internal_indexing
-from .converter.to_rna import to_rna_coordinates, to_rna_reference_model
+from .converter.to_rna import to_rna_protein_coordinates, to_rna_reference_model
 from .converter.variants_de_to_hgvs import de_to_hgvs
 from .description_model import (
     get_locations_min_max,
@@ -824,8 +824,9 @@ class Description(object):
 
     @check_errors
     def _rna(self):
+        print("======================")
         if self.corrected_model["coordinate_system"] == "r":
-            variants = to_rna_coordinates(
+            variants = to_rna_protein_coordinates(
                 self.delins_model["variants"],
                 self.get_sequences(),
                 self._get_selector_model(),

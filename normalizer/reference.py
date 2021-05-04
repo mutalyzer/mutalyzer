@@ -45,7 +45,6 @@ def update_locations(r_m, shift):
     :param shift: Value to be subtracted from locations.
     """
     if r_m.get("location"):
-        print("yes")
         if r_m["location"].get("start") and r_m["location"]["start"].get("position"):
             r_m["location"]["start"]["position"] -= shift
         if r_m["location"].get("end") and r_m["location"]["end"].get("position"):
@@ -455,10 +454,22 @@ def get_coordinate_system_from_reference(reference):
     return coordinate_system_from_mol_type(mol_type)
 
 
-def _get_cds_into_exons(exons, cds):
+def _get_exons_and_cds(s_m):
+    exons = [e for l in s_m["exon"] for e in l]
+    cds = [s_m["cds"][0][0], s_m["cds"][0][1]]
+    # if s_m.get("inverted"):
+    #     cds[0] = exons[0]
+    # else:
+    #     cds[1] = exons[-1]
+    return exons, cds
+
+
+def _get_cds_into_exons(s_m):
+    exons, cds = _get_exons_and_cds(s_m)
     l_index = bisect.bisect_right(exons, cds[0])
     r_index = bisect.bisect_left(exons, cds[1])
-    return [cds[0]] + exons[l_index:r_index] + [cds[1]]
+    new_exons = [cds[0]] + exons[l_index:r_index] + [cds[1]]
+    return list(zip(new_exons[0::2], new_exons[1::2]))
 
 
 def slice_to_selector(model, selector_id, strand=False, include_cds=False):
@@ -469,16 +480,16 @@ def slice_to_selector(model, selector_id, strand=False, include_cds=False):
     :param model: Reference model.
     :param selector_id: Id of the selector containing the slice locations.
     :param strand: Reverse complement the sequence if selector is inverted.
+    :param include_cds: Slice according to the CDS.
     :return: Sequence slice.
     """
     s_m = get_selector_model(model["annotations"], selector_id)
     output = ""
     slices = s_m["exon"]
-    if include_cds and s_m.get("CDS"):
-        print(_get_cds_into_exons(s_m["exons"], s_m["cds"]))
-    for slice in slices:
-        output += model["sequence"]["seq"][slice[0] : slice[1]]
-    print(s_m)
+    if include_cds and s_m.get("cds"):
+        slices = _get_cds_into_exons(s_m)
+    for s in slices:
+        output += model["sequence"]["seq"][s[0] : s[1]]
     if strand and s_m["inverted"]:
         output = reverse_complement(output)
     return output

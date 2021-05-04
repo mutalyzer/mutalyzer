@@ -1,49 +1,104 @@
 import bisect
 from copy import deepcopy
 
-from mutalyzer_crossmapper import Coding, Genomic
+from mutalyzer_crossmapper import Coding, Genomic, NonCoding
 from mutalyzer_mutator.util import reverse_complement
 
 from normalizer.util import get_end, get_start
 
+from ..description_model import variant_to_description
 from ..reference import (
     extract_feature_model,
     get_feature,
     get_selector_model,
     slice_to_selector,
-    update_locations,
 )
 from .to_hgvs_coordinates import genomic_to_point, reverse_strand_shift
 
 
-def yield_locations(r_model, selector_id):
-    for feature in get_feature(r_model["annotations"], selector_id)["features"]:
-        if feature.get("location"):
-            yield feature["location"], feature["type"]
+def _yield_locations(annotations):
+    yield annotations["location"], annotations["type"]
+    if annotations.get("features"):
+        for feature in annotations["features"]:
+            yield from _yield_locations(feature)
 
 
-def to_rna_reference_model(r_model, selector_id):
+def to_rna_reference_model(reference_model, selector_id):
     """
-    Modify the reference model based on the selector.
+    Get the RNA reference model of the provided selector.
 
-    :param r_model:
-    :param selector_id:
-    :return:
+    1. Extract the tree corresponding to the selector from the model (including
+    the parents).
+    2. Slice the sequence.
+    3. Update the model features locations using the crossmapper.
+
+    TODO: Convert sequence to RNA?
+    TODO: Make sure everything is on the plus strand?
+
+    :param reference_model: Reference model.
+    :param selector_id: Selector ID.
+    :return: RNA reference model.
     """
-    new_r_model = {
+    rna_model = {
         "annotations": deepcopy(
-            extract_feature_model(r_model["annotations"], selector_id)[0]
-        )
+            extract_feature_model(reference_model["annotations"], selector_id)[0]
+        ),
+        "sequence": {"seq": slice_to_selector(reference_model, selector_id)},
     }
-    ref_seq = r_model["sequence"]["seq"]
-    s_model = get_selector_model(new_r_model["annotations"], selector_id, True)
-    slice_to_selector(r_model, selector_id, False, True)
+    s_m = get_selector_model(rna_model["annotations"], selector_id, True)
+    x = NonCoding(s_m["exon"]).coordinate_to_noncoding
 
-    if s_model.get("CDS"):
-        shift = s_model["CDS"][0][0]
-    else:
-        shift = s_model["exon"][0][0]
-    update_locations(new_r_model["annotations"], shift)
+    new_start = x(s_m["exon"][0][0])[0] - 1
+    new_end = x(s_m["exon"][-1][-1])[0]
+    for location, f_type in _yield_locations(rna_model["annotations"]):
+        if f_type in ["exon", "CDS"]:
+            location["start"]["position"] = x(location["start"]["position"])[0] - 1
+            location["end"]["position"] = x(location["end"]["position"])[0]
+        else:
+            location["start"]["position"] = new_start
+            location["end"]["position"] = new_end
+
+    return rna_model
+
+
+def _get_location_type(location, exons):
+    start_i = bisect.bisect_right(exons, get_start(location))
+    end_i = bisect.bisect_left(exons, get_end(location))
+    print(start_i, end_i)
+    if abs(start_i - end_i) == 0:
+        if start_i % 2 == 0:
+            return "same intron"
+        else:
+            return "same exon"
+    elif abs(start_i - end_i) == 1:
+        if start_i % 2 == 0:
+            return "adjacent intron exon"
+        else:
+            return "adjacent exon intron"
+    elif abs(start_i - end_i) > 1:
+        if start_i % 2 == 0 and end_i % 2 == 0:
+            return "intron intron"
+        elif start_i % 2 == 0 and end_i % 2 == 1:
+            return "intron exon"
+        elif start_i % 2 == 1 and end_i % 2 == 0:
+            return "exon intron"
+        elif start_i % 2 == 1 and end_i % 2 == 1:
+            return "exon exon"
+
+
+def to_rna_variants(variants, sequences, selector_model):
+    """
+    Convert coordinate delins variants to RNA.
+
+    :param variants: Variants with coordinate locations.
+    :param sequences: Sequences dictionary.
+    :param selector_model: Selector model.
+    """
+    exons = [e for l in selector_model["exon"] for e in l]
+    print(exons)
+    for variant in variants:
+        print(f"- {variant_to_description(variant)}")
+        print(f"  {_get_location_type(variant['location'], exons)}")
 
 
 def _point_to_cds_coordinate(point, selector_model, crossmap):
@@ -144,6 +199,12 @@ def _get_exons_and_cds(selector_model):
     return exons, cds
 
 
+def _get_exons_and_cds_2(s_m):
+    exons = [e for l in s_m["exon"] for e in l]
+    cds = [s_m["cds"][0][0], s_m["cds"][0][1]]
+    return exons, cds
+
+
 def to_exon_positions(variants, exons, cds):
     exons = _get_cds_into_exons(exons, cds)
     new_variants = []
@@ -189,7 +250,7 @@ def reverse_variants(variants, sequences):
     return reversed_variants
 
 
-def to_rna_coordinates(variants, sequences, selector_model):
+def to_rna_protein_coordinates(variants, sequences, selector_model):
     """
     Converts the locations to cds equivalent.
 
