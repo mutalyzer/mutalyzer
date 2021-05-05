@@ -1,18 +1,12 @@
 import bisect
 from copy import deepcopy
 
+from Bio.Seq import Seq
 from mutalyzer_crossmapper import Coding, Genomic, NonCoding
 from mutalyzer_mutator.util import reverse_complement
 
-from normalizer.util import get_end, get_start
-
-from ..description_model import variant_to_description
-from ..reference import (
-    extract_feature_model,
-    get_feature,
-    get_selector_model,
-    slice_to_selector,
-)
+from ..reference import extract_feature_model, get_selector_model, slice_to_selector
+from ..util import construct_sequence, get_end, get_start, set_end, set_start
 from .to_hgvs_coordinates import genomic_to_point, reverse_strand_shift
 
 
@@ -43,7 +37,11 @@ def to_rna_reference_model(reference_model, selector_id):
         "annotations": deepcopy(
             extract_feature_model(reference_model["annotations"], selector_id)[0]
         ),
-        "sequence": {"seq": slice_to_selector(reference_model, selector_id)},
+        "sequence": {
+            "seq": str(
+                Seq(slice_to_selector(reference_model, selector_id)).transcribe()
+            ).lower()
+        },
     }
     s_m = get_selector_model(rna_model["annotations"], selector_id, True)
     x = NonCoding(s_m["exon"]).coordinate_to_noncoding
@@ -62,10 +60,16 @@ def to_rna_reference_model(reference_model, selector_id):
 
 
 def _get_location_type(location, exons):
+    """
+
+    :arg dict location: Location model.
+    :arg list exons: Flatten exon positions.
+    :returns:
+    :rtype: str
+    """
     start_i = bisect.bisect_right(exons, get_start(location))
     end_i = bisect.bisect_left(exons, get_end(location))
-    print(start_i, end_i)
-    if abs(start_i - end_i) == 0:
+    if get_start(location) == get_end(location) or abs(start_i - end_i) == 0:
         if start_i % 2 == 0:
             return "same intron"
         else:
@@ -86,6 +90,48 @@ def _get_location_type(location, exons):
             return "exon exon"
 
 
+def _get_exon_start_position(position, exons):
+    return exons[bisect.bisect_right(exons, position)]
+
+
+def _get_exon_end_position(position, exons):
+    return exons[bisect.bisect_left(exons, position) - 1]
+
+
+def _set_start_to_exon(location, exons):
+    set_start(location, _get_exon_start_position(get_start(location), exons))
+
+
+def _set_end_to_exon(location, exons):
+    set_end(location, _get_exon_end_position(get_end(location), exons))
+
+
+def _trim_to_exons(variants, exons, sequences):
+    new_variants = []
+    for v in variants:
+        location_type = _get_location_type(v["location"], exons)
+        new_v = deepcopy(v)
+        if location_type == "adjacent intron exon" and not (
+            v.get("inserted") and construct_sequence(v["inserted"], sequences)
+        ):
+            _set_start_to_exon(new_v["location"], exons)
+            new_variants.append(new_v)
+        elif location_type == "adjacent exon intron" and not (
+            v.get("inserted") and construct_sequence(v["inserted"], sequences)
+        ):
+            _set_start_to_exon(new_v["location"], exons)
+            new_variants.append(new_v)
+        elif location_type == "intron intron" and not (
+            v.get("inserted") and construct_sequence(v["inserted"], sequences)
+        ):
+            _set_start_to_exon(new_v["location"], exons)
+            _set_end_to_exon(new_v["location"], exons)
+            new_variants.append(new_v)
+        elif location_type in ["exon exon", "same exon"]:
+            new_variants.append(new_v)
+    return new_variants
+
+
 def to_rna_variants(variants, sequences, selector_model):
     """
     Convert coordinate delins variants to RNA.
@@ -94,11 +140,16 @@ def to_rna_variants(variants, sequences, selector_model):
     :param sequences: Sequences dictionary.
     :param selector_model: Selector model.
     """
-    exons = [e for l in selector_model["exon"] for e in l]
-    print(exons)
-    for variant in variants:
-        print(f"- {variant_to_description(variant)}")
-        print(f"  {_get_location_type(variant['location'], exons)}")
+    exons = [e for exon in selector_model["exon"] for e in exon]
+    trimmed_variants = _trim_to_exons(variants, exons, sequences)
+
+    crossmap = NonCoding(selector_model["exon"]).coordinate_to_noncoding
+
+    for variant in trimmed_variants:
+        set_start(variant["location"], crossmap(get_start(variant))[0] - 1)
+        set_end(variant["location"], crossmap(get_end(variant))[0] - 1)
+
+    return trimmed_variants
 
 
 def _point_to_cds_coordinate(point, selector_model, crossmap):

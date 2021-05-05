@@ -35,8 +35,8 @@ def get_start(model):
         return model["position"]
 
 
-def set_start(location, start):
-    location["start"]["position"] = start
+def set_start(location, position):
+    location["start"]["position"] = position
 
 
 def get_end(model):
@@ -51,6 +51,10 @@ def get_end(model):
         return model["end"]["position"]
     elif model["type"] == "point":
         return model["position"]
+
+
+def set_end(location, position):
+    location["end"]["position"] = position
 
 
 def get_location_length(location):

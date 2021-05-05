@@ -1,10 +1,14 @@
 import pytest
-
-from normalizer.name_checker import name_check
-from normalizer.reference import retrieve_reference, slice_to_selector
-from normalizer.converter.to_rna import to_rna_reference_model, to_rna_variants
-from normalizer.reference import get_selector_model
 from mutalyzer_hgvs_parser import to_model
+
+from normalizer.converter.to_rna import (
+    _get_location_type,
+    _trim_to_exons,
+    to_rna_reference_model,
+    to_rna_variants,
+)
+from normalizer.name_checker import name_check
+from normalizer.reference import get_selector_model, retrieve_reference
 
 from .commons import code_in, patch_retriever
 
@@ -12,7 +16,7 @@ TESTS = [
     {
         "keywords": ["rna", "equal", "genomic"],
         "input": "NG_012337.1(NM_003002.2):r.275=",
-        "normalized": "NG_012337.1(NM_003002.2):r.=",
+        "normalized": "NG_012337.1(NM_003002.2):r.275=",
         "to_test": True,
     },
     {
@@ -174,7 +178,7 @@ def test_rna(input_description, normalized):
                     ],
                 },
                 "sequence": {
-                    "seq": "ATGGGGTCACAGTGGTTATAAAGAGTTATACCCTGAAGAATTTGAAACAGACAGTAGTGATCAGCAAGATATTACCAACGGGAAGAAAACATCTCCCCAGGTAAAGTCATCTACCCATGAATCCCGCAAACACAAGAAGTCAAAGAAATCCCACAAAAAAAAGCAGAAAAAAAGGTCACACAAAAAACAGAAGAAAAGCAAAAAGGAAGCCACAGATATAACAGCAGATTCCTCGAGTGAGTTCTCAGAAGAAACTGGGGCTTCTGGTACAAGGAAAGGGAAACAACCACATAAACGCAAGAAAAAATCCAGGAAAAAGTCTCTCAAAAAACCTGCTTTATTCTTAGAGGCAGAAAGTAACACTTCACATTCAGATGATTCAGCATCCAGCAGTTCTGAGGAAAGTGAGGAAAGAGACACTAAGAAAACCAAAAGGAAAAAGAGAGAGAAAAAAGCCCATACCTCTGTAGCCAACAATGAAATACAGGAGAGGACAAACAAACGCACAAATTGGAAAGTAGCTACAGATGAAAGGTCTGCTGAGAGCTCAGAGGATGACTAAATGGGAAACACTTTTGTTTTCCACATGACTGTGGATATTTACAGTTCTTACTCCTTGTGGTTTTGCCAGTGACT"
+                    "seq": "auggggucacagugguuauaaagaguuauacccugaagaauuugaaacagacaguagugaucagcaagauauuaccaacgggaagaaaacaucuccccagguaaagucaucuacccaugaaucccgcaaacacaagaagucaaagaaaucccacaaaaaaaagcagaaaaaaaggucacacaaaaaacagaagaaaagcaaaaaggaagccacagauauaacagcagauuccucgagugaguucucagaagaaacuggggcuucugguacaaggaaagggaaacaaccacauaaacgcaagaaaaaauccaggaaaaagucucucaaaaaaccugcuuuauucuuagaggcagaaaguaacacuucacauucagaugauucagcauccagcaguucugaggaaagugaggaaagagacacuaagaaaaccaaaaggaaaaagagagagaaaaaagcccauaccucuguagccaacaaugaaauacaggagaggacaaacaaacgcacaaauuggaaaguagcuacagaugaaaggucugcugagagcucagaggaugacuaaaugggaaacacuuuuguuuuccacaugacuguggauauuuacaguucuuacuccuugugguuuugccagugacu"
                 },
             },
         ),
@@ -272,7 +276,7 @@ def test_rna(input_description, normalized):
                     ],
                 },
                 "sequence": {
-                    "seq": "TTGCTTTAACAATACATGTGATGTGTCATATTACAGATGGGGTCACAGTGGTTATAAAGAGTTATACCCTGAAGAATTTGAAACAGACAGGTAAGGAAAATGAAACAATAGGTGATTTAGTTAGGAGGTGATCCCTGTTTTCCCATTCTCTGGTTGATGTTTGGCATGTCTGTAAGCATTTTGGTTTTTATATATAGTATTCTTTTAACTTTTCTTATTAGTAGTGATCAGCAAGATATTACCAACGGGAAGAAAACATCTCCCCAGGTAAAGTCATCTACCCATGAATCCCGCAAACACAAGAAGTCAAAGAAATCCCACAAAAAAAAGCAGAAAAAAAGGTCACACAAAAAACAGAAGAAAAGCAAAAAGGAAGCCACAGATATAACAGCAGATTCCTCGAGTGAGTTCTCAGAAGAAACTGGGGCTTCTGGTACAAGGAAAGGGAAACAACCACATAAACGCAAGAAAAAATCCAGGAAAAAGTCTCTCAAAAAACCTGC"
+                    "seq": "uugcuuuaacaauacaugugaugugucauauuacagauggggucacagugguuauaaagaguuauacccugaagaauuugaaacagacagguaaggaaaaugaaacaauaggugauuuaguuaggaggugaucccuguuuucccauucucugguugauguuuggcaugucuguaagcauuuugguuuuuauauauaguauucuuuuaacuuuucuuauuaguagugaucagcaagauauuaccaacgggaagaaaacaucuccccagguaaagucaucuacccaugaaucccgcaaacacaagaagucaaagaaaucccacaaaaaaaagcagaaaaaaaggucacacaaaaaacagaagaaaagcaaaaaggaagccacagauauaacagcagauuccucgagugaguucucagaagaaacuggggcuucugguacaaggaaagggaaacaaccacauaaacgcaagaaaaaauccaggaaaaagucucucaaaaaaccugc"
                 },
             },
         ),
@@ -402,7 +406,7 @@ def test_rna(input_description, normalized):
                     ],
                 },
                 "sequence": {
-                    "seq": "TGTACTCCAAAGTCTTTCTAATGTTGCTTTAATTTCCAAAAATGTATGCATTGCTTTAACAATACATGTGATGTGTCATATTACAGATGGGGTCACAGTGGTTATAAAGAGTTATACCCTGAAGAATTTGAAACAGACAGGTAAGGAAAATAGGCTTACTGAAAGAAACTAAGATGGTACAAAATCTGTATTATAAATTGAGGTTGATGTTTGGCATGTCTGTAAGCATTTTGGTTTTTATATATAGTATTCCATACAGTAACTCAGTATGGCAGCTTAGAATTTTTACCTTCATTTTAAAGATGAGGAAACAAAAACTCAATGAGAATATTAAAGTGTTAAAGTATACATTAAAGTGCTTATTTAAAATTCAGATGTTAACCTCAATTTTTTAATCTAGAATGCAAAATATTAAAATAATACGCTTTTTTTTTACATAAAAGCTTCTATTTTTTAACTTTTCTTATTAGTAGTGATCAGCAAGATATTACCAACGGGAAGAAGTGAGTTCTCAGAAGAAACTGGGGCTTCTGGTACAAGGAAAGGGAAACAACCACATAAACGCAAGAAAAAATCCAGGAAAAAGTCTCTCAAAAAACCTGCGAAAAAGAGAGAGAAAAAAGCCCATACCTCTGTAGCCAACAATGAAATACAGGAGAGGACAAACAAACGCACAAATTGGAAAGTAGCTACAGATGAAAGGTCTGCTGAGAGCTCAGAGGATGACTAAATGGGAAACACTTTTGTTTTCCACATGACTGTGGATATTTACAGTTCTTACTCCTTGTGGTTTTGCCAGTGACTCTTGTTCAGCACGGGGCCTGAGGTCAGAGCTGTCTTGTGCCATCTGTCATTTCTGACAGACGTCTTGTCTTCTATTTTGGCGTTAAGCTTGATCCCCTTTTCTTGTTAAAAGGGAATCTGGTATTTTGTTATGAAGGTTTCTTGAAGAGA"
+                    "seq": "uguacuccaaagucuuucuaauguugcuuuaauuuccaaaaauguaugcauugcuuuaacaauacaugugaugugucauauuacagauggggucacagugguuauaaagaguuauacccugaagaauuugaaacagacagguaaggaaaauaggcuuacugaaagaaacuaagaugguacaaaaucuguauuauaaauugagguugauguuuggcaugucuguaagcauuuugguuuuuauauauaguauuccauacaguaacucaguauggcagcuuagaauuuuuaccuucauuuuaaagaugaggaaacaaaaacucaaugagaauauuaaaguguuaaaguauacauuaaagugcuuauuuaaaauucagauguuaaccucaauuuuuuaaucuagaaugcaaaauauuaaaauaauacgcuuuuuuuuuacauaaaagcuucuauuuuuuaacuuuucuuauuaguagugaucagcaagauauuaccaacgggaagaagugaguucucagaagaaacuggggcuucugguacaaggaaagggaaacaaccacauaaacgcaagaaaaaauccaggaaaaagucucucaaaaaaccugcgaaaaagagagagaaaaaagcccauaccucuguagccaacaaugaaauacaggagaggacaaacaaacgcacaaauuggaaaguagcuacagaugaaaggucugcugagagcucagaggaugacuaaaugggaaacacuuuuguuuuccacaugacuguggauauuuacaguucuuacuccuugugguuuugccagugacucuuguucagcacggggccugaggucagagcugucuugugccaucugucauuucugacagacgucuugucuucuauuuuggcguuaagcuugauccccuuuucuuguuaaaagggaaucugguauuuuguuaugaagguuucuugaagaga"
                 },
             },
         ),
@@ -500,27 +504,284 @@ def test_rna(input_description, normalized):
                     ],
                 },
                 "sequence": {
-                    "seq": "AGTCTTTCTAATGTTGCTTTAATTTCCAAAAATGTATGCATTGCTTTAACAATACATGTGATGTGTCATATTACAGATGGGGTCACAGTGGTTATAAAGAGTTATACCCTGAAGAATTTGAAACAGACAGGTAAGGAAAATAGGCTTACTGAAAGAAACTAAGATGGTACAAAATCTGTATTATAAATTGAGGTTGATGTTTGGCATGTCTGTAAGCATTTTGGTTTTTATATATAGTATTCCATACAGTAACTCAGTATGGCAGCTTAGAATTTTTACCTTCATTTTAAAGATGAGGAAACAAAAACTCAATGAGAATATTAAAGTGTTAAAGTATACATTAAAGTGCTTATTTAAAATTCAGATGTTAACCTCAATTTTTTAATCTAGAATGCAAAATATTAAAATAATACGCTTTTTTTTTACATAAAAGCTTCTATTTTTTAACTTTTCTTATTAGTAGTGATCAGCAAGATATTACCAACGGGAAGAAAACATCTCCCCAGGTAAAGTCATCTACCCATGAATCCCGCAAACACAAGCTTTATTCTTAGAGGCAGAAAGTAACACTTCACATTCAGATGATTCAGCATCCAGCAGTTCTGAGGAAAGTGAGGAAAGAGACACTAAGAAAACCAAAAGGAAAAAGAGAGAGAAAAAAGCCCATACCTCTGTAGCCAACAATGAAATACAGGAGAGGACAAACAAACGCACAAATTGGAAAGTAGCTACAGATGAAAGGTCTGCTGAGAGCTCAGAGGATGACTAAATGGGAAACACTTTTGTTTTCCACATGACTGTGGATATTTACAGTTCTTACTCCTTGTGGTTTTGCCAGTGACTCTTGTTCAGCACGGGGCCTGAGGTCAGAGCTGTCTTGTGCCATCTGTCATTTCTGACAGACGTCTTGTCTTCTATTTTGGCGTTAAGCTTGATCCCCTTTTCTTGTTAAAAGGGAATCTGGTATTTTGTTATGAAGGTTTCTTGAAGAGA"
+                    "seq": "agucuuucuaauguugcuuuaauuuccaaaaauguaugcauugcuuuaacaauacaugugaugugucauauuacagauggggucacagugguuauaaagaguuauacccugaagaauuugaaacagacagguaaggaaaauaggcuuacugaaagaaacuaagaugguacaaaaucuguauuauaaauugagguugauguuuggcaugucuguaagcauuuugguuuuuauauauaguauuccauacaguaacucaguauggcagcuuagaauuuuuaccuucauuuuaaagaugaggaaacaaaaacucaaugagaauauuaaaguguuaaaguauacauuaaagugcuuauuuaaaauucagauguuaaccucaauuuuuuaaucuagaaugcaaaauauuaaaauaauacgcuuuuuuuuuacauaaaagcuucuauuuuuuaacuuuucuuauuaguagugaucagcaagauauuaccaacgggaagaaaacaucuccccagguaaagucaucuacccaugaaucccgcaaacacaagcuuuauucuuagaggcagaaaguaacacuucacauucagaugauucagcauccagcaguucugaggaaagugaggaaagagacacuaagaaaaccaaaaggaaaaagagagagaaaaaagcccauaccucuguagccaacaaugaaauacaggagaggacaaacaaacgcacaaauuggaaaguagcuacagaugaaaggucugcugagagcucagaggaugacuaaaugggaaacacuuuuguuuuccacaugacuguggauauuuacaguucuuacuccuugugguuuugccagugacucuuguucagcacggggccugaggucagagcugucuugugccaucugucauuucugacagacgucuugucuucuauuuuggcguuaagcuugauccccuuuucuuguuaaaagggaaucugguauuuuguuaugaagguuucuugaagaga"
                 },
             },
         ),
     ],
 )
 def test_to_rna_reference_model(r_id, s_id, expected):
-
     model = retrieve_reference(r_id)
     rna_model = to_rna_reference_model(model, s_id)
-    # import json
-    # print(json.dumps(rna_model, indent=2))
-    # print(len(rna_model["sequence"]["seq"]))
     assert rna_model == expected
 
 
-def test_to_rna_variants():
-    variants = to_model("[10_20delinsT;120_141delinsA;150_180delinsA;10_200delinsT;10_189delinsT;10_1200delinsT]", "variants")
-    print(variants)
-    sequences = {"TEST_REF": retrieve_reference("TEST_REF"),
-                 "reference": retrieve_reference("TEST_REF")}
-    s_model = get_selector_model(retrieve_reference("TEST_REF")["annotations"], "NM_PLUS")
-    to_rna_variants(variants, sequences, s_model)
-    assert 1 == 0
+@pytest.mark.parametrize(
+    "variants, expected",
+    [
+        (  # same intron
+            [
+                {
+                    "location": {
+                        "type": "range",
+                        "start": {"type": "point", "position": 10},
+                        "end": {"type": "point", "position": 20},
+                    },
+                    "type": "deletion_insertion",
+                    "source": "reference",
+                    "inserted": [{"sequence": "T", "source": "description"}],
+                },
+            ],
+            [],
+        ),
+        (  # intron exon with insertion
+            [
+                {
+                    "location": {
+                        "type": "range",
+                        "start": {"type": "point", "position": 120},
+                        "end": {"type": "point", "position": 141},
+                    },
+                    "type": "deletion_insertion",
+                    "source": "reference",
+                    "inserted": [{"sequence": "A", "source": "description"}],
+                },
+            ],
+            [],
+        ),
+        (  # intron exon without insertion
+            [
+                {
+                    "location": {
+                        "type": "range",
+                        "start": {"type": "point", "position": 120},
+                        "end": {"type": "point", "position": 141},
+                    },
+                    "type": "deletion_insertion",
+                    "source": "reference",
+                },
+            ],
+            [
+                {
+                    "location": {
+                        "type": "range",
+                        "start": {"type": "point", "position": 135},
+                        "end": {"type": "point", "position": 141},
+                    },
+                    "type": "deletion_insertion",
+                    "source": "reference",
+                }
+            ],
+        ),
+        (  # same exon
+            [
+                {
+                    "location": {
+                        "type": "range",
+                        "start": {"type": "point", "position": 150},
+                        "end": {"type": "point", "position": 180},
+                    },
+                    "type": "deletion_insertion",
+                    "source": "reference",
+                    "inserted": [{"sequence": "A", "source": "description"}],
+                },
+            ],
+            [
+                {
+                    "location": {
+                        "type": "range",
+                        "start": {"type": "point", "position": 150},
+                        "end": {"type": "point", "position": 180},
+                    },
+                    "type": "deletion_insertion",
+                    "source": "reference",
+                    "inserted": [{"sequence": "A", "source": "description"}],
+                }
+            ],
+        ),
+        (  # intron intron with insertion
+            [
+                {
+                    "location": {
+                        "type": "range",
+                        "start": {"type": "point", "position": 10},
+                        "end": {"type": "point", "position": 200},
+                    },
+                    "type": "deletion_insertion",
+                    "source": "reference",
+                    "inserted": [{"sequence": "T", "source": "description"}],
+                },
+            ],
+            [],
+        ),
+        (  # intron intron without insertion
+            [
+                {
+                    "location": {
+                        "type": "range",
+                        "start": {"type": "point", "position": 10},
+                        "end": {"type": "point", "position": 200},
+                    },
+                    "type": "deletion_insertion",
+                    "source": "reference",
+                },
+            ],
+            [
+                {
+                    "location": {
+                        "type": "range",
+                        "start": {"type": "point", "position": 135},
+                        "end": {"type": "point", "position": 189},
+                    },
+                    "type": "deletion_insertion",
+                    "source": "reference",
+                }
+            ],
+        ),
+        (
+            [
+                {
+                    "location": {
+                        "type": "range",
+                        "start": {"type": "point", "position": 10},
+                        "end": {"type": "point", "position": 189},
+                    },
+                    "type": "deletion_insertion",
+                    "source": "reference",
+                    "inserted": [{"sequence": "T", "source": "description"}],
+                },
+            ],
+            [],
+        ),
+        (  # intron intron over exon with insertion
+            [
+                {
+                    "location": {
+                        "type": "range",
+                        "start": {"type": "point", "position": 10},
+                        "end": {"type": "point", "position": 1200},
+                    },
+                    "type": "deletion_insertion",
+                    "source": "reference",
+                    "inserted": [{"sequence": "T", "source": "description"}],
+                },
+            ],
+            [],
+        ),
+        (  # intron intron over exon without insertion
+            [
+                {
+                    "location": {
+                        "type": "range",
+                        "start": {"type": "point", "position": 10},
+                        "end": {"type": "point", "position": 1201},
+                    },
+                    "type": "deletion_insertion",
+                    "source": "reference",
+                },
+            ],
+            [
+                {
+                    "location": {
+                        "type": "range",
+                        "start": {"type": "point", "position": 135},
+                        "end": {"type": "point", "position": 1200},
+                    },
+                    "type": "deletion_insertion",
+                    "source": "reference",
+                }
+            ],
+        ),
+        (  # exon exon over intron without insertion
+            [
+                {
+                    "location": {
+                        "type": "range",
+                        "start": {"type": "point", "position": 150},
+                        "end": {"type": "point", "position": 1100},
+                    },
+                    "type": "deletion_insertion",
+                    "source": "reference",
+                },
+            ],
+            [
+                {
+                    "location": {
+                        "type": "range",
+                        "start": {"type": "point", "position": 150},
+                        "end": {"type": "point", "position": 1100},
+                    },
+                    "type": "deletion_insertion",
+                    "source": "reference",
+                }
+            ],
+        ),
+    ],
+)
+def test_trim_to_exons(variants, expected):
+    sequences = {
+        "TEST_REF": retrieve_reference("TEST_REF"),
+        "reference": retrieve_reference("TEST_REF"),
+    }
+    selector_model = get_selector_model(
+        retrieve_reference("TEST_REF")["annotations"], "NM_PLUS"
+    )
+    exons = [e for exon in selector_model["exon"] for e in exon]
+    # exons: [135, 189, 618, 1200]
+    assert _trim_to_exons(variants, exons, sequences) == expected
+
+
+@pytest.mark.parametrize(
+    "location, exons, location_type",
+    [
+        ("134_134", [135, 189, 618, 1200], "same intron"),
+        ("134_135", [135, 189, 618, 1200], "same intron"),
+        ("134_136", [135, 189, 618, 1200], "adjacent intron exon"),
+        ("134_188", [135, 189, 618, 1200], "adjacent intron exon"),
+        ("134_189", [135, 189, 618, 1200], "adjacent intron exon"),
+        ("134_190", [135, 189, 618, 1200], "intron intron"),
+        ("134_617", [135, 189, 618, 1200], "intron intron"),
+        ("134_618", [135, 189, 618, 1200], "intron intron"),
+        ("134_619", [135, 189, 618, 1200], "intron exon"),
+        ("134_1199", [135, 189, 618, 1200], "intron exon"),
+        ("134_1200", [135, 189, 618, 1200], "intron exon"),
+        ("134_1201", [135, 189, 618, 1200], "intron intron"),
+        ("135_135", [135, 189, 618, 1200], "same exon"),
+        ("135_136", [135, 189, 618, 1200], "same exon"),
+        ("135_188", [135, 189, 618, 1200], "same exon"),
+        ("135_189", [135, 189, 618, 1200], "same exon"),
+        ("135_190", [135, 189, 618, 1200], "adjacent exon intron"),
+        ("135_617", [135, 189, 618, 1200], "adjacent exon intron"),
+        ("135_618", [135, 189, 618, 1200], "adjacent exon intron"),
+        ("135_619", [135, 189, 618, 1200], "exon exon"),
+        ("136_188", [135, 189, 618, 1200], "same exon"),
+        ("136_189", [135, 189, 618, 1200], "same exon"),
+        ("136_190", [135, 189, 618, 1200], "adjacent exon intron"),
+        ("136_617", [135, 189, 618, 1200], "adjacent exon intron"),
+        ("136_618", [135, 189, 618, 1200], "adjacent exon intron"),
+        ("136_619", [135, 189, 618, 1200], "exon exon"),
+        ("188_188", [135, 189, 618, 1200], "same exon"),
+        ("188_189", [135, 189, 618, 1200], "same exon"),
+        ("188_190", [135, 189, 618, 1200], "adjacent exon intron"),
+        ("189_189", [135, 189, 618, 1200], "same intron"),
+        ("617_617", [135, 189, 618, 1200], "same intron"),
+        ("617_618", [135, 189, 618, 1200], "same intron"),
+        ("617_619", [135, 189, 618, 1200], "adjacent intron exon"),
+        ("618_618", [135, 189, 618, 1200], "same exon"),
+        ("618_619", [135, 189, 618, 1200], "same exon"),
+        ("618_1199", [135, 189, 618, 1200], "same exon"),
+        ("618_1200", [135, 189, 618, 1200], "same exon"),
+        ("618_1201", [135, 189, 618, 1200], "adjacent exon intron"),
+        ("1199_1199", [135, 189, 618, 1200], "same exon"),
+        ("1199_1200", [135, 189, 618, 1200], "same exon"),
+        ("1199_1201", [135, 189, 618, 1200], "adjacent exon intron"),
+        ("1200_1201", [135, 189, 618, 1200], "same intron"),
+        ("188_188", [135, 189, 189, 1200], "same exon"),
+        ("188_189", [135, 189, 189, 1200], "same exon"),
+        ("189_189", [135, 189, 189, 1200], "same exon"),
+        ("188_190", [135, 189, 189, 1200], "exon exon"),  # TODO: adjacent exon?
+    ],
+)
+def test_get_location_type(location, exons, location_type):
+    location = to_model(location, "location")
+    assert _get_location_type(location, exons) == location_type

@@ -30,7 +30,7 @@ from .converter.to_internal_coordinates import (
     to_internal_coordinates,
 )
 from .converter.to_internal_indexing import to_internal_indexing
-from .converter.to_rna import to_rna_protein_coordinates, to_rna_reference_model
+from .converter.to_rna import to_rna_reference_model, to_rna_variants
 from .converter.variants_de_to_hgvs import de_to_hgvs
 from .description_model import (
     get_locations_min_max,
@@ -334,6 +334,7 @@ class Description(object):
             else:
                 r_c_s = get_coordinate_system_from_reference(self.references[r_id])
                 if not ((r_c_s == c_s) and (c_s in ["g", "m"])):
+                    print(r_c_s, c_s)
                     if is_only_one_selector(self.references[r_id], c_s):
                         self._correct_selector_id_from_coordinate_system(
                             r_id,
@@ -730,7 +731,7 @@ class Description(object):
             seq_ref = slice_sequence(v_i["location"], sequences["reference"])
             seq_del = construct_sequence(v_i[ins_or_del], sequences)
             if self.corrected_model["coordinate_system"] == "r":
-                seq_del = Seq(seq_del).back_transcribe().upper()
+                seq_del = str(Seq(seq_del).back_transcribe().upper())
             if seq_del and seq_ref and seq_del != seq_ref:
                 if self.is_inverted():
                     seq_del = reverse_complement(seq_del)
@@ -750,14 +751,21 @@ class Description(object):
                 if not is_dna(seq.upper()):
                     self._add_error(errors.no_dna(seq.upper(), path))
             elif self.corrected_model["coordinate_system"] == "r":
-                seq_lower = seq.lower()
-                if seq_lower != seq:
-                    self._add_info(infos.corrected_sequence(seq, seq_lower))
-                    set_by_path(self.corrected_model, path, seq_lower)
-                    set_by_path(self.internal_coordinates_model, path, seq_lower)
-                    set_by_path(self.internal_indexing_model, path, seq_lower)
-                if not is_rna(seq_lower):
-                    self._add_error(errors.no_dna(seq_lower, path))
+                if is_dna(seq):
+                    seq_rna = str(Seq(seq).transcribe()).lower()
+                    self._add_info(infos.corrected_sequence(seq, seq_rna))
+                    set_by_path(self.corrected_model, path, seq_rna)
+                    set_by_path(self.internal_coordinates_model, path, seq_rna)
+                    set_by_path(self.internal_indexing_model, path, seq_rna)
+                else:
+                    seq_lower = seq.lower()
+                    if seq_lower != seq:
+                        self._add_info(infos.corrected_sequence(seq, seq_lower))
+                        set_by_path(self.corrected_model, path, seq_lower)
+                        set_by_path(self.internal_coordinates_model, path, seq_lower)
+                        set_by_path(self.internal_indexing_model, path, seq_lower)
+                    if not is_rna(seq_lower):
+                        self._add_error(errors.no_dna(seq_lower, path))
 
     @check_errors
     def check(self):
@@ -826,14 +834,21 @@ class Description(object):
     def _rna(self):
         print("======================")
         if self.corrected_model["coordinate_system"] == "r":
-            variants = to_rna_protein_coordinates(
+            variants = to_rna_variants(
                 self.delins_model["variants"],
                 self.get_sequences(),
                 self._get_selector_model(),
             )
-            to_rna_reference_model(
+            rna_reference_model = to_rna_reference_model(
                 self.references["reference"], self._get_selector_id()
             )
+            self.delins_model["variants"] = variants
+            self.references = {
+                get_reference_id(self.corrected_model): rna_reference_model,
+                "reference": rna_reference_model,
+            }
+            print(self.delins_model)
+            print(self.references["reference"]["sequence"]["seq"][336])
 
     def normalize(self):
         self.to_internal_indexing_model()
@@ -864,7 +879,7 @@ class Description(object):
             self._construct_equivalent()
         self._remove_superfluous_selector()
 
-        # self.print_models_summary()
+        self.print_models_summary()
 
     def output(self):
         output = {
