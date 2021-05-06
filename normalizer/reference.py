@@ -385,14 +385,14 @@ def yield_overlap_ids(model, start, end):
                         yield selector
 
 
-def get_only_selector_id(model, coordinate_system):
-    for selector_id in yield_selector_ids_coordinate_system(model, coordinate_system):
+def get_only_selector_id(model):
+    for selector_id in yield_selector_ids(model):
         return selector_id
 
 
-def is_only_one_selector(model, coordinate_system):
+def is_only_one_selector(model):
     i = 0
-    for selector_id in yield_selector_ids_coordinate_system(model, coordinate_system):
+    for selector_id in yield_selectors(model):
         if i > 1:
             break
         i += 1
@@ -457,10 +457,6 @@ def get_coordinate_system_from_reference(reference):
 def _get_exons_and_cds(s_m):
     exons = [e for l in s_m["exon"] for e in l]
     cds = [s_m["cds"][0][0], s_m["cds"][0][1]]
-    # if s_m.get("inverted"):
-    #     cds[0] = exons[0]
-    # else:
-    #     cds[1] = exons[-1]
     return exons, cds
 
 
@@ -477,13 +473,14 @@ def slice_to_selector(model, selector_id, strand=False, include_cds=False):
     Slice the reference model sequence according to the exons and cds
     locations of the selector with the provided id.
 
-    :param model: Reference model.
-    :param selector_id: Id of the selector containing the slice locations.
-    :param strand: Reverse complement the sequence if selector is inverted.
-    :param include_cds: Slice according to the CDS.
-    :return: Sequence slice.
+    :arg dict model: Reference model.
+    :arg str selector_id: Id of the selector containing the slice locations.
+    :arg int strand: Reverse complement the sequence if selector is inverted.
+    :arg bool include_cds: Slice according to the CDS.
+    :returns: Sequence slice.
+    :rtype: str
     """
-    s_m = get_selector_model(model["annotations"], selector_id)
+    s_m = get_selector_model(model["annotations"], selector_id, True)
     output = ""
     slices = s_m["exon"]
     if include_cds and s_m.get("cds"):

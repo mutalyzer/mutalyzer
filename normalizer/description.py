@@ -327,19 +327,20 @@ class Description(object):
                 c_s_s = get_coordinate_system_from_selector_id(
                     self.references[r_id], s_id
                 )
-                if c_s_s != c_s and not (c_s_s == "c" and c_s == "r"):
+                if c_s_s != c_s and not (
+                    (c_s_s == "c" and c_s == "r") or (c_s_s == "n" and c_s == "r")
+                ):
                     self._add_error(
                         errors.coordinate_system_mismatch(c_s, s_id, c_s_s, c_s_path)
                     )
             else:
                 r_c_s = get_coordinate_system_from_reference(self.references[r_id])
                 if not ((r_c_s == c_s) and (c_s in ["g", "m"])):
-                    print(r_c_s, c_s)
-                    if is_only_one_selector(self.references[r_id], c_s):
+                    if is_only_one_selector(self.references[r_id]):
                         self._correct_selector_id_from_coordinate_system(
                             r_id,
                             r_path,
-                            get_only_selector_id(self.references[r_id], c_s),
+                            get_only_selector_id(self.references[r_id]),
                         )
                     else:
                         self._add_error(
@@ -832,7 +833,6 @@ class Description(object):
 
     @check_errors
     def _rna(self):
-        print("======================")
         if self.corrected_model["coordinate_system"] == "r":
             variants = to_rna_variants(
                 self.delins_model["variants"],
@@ -847,8 +847,6 @@ class Description(object):
                 get_reference_id(self.corrected_model): rna_reference_model,
                 "reference": rna_reference_model,
             }
-            print(self.delins_model)
-            print(self.references["reference"]["sequence"]["seq"][336])
 
     def normalize(self):
         self.to_internal_indexing_model()

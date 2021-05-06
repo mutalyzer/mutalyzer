@@ -14,19 +14,19 @@ from .commons import code_in, patch_retriever
 
 TESTS = [
     {
-        "keywords": ["rna", "equal", "genomic"],
+        "keywords": ["rna", "equal", "genomic", "mRNA"],
         "input": "NG_012337.1(NM_003002.2):r.275=",
         "normalized": "NG_012337.1(NM_003002.2):r.275=",
         "to_test": True,
     },
     {
-        "keywords": ["rna", "uncertain", "genomic"],
+        "keywords": ["rna", "uncertain", "genomic", "mRNA"],
         "input": "NG_012337.1(NM_003002.2):r.?",
         "normalized": "NG_012337.1(NM_003002.2):r.?",
         "to_test": False,
     },
     {
-        "keywords": ["rna", "substitution", "genomic"],
+        "keywords": ["rna", "substitution", "genomic", "mRNA"],
         "input": "NG_012337.1(NM_003002.2):r.275a>c",
         "normalized": "NG_012337.1(NM_003002.2):r.275a>c",
         "to_test": True,
@@ -44,7 +44,7 @@ TESTS = [
         "to_test": True,
     },
     {
-        "keywords": ["rna", "deletion", "genomic"],
+        "keywords": ["rna", "deletion", "genomic", "mRNA"],
         "input": "NG_012337.1(NM_003002.2):r.273del",
         "normalized": "NG_012337.1(NM_003002.2):r.274del",
         "to_test": True,

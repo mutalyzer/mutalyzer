@@ -150,9 +150,6 @@ def points_to_internal_coordinates(model, references):
         else None
     )
 
-    if coordinate_system == "r" and selector_model is None:
-        pass
-
     internal_model = initialize_internal_model(model)
     crossmap = crossmap_to_internal_setup(coordinate_system, selector_model)
 
