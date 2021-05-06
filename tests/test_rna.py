@@ -394,7 +394,7 @@ def test_rna(input_description, normalized):
                                                 },
                                                 "end": {
                                                     "type": "point",
-                                                    "position": 855,
+                                                    "position": 854,
                                                 },
                                                 "strand": -1,
                                             },
@@ -516,207 +516,86 @@ def test_to_rna_reference_model(r_id, s_id, expected):
     assert rna_model == expected
 
 
+def _location(s, e, strand=None):
+    location = {
+        "type": "range",
+        "start": {"type": "point", "position": s},
+        "end": {"type": "point", "position": e},
+    }
+    if strand:
+        location["strand"] = strand
+    return location
+
+
+def _variant(s, e, ins=None):
+    v = {
+        "location": _location(s, e),
+        "type": "deletion_insertion",
+        "source": "reference",
+    }
+    if ins:
+        v["inserted"] = [{"sequence": ins, "source": "description"}]
+    return v
+
+
+TESTS_VARIANTS = [
+    # input, trimmed, rna
+    (  # same intron
+        [_variant(10, 20, "T")],
+        [],
+        [],
+    ),
+    (  # intron exon with insertion
+        [_variant(120, 141, "A")],
+        [],
+        [],
+    ),
+    (  # intron exon without insertion
+        [_variant(120, 141)],
+        [_variant(135, 141)],
+        [_variant(0, 6)],
+    ),
+    (  # same exon
+        [_variant(150, 180, "A")],
+        [_variant(150, 180, "A")],
+        [_variant(15, 45, "A")],
+    ),
+    (  # intron intron with insertion
+        [_variant(10, 200, "A")],
+        [],
+        [],
+    ),
+    (  # intron intron without insertion
+        [_variant(10, 200)],
+        [_variant(135, 189)],
+        [_variant(0, 54)],
+    ),
+    (
+        [_variant(10, 189, "A")],
+        [],
+        [],
+    ),
+    (  # intron intron over exon with insertion
+        [_variant(10, 1200, "A")],
+        [],
+        [],
+    ),
+    (  # intron intron over exon without insertion
+        [_variant(10, 1201)],
+        [_variant(135, 1200)],
+        [_variant(0, 636)],
+    ),
+    (  # exon exon over intron without insertion
+        [_variant(150, 1100)],
+        [_variant(150, 1100)],
+        [_variant(15, 536)],
+    ),
+]
+
+
 @pytest.mark.parametrize(
     "variants, expected",
-    [
-        (  # same intron
-            [
-                {
-                    "location": {
-                        "type": "range",
-                        "start": {"type": "point", "position": 10},
-                        "end": {"type": "point", "position": 20},
-                    },
-                    "type": "deletion_insertion",
-                    "source": "reference",
-                    "inserted": [{"sequence": "T", "source": "description"}],
-                },
-            ],
-            [],
-        ),
-        (  # intron exon with insertion
-            [
-                {
-                    "location": {
-                        "type": "range",
-                        "start": {"type": "point", "position": 120},
-                        "end": {"type": "point", "position": 141},
-                    },
-                    "type": "deletion_insertion",
-                    "source": "reference",
-                    "inserted": [{"sequence": "A", "source": "description"}],
-                },
-            ],
-            [],
-        ),
-        (  # intron exon without insertion
-            [
-                {
-                    "location": {
-                        "type": "range",
-                        "start": {"type": "point", "position": 120},
-                        "end": {"type": "point", "position": 141},
-                    },
-                    "type": "deletion_insertion",
-                    "source": "reference",
-                },
-            ],
-            [
-                {
-                    "location": {
-                        "type": "range",
-                        "start": {"type": "point", "position": 135},
-                        "end": {"type": "point", "position": 141},
-                    },
-                    "type": "deletion_insertion",
-                    "source": "reference",
-                }
-            ],
-        ),
-        (  # same exon
-            [
-                {
-                    "location": {
-                        "type": "range",
-                        "start": {"type": "point", "position": 150},
-                        "end": {"type": "point", "position": 180},
-                    },
-                    "type": "deletion_insertion",
-                    "source": "reference",
-                    "inserted": [{"sequence": "A", "source": "description"}],
-                },
-            ],
-            [
-                {
-                    "location": {
-                        "type": "range",
-                        "start": {"type": "point", "position": 150},
-                        "end": {"type": "point", "position": 180},
-                    },
-                    "type": "deletion_insertion",
-                    "source": "reference",
-                    "inserted": [{"sequence": "A", "source": "description"}],
-                }
-            ],
-        ),
-        (  # intron intron with insertion
-            [
-                {
-                    "location": {
-                        "type": "range",
-                        "start": {"type": "point", "position": 10},
-                        "end": {"type": "point", "position": 200},
-                    },
-                    "type": "deletion_insertion",
-                    "source": "reference",
-                    "inserted": [{"sequence": "T", "source": "description"}],
-                },
-            ],
-            [],
-        ),
-        (  # intron intron without insertion
-            [
-                {
-                    "location": {
-                        "type": "range",
-                        "start": {"type": "point", "position": 10},
-                        "end": {"type": "point", "position": 200},
-                    },
-                    "type": "deletion_insertion",
-                    "source": "reference",
-                },
-            ],
-            [
-                {
-                    "location": {
-                        "type": "range",
-                        "start": {"type": "point", "position": 135},
-                        "end": {"type": "point", "position": 189},
-                    },
-                    "type": "deletion_insertion",
-                    "source": "reference",
-                }
-            ],
-        ),
-        (
-            [
-                {
-                    "location": {
-                        "type": "range",
-                        "start": {"type": "point", "position": 10},
-                        "end": {"type": "point", "position": 189},
-                    },
-                    "type": "deletion_insertion",
-                    "source": "reference",
-                    "inserted": [{"sequence": "T", "source": "description"}],
-                },
-            ],
-            [],
-        ),
-        (  # intron intron over exon with insertion
-            [
-                {
-                    "location": {
-                        "type": "range",
-                        "start": {"type": "point", "position": 10},
-                        "end": {"type": "point", "position": 1200},
-                    },
-                    "type": "deletion_insertion",
-                    "source": "reference",
-                    "inserted": [{"sequence": "T", "source": "description"}],
-                },
-            ],
-            [],
-        ),
-        (  # intron intron over exon without insertion
-            [
-                {
-                    "location": {
-                        "type": "range",
-                        "start": {"type": "point", "position": 10},
-                        "end": {"type": "point", "position": 1201},
-                    },
-                    "type": "deletion_insertion",
-                    "source": "reference",
-                },
-            ],
-            [
-                {
-                    "location": {
-                        "type": "range",
-                        "start": {"type": "point", "position": 135},
-                        "end": {"type": "point", "position": 1200},
-                    },
-                    "type": "deletion_insertion",
-                    "source": "reference",
-                }
-            ],
-        ),
-        (  # exon exon over intron without insertion
-            [
-                {
-                    "location": {
-                        "type": "range",
-                        "start": {"type": "point", "position": 150},
-                        "end": {"type": "point", "position": 1100},
-                    },
-                    "type": "deletion_insertion",
-                    "source": "reference",
-                },
-            ],
-            [
-                {
-                    "location": {
-                        "type": "range",
-                        "start": {"type": "point", "position": 150},
-                        "end": {"type": "point", "position": 1100},
-                    },
-                    "type": "deletion_insertion",
-                    "source": "reference",
-                }
-            ],
-        ),
-    ],
+    [(t_v[0], t_v[1]) for t_v in TESTS_VARIANTS],
 )
 def test_trim_to_exons(variants, expected):
     sequences = {
@@ -729,6 +608,22 @@ def test_trim_to_exons(variants, expected):
     exons = [e for exon in selector_model["exon"] for e in exon]
     # exons: [135, 189, 618, 1200]
     assert _trim_to_exons(variants, exons, sequences) == expected
+
+
+@pytest.mark.parametrize(
+    "variants, expected",
+    [(t_v[0], t_v[2]) for t_v in TESTS_VARIANTS],
+)
+def test_to_rna_variants(variants, expected):
+    sequences = {
+        "TEST_REF": retrieve_reference("TEST_REF"),
+        "reference": retrieve_reference("TEST_REF"),
+    }
+    selector_model = get_selector_model(
+        retrieve_reference("TEST_REF")["annotations"], "NM_PLUS"
+    )
+    # exons: [135, 189, 618, 1200]
+    assert to_rna_variants(variants, sequences, selector_model) == expected
 
 
 @pytest.mark.parametrize(

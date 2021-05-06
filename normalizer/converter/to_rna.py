@@ -26,7 +26,6 @@ def to_rna_reference_model(reference_model, selector_id):
     2. Slice the sequence.
     3. Update the model features locations using the crossmapper.
 
-    TODO: Convert sequence to RNA?
     TODO: Make sure everything is on the plus strand?
 
     :param reference_model: Reference model.
@@ -49,12 +48,19 @@ def to_rna_reference_model(reference_model, selector_id):
     new_start = x(s_m["exon"][0][0])[0] - 1
     new_end = x(s_m["exon"][-1][-1])[0]
     for location, f_type in _yield_locations(rna_model["annotations"]):
-        if f_type in ["exon", "CDS"]:
-            location["start"]["position"] = x(location["start"]["position"])[0] - 1
-            location["end"]["position"] = x(location["end"]["position"])[0]
+        if f_type == "CDS":
+            if s_m.get("inverted"):
+                shift_end = -1
+            else:
+                shift_end = 0
+            set_start(location, x(get_start(location))[0] - 1)
+            set_end(location, x(get_end(location))[0] + shift_end)
+        elif f_type == "exon":
+            set_start(location, x(get_start(location))[0] - 1)
+            set_end(location, x(get_end(location))[0])
         else:
-            location["start"]["position"] = new_start
-            location["end"]["position"] = new_end
+            set_start(location, new_start)
+            set_end(location, new_end)
 
     return rna_model
 
@@ -143,12 +149,13 @@ def to_rna_variants(variants, sequences, selector_model):
     exons = [e for exon in selector_model["exon"] for e in exon]
     trimmed_variants = _trim_to_exons(variants, exons, sequences)
 
-    crossmap = NonCoding(selector_model["exon"]).coordinate_to_noncoding
+    x = NonCoding(selector_model["exon"]).coordinate_to_noncoding
 
     for variant in trimmed_variants:
-        set_start(variant["location"], crossmap(get_start(variant))[0] - 1)
-        set_end(variant["location"], crossmap(get_end(variant))[0] - 1)
-
+        set_start(variant["location"], x(get_start(variant))[0] - 1)
+        set_end(
+            variant["location"], x(get_end(variant))[0] + x(get_end(variant))[1] - 1
+        )
     return trimmed_variants
 
 
