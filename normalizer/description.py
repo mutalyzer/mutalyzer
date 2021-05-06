@@ -30,7 +30,7 @@ from .converter.to_internal_coordinates import (
     to_internal_coordinates,
 )
 from .converter.to_internal_indexing import to_internal_indexing
-from .converter.to_rna import to_rna_reference_model, to_rna_variants
+from .converter.to_rna import to_rna_reference_model, to_rna_sequences, to_rna_variants
 from .converter.variants_de_to_hgvs import de_to_hgvs
 from .description_model import (
     get_locations_min_max,
@@ -457,6 +457,9 @@ class Description(object):
 
     def _construct_normalized_description(self):
         if self.de_hgvs_model:
+            if self.de_hgvs_model["coordinate_system"] == "r":
+                print("should be done")
+                to_rna_sequences(self.de_hgvs_model)
             self.normalized_description = model_to_string(self.de_hgvs_model)
 
     def _construct_equivalent(self, other=None, as_description=True):
@@ -472,6 +475,7 @@ class Description(object):
             get_coordinate_system_from_reference(self.references["reference"])
             == "g"
             != self.corrected_model["coordinate_system"]
+            and self.corrected_model["coordinate_system"] != "r"
         ):
             converted_model = to_hgvs_locations(
                 model=from_model,
@@ -536,7 +540,13 @@ class Description(object):
 
     @check_errors
     def _construct_protein_description(self):
-        if self.de_hgvs_model["coordinate_system"] == "c":
+        if self.de_hgvs_model["coordinate_system"] == "c" or (
+            self.de_hgvs_model["coordinate_system"] == "r"
+            and get_coordinate_system_from_selector_id(
+                self.references["reference"], self._get_selector_id()
+            )
+            == "c"
+        ):
             self.protein = dict(
                 zip(
                     ["description", "reference", "predicted"],
@@ -747,6 +757,8 @@ class Description(object):
                 if seq.upper() != seq:
                     self._add_info(infos.corrected_sequence(seq, seq.upper()))
                     set_by_path(self.corrected_model, path, seq.upper())
+                    if self.is_inverted():
+                        path = reverse_path(self.corrected_model, path)
                     set_by_path(self.internal_coordinates_model, path, seq.upper())
                     set_by_path(self.internal_indexing_model, path, seq.upper())
                 if not is_dna(seq.upper()):
@@ -755,18 +767,24 @@ class Description(object):
                 if is_dna(seq):
                     seq_rna = str(Seq(seq).transcribe()).lower()
                     self._add_info(infos.corrected_sequence(seq, seq_rna))
-                    set_by_path(self.corrected_model, path, seq_rna)
-                    set_by_path(self.internal_coordinates_model, path, seq_rna)
-                    set_by_path(self.internal_indexing_model, path, seq_rna)
+                    seq_dna = str(Seq(seq_rna).back_transcribe()).upper()
+                    set_by_path(self.corrected_model, path, seq_dna)
+                    if self.is_inverted():
+                        path = reverse_path(self.corrected_model, path)
+                    set_by_path(self.internal_coordinates_model, path, seq_dna)
+                    set_by_path(self.internal_indexing_model, path, seq_dna)
                 else:
                     seq_lower = seq.lower()
                     if seq_lower != seq:
                         self._add_info(infos.corrected_sequence(seq, seq_lower))
-                        set_by_path(self.corrected_model, path, seq_lower)
-                        set_by_path(self.internal_coordinates_model, path, seq_lower)
-                        set_by_path(self.internal_indexing_model, path, seq_lower)
                     if not is_rna(seq_lower):
                         self._add_error(errors.no_dna(seq_lower, path))
+                    seq_lower = str(Seq(seq).back_transcribe()).upper()
+                    # set_by_path(self.corrected_model, path, seq_lower)
+                    if self.is_inverted():
+                        path = reverse_path(self.corrected_model, path)
+                    set_by_path(self.internal_coordinates_model, path, seq_lower)
+                    set_by_path(self.internal_indexing_model, path, seq_lower)
 
     @check_errors
     def check(self):

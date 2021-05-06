@@ -512,7 +512,7 @@ def test_rna(input_description, normalized):
 )
 def test_to_rna_reference_model(r_id, s_id, expected):
     model = retrieve_reference(r_id)
-    rna_model = to_rna_reference_model(model, s_id)
+    rna_model = to_rna_reference_model(model, s_id, transcribe=True)
     assert rna_model == expected
 
 

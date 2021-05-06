@@ -5,8 +5,17 @@ from Bio.Seq import Seq
 from mutalyzer_crossmapper import Coding, Genomic, NonCoding
 from mutalyzer_mutator.util import reverse_complement
 
+from ..description_model import yield_sub_model
 from ..reference import extract_feature_model, get_selector_model, slice_to_selector
-from ..util import construct_sequence, get_end, get_start, set_end, set_start
+from ..util import (
+    construct_sequence,
+    get_end,
+    get_inserted_sequence,
+    get_start,
+    set_by_path,
+    set_end,
+    set_start,
+)
 from .to_hgvs_coordinates import genomic_to_point, reverse_strand_shift
 
 
@@ -17,7 +26,7 @@ def _yield_locations(annotations):
             yield from _yield_locations(feature)
 
 
-def to_rna_reference_model(reference_model, selector_id):
+def to_rna_reference_model(reference_model, selector_id, transcribe=False):
     """
     Get the RNA reference model of the provided selector.
 
@@ -28,9 +37,11 @@ def to_rna_reference_model(reference_model, selector_id):
 
     TODO: Make sure everything is on the plus strand?
 
-    :param reference_model: Reference model.
-    :param selector_id: Selector ID.
-    :return: RNA reference model.
+    :arg dict reference_model: Reference model.
+    :arg str selector_id: Selector ID.
+    :arg bool transcribe: Transcribe the sequence to RNA.
+    :returns: RNA reference model.
+    :rtype: dict
     """
     rna_model = {
         "annotations": deepcopy(
@@ -40,6 +51,8 @@ def to_rna_reference_model(reference_model, selector_id):
             "seq": str(
                 Seq(slice_to_selector(reference_model, selector_id)).transcribe()
             ).lower()
+            if transcribe
+            else slice_to_selector(reference_model, selector_id)
         },
     }
     s_m = get_selector_model(rna_model["annotations"], selector_id, True)
@@ -138,13 +151,15 @@ def _trim_to_exons(variants, exons, sequences):
     return new_variants
 
 
-def to_rna_variants(variants, sequences, selector_model):
+def to_rna_variants(variants, sequences, selector_model, transcribe=False):
     """
     Convert coordinate delins variants to RNA.
 
-    :param variants: Variants with coordinate locations.
-    :param sequences: Sequences dictionary.
-    :param selector_model: Selector model.
+    :arg list variants: Variants with coordinate locations.
+    :arg list sequences: List with sequences dictionary.
+    :arg dict selector_model: Selector model.
+    :returns: Converted RNA variants.
+    :rtype: dict
     """
     exons = [e for exon in selector_model["exon"] for e in exon]
     trimmed_variants = _trim_to_exons(variants, exons, sequences)
@@ -156,7 +171,20 @@ def to_rna_variants(variants, sequences, selector_model):
         set_end(
             variant["location"], x(get_end(variant))[0] + x(get_end(variant))[1] - 1
         )
+        if variant.get("inserted"):
+            variant["inserted"] = [
+                {
+                    "source": "description",
+                    "sequence": get_inserted_sequence(variant, sequences),
+                }
+            ]
+
     return trimmed_variants
+
+
+def to_rna_sequences(model):
+    for seq, path in yield_sub_model(model, ["sequence"]):
+        set_by_path(model, path, str(Seq(seq).transcribe().lower()))
 
 
 def _point_to_cds_coordinate(point, selector_model, crossmap):
@@ -171,7 +199,7 @@ def _point_to_cds_coordinate(point, selector_model, crossmap):
         return genomic_to_point(genomic_to_coordinate(coding[0]))
 
 
-def get_inserted_sequence(insertion, sequences):
+def _get_inserted_sequence(insertion, sequences):
     if isinstance(insertion["source"], str):
         source = insertion["source"]
     elif isinstance(insertion["source"], dict):
@@ -187,7 +215,7 @@ def merge_inserted_to_string(inserted, sequences):
         if insertion.get("sequence"):
             inserted_value += insertion.get("sequence")
         else:
-            inserted_value += get_inserted_sequence(insertion, sequences)
+            inserted_value += _get_inserted_sequence(insertion, sequences)
         if insertion.get("inverted"):
             inserted_value = reverse_complement(inserted_value)
 
