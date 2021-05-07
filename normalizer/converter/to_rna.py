@@ -20,7 +20,8 @@ from .to_hgvs_coordinates import genomic_to_point, reverse_strand_shift
 
 
 def _yield_locations(annotations):
-    yield annotations["location"], annotations["type"]
+    if annotations.get("location"):
+        yield annotations["location"], annotations["type"]
     if annotations.get("features"):
         for feature in annotations["features"]:
             yield from _yield_locations(feature)
@@ -128,26 +129,27 @@ def _set_end_to_exon(location, exons):
 def _trim_to_exons(variants, exons, sequences):
     new_variants = []
     for v in variants:
-        location_type = _get_location_type(v["location"], exons)
         new_v = deepcopy(v)
-        if location_type == "adjacent intron exon" and not (
-            v.get("inserted") and construct_sequence(v["inserted"], sequences)
-        ):
-            _set_start_to_exon(new_v["location"], exons)
-            new_variants.append(new_v)
-        elif location_type == "adjacent exon intron" and not (
-            v.get("inserted") and construct_sequence(v["inserted"], sequences)
-        ):
-            _set_start_to_exon(new_v["location"], exons)
-            new_variants.append(new_v)
-        elif location_type == "intron intron" and not (
-            v.get("inserted") and construct_sequence(v["inserted"], sequences)
-        ):
-            _set_start_to_exon(new_v["location"], exons)
-            _set_end_to_exon(new_v["location"], exons)
-            new_variants.append(new_v)
-        elif location_type in ["exon exon", "same exon"]:
-            new_variants.append(new_v)
+        if v.get("location"):
+            location_type = _get_location_type(v["location"], exons)
+            if location_type == "adjacent intron exon" and not (
+                v.get("inserted") and construct_sequence(v["inserted"], sequences)
+            ):
+                _set_start_to_exon(new_v["location"], exons)
+                new_variants.append(new_v)
+            elif location_type == "adjacent exon intron" and not (
+                v.get("inserted") and construct_sequence(v["inserted"], sequences)
+            ):
+                _set_start_to_exon(new_v["location"], exons)
+                new_variants.append(new_v)
+            elif location_type == "intron intron" and not (
+                v.get("inserted") and construct_sequence(v["inserted"], sequences)
+            ):
+                _set_start_to_exon(new_v["location"], exons)
+                _set_end_to_exon(new_v["location"], exons)
+                new_variants.append(new_v)
+            elif location_type in ["exon exon", "same exon"]:
+                new_variants.append(new_v)
     return new_variants
 
 
@@ -167,17 +169,18 @@ def to_rna_variants(variants, sequences, selector_model, transcribe=False):
     x = NonCoding(selector_model["exon"]).coordinate_to_noncoding
 
     for variant in trimmed_variants:
-        set_start(variant["location"], x(get_start(variant))[0] - 1)
-        set_end(
-            variant["location"], x(get_end(variant))[0] + x(get_end(variant))[1] - 1
-        )
-        if variant.get("inserted"):
-            variant["inserted"] = [
-                {
-                    "source": "description",
-                    "sequence": get_inserted_sequence(variant, sequences),
-                }
-            ]
+        if variant.get("location"):
+            set_start(variant["location"], x(get_start(variant))[0] - 1)
+            set_end(
+                variant["location"], x(get_end(variant))[0] + x(get_end(variant))[1] - 1
+            )
+            if variant.get("inserted"):
+                variant["inserted"] = [
+                    {
+                        "source": "description",
+                        "sequence": get_inserted_sequence(variant, sequences),
+                    }
+                ]
 
     return trimmed_variants
 
@@ -185,6 +188,10 @@ def to_rna_variants(variants, sequences, selector_model, transcribe=False):
 def to_rna_sequences(model):
     for seq, path in yield_sub_model(model, ["sequence"]):
         set_by_path(model, path, str(Seq(seq).transcribe().lower()))
+
+
+def get_rna_description():
+    pass
 
 
 def _point_to_cds_coordinate(point, selector_model, crossmap):

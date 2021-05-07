@@ -100,6 +100,7 @@ class Description(object):
         self.de_hgvs_model = {}
         self.normalized_description = None
         self.protein = None
+        self.rna = None
 
         self.references = {}
 
@@ -563,6 +564,35 @@ class Description(object):
                 )
             )
 
+    @check_errors
+    def _construct_rna_description(self):
+        if self.de_hgvs_model["coordinate_system"] in ["c", "n"]:
+            rna_variants_coordinate = to_rna_variants(
+                variants_to_delins(self.de_hgvs_internal_indexing_model["variants"]),
+                self.get_sequences(),
+                self._get_selector_model(),
+            )
+            rna_reference_model = to_rna_reference_model(
+                self.references["reference"], self._get_selector_id()
+            )
+            rna_references = {
+                get_reference_id(self.corrected_model): rna_reference_model,
+                "reference": rna_reference_model,
+            }
+            rna_model = to_hgvs_locations(
+                {
+                    "reference": self.de_hgvs_internal_indexing_model["reference"],
+                    "coordinate_system": "i",
+                    "variants": rna_variants_coordinate,
+                },
+                rna_references,
+                self.corrected_model["coordinate_system"],
+                get_selector_id(self.corrected_model),
+                True,
+            )
+            rna_model["coordinate_system"] = "r"
+            self.rna = {"description": model_to_string(rna_model)}
+
     def _check_location_boundaries(self):
         for point, path in yield_sub_model(
             self.internal_coordinates_model, ["location", "start", "end"], ["point"]
@@ -892,6 +922,7 @@ class Description(object):
             self._construct_de_hgvs_coordinates_model()
             self._construct_normalized_description()
             self._construct_protein_description()
+            self._construct_rna_description()
             self._construct_equivalent()
         self._remove_superfluous_selector()
 
@@ -910,6 +941,8 @@ class Description(object):
 
         if self.protein:
             output["protein"] = self.protein
+        if self.rna:
+            output["rna"] = self.rna
         if self.equivalent:
             output["equivalent_descriptions"] = self.equivalent
         if self.errors:
