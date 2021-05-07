@@ -459,7 +459,6 @@ class Description(object):
     def _construct_normalized_description(self):
         if self.de_hgvs_model:
             if self.de_hgvs_model["coordinate_system"] == "r":
-                print("should be done")
                 to_rna_sequences(self.de_hgvs_model)
             self.normalized_description = model_to_string(self.de_hgvs_model)
 
@@ -575,6 +574,10 @@ class Description(object):
             rna_reference_model = to_rna_reference_model(
                 self.references["reference"], self._get_selector_id()
             )
+            rna_variants_coordinate = de_to_hgvs(
+                rna_variants_coordinate, self.get_sequences()
+            )
+            to_rna_sequences(rna_variants_coordinate)
             rna_references = {
                 get_reference_id(self.corrected_model): rna_reference_model,
                 "reference": rna_reference_model,
