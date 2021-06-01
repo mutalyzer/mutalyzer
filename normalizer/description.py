@@ -1033,10 +1033,13 @@ class Description(object):
             print(model_to_string(self.de_hgvs_model))
         else:
             print("- No de hgvs model")
-        print("------")
-
         if self.errors:
+            print("---\nErrors:")
             print(self.errors)
+        if self.infos:
+            print("---\nInfos:")
+            print(self.infos)
+        print("------")
 
     def get_reference_summary(self):
         return {

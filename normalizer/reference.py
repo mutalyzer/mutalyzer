@@ -490,3 +490,15 @@ def slice_to_selector(model, selector_id, strand=False, include_cds=False):
     if strand and s_m["inverted"]:
         output = reverse_complement(output)
     return output
+
+
+def yield_locations(annotations):
+    """
+    All locations present in the annotations and the feature to which they
+    correspond.
+    """
+    if annotations.get("location"):
+        yield annotations["location"], annotations["type"]
+    if annotations.get("features"):
+        for feature in annotations["features"]:
+            yield from yield_locations(feature)

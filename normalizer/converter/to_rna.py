@@ -6,11 +6,16 @@ from mutalyzer_crossmapper import Coding, Genomic, NonCoding
 from mutalyzer_mutator.util import reverse_complement
 
 from ..description_model import (
-    yield_sub_model,
-    variants_to_description,
     variant_to_description,
+    variants_to_description,
+    yield_sub_model,
 )
-from ..reference import extract_feature_model, get_selector_model, slice_to_selector
+from ..reference import (
+    extract_feature_model,
+    get_selector_model,
+    slice_to_selector,
+    yield_locations,
+)
 from ..util import (
     construct_sequence,
     get_end,
@@ -21,14 +26,6 @@ from ..util import (
     set_start,
 )
 from .to_hgvs_coordinates import genomic_to_point, reverse_strand_shift
-
-
-def _yield_locations(annotations):
-    if annotations.get("location"):
-        yield annotations["location"], annotations["type"]
-    if annotations.get("features"):
-        for feature in annotations["features"]:
-            yield from _yield_locations(feature)
 
 
 def to_rna_reference_model(reference_model, selector_id, transcribe=False):
@@ -65,7 +62,7 @@ def to_rna_reference_model(reference_model, selector_id, transcribe=False):
 
     new_start = x(s_m["exon"][0][0])[0] - 1
     new_end = x(s_m["exon"][-1][-1])[0]
-    for location, f_type in _yield_locations(rna_model["annotations"]):
+    for location, f_type in yield_locations(rna_model["annotations"]):
         if f_type == "CDS":
             if s_m.get("inverted"):
                 shift_end = -1
@@ -84,8 +81,23 @@ def to_rna_reference_model(reference_model, selector_id, transcribe=False):
 
 
 def get_position_type(position, exons, len_ss=2, len_as=5):
+    """
+    Get the position location within the exons/introns. Even numbers for
+    introns and odd numbers for exons are returned. Empty introns are
+    considered as well in the returned index. The second returned value
+    represents a splice site (1, -1) or around a splice site (-2, 2) location,
+    otherwise 0 (within an intron outside the splice (around) sites or
+    within an exon).
+
+    :arg int position: Zero-based position.
+    :arg list exons: Zero-based half open exon positions list of tuples.
+    :arg int len_ss: Splice site length.
+    :arg int len_as: Around splice site length.
+    :returns: Position type.
+    :rtype: tuple
+    """
     x = NonCoding(exons).coordinate_to_noncoding
-    exons = [e for exon in exons for e in exon]
+    exons = _get_flatten_exons(exons)
     position_x = x(position)
 
     if position_x[1] == 0:
@@ -106,10 +118,14 @@ def get_position_type(position, exons, len_ss=2, len_as=5):
 
 def _get_location_type(location, exons):
     """
+    Returns the location spanning with respect to the exons/introns. Currently
+    the supported types are: same exon (start and end in the same exon),
+    exon - exon (start and end in different exons), same intron,
+    and intron - intron.
 
     :arg dict location: Location model.
-    :arg list exons: Exon positions.
-    :returns:
+    :arg list exons: Flatten exon positions.
+    :returns: Location type within the exons/introns.
     :rtype: str
     """
     start_i = get_position_type(get_start(location), exons)
@@ -133,27 +149,68 @@ def _get_location_type(location, exons):
             return "intron intron"
 
 
+def _get_flatten_exons(exons):
+    """
+    Transform the exon list of tuples into a list of integers.
+
+    :params list exons: Exons as a list of tuples.
+    :return: Flattened exons list.
+    :rtype: list
+    """
+    return [e for exon in exons for e in exon]
+
+
 def _get_exon_start_position(position, exons):
+    """
+    Given an intronic position (start), get its appropriate exon position.
+
+    :arg int position: Zero-based position.
+    :arg list exons: Flattened exons list.
+    :returns: Exon position.
+    :rtype: int
+    """
     return exons[bisect.bisect_right(exons, position)]
 
 
 def _get_exon_end_position(position, exons):
+    """
+    Given an intronic position (end), get its appropriate exon position.
+
+    :arg int position: Zero-based position.
+    :arg list exons: Flattened exons list.
+    :returns: Exon position.
+    :rtype: int
+    """
     return exons[bisect.bisect_left(exons, position) - 1]
 
 
-def _get_flatten_exons(exons):
-    return [e for exon in exons for e in exon]
-
-
 def _set_start_to_exon(location, exons):
+    """
+    Update the location start position with its appropriate exon position.
+
+    :arg dict location: Zero-based location model.
+    :arg list exons: Flattened exons list.
+    """
     set_start(location, _get_exon_start_position(get_start(location), exons))
 
 
 def _set_end_to_exon(location, exons):
+    """
+    Update the location end position with its appropriate exon position.
+
+    :arg dict location: Zero-based location model.
+    :arg list exons: Flattened exons list.
+    """
     set_end(location, _get_exon_end_position(get_end(location), exons))
 
 
 def _trim_to_exons(variants, exons, sequences):
+    """
+    Update variants locations to the corresponding exons.
+    Notes:
+      - same intron locations are discarded;
+      - splice sites checked should have been performed already.
+    """
     new_variants = []
     for v in variants:
         new_v = deepcopy(v)
@@ -172,7 +229,7 @@ def _trim_to_exons(variants, exons, sequences):
     return new_variants
 
 
-def to_rna_variants(variants, sequences, selector_model, transcribe=False):
+def to_rna_variants(variants, sequences, selector_model):
     """
     Convert coordinate delins variants to RNA.
 
@@ -203,12 +260,13 @@ def to_rna_variants(variants, sequences, selector_model, transcribe=False):
 
 
 def to_rna_sequences(model):
+    """
+    Convert all the sequences present in the model to RNA.
+
+    :args dict model: Description model.
+    """
     for seq, path in yield_sub_model(model, ["sequence"]):
         set_by_path(model, path, str(Seq(seq).transcribe().lower()))
-
-
-def get_rna_description():
-    pass
 
 
 def _point_to_cds_coordinate(point, selector_model, crossmap):
