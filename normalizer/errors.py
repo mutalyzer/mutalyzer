@@ -257,3 +257,11 @@ def no_to_selector(reference_id, selector_id):
             selector_id, reference_id
         ),
     }
+
+
+def splice_site(path):
+    return {
+        "code": "ESPLICESITE",
+        "details": "Splice site(s) affected.",
+        "paths": [path],
+    }

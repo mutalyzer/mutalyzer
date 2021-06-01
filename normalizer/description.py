@@ -15,6 +15,7 @@ from .checker import (
     contains_insert_length,
     contains_uncertain_locations,
     is_overlap,
+    splice_sites,
 )
 from .converter.extras import convert_selector_model
 from .converter.to_delins import to_delins, variants_to_delins
@@ -566,6 +567,18 @@ class Description(object):
     @check_errors
     def _construct_rna_description(self):
         if self.de_hgvs_model["coordinate_system"] in ["c", "n"]:
+            self.rna = {}
+            errors_splice, infos_splice = splice_sites(
+                variants_to_delins(self.de_hgvs_internal_indexing_model["variants"]),
+                self.get_sequences(),
+                self._get_selector_model(),
+            )
+            if infos_splice:
+                self.rna["infos"] = infos_splice
+            if errors_splice:
+                self.rna["errors"] = errors_splice
+                return
+
             rna_variants_coordinate = to_rna_variants(
                 variants_to_delins(self.de_hgvs_internal_indexing_model["variants"]),
                 self.get_sequences(),
@@ -885,6 +898,16 @@ class Description(object):
     @check_errors
     def _rna(self):
         if self.corrected_model["coordinate_system"] == "r":
+            errors_splice, infos_splice = splice_sites(
+                self.delins_model["variants"],
+                self.get_sequences(),
+                self._get_selector_model(),
+            )
+            self.infos += infos_splice
+            self.errors += errors_splice
+            if errors_splice:
+                return
+
             variants = to_rna_variants(
                 self.delins_model["variants"],
                 self.get_sequences(),

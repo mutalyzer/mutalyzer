@@ -5,7 +5,11 @@ from Bio.Seq import Seq
 from mutalyzer_crossmapper import Coding, Genomic, NonCoding
 from mutalyzer_mutator.util import reverse_complement
 
-from ..description_model import yield_sub_model
+from ..description_model import (
+    yield_sub_model,
+    variants_to_description,
+    variant_to_description,
+)
 from ..reference import extract_feature_model, get_selector_model, slice_to_selector
 from ..util import (
     construct_sequence,
@@ -71,7 +75,7 @@ def to_rna_reference_model(reference_model, selector_id, transcribe=False):
             set_end(location, x(get_end(location))[0] + shift_end)
         elif f_type == "exon":
             set_start(location, x(get_start(location))[0] - 1)
-            set_end(location, x(get_end(location))[0])
+            set_end(location, x(get_end(location))[0] + x(get_end(location))[1] - 1)
         else:
             set_start(location, new_start)
             set_end(location, new_end)
@@ -79,35 +83,54 @@ def to_rna_reference_model(reference_model, selector_id, transcribe=False):
     return rna_model
 
 
+def get_position_type(position, exons, len_ss=2, len_as=5):
+    x = NonCoding(exons).coordinate_to_noncoding
+    exons = [e for exon in exons for e in exon]
+    position_x = x(position)
+
+    if position_x[1] == 0:
+        return bisect.bisect_right(exons, position), 0
+    elif 0 < abs(position_x[1]) <= len_ss:
+        if position_x[1] > 0:
+            return bisect.bisect_right(exons, position), 1
+        else:
+            return bisect.bisect_left(exons, position), -1
+    elif len_ss < abs(position_x[1]) <= len_ss + len_as:
+        if position_x[1] > 0:
+            return bisect.bisect_right(exons, position), 2
+        else:
+            return bisect.bisect_left(exons, position), -2
+    else:
+        return bisect.bisect_left(exons, position), 0
+
+
 def _get_location_type(location, exons):
     """
 
     :arg dict location: Location model.
-    :arg list exons: Flatten exon positions.
+    :arg list exons: Exon positions.
     :returns:
     :rtype: str
     """
-    start_i = bisect.bisect_right(exons, get_start(location))
-    end_i = bisect.bisect_left(exons, get_end(location))
-    if get_start(location) == get_end(location) or abs(start_i - end_i) == 0:
-        if start_i % 2 == 0:
-            return "same intron"
-        else:
+    start_i = get_position_type(get_start(location), exons)
+    end_i = get_position_type(get_end(location) - 1, exons)
+    if get_start(location) == get_end(location):
+        # this is an insertion
+        if start_i[0] % 2 == 1:
             return "same exon"
-    elif abs(start_i - end_i) == 1:
-        if start_i % 2 == 0:
-            return "adjacent intron exon"
         else:
-            return "adjacent exon intron"
-    elif abs(start_i - end_i) > 1:
-        if start_i % 2 == 0 and end_i % 2 == 0:
-            return "intron intron"
-        elif start_i % 2 == 0 and end_i % 2 == 1:
-            return "intron exon"
-        elif start_i % 2 == 1 and end_i % 2 == 0:
-            return "exon intron"
-        elif start_i % 2 == 1 and end_i % 2 == 1:
+            if start_i[1] == 0:
+                return "same intron"
+    elif start_i[0] % 2 == 1 and end_i[0] % 2 == 1:
+        if start_i[0] == end_i[0]:
+            return "same exon"
+        else:
             return "exon exon"
+    elif start_i[0] % 2 == 0 and end_i[0] % 2 == 0:
+        if start_i[0] == end_i[0] and start_i[1] == 0:
+            return "same intron"
+        if start_i[0] != end_i[0] and start_i[1] == 0 and end_i[1] == 0:
+            return "intron intron"
 
 
 def _get_exon_start_position(position, exons):
@@ -116,6 +139,10 @@ def _get_exon_start_position(position, exons):
 
 def _get_exon_end_position(position, exons):
     return exons[bisect.bisect_left(exons, position) - 1]
+
+
+def _get_flatten_exons(exons):
+    return [e for exon in exons for e in exon]
 
 
 def _set_start_to_exon(location, exons):
@@ -132,23 +159,15 @@ def _trim_to_exons(variants, exons, sequences):
         new_v = deepcopy(v)
         if v.get("location"):
             location_type = _get_location_type(v["location"], exons)
-            if location_type == "adjacent intron exon" and not (
+            if location_type == "intron intron" and not (
                 v.get("inserted") and construct_sequence(v["inserted"], sequences)
             ):
-                _set_start_to_exon(new_v["location"], exons)
+                _set_start_to_exon(new_v["location"], _get_flatten_exons(exons))
+                _set_end_to_exon(new_v["location"], _get_flatten_exons(exons))
                 new_variants.append(new_v)
-            elif location_type == "adjacent exon intron" and not (
-                v.get("inserted") and construct_sequence(v["inserted"], sequences)
-            ):
-                _set_start_to_exon(new_v["location"], exons)
+            elif location_type == "exon exon":
                 new_variants.append(new_v)
-            elif location_type == "intron intron" and not (
-                v.get("inserted") and construct_sequence(v["inserted"], sequences)
-            ):
-                _set_start_to_exon(new_v["location"], exons)
-                _set_end_to_exon(new_v["location"], exons)
-                new_variants.append(new_v)
-            elif location_type in ["exon exon", "same exon"]:
+            elif location_type == "same exon":
                 new_variants.append(new_v)
     return new_variants
 
@@ -163,8 +182,7 @@ def to_rna_variants(variants, sequences, selector_model, transcribe=False):
     :returns: Converted RNA variants.
     :rtype: dict
     """
-    exons = [e for exon in selector_model["exon"] for e in exon]
-    trimmed_variants = _trim_to_exons(variants, exons, sequences)
+    trimmed_variants = _trim_to_exons(variants, selector_model["exon"], sequences)
 
     x = NonCoding(selector_model["exon"]).coordinate_to_noncoding
 
@@ -181,7 +199,6 @@ def to_rna_variants(variants, sequences, selector_model, transcribe=False):
                         "sequence": get_inserted_sequence(variant, sequences),
                     }
                 ]
-
     return trimmed_variants
 
 

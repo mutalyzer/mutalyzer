@@ -1,0 +1,13 @@
+##sequence-region NM_012459.4 1 780
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=9606
+NM_012459.4	RefSeq	region	1	780	.	+	.	ID=NM_012459.4:1..780;Dbxref=taxon:9606;Name=11;chromosome=11;gbkey=Src;genome=genomic;map=11q23.1;mol_type=mRNA
+NM_012459.4	RefSeq	gene	1	780	.	+	.	ID=gene-TIMM8B;Dbxref=GeneID:26521,HGNC:HGNC:11818,MIM:606659;Name=TIMM8B;description=translocase of inner mitochondrial membrane 8 homolog B;gbkey=Gene;gene=TIMM8B;gene_synonym=DDP2,TIM8B
+NM_012459.4	RefSeq	CDS	34	285	.	+	0	ID=cds-NP_036591.3;Parent=gene-TIMM8B;Dbxref=CCDS:CCDS8357.2,Genbank:NP_036591.3,GeneID:26521,HGNC:HGNC:11818,MIM:606659;Name=NP_036591.3;gbkey=CDS;gene=TIMM8B;product=mitochondrial import inner membrane translocase subunit Tim8 B;protein_id=NP_036591.3
+NM_012459.4	RefSeq	exon	1	117	.	+	.	ID=id-TIMM8B;Parent=gene-TIMM8B;Dbxref=GeneID:26521,HGNC:HGNC:11818,MIM:606659;gbkey=exon;gene=TIMM8B;inference=alignment:Splign:2.1.0
+NM_012459.4	RefSeq	exon	118	780	.	+	.	ID=id-TIMM8B-2;Parent=gene-TIMM8B;Dbxref=GeneID:26521,HGNC:HGNC:11818,MIM:606659;gbkey=exon;gene=TIMM8B;inference=alignment:Splign:2.1.0
+NM_012459.4	RefSeq	polyA_site	435	435	.	+	.	ID=id-TIMM8B-3;Parent=gene-TIMM8B;Dbxref=GeneID:26521,HGNC:HGNC:11818,MIM:606659;Note=major polyA site;gbkey=polyA_site;gene=TIMM8B
+NM_012459.4	RefSeq	polyA_site	751	751	.	+	.	ID=id-TIMM8B-4;Parent=gene-TIMM8B;Dbxref=GeneID:26521,HGNC:HGNC:11818,MIM:606659;gbkey=polyA_site;gene=TIMM8B
+NM_012459.4	RefSeq	polyA_signal_sequence	414	419	.	+	.	ID=id-TIMM8B-5;Parent=gene-TIMM8B;Dbxref=GeneID:26521,HGNC:HGNC:11818,MIM:606659;Note=hexamer: AGTAAA;gbkey=regulatory;gene=TIMM8B;regulatory_class=polyA_signal_sequence
+NM_012459.4	RefSeq	polyA_signal_sequence	712	717	.	+	.	ID=id-TIMM8B-6;Parent=gene-TIMM8B;Dbxref=GeneID:26521,HGNC:HGNC:11818,MIM:606659;Note=hexamer: AACAAA;gbkey=regulatory;gene=TIMM8B;regulatory_class=polyA_signal_sequence
+
+

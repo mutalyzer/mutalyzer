@@ -87,3 +87,19 @@ def corrected_sequence(original, corrected):
         "code": "CORRECTEDSEQUENCE",
         "details": f'Sequence "{original}" corrected to "{corrected}".',
     }
+
+
+def variant_discarded(path):
+    return {
+        "code": "IVARIANTDISCARDED",
+        "details": "Variant discarded.",
+        "paths": [path],
+    }
+
+
+def splice_site_removed(path):
+    return {
+        "code": "ISPLICESITEREMOVED",
+        "details": "Splice(s) sites removed.",
+        "paths": [path],
+    }
