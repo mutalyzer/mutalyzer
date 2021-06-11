@@ -788,7 +788,8 @@ class Description(object):
             seq_ref = slice_sequence(v_i["location"], sequences["reference"])
             seq_del = construct_sequence(v_i[ins_or_del], sequences)
             if self.corrected_model["coordinate_system"] == "r":
-                seq_del = str(Seq(seq_del).back_transcribe().upper())
+                seq_del = str(Seq(seq_del).transcribe().lower())
+                seq_ref = str(Seq(seq_ref).transcribe().lower())
             if seq_del and seq_ref and seq_del != seq_ref:
                 if self.is_inverted():
                     seq_del = reverse_complement(seq_del)
@@ -824,7 +825,7 @@ class Description(object):
                     if seq_lower != seq:
                         self._add_info(infos.corrected_sequence(seq, seq_lower))
                     if not is_rna(seq_lower):
-                        self._add_error(errors.no_dna(seq_lower, path))
+                        self._add_error(errors.no_rna(seq_lower, path))
                     seq_lower = str(Seq(seq).back_transcribe()).upper()
                     # set_by_path(self.corrected_model, path, seq_lower)
                     if self.is_inverted():
@@ -899,7 +900,7 @@ class Description(object):
     def _rna(self):
         if self.corrected_model["coordinate_system"] == "r":
             errors_splice, infos_splice = splice_sites(
-                self.delins_model["variants"],
+                self.internal_indexing_model["variants"],
                 self.get_sequences(),
                 self._get_selector_model(),
             )
@@ -908,15 +909,15 @@ class Description(object):
             if errors_splice:
                 return
 
-            variants = to_rna_variants(
-                self.delins_model["variants"],
+            self.internal_indexing_model["variants"] = to_rna_variants(
+                self.internal_indexing_model["variants"],
                 self.get_sequences(),
                 self._get_selector_model(),
             )
             rna_reference_model = to_rna_reference_model(
                 self.references["reference"], self._get_selector_id()
             )
-            self.delins_model["variants"] = variants
+            # self.delins_model["variants"] = variants
             self.references = {
                 get_reference_id(self.corrected_model): rna_reference_model,
                 "reference": rna_reference_model,
@@ -930,6 +931,7 @@ class Description(object):
         self._check_and_correct_sequences()
 
         self.check()
+        self._rna()
 
         if self._only_equals() or self._no_operation():
             self.de_hgvs_internal_indexing_model = self.internal_indexing_model
@@ -941,7 +943,6 @@ class Description(object):
             self._construct_equivalent()
         else:
             self._construct_delins_model()
-            self._rna()
             self._mutate()
             self._extract()
             self._construct_de_hgvs_internal_indexing_model()

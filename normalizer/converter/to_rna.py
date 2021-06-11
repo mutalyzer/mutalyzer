@@ -28,7 +28,7 @@ from ..util import (
 from .to_hgvs_coordinates import genomic_to_point, reverse_strand_shift
 
 
-def to_rna_reference_model(reference_model, selector_id, transcribe=False):
+def to_rna_reference_model(reference_model, selector_id, transcribe=True):
     """
     Get the RNA reference model of the provided selector.
 
@@ -256,7 +256,7 @@ def to_rna_variants(variants, sequences, selector_model):
                         "sequence": get_inserted_sequence(variant, sequences),
                     }
                 ]
-    return trimmed_variants
+    return to_rna_sequences(trimmed_variants)
 
 
 def to_rna_sequences(model):
@@ -267,6 +267,7 @@ def to_rna_sequences(model):
     """
     for seq, path in yield_sub_model(model, ["sequence"]):
         set_by_path(model, path, str(Seq(seq).transcribe().lower()))
+    return model
 
 
 def _point_to_cds_coordinate(point, selector_model, crossmap):

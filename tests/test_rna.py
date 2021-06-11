@@ -799,6 +799,39 @@ TESTS = [
         "errors": [ESPLICESITE],
         "to_test": True,
     },
+    # ---- other
+    {
+        "keywords": [
+            "rna",
+            "substitution",
+            "mRNA",
+        ],
+        "input": "NM_003002.2:r.277g>u",
+        "errors": [
+            {
+                "code": "ESEQUENCEMISMATCH",
+                "details": "g not found in the reference sequence, found u instead.",
+                "paths": [["variants", 0, "deleted"]],
+            }
+        ],
+        "to_test": True,
+    },
+    {
+        "keywords": [
+            "rna",
+            "substitution",
+            "mRNA",
+        ],
+        "input": "NM_003002.2:r.277t>u",
+        "errors": [
+            {
+                "code": "ENORNA",
+                "details": "Sequence 't' is not an RNA sequence.",
+                "paths": [["variants", 0, "deleted", 0, "sequence"]],
+            }
+        ],
+        "to_test": True,
+    },
 ]
 
 
@@ -1312,7 +1345,7 @@ TESTS_VARIANTS = [
     (  # same exon
         [_variant(150, 180, "A")],
         [_variant(150, 180, "A")],
-        [_variant(15, 45, "A")],
+        [_variant(15, 45, "a")],
     ),
     (  # intron intron with insertion
         [_variant(10, 200, "A")],

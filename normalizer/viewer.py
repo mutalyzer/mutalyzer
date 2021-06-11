@@ -22,9 +22,10 @@ def shrink_seq(seq, limit=100, left=50, right=50):
 
 def view_variants(description, left=20, right=20):
     d = Description(description)
-    d.to_internal_indexing_model()
+    d.normalize()
     sequences = d.get_sequences()
     output = []
+    print(d.internal_indexing_model["variants"])
     for i, variant in enumerate(d.internal_indexing_model["variants"]):
         delins_variant = variant_to_delins(variant)
         if delins_variant is None:
@@ -82,4 +83,5 @@ def view_variants(description, left=20, right=20):
         output.append(details)
     if d.is_inverted():
         output.reverse()
+    print(output)
     return output

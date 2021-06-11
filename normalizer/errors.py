@@ -197,6 +197,14 @@ def no_dna(sequence, path):
     }
 
 
+def no_rna(sequence, path):
+    return {
+        "code": "ENORNA",
+        "details": "Sequence '{}' is not an RNA sequence.".format(sequence),
+        "paths": [path],
+    }
+
+
 def repeat_not_supported(variant, path):
     return {
         "code": "EREPEATUNSUPPORTED",

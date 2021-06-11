@@ -184,7 +184,9 @@ def map_description(
             raw_de_variants,
             {"reference": ref_seq1, "observed": ref_seq2},
         )
-        if [v for v in seq_variants if v not in variants]:
+        if not (len(seq_variants) == 1 and seq_variants[0]["type"] == "equal") and [
+            v for v in seq_variants if v not in variants
+        ]:
             return {
                 "errors": [{"code": "EMAPFILTER", "details": "Unsuccessful filtering."}]
             }
