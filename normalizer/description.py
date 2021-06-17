@@ -943,6 +943,12 @@ class Description(object):
                 {"reference": protein_sequence},
                 to_delins(self.internal_indexing_model)["variants"],
             )
+            self.references = copy.deepcopy(self.references)
+            self.references["reference"]["sequence"]["seq"] = protein_sequence
+            self.references[self.corrected_model["reference"]["id"]]["sequence"][
+                "seq"
+            ] = protein_sequence
+            self.references["observed"] = {"sequence": {"seq": observed_sequence}}
             reference_id = self.corrected_model["reference"]["id"]
             selector_id = (
                 "({})".format(self._get_selector_id())

@@ -25,7 +25,6 @@ def view_variants(description, left=20, right=20):
     d.normalize()
     sequences = d.get_sequences()
     output = []
-    print(d.internal_indexing_model["variants"])
     for i, variant in enumerate(d.internal_indexing_model["variants"]):
         delins_variant = variant_to_delins(variant)
         if delins_variant is None:
