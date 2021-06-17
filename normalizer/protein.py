@@ -374,7 +374,6 @@ def get_protein_description(variants, references, selector_model):
         pass
 
     cds_stop = len(mutate({"reference": cds_seq}, cds_variants))
-    print("----- cds_stop", cds_stop)
     description = protein_description(cds_stop, p_ref_seq, p_obs_seq)
 
     if len(cds_variants) > 1:

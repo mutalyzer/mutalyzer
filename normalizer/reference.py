@@ -472,7 +472,6 @@ def coordinate_system_from_mol_type(mol_type):
 
 def get_coordinate_system_from_selector_id(model, selector_id):
     selector = get_selector_feature(model["annotations"], selector_id)
-    print(selector)
     return coordinate_system_from_mol_type(selector.get("type"))
 
 

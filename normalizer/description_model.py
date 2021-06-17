@@ -231,10 +231,12 @@ def model_to_string(model, exclude_superfluous_selector=True):
     else:
         coordinate_system = ""
     if isinstance(model.get("variants"), list):
-        if model.get("predicted"):
-            variants = "({})".format(variants_to_description(model["variants"]))
+        if model.get("type") == "description_protein":
+            variants = variants_to_description(model["variants"], True)
         else:
-            variants = variants_to_description(model["variants"])
+            variants = variants_to_description(model["variants"], False)
+        if model.get("predicted"):
+            variants = f"({variants})"
         return "{}:{}{}".format(reference, coordinate_system, variants)
     if model.get("location"):
         return "{}:{}{}".format(
@@ -242,7 +244,7 @@ def model_to_string(model, exclude_superfluous_selector=True):
         )
 
 
-def variants_to_description(variants):
+def variants_to_description(variants, protein=False):
     """
     Convert a list of variant models to string.
     :param variants: Variant models.
@@ -253,14 +255,14 @@ def variants_to_description(variants):
             return "="
         variants_list = []
         for variant in variants:
-            variants_list.append(variant_to_description(variant))
+            variants_list.append(variant_to_description(variant, protein))
         if len(variants_list) > 1:
             return "[{}]".format(";".join(variants_list))
         elif len(variants_list) == 1:
             return variants_list[0]
 
 
-def variant_to_description(variant):
+def variant_to_description(variant, protein=False):
     """
     Convert the variant dictionary model to string.
     :param variant: Variant model.
@@ -292,7 +294,9 @@ def variant_to_description(variant):
 
     variant_type = variant.get("type")
     if variant_type == "substitution":
-        variant_type = deleted + ">"
+        variant_type = deleted
+        if not protein:
+            variant_type += ">"
     elif variant_type == "deletion":
         variant_type = "del" + deleted
     elif variant_type == "deletion_insertion":

@@ -154,10 +154,8 @@ def points_to_internal_coordinates(model, references):
 
     internal_model = initialize_internal_model(model)
     crossmap = crossmap_to_internal_setup(coordinate_system, selector_model)
-    print(crossmap)
 
     for point, path in yield_point_locations_for_main_reference(model):
-        print(point)
         set_by_path(internal_model, path, point_to_internal(point, crossmap))
 
     # if selector_model and selector_model.get("inverted"):
@@ -187,7 +185,6 @@ def to_internal_coordinates(model, references):
         if selector_id
         else None
     )
-    print(selector_model)
 
     if selector_model and selector_model.get("inverted"):
         reverse_strand(internal_model)
