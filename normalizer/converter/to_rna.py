@@ -12,7 +12,7 @@ from ..description_model import (
 )
 from ..reference import (
     extract_feature_model,
-    get_selector_model,
+    get_internal_selector_model,
     slice_to_selector,
     yield_locations,
 )
@@ -57,7 +57,7 @@ def to_rna_reference_model(reference_model, selector_id, transcribe=True):
             else slice_to_selector(reference_model, selector_id)
         },
     }
-    s_m = get_selector_model(rna_model["annotations"], selector_id, True)
+    s_m = get_internal_selector_model(rna_model["annotations"], selector_id, True)
     x = NonCoding(s_m["exon"]).coordinate_to_noncoding
 
     new_start = x(s_m["exon"][0][0])[0] - 1

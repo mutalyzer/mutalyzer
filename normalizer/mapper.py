@@ -14,9 +14,9 @@ from .reference import (
     extract_feature_model,
     get_coordinate_system_from_reference,
     get_coordinate_system_from_selector_id,
-    get_feature,
+    get_internal_selector_model,
     get_reference_model,
-    get_selector_model,
+    get_selector_feature,
     retrieve_reference,
 )
 
@@ -34,7 +34,9 @@ def _get_gene_locations(r_model):
 
 
 def _yield_locations(r_model, selector_id):
-    for feature in get_feature(r_model["annotations"], selector_id)["features"]:
+    for feature in get_selector_feature(r_model["annotations"], selector_id)[
+        "features"
+    ]:
         if feature.get("location"):
             yield feature["location"], feature["type"]
 
@@ -58,7 +60,7 @@ def _get_reference_model(r_model, selector_id=None, slice_to=None):
         )
     }
     ref_seq = r_model["sequence"]["seq"]
-    s_model = get_selector_model(new_r_model["annotations"], selector_id, True)
+    s_model = get_internal_selector_model(new_r_model["annotations"], selector_id, True)
 
     if slice_to == "transcript":
         ref_seq = _slice_seq(ref_seq, s_model["exon"])
@@ -91,7 +93,7 @@ def _get_ref_seq(r_model, selector_id=None):
     """
     ref_seq = r_model["sequence"]["seq"]
     if selector_id:
-        s_model = get_selector_model(r_model, selector_id, True)
+        s_model = get_internal_selector_model(r_model, selector_id, True)
         if s_model["inverted"]:
             ref_seq = reverse_complement(ref_seq)
     return ref_seq
@@ -163,7 +165,7 @@ def map_description(
     ref_seq2 = d.references["reference"]["sequence"]["seq"]
 
     if selector_id:
-        s_model = get_selector_model(r_model["annotations"], selector_id, True)
+        s_model = get_internal_selector_model(r_model["annotations"], selector_id, True)
         if s_model is None:
             return {"errors": [no_selector_found(reference_id, selector_id, [])]}
         if s_model["inverted"]:

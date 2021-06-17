@@ -12,7 +12,7 @@ from ..description_model import (
 from ..reference import (
     get_coordinate_system_from_reference,
     get_coordinate_system_from_selector_id,
-    get_selector_model,
+    get_internal_selector_model,
 )
 from ..util import set_by_path
 
@@ -65,7 +65,7 @@ def point_to_internal(point, crossmap):
 
 
 def crossmap_to_internal_setup(coordinate_system, selector_model=None):
-    if coordinate_system == "g":
+    if coordinate_system in ["g", "p"]:
         crossmap = Genomic()
         return {
             "crossmap_function": crossmap.genomic_to_coordinate,
@@ -145,15 +145,19 @@ def points_to_internal_coordinates(model, references):
     coordinate_system = get_coordinate_system(model, references)
     selector_id = get_selector_id(model)
     selector_model = (
-        get_selector_model(references[reference_id]["annotations"], selector_id, True)
+        get_internal_selector_model(
+            references[reference_id]["annotations"], selector_id, True
+        )
         if selector_id
         else None
     )
 
     internal_model = initialize_internal_model(model)
     crossmap = crossmap_to_internal_setup(coordinate_system, selector_model)
+    print(crossmap)
 
     for point, path in yield_point_locations_for_main_reference(model):
+        print(point)
         set_by_path(internal_model, path, point_to_internal(point, crossmap))
 
     # if selector_model and selector_model.get("inverted"):
@@ -177,10 +181,13 @@ def to_internal_coordinates(model, references):
     reference_id = get_reference_id(model)
     selector_id = get_selector_id(model)
     selector_model = (
-        get_selector_model(references[reference_id]["annotations"], selector_id, True)
+        get_internal_selector_model(
+            references[reference_id]["annotations"], selector_id, True
+        )
         if selector_id
         else None
     )
+    print(selector_model)
 
     if selector_model and selector_model.get("inverted"):
         reverse_strand(internal_model)

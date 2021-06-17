@@ -4,6 +4,7 @@ from Bio.Seq import Seq
 from extractor import describe_dna
 from mutalyzer_hgvs_parser import to_model
 from mutalyzer_hgvs_parser.exceptions import UnexpectedCharacter, UnexpectedEnd
+from mutalyzer_hgvs_parser.protein import parse_protein_to_model
 from mutalyzer_mutator import mutate
 from mutalyzer_mutator.util import reverse_complement
 
@@ -49,17 +50,18 @@ from .reference import (
     get_coordinate_system_from_selector_id,
     get_gene_selectors,
     get_gene_selectors_hgnc,
+    get_internal_selector_model,
     get_only_selector_id,
     get_protein_selector_model,
     get_reference_id_from_model,
     get_reference_mol_type,
-    get_selector_model,
     get_selectors_ids,
     get_sequence_length,
     is_only_one_selector,
     is_selector_in_reference,
     overlap_min_max,
     retrieve_reference,
+    slice_to_selector,
     yield_overlap_ids,
 )
 from .util import (
@@ -132,7 +134,7 @@ class Description(object):
     def _get_selector_model(self):
         selector_id = self._get_selector_id()
         if self.references and selector_id:
-            return get_selector_model(
+            return get_internal_selector_model(
                 self.references["reference"]["annotations"], selector_id, True
             )
 
@@ -149,7 +151,8 @@ class Description(object):
     @check_errors
     def _convert_description_to_model(self):
         try:
-            self.input_model = to_model(self.input_description)
+            # self.input_model = to_model(self.input_description)
+            self.input_model = parse_protein_to_model(self.input_description)
         except UnexpectedCharacter as e:
             self._add_error(errors.syntax_uc(e))
         except UnexpectedEnd as e:
@@ -864,10 +867,6 @@ class Description(object):
             self._add_error(errors.inserted_length())
 
     def to_internal_indexing_model(self):
-        self.retrieve_references()
-
-        self.pre_conversion_checks()
-
         self._construct_internal_coordinate_model()
         self._construct_internal_indexing_model()
 
@@ -923,35 +922,45 @@ class Description(object):
                 "reference": rna_reference_model,
             }
 
+    def _normalize_protein(self):
+        if self._get_selector_id():
+            print(self._get_selector_id())
+            print(self._get_selector_model())
+
     def normalize(self):
+        self.retrieve_references()
+        self.pre_conversion_checks()
         self.to_internal_indexing_model()
 
-        self._correct_variants_type()
-        self._correct_points()
-        self._check_and_correct_sequences()
-
-        self.check()
-        self._rna()
-
-        if self._only_equals() or self._no_operation():
-            self.de_hgvs_internal_indexing_model = self.internal_indexing_model
-            self.references["observed"] = {
-                "sequence": {"seq": self.references["reference"]["sequence"]["seq"]}
-            }
-            self._construct_de_hgvs_coordinates_model()
-            self._construct_normalized_description()
-            self._construct_equivalent()
+        if self.corrected_model.get("type") == "description_protein":
+            self._normalize_protein()
         else:
-            self._construct_delins_model()
-            self._mutate()
-            self._extract()
-            self._construct_de_hgvs_internal_indexing_model()
-            self._construct_de_hgvs_coordinates_model()
-            self._construct_normalized_description()
-            self._construct_protein_description()
-            self._construct_rna_description()
-            self._construct_equivalent()
-        self._remove_superfluous_selector()
+            self._correct_variants_type()
+            self._correct_points()
+            self._check_and_correct_sequences()
+
+            self.check()
+            self._rna()
+
+            if self._only_equals() or self._no_operation():
+                self.de_hgvs_internal_indexing_model = self.internal_indexing_model
+                self.references["observed"] = {
+                    "sequence": {"seq": self.references["reference"]["sequence"]["seq"]}
+                }
+                self._construct_de_hgvs_coordinates_model()
+                self._construct_normalized_description()
+                self._construct_equivalent()
+            else:
+                self._construct_delins_model()
+                self._mutate()
+                self._extract()
+                self._construct_de_hgvs_internal_indexing_model()
+                self._construct_de_hgvs_coordinates_model()
+                self._construct_normalized_description()
+                self._construct_protein_description()
+                self._construct_rna_description()
+                self._construct_equivalent()
+            self._remove_superfluous_selector()
 
         self.print_models_summary()
 

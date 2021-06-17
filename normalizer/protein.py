@@ -308,6 +308,10 @@ def slice_seq(seq, slices, start=None, end=None):
     return output[start:end]
 
 
+def get_protein_observed_sequence():
+    pass
+
+
 def get_protein_description(variants, references, selector_model):
     """
     Retrieves the protein description.

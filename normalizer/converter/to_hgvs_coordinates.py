@@ -8,7 +8,10 @@ from ..description_model import (
     yield_point_locations_for_main_reference,
     yield_ranges_main_reference,
 )
-from ..reference import get_coordinate_system_from_selector_id, get_selector_model
+from ..reference import (
+    get_coordinate_system_from_selector_id,
+    get_internal_selector_model,
+)
 from ..util import get_start, set_by_path
 from .to_hgvs_indexing import to_hgvs_indexing
 from .to_internal_coordinates import get_coordinate_system
@@ -154,7 +157,7 @@ def to_hgvs_locations(
     reference_id = get_reference_id(model)
 
     if to_selector_id and selector_model is None:
-        selector_model = get_selector_model(
+        selector_model = get_internal_selector_model(
             references[reference_id]["annotations"], to_selector_id, True
         )
     if to_selector_id is None and selector_model:

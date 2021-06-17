@@ -10,7 +10,7 @@ from normalizer.converter.to_rna import (
     to_rna_variants,
 )
 from normalizer.name_checker import name_check
-from normalizer.reference import get_selector_model, retrieve_reference
+from normalizer.reference import get_internal_selector_model, retrieve_reference
 
 from .commons import code_in, patch_retriever
 
@@ -1389,7 +1389,7 @@ def test_trim_to_exons(variants, expected):
         "TEST_REF": retrieve_reference("TEST_REF"),
         "reference": retrieve_reference("TEST_REF"),
     }
-    selector_model = get_selector_model(
+    selector_model = get_internal_selector_model(
         retrieve_reference("TEST_REF")["annotations"], "NM_PLUS"
     )
 
@@ -1406,7 +1406,7 @@ def test_to_rna_variants(variants, expected):
         "TEST_REF": retrieve_reference("TEST_REF"),
         "reference": retrieve_reference("TEST_REF"),
     }
-    selector_model = get_selector_model(
+    selector_model = get_internal_selector_model(
         retrieve_reference("TEST_REF")["annotations"], "NM_PLUS"
     )
     # exons: [135, 189, 618, 1200]
@@ -1498,7 +1498,7 @@ def test_splice_sites(variant, error, info):
         "TEST_REF": retrieve_reference("TEST_REF"),
         "reference": retrieve_reference("TEST_REF"),
     }
-    selector_model = get_selector_model(
+    selector_model = get_internal_selector_model(
         retrieve_reference("TEST_REF")["annotations"], "NM_PLUS"
     )
     # exons: [135, 189, 618, 1200]
