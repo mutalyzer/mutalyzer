@@ -1,6 +1,7 @@
 import copy
 
 from Bio.Seq import Seq
+from Bio.SeqUtils import seq1, seq3
 from extractor import describe_dna
 from mutalyzer_hgvs_parser import to_model
 from mutalyzer_hgvs_parser.exceptions import UnexpectedCharacter, UnexpectedEnd
@@ -43,8 +44,14 @@ from .description_model import (
     yield_reference_selector_ids,
     yield_reference_selector_ids_coordinate_system,
     yield_sub_model,
+    yield_values,
 )
-from .protein import get_protein_description
+from .protein import (
+    get_protein_description,
+    get_protein_sequence,
+    in_frame_description,
+    protein_description,
+)
 from .reference import (
     get_coordinate_system_from_reference,
     get_coordinate_system_from_selector_id,
@@ -924,17 +931,40 @@ class Description(object):
 
     def _normalize_protein(self):
         if self._get_selector_id():
-            print(self._get_selector_id())
-            print(self._get_selector_model())
+            for sequence, path in yield_values(self.corrected_model, ["sequence"]):
+                seq_1a = str(seq1(sequence))
+                if sequence == str(seq3(seq_1a)):
+                    set_by_path(self.corrected_model, path, seq_1a)
+            self.to_internal_indexing_model()
+            protein_sequence = get_protein_sequence(
+                self.references["reference"], self._get_selector_model()
+            )
+            observed_sequence = mutate(
+                {"reference": protein_sequence},
+                to_delins(self.internal_indexing_model)["variants"],
+            )
+            reference_id = self.corrected_model["reference"]["id"]
+            selector_id = (
+                "({})".format(self._get_selector_id())
+                if self._get_selector_id()
+                else ""
+            )
+            p_description = "{}{}:{}".format(
+                reference_id,
+                selector_id,
+                in_frame_description(protein_sequence, observed_sequence)[0],
+            )
+            self.de_hgvs_model = parse_protein_to_model(p_description)
+            self.normalized_description = model_to_string(self.de_hgvs_model)
 
     def normalize(self):
         self.retrieve_references()
         self.pre_conversion_checks()
-        self.to_internal_indexing_model()
 
         if self.corrected_model.get("type") == "description_protein":
             self._normalize_protein()
         else:
+            self.to_internal_indexing_model()
             self._correct_variants_type()
             self._correct_points()
             self._check_and_correct_sequences()

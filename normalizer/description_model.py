@@ -178,6 +178,17 @@ def yield_sub_model(model, keys, types=None, path=[]):
             yield from yield_sub_model(sub_model, keys, types, path + [i])
 
 
+def yield_values(model, keys, path=[]):
+    if isinstance(model, dict):
+        for k in model.keys():
+            if k in keys:
+                yield model[k], path + [k]
+            yield from yield_values(model[k], keys, path + [k])
+    elif isinstance(model, list):
+        for i, sub_model in enumerate(model):
+            yield from yield_values(sub_model, keys, path + [i])
+
+
 def get_locations_min_max(model):
     """
     Get the minimum and maximum positions from all the locations present in
@@ -220,9 +231,11 @@ def model_to_string(model, exclude_superfluous_selector=True):
     else:
         coordinate_system = ""
     if isinstance(model.get("variants"), list):
-        return "{}:{}{}".format(
-            reference, coordinate_system, variants_to_description(model.get("variants"))
-        )
+        if model.get("predicted"):
+            variants = "({})".format(variants_to_description(model["variants"]))
+        else:
+            variants = variants_to_description(model["variants"])
+        return "{}:{}{}".format(reference, coordinate_system, variants)
     if model.get("location"):
         return "{}:{}{}".format(
             reference, coordinate_system, location_to_description(model.get("location"))
@@ -354,6 +367,10 @@ def point_to_description(point):
     :return: Equivalent position string representation.
     """
     outside_cds = offset = ""
+    if point.get("sequence"):
+        sequence = point.get("sequence")
+    else:
+        sequence = ""
     if point.get("outside_cds"):
         if point["outside_cds"] == "downstream":
             outside_cds = "*"
@@ -371,7 +388,7 @@ def point_to_description(point):
                 offset = "-?"
             elif point["offset"].get("downstream"):
                 offset = "+?"
-    return "{}{}{}".format(outside_cds, position, offset)
+    return "{}{}{}{}".format(sequence, outside_cds, position, offset)
 
 
 def length_to_description(length):
