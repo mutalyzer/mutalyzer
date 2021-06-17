@@ -93,14 +93,14 @@ def in_frame_description(s1, s2):
 
     if s1 == s2:
         # Nothing happened.
-        return ("p.(=)", 0, 0, 0)
+        return "p.(=)", 0, 0, 0
 
     lcp = len(longest_common_prefix(s1, s2))
     lcs = len(longest_common_suffix(s1[lcp:], s2[lcp:]))
     s1_end = len(s1) - lcs
     s2_end = len(s2) - lcs
 
-    # Insertion / Duplication / Extention.
+    # Insertion / Duplication / Extension.
     if not s1_end - lcp:
         if len(s1) == lcp:
             # http://www.hgvs.org/mutnomen/FAQ.html#nostop
@@ -312,6 +312,16 @@ def get_protein_observed_sequence():
     pass
 
 
+def get_protein_sequence(reference_model, selector_model):
+    exons = selector_model["exon"]
+    cds = [selector_model["cds"][0][0], selector_model["cds"][0][1]]
+    dna_ref_seq = reference_model["sequence"]["seq"]
+    cds_seq = slice_seq(dna_ref_seq, exons, cds[0], cds[1])
+    if selector_model["inverted"]:
+        cds_seq = reverse_complement(cds_seq)
+    return str(Seq(cds_seq).translate())
+
+
 def get_protein_description(variants, references, selector_model):
     """
     Retrieves the protein description.
@@ -364,6 +374,7 @@ def get_protein_description(variants, references, selector_model):
         pass
 
     cds_stop = len(mutate({"reference": cds_seq}, cds_variants))
+    print("----- cds_stop", cds_stop)
     description = protein_description(cds_stop, p_ref_seq, p_obs_seq)
 
     if len(cds_variants) > 1:
