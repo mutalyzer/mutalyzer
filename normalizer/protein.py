@@ -308,10 +308,6 @@ def slice_seq(seq, slices, start=None, end=None):
     return output[start:end]
 
 
-def get_protein_observed_sequence():
-    pass
-
-
 def get_protein_sequence(reference_model, selector_model):
     exons = selector_model["exon"]
     cds = [selector_model["cds"][0][0], selector_model["cds"][0][1]]
@@ -320,6 +316,10 @@ def get_protein_sequence(reference_model, selector_model):
     if selector_model["inverted"]:
         cds_seq = reverse_complement(cds_seq)
     return str(Seq(cds_seq).translate())
+
+
+def get_protein_references(references, selector_model):
+    pass
 
 
 def get_protein_description(variants, references, selector_model):

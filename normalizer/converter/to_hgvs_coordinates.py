@@ -69,7 +69,7 @@ def crossmap_to_hgvs_setup(coordinate_system, selector_model=None, degenerate=Fa
     Returns a crossmap instance able to convert from the internal system
     to the to hgvs system.
     """
-    if coordinate_system == "g":
+    if coordinate_system in ["g", "p"]:
         crossmap = Genomic()
         return {
             "crossmap_function": crossmap.coordinate_to_genomic,
