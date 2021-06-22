@@ -347,7 +347,7 @@ class Description(object):
                     )
             else:
                 r_c_s = get_coordinate_system_from_reference(self.references[r_id])
-                if not ((r_c_s == c_s) and (c_s in ["g", "m"])):
+                if not ((r_c_s == c_s) and (c_s in ["g", "m", "p"])):
                     if is_only_one_selector(self.references[r_id]):
                         self._correct_selector_id_from_coordinate_system(
                             r_id,
@@ -930,58 +930,67 @@ class Description(object):
             }
 
     def _normalize_protein(self):
+        reference_id = self.corrected_model["reference"]["id"]
+        # Convert amino acids to one letter code
+        for sequence, path in yield_values(
+            self.corrected_model, ["sequence", "amino_acid"]
+        ):
+            seq_1a = str(seq1(sequence))
+            seq_3a = str(seq3(sequence))
+            if sequence == str(seq3(seq_1a)):
+                set_by_path(self.corrected_model, path, seq_1a)
+            elif sequence != str(seq1(seq_3a)):
+                self._add_error(
+                    {
+                        "code": "EAA",
+                        "details": f"Sequence '{sequence}' could not be converted to one letter code.",
+                    }
+                )
+                return
         if self._get_selector_id():
-            # Convert amino acids to one letter code
-            for sequence, path in yield_values(self.corrected_model, ["sequence"]):
-                seq_1a = str(seq1(sequence))
-                seq_3a = str(seq3(sequence))
-                if sequence == str(seq3(seq_1a)):
-                    set_by_path(self.corrected_model, path, seq_1a)
-                elif sequence != str(seq1(seq_3a)):
-                    self._add_error(
-                        {
-                            "code": "EAA",
-                            "details": f"Sequence '{sequence}' could not be converted to one letter code.",
-                        }
-                    )
-                    return
             # Convert references to protein model
             p_seq = get_protein_sequence(
                 self.references["reference"], self._get_selector_model()
             )
-            reference_id = self.corrected_model["reference"]["id"]
             self.references = copy.deepcopy(self.references)
             self.references["reference"]["sequence"]["seq"] = p_seq
             self.references[reference_id]["sequence"]["seq"] = p_seq
 
-            self.to_internal_indexing_model()
+        self.to_internal_indexing_model()
+        self._correct_variants_type()
+        self._check_and_correct_sequences()
+        self.check()
+        if self.errors:
+            return
 
-            if self._only_equals() or self._no_operation():
-                self.de_hgvs_model = self.corrected_model
-                self.references["observed"] = {
-                    "sequence": {"seq": self.references["reference"]["sequence"]["seq"]}
-                }
-                for sequence, path in yield_values(self.corrected_model, ["sequence"]):
-                    seq_3a = str(seq3(sequence))
-                    set_by_path(self.corrected_model, path, seq_3a)
-            else:
-                observed_sequence = mutate(
-                    {"reference": p_seq},
-                    to_delins(self.internal_indexing_model)["variants"],
-                )
-                self.references["observed"] = {"sequence": {"seq": observed_sequence}}
-                selector_id = (
-                    "({})".format(self._get_selector_id())
-                    if self._get_selector_id()
-                    else ""
-                )
-                p_description = "{}{}:{}".format(
-                    reference_id,
-                    selector_id,
-                    in_frame_description(p_seq, observed_sequence)[0],
-                )
-                self.de_hgvs_model = parse_protein_to_model(p_description)
-            self.normalized_description = model_to_string(self.de_hgvs_model)
+        if self._only_equals() or self._no_operation():
+            self.de_hgvs_model = self.corrected_model
+            self.references["observed"] = {
+                "sequence": {"seq": self.references["reference"]["sequence"]["seq"]}
+            }
+            for sequence, path in yield_values(self.corrected_model, ["sequence"]):
+                seq_3a = str(seq3(sequence))
+                set_by_path(self.corrected_model, path, seq_3a)
+        else:
+            observed_sequence = mutate(
+                self.get_sequences(),
+                to_delins(self.internal_indexing_model)["variants"],
+            )
+            self.references["observed"] = {"sequence": {"seq": observed_sequence}}
+            selector_id = (
+                "({})".format(self._get_selector_id())
+                if self._get_selector_id()
+                else ""
+            )
+            p_description = "{}{}:{}".format(
+                reference_id,
+                selector_id,
+                in_frame_description(
+                    self.references["reference"]["sequence"]["seq"], observed_sequence
+                )[0],
+            )
+            self.de_hgvs_model = parse_protein_to_model(p_description)
+        self.normalized_description = model_to_string(self.de_hgvs_model)
 
     def normalize(self):
         self.retrieve_references()

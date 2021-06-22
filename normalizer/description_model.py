@@ -371,8 +371,8 @@ def point_to_description(point):
     :return: Equivalent position string representation.
     """
     outside_cds = offset = ""
-    if point.get("sequence"):
-        sequence = point.get("sequence")
+    if point.get("amino_acid"):
+        sequence = point.get("amino_acid")
     else:
         sequence = ""
     if point.get("outside_cds"):
