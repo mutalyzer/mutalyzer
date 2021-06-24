@@ -82,5 +82,4 @@ def view_variants(description, left=20, right=20):
         output.append(details)
     if d.is_inverted():
         output.reverse()
-    print(output)
     return output
