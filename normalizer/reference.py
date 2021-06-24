@@ -253,6 +253,12 @@ def get_internal_selector_model(reference_annotations, selector_id, fix_exon=Fal
         cds_sub_feature_model = _get_cds_id(feature_model)
         if cds_sub_feature_model:
             output["cds_id"] = cds_sub_feature_model["id"]
+            if cds_sub_feature_model.get("qualifiers") and cds_sub_feature_model[
+                "qualifiers"
+            ].get("translation_exception"):
+                output["translation_exception"] = cds_sub_feature_model["qualifiers"][
+                    "translation_exception"
+                ]
         if feature_model["type"] == "CDS":
             parent_model = get_feature_parent(
                 reference_annotations, feature_model["id"]

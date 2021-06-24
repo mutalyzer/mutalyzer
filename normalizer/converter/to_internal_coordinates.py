@@ -61,6 +61,8 @@ def point_to_coding(point, crossmap_function, point_function, inverted=False):
 
 def point_to_internal(point, crossmap):
     new_point = point_to_coding(point, **crossmap)
+    if point.get("amino_acid"):
+        new_point["amino_acid"] = point["amino_acid"]
     return new_point
 
 

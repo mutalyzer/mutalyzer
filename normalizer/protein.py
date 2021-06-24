@@ -1,10 +1,12 @@
 from Bio.Seq import Seq
 from Bio.SeqUtils import seq3
+from mutalyzer_crossmapper import Coding
 from mutalyzer_mutator import mutate
 from mutalyzer_mutator.util import reverse_complement
 
 from .converter import to_rna_protein_coordinates
 from .reference import extract_sequences
+from .util import get_start
 
 
 def longest_common_prefix(s1, s2):
@@ -315,7 +317,14 @@ def get_protein_sequence(reference_model, selector_model):
     cds_seq = slice_seq(dna_ref_seq, exons, cds[0], cds[1])
     if selector_model["inverted"]:
         cds_seq = reverse_complement(cds_seq)
-    return str(Seq(cds_seq).translate())
+    seq = list(str(Seq(cds_seq).translate()))
+    if selector_model.get("translation_exception"):
+        x = Coding(
+            selector_model["exon"], selector_model["cds"][0], selector_model["inverted"]
+        )
+        for t_e in selector_model.get("translation_exception")["exceptions"]:
+            seq[x.coordinate_to_protein(get_start(t_e))[0] - 1] = t_e["amino_acid"]
+    return "".join(seq)
 
 
 def get_protein_references(references, selector_model):

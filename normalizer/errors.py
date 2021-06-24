@@ -189,6 +189,16 @@ def sequence_mismatch(reference_sequence, deleted_sequence, path):
     }
 
 
+def amino_acid_mismatch(description_aa, reference_aa, path):
+    return {
+        "code": "EAMINOACIDMISMATCH",
+        "details": "{} not found in the reference sequence, found {} instead.".format(
+            description_aa, reference_aa
+        ),
+        "paths": [path],
+    }
+
+
 def no_dna(sequence, path):
     return {
         "code": "ENODNA",

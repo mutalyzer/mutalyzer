@@ -5,7 +5,6 @@ from Bio.SeqUtils import seq1, seq3
 from extractor import describe_dna
 from mutalyzer_hgvs_parser import to_model
 from mutalyzer_hgvs_parser.exceptions import UnexpectedCharacter, UnexpectedEnd
-from mutalyzer_hgvs_parser.protein import parse_protein_to_model
 from mutalyzer_mutator import mutate
 from mutalyzer_mutator.util import reverse_complement
 
@@ -158,8 +157,7 @@ class Description(object):
     @check_errors
     def _convert_description_to_model(self):
         try:
-            # self.input_model = to_model(self.input_description)
-            self.input_model = parse_protein_to_model(self.input_description)
+            self.input_model = to_model(self.input_description)
         except UnexpectedCharacter as e:
             self._add_error(errors.syntax_uc(e))
         except UnexpectedEnd as e:
@@ -619,6 +617,20 @@ class Description(object):
             rna_model["coordinate_system"] = "r"
             self.rna = {"description": model_to_string(rna_model)}
 
+    def _get_reference_id(self, model, path):
+        ref_id = get_reference_id(model)
+        for ins_or_del in ["inserted", "deleted"]:
+            if ins_or_del in path:
+                ins_or_del_ref = get_reference_id(
+                    get_submodel_by_path(
+                        model,
+                        path[: path.index(ins_or_del) + 2],
+                    )
+                )
+                if ins_or_del_ref:
+                    ref_id = ins_or_del_ref
+        return ref_id
+
     def _check_location_boundaries(self):
         for point, path in yield_sub_model(
             self.internal_coordinates_model, ["location", "start", "end"], ["point"]
@@ -809,7 +821,9 @@ class Description(object):
 
     @check_errors
     def _check_and_correct_sequences(self):
-        for seq, path in yield_sub_model(self.corrected_model, ["sequence"]):
+        for seq, path in yield_sub_model(
+            self.corrected_model, ["sequence", "amino_acid"]
+        ):
             if self.corrected_model["coordinate_system"] in ["g", "c", "n"]:
                 if seq.upper() != seq:
                     self._add_info(infos.corrected_sequence(seq, seq.upper()))
@@ -844,9 +858,28 @@ class Description(object):
                     set_by_path(self.internal_indexing_model, path, seq_lower)
 
     @check_errors
+    def _check_location_amino_acids(self):
+        sequences = self.get_sequences()
+        for point, path in yield_sub_model(
+            self.internal_coordinates_model, ["location", "start", "end"], ["point"]
+        ):
+            ref_id = self._get_reference_id(self.internal_indexing_model, path)
+            if (
+                point.get("amino_acid")
+                and point.get("position")
+                and sequences[ref_id][point["position"]] != point["amino_acid"]
+            ):
+                self._add_error(
+                    errors.amino_acid_mismatch(
+                        point["amino_acid"], sequences[ref_id][point["position"]], path
+                    )
+                )
+
+    @check_errors
     def check(self):
         self._check_location_boundaries()
         self._check_location_range()
+        self._check_location_amino_acids()
         for i, v in enumerate(self.internal_coordinates_model["variants"]):
             if v.get("deleted"):
                 self._check_superfluous(["variants", i, "deleted"])
@@ -968,7 +1001,9 @@ class Description(object):
             self.references["observed"] = {
                 "sequence": {"seq": self.references["reference"]["sequence"]["seq"]}
             }
-            for sequence, path in yield_values(self.corrected_model, ["sequence"]):
+            for sequence, path in yield_values(
+                self.corrected_model, ["sequence", "amino_acid"]
+            ):
                 seq_3a = str(seq3(sequence))
                 set_by_path(self.corrected_model, path, seq_3a)
         else:
@@ -989,7 +1024,7 @@ class Description(object):
                     self.references["reference"]["sequence"]["seq"], observed_sequence
                 )[0],
             )
-            self.de_hgvs_model = parse_protein_to_model(p_description)
+            self.de_hgvs_model = to_model(p_description)
         self.normalized_description = model_to_string(self.de_hgvs_model)
 
     def normalize(self):
