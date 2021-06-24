@@ -35,6 +35,66 @@ TESTS = [
         "normalized": "NG_012337.1(NP_002993.1):p.(Asp92Tyr)",
         "to_test": True,
     },
+    {
+        "keywords": [
+            "protein",
+            "delins",
+            "substitution",
+            "mRNA",
+            "translation exception",
+        ],
+        "input": "NM_005410.4:p.U59delinsTyr",
+        "normalized": "NM_005410.4:p.(Sec59Tyr)",
+        "to_test": True,
+    },
+    {
+        "keywords": ["protein", "delins", "mRNA", "translation exception", "error"],
+        "input": "NM_005410.4:p.D59delinsA",
+        "errors": [
+            {
+                "code": "EAMINOACIDMISMATCH",
+                "details": "D not found in the reference sequence, found U instead.",
+                "paths": [["variants", 0, "location"]],
+            }
+        ],
+        "to_test": True,
+    },
+    {
+        "keywords": [
+            "protein",
+            "delins",
+            "mRNA",
+            "reference insertion",
+            "translation exception",
+        ],
+        "input": "NM_005410.4:p.U59delinsNP_002993.1:H50_53",
+        "normalized": "NM_005410.4:p.(Sec59delinsHisLeuSerPro)",
+        "to_test": True,
+    },
+    {
+        "keywords": [
+            "protein",
+            "delins",
+            "mRNA",
+            "reference insertion",
+            "translation exception",
+            "error",
+        ],
+        "input": "NM_005410.4:p.D59delinsNP_002993.1:Asp50_53",
+        "errors": [
+            {
+                "code": "EAMINOACIDMISMATCH",
+                "details": "D not found in the reference sequence, found U instead.",
+                "paths": [["variants", 0, "location"]],
+            },
+            {
+                "code": "EAMINOACIDMISMATCH",
+                "details": "D not found in the reference sequence, found H instead.",
+                "paths": [["variants", 0, "inserted", 0, "location", "start"]],
+            },
+        ],
+        "to_test": True,
+    },
 ]
 
 
@@ -56,3 +116,12 @@ def get_tests(tests, t_type):
 def test_protein(input_description, normalized):
     d = name_check(input_description)
     assert d["normalized_description"] == normalized
+
+
+@pytest.mark.parametrize(
+    "input_description, errors",
+    get_tests(TESTS, "errors"),
+)
+def test_protein_errors(input_description, errors):
+    d = name_check(input_description)
+    assert d.get("errors") == errors
