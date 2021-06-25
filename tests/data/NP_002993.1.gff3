@@ -1,0 +1,17 @@
+##sequence-region NP_002993.1 1 159
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=9606
+NP_002993.1	RefSeq	region	1	159	.	+	.	ID=NP_002993.1:1..159;Dbxref=taxon:9606;Name=11;chromosome=11;gbkey=Src;genome=genomic;map=11q23.1;mol_type=unassigned
+NP_002993.1	RefSeq	polypeptide	1	159	.	+	.	ID=id-NP_002993.1:1..159;calculated_mol_wt=17043;gbkey=Prot;product=succinate dehydrogenase [ubiquinone] cytochrome b small subunit%2C mitochondrial isoform a precursor
+NP_002993.1	RefSeq	transit_peptide	1	56	.	+	.	ID=id-NP_002993.1:1..56;Note=Mitochondrion. /evidence%3DECO:0000255%3B propagated from UniProtKB/Swiss-Prot (O14521.1);calculated_mol_wt=6172;gbkey=Prot
+NP_002993.1	RefSeq	mature_protein_region	57	159	.	+	.	ID=id-NP_002993.1:57..159;Note=propagated from UniProtKB/Swiss-Prot (O14521.1);calculated_mol_wt=10889;gbkey=Prot;product=Succinate dehydrogenase [ubiquinone] cytochrome b small subunit%2C mitochondrial. /id%3DPRO_0000006487
+NP_002993.1	RefSeq	biological_region	60	158	.	+	.	ID=id-NP_002993.1:60..158;Dbxref=CDD:239576;Name=SQR_TypeC_CybS;Note=SQR catalyzes the oxidation of succinate to fumarate coupled to the reduction of quinone to quinol. Eukaryotic SQRs reduce high potential quinones such as ubiquinone. SQR is also called succinate dehydrogenase or Complex II%2C and is part of the citric ...;gbkey=Region
+NP_002993.1	RefSeq	region	60	116	.	+	.	ID=id-NP_002993.1:60..116;Dbxref=CDD:239576;Note=Iron-sulfur protein interface;gbkey=Site;is_ordered=true
+NP_002993.1	RefSeq	region	64	85	.	+	.	ID=id-NP_002993.1:64..85;Note=propagated from UniProtKB/Swiss-Prot (O14521.1);gbkey=Site
+NP_002993.1	RefSeq	region	70	157	.	+	.	ID=id-NP_002993.1:70..157;Dbxref=CDD:239576;Note=CybL subunit interface [polypeptide binding];gbkey=Site;is_ordered=true
+NP_002993.1	RefSeq	region	83	157	.	+	.	ID=id-NP_002993.1:83..157;Dbxref=CDD:239576;Note=distal quinone binding site [chemical binding];gbkey=Site;is_ordered=true
+NP_002993.1	RefSeq	region	91	111	.	+	.	ID=id-NP_002993.1:91..111;Note=propagated from UniProtKB/Swiss-Prot (O14521.1);gbkey=Site
+NP_002993.1	RefSeq	region	102	106	.	+	.	ID=id-NP_002993.1:102..106;Dbxref=CDD:239576;Note=proximal heme binding site [chemical binding];gbkey=Site;is_ordered=true
+NP_002993.1	RefSeq	region	114	114	.	+	.	ID=id-NP_002993.1:114..114;Dbxref=CDD:239576;Note=proximal quinone binding site [chemical binding];gbkey=Site
+NP_002993.1	RefSeq	region	121	142	.	+	.	ID=id-NP_002993.1:121..142;Note=propagated from UniProtKB/Swiss-Prot (O14521.1);gbkey=Site
+
+
