@@ -207,7 +207,7 @@ def get_locations_min_max(model):
         return None, None
 
 
-def model_to_string(model, exclude_superfluous_selector=True):
+def model_to_string(model, exclude_superfluous_selector=True, aa="verbatim"):
     """
     Convert the variant description model to string.
     :param exclude_superfluous_selector: Do not include the selector_id
@@ -244,7 +244,7 @@ def model_to_string(model, exclude_superfluous_selector=True):
         )
 
 
-def variants_to_description(variants, protein=False):
+def variants_to_description(variants, protein=False, aa="verbatim"):
     """
     Convert a list of variant models to string.
     :param variants: Variant models.
@@ -262,7 +262,7 @@ def variants_to_description(variants, protein=False):
             return variants_list[0]
 
 
-def variant_to_description(variant, protein=False):
+def variant_to_description(variant, protein=False, aa="verbatim"):
     """
     Convert the variant dictionary model to string.
     :param variant: Variant model.
@@ -317,7 +317,7 @@ def variant_to_description(variant, protein=False):
     return "{}{}{}".format(deleted_location, variant_type, inserted)
 
 
-def inserted_to_description(inserted):
+def inserted_to_description(inserted, aa="verbatim"):
     """
     Convert the inserted dictionary model to string.
     :param inserted: Inserted dictionary model.
@@ -343,7 +343,7 @@ def inserted_to_description(inserted):
         return descriptions[0]
 
 
-def location_to_description(location):
+def location_to_description(location, aa="verbatim"):
     """
     Convert the location dictionary model to string.
     :param location: Location dictionary.
@@ -364,7 +364,7 @@ def location_to_description(location):
             )
 
 
-def point_to_description(point):
+def point_to_description(point, aa="verbatim"):
     """
     Convert the position dictionary model to string.
     :param point: Position dictionary.

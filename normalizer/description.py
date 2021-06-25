@@ -18,7 +18,7 @@ from .checker import (
     is_overlap,
     splice_sites,
 )
-from .converter.extras import convert_selector_model
+from .converter.extras import convert_amino_acids, convert_selector_model
 from .converter.to_delins import to_delins, variants_to_delins
 from .converter.to_hgvs_coordinates import (
     crossmap_to_hgvs_setup,
@@ -962,24 +962,30 @@ class Description(object):
                 "reference": rna_reference_model,
             }
 
-    def _normalize_protein(self):
-        reference_id = self.corrected_model["reference"]["id"]
-        # Convert amino acids to one letter code
+    def _check_amino_acids(self):
         for sequence, path in yield_values(
             self.corrected_model, ["sequence", "amino_acid"]
         ):
             seq_1a = str(seq1(sequence))
             seq_3a = str(seq3(sequence))
-            if sequence == str(seq3(seq_1a)):
-                set_by_path(self.corrected_model, path, seq_1a)
-            elif sequence != str(seq1(seq_3a)):
+            if not ((sequence == str(seq3(seq_1a))) != (sequence == str(seq1(seq_3a)))):
                 self._add_error(
                     {
                         "code": "EAA",
-                        "details": f"Sequence '{sequence}' could not be converted to one letter code.",
+                        "details": f"Sequence '{sequence}' is a mix of 1 and 3 letter amino acids.",
                     }
                 )
-                return
+
+    @check_errors
+    def _convert_amino_acids(self):
+        convert_amino_acids(self.internal_indexing_model, "1a")
+        convert_amino_acids(self.internal_coordinates_model, "1a")
+
+    def _normalize_protein(self):
+        reference_id = self.corrected_model["reference"]["id"]
+        self._check_amino_acids()
+        if self.errors:
+            return
         if self._get_selector_id():
             # Convert references to protein model
             p_seq = get_protein_sequence(
@@ -990,6 +996,7 @@ class Description(object):
             self.references[reference_id]["sequence"]["seq"] = p_seq
 
         self.to_internal_indexing_model()
+        self._convert_amino_acids()
         self._correct_variants_type()
         self._check_and_correct_sequences()
         self.check()
@@ -997,15 +1004,12 @@ class Description(object):
             return
 
         if self._only_equals() or self._no_operation():
-            self.de_hgvs_model = self.corrected_model
+            self.de_hgvs_model = copy.deepcopy(self.corrected_model)
+            convert_amino_acids(self.de_hgvs_model, "1a")
+            convert_amino_acids(self.de_hgvs_model, "3a")
             self.references["observed"] = {
                 "sequence": {"seq": self.references["reference"]["sequence"]["seq"]}
             }
-            for sequence, path in yield_values(
-                self.corrected_model, ["sequence", "amino_acid"]
-            ):
-                seq_3a = str(seq3(sequence))
-                set_by_path(self.corrected_model, path, seq_3a)
         else:
             observed_sequence = mutate(
                 self.get_sequences(),
@@ -1026,6 +1030,9 @@ class Description(object):
             )
             self.de_hgvs_model = to_model(p_description)
         self.normalized_description = model_to_string(self.de_hgvs_model)
+        equivalent_1a_model = copy.deepcopy(self.de_hgvs_model)
+        convert_amino_acids(equivalent_1a_model, "1a")
+        self.equivalent = {"p": [model_to_string(equivalent_1a_model)]}
 
     def normalize(self):
         self.retrieve_references()
