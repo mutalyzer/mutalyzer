@@ -60,6 +60,18 @@ TESTS = [
         "to_test": True,
     },
     {
+        "keywords": ["protein", "delins", "protein", "translation exception", "error"],
+        "input": "NP_005401.3:p.D59delinsA",
+        "errors": [
+            {
+                "code": "EAMINOACIDMISMATCH",
+                "details": "D not found in the reference sequence, found U instead.",
+                "paths": [["variants", 0, "location"]],
+            }
+        ],
+        "to_test": True,
+    },
+    {
         "keywords": [
             "protein",
             "delins",

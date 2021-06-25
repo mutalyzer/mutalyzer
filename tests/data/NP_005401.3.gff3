@@ -1,0 +1,19 @@
+##sequence-region NP_005401.3 1 381
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=9606
+NP_005401.3	RefSeq	region	1	381	.	+	.	ID=NP_005401.3:1..381;Dbxref=taxon:9606;Name=5;chromosome=5;gbkey=Src;genome=genomic;map=5p12;mol_type=unassigned
+NP_005401.3	RefSeq	polypeptide	1	381	.	+	.	ID=id-NP_005401.3:1..381;calculated_mol_wt=43174;gbkey=Prot;product=selenoprotein P isoform 1 precursor
+NP_005401.3	RefSeq	signal_peptide	1	21	.	+	.	ID=id-NP_005401.3:1..21;calculated_mol_wt=2176;gbkey=Prot;inference=COORDINATES: ab initio prediction:SignalP:4.0
+NP_005401.3	RefSeq	biological_region	23	243	.	+	.	ID=id-NP_005401.3:23..243;Dbxref=CDD:282453;Name=SelP_N;Note=Selenoprotein P%2C N terminal region;gbkey=Region
+NP_005401.3	RefSeq	region	59	59	.	+	.	ID=id-NP_005401.3:59..59;Note=Selenocysteine;gbkey=Site
+NP_005401.3	RefSeq	biological_region	251	381	.	+	.	ID=id-NP_005401.3:251..381;Dbxref=CDD:282454;Name=SelP_C;Note=Selenoprotein P%2C C terminal region;gbkey=Region
+NP_005401.3	RefSeq	region	300	300	.	+	.	ID=id-NP_005401.3:300..300;Note=Selenocysteine;gbkey=Site
+NP_005401.3	RefSeq	region	318	318	.	+	.	ID=id-NP_005401.3:318..318;Note=Selenocysteine;gbkey=Site
+NP_005401.3	RefSeq	region	330	330	.	+	.	ID=id-NP_005401.3:330..330;Note=Selenocysteine;gbkey=Site
+NP_005401.3	RefSeq	region	345	345	.	+	.	ID=id-NP_005401.3:345..345;Note=Selenocysteine;gbkey=Site
+NP_005401.3	RefSeq	region	352	352	.	+	.	ID=id-NP_005401.3:352..352;Note=Selenocysteine;gbkey=Site
+NP_005401.3	RefSeq	region	367	367	.	+	.	ID=id-NP_005401.3:367..367;Note=Selenocysteine;gbkey=Site
+NP_005401.3	RefSeq	region	369	369	.	+	.	ID=id-NP_005401.3:369..369;Note=Selenocysteine;gbkey=Site
+NP_005401.3	RefSeq	region	376	376	.	+	.	ID=id-NP_005401.3:376..376;Note=Selenocysteine;gbkey=Site
+NP_005401.3	RefSeq	region	378	378	.	+	.	ID=id-NP_005401.3:378..378;Note=Selenocysteine;gbkey=Site
+
+
