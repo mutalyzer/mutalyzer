@@ -976,6 +976,15 @@ class Description(object):
                     }
                 )
 
+    def _check_supported_variants(self, model):
+        for i, variant in enumerate(model["variants"]):
+            if variant.get("type") in ["frame_shift", "extension"]:
+                self._add_error(
+                    errors.variant_not_supported(
+                        variant, variant["type"], ["variants", i]
+                    )
+                )
+
     @check_errors
     def _convert_amino_acids(self):
         convert_amino_acids(self.internal_indexing_model, "1a")
@@ -1000,6 +1009,8 @@ class Description(object):
         self._correct_variants_type()
         self._check_and_correct_sequences()
         self.check()
+        self._check_supported_variants(self.corrected_model)
+
         if self.errors:
             return
 

@@ -225,6 +225,16 @@ def repeat_not_supported(variant, path):
     }
 
 
+def variant_not_supported(variant, variant_type, path):
+    return {
+        "code": "EVARIANTNOTSUPPORTED",
+        "details": "Variant '{}' type '{}' not supported.".format(
+            variant_to_description(variant), variant_type
+        ),
+        "paths": [path],
+    }
+
+
 def uncertain():
     return {"code": "EUNCERTAIN", "details": "Uncertainties present in locations."}
 
