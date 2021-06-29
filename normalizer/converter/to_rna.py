@@ -64,19 +64,14 @@ def to_rna_reference_model(reference_model, selector_id, transcribe=True):
     new_end = x(s_m["exon"][-1][-1])[0]
     for location, f_type in yield_locations(rna_model["annotations"]):
         if f_type == "CDS":
-            if s_m.get("inverted"):
-                shift_end = -1
-            else:
-                shift_end = 0
             set_start(location, x(get_start(location))[0] - 1)
-            set_end(location, x(get_end(location))[0] + shift_end)
+            set_end(location, x(get_end(location))[0] - 1)
         elif f_type == "exon":
             set_start(location, x(get_start(location))[0] - 1)
             set_end(location, x(get_end(location))[0] + x(get_end(location))[1] - 1)
         else:
             set_start(location, new_start)
             set_end(location, new_end)
-
     return rna_model
 
 

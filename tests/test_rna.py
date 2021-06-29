@@ -958,7 +958,7 @@ def test_rna_infos(input_description, infos):
                                                 },
                                                 "end": {
                                                     "type": "point",
-                                                    "position": 563,
+                                                    "position": 562,
                                                 },
                                                 "strand": 1,
                                             },
