@@ -55,12 +55,14 @@ TESTS = [
         "keywords": ["rna", "substitution", "genomic", "mRNA"],
         "input": "NG_012337.1(NM_003002.2):r.275a>c",
         "normalized": "NG_012337.1(NM_003002.2):r.275a>c",
+        "protein_description": "NG_012337.1(NP_002993.1):p.(Asp92Ala)",
         "to_test": True,
     },
     {
         "keywords": ["rna", "substitution", "mRNA"],
         "input": "NM_003002.2:r.275a>c",
         "normalized": "NM_003002.2:r.275a>c",
+        "protein_description": "NM_003002.2(NP_002993.1):p.(Asp92Ala)",
         "to_test": True,
     },
     {
@@ -73,6 +75,7 @@ TESTS = [
         "keywords": ["rna", "deletion", "genomic", "mRNA"],
         "input": "NG_012337.1(NM_003002.2):r.273del",
         "normalized": "NG_012337.1(NM_003002.2):r.274del",
+        "protein_description": "NG_012337.1(NP_002993.1):p.(Asp92Thrfs*43)",
         "to_test": True,
     },
     {
@@ -85,18 +88,21 @@ TESTS = [
         "keywords": ["rna", "deletion", "mRNA", "same exon"],
         "input": "NM_003002.4:r.-30_40del",
         "normalized": "NM_003002.4:r.-30_40del",
+        "protein_description": "NM_003002.4(NP_002993.1):p.?",
         "to_test": True,
     },
     {
         "keywords": ["rna", "deletion", "genomic", "mRNA", "same exon", "minus strand"],
         "input": "NG_012337.3(NM_012459.4):r.-30_40del",
         "normalized": "NG_012337.3(NM_012459.4):r.-30_40del",
+        "protein_description": "NG_012337.3(NP_036591.3):p.?",
         "to_test": True,
     },
     {
         "keywords": ["rna", "deletion", "mRNA", "same exon"],
         "input": "NM_012459.4:r.-30_40del",
         "normalized": "NM_012459.4:r.-30_40del",
+        "protein_description": "NM_012459.4(NP_036591.3):p.?",
         "to_test": True,
     },
     {
@@ -110,6 +116,7 @@ TESTS = [
         ],
         "input": "NG_012337.3(NM_003002.4):r.-30_40delinsAAA",
         "normalized": "NG_012337.3(NM_003002.4):r.-30_40delinsaaa",
+        "protein_description": "NG_012337.3(NP_002993.1):p.?",
         "infos": [CORRECTEDSEQUENCE],
         "to_test": True,
     },
@@ -117,6 +124,7 @@ TESTS = [
         "keywords": ["rna", "deletion insertion", "mRNA", "same exon"],
         "input": "NM_003002.4:r.-30_40delinsAAA",
         "normalized": "NM_003002.4:r.-30_40delinsaaa",
+        "protein_description": "NM_003002.4(NP_002993.1):p.?",
         "infos": [CORRECTEDSEQUENCE],
         "to_test": True,
     },
@@ -131,6 +139,7 @@ TESTS = [
         ],
         "input": "NG_012337.3(NM_012459.4):r.-30_40delinsAAA",
         "normalized": "NG_012337.3(NM_012459.4):r.-30_40delinsaaa",
+        "protein_description": "NG_012337.3(NP_036591.3):p.?",
         "infos": [CORRECTEDSEQUENCE],
         "to_test": True,
     },
@@ -138,6 +147,7 @@ TESTS = [
         "keywords": ["rna", "deletion insertion", "mRNA", "same exon"],
         "input": "NM_012459.4:r.-30_40delinsAAA",
         "normalized": "NM_012459.4:r.-30_40delinsaaa",
+        "protein_description": "NM_012459.4(NP_036591.3):p.?",
         "infos": [CORRECTEDSEQUENCE],
         "to_test": True,
     },
@@ -152,6 +162,7 @@ TESTS = [
         ],
         "input": "NG_012337.3(NM_003002.4):r.-30_200del",
         "normalized": "NG_012337.3(NM_003002.4):r.-30_200del",
+        "protein_description": "NG_012337.3(NP_002993.1):p.?",
         "infos": [ISPLICESITEREMOVED],
         "to_test": True,
     },
@@ -159,6 +170,7 @@ TESTS = [
         "keywords": ["rna", "deletion", "mRNA", "exon - exon"],
         "input": "NM_003002.4:r.-30_200del",
         "normalized": "NM_003002.4:r.-30_200del",
+        "protein_description": "NM_003002.4(NP_002993.1):p.?",
         "to_test": True,
     },
     {
@@ -172,6 +184,7 @@ TESTS = [
         ],
         "input": "NG_012337.3(NM_012459.4):r.-30_200del",
         "normalized": "NG_012337.3(NM_012459.4):r.-29_201del",
+        "protein_description": "NG_012337.3(NP_036591.3):p.?",
         "infos": [ISPLICESITEREMOVED],
         "to_test": True,
     },
@@ -179,6 +192,7 @@ TESTS = [
         "keywords": ["rna", "deletion", "mRNA", "exon - exon"],
         "input": "NM_012459.4:r.-30_200del",
         "normalized": "NM_012459.4:r.-29_201del",
+        "protein_description": "NM_012459.4(NP_036591.3):p.?",
         "to_test": True,
     },
     {
@@ -199,6 +213,7 @@ TESTS = [
         "keywords": ["rna", "deletion insertion", "mRNA", "exon - exon"],
         "input": "NM_003002.4:r.-30_200delinsAAA",
         "normalized": "NM_003002.4:r.-30_200delinsaaa",
+        "protein_description": "NM_003002.4(NP_002993.1):p.?",
         "infos": [CORRECTEDSEQUENCE],
         "to_test": True,
     },
@@ -220,6 +235,7 @@ TESTS = [
         "keywords": ["rna", "deletion insertion", "mRNA", "exon - exon"],
         "input": "NM_012459.4:r.-30_200delinsAAA",
         "normalized": "NM_012459.4:r.-30_200delinsaaa",
+        "protein_description": "NM_012459.4(NP_036591.3):p.?",
         "infos": [CORRECTEDSEQUENCE],
         "to_test": True,
     },
@@ -754,6 +770,7 @@ TESTS = [
         ],
         "input": "NG_012337.3(NM_003002.4):r.52+8_169+8del",
         "normalized": "NG_012337.3(NM_003002.4):r.55_171del",
+        "protein_description": "NG_012337.3(NP_002993.1):p.(Leu19_Ser57del)",
         "infos": [ISPLICESITEREMOVED],
         "to_test": True,
     },
@@ -839,7 +856,7 @@ def get_tests(tests, t_type):
     output = []
     for test in tests:
         if test.get("to_test"):
-            if test.get(t_type):
+            if test.get(t_type) is not None:
                 output.append((test["input"], test[t_type]))
             else:
                 output.append((test["input"], None))
@@ -871,6 +888,18 @@ def test_rna_errors(input_description, errors):
 def test_rna_infos(input_description, infos):
     d = name_check(input_description)
     assert d.get("infos") == infos
+
+
+@pytest.mark.parametrize(
+    "input_description, protein_description",
+    get_tests(TESTS, "protein_description"),
+)
+def test_rna_protein(input_description, protein_description):
+
+    normalized_output = name_check(input_description)
+    if protein_description is not None:
+        normalizer_protein = normalized_output["protein"]["description"]
+        assert normalizer_protein == protein_description
 
 
 @pytest.mark.parametrize(
