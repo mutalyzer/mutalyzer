@@ -453,6 +453,8 @@ class Description(object):
                     self.get_sequences(),
                 ),
             }
+            if self.corrected_model.get("predicted"):
+                self.de_hgvs_internal_indexing_model["predicted"] = True
 
     @check_errors
     def _construct_de_hgvs_coordinates_model(self):
@@ -615,6 +617,7 @@ class Description(object):
                 True,
             )
             rna_model["coordinate_system"] = "r"
+            rna_model["predicted"] = True
             self.rna = {"description": model_to_string(rna_model)}
 
     def _get_reference_id(self, model, path):
