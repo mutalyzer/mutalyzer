@@ -137,7 +137,7 @@ class Description(object):
         if self.corrected_model:
             return get_selector_id(self.corrected_model)
 
-    def _get_selector_model(self):
+    def get_selector_model(self):
         selector_id = self._get_selector_id()
         if self.references and selector_id:
             return get_internal_selector_model(
@@ -145,7 +145,7 @@ class Description(object):
             )
 
     def is_inverted(self):
-        selector_model = self._get_selector_model()
+        selector_model = self.get_selector_model()
         if (
             selector_model
             and selector_model.get("location")
@@ -338,7 +338,8 @@ class Description(object):
                     self.references[r_id], s_id
                 )
                 if c_s_s != c_s and not (
-                    (c_s_s == "c" and c_s == "r") or (c_s_s == "n" and c_s == "r")
+                    (c_s_s == "c" and c_s in ["r", "p"])
+                    or (c_s_s == "n" and c_s == "r")
                 ):
                     self._add_error(
                         errors.coordinate_system_mismatch(c_s, s_id, c_s_s, c_s_path)
@@ -383,10 +384,10 @@ class Description(object):
     @check_errors
     def _correct_points(self):
         c_s = get_coordinate_system(self.corrected_model, self.references)
-        crossmap_to = crossmap_to_internal_setup(c_s, self._get_selector_model())
+        crossmap_to = crossmap_to_internal_setup(c_s, self.get_selector_model())
         crossmap_from = crossmap_to_hgvs_setup(
             c_s,
-            self._get_selector_model(),
+            self.get_selector_model(),
             degenerate=True,
         )
 
@@ -581,7 +582,7 @@ class Description(object):
             errors_splice, infos_splice = splice_sites(
                 variants_to_delins(self.de_hgvs_internal_indexing_model["variants"]),
                 self.get_sequences(),
-                self._get_selector_model(),
+                self.get_selector_model(),
             )
             if infos_splice:
                 self.rna["infos"] = infos_splice
@@ -592,7 +593,7 @@ class Description(object):
             rna_variants_coordinate = to_rna_variants(
                 variants_to_delins(self.de_hgvs_internal_indexing_model["variants"]),
                 self.get_sequences(),
-                self._get_selector_model(),
+                self.get_selector_model(),
             )
             rna_reference_model = to_rna_reference_model(
                 self.references["reference"], self._get_selector_id()
@@ -944,7 +945,7 @@ class Description(object):
             errors_splice, infos_splice = splice_sites(
                 self.internal_indexing_model["variants"],
                 self.get_sequences(),
-                self._get_selector_model(),
+                self.get_selector_model(),
             )
             self.infos += infos_splice
             self.errors += errors_splice
@@ -954,7 +955,7 @@ class Description(object):
             self.internal_indexing_model["variants"] = to_rna_variants(
                 self.internal_indexing_model["variants"],
                 self.get_sequences(),
-                self._get_selector_model(),
+                self.get_selector_model(),
             )
             rna_reference_model = to_rna_reference_model(
                 self.references["reference"], self._get_selector_id()
@@ -1001,7 +1002,7 @@ class Description(object):
         if self._get_selector_id():
             # Convert references to protein model
             p_seq = get_protein_sequence(
-                self.references["reference"], self._get_selector_model()
+                self.references["reference"], self.get_selector_model()
             )
             self.references = copy.deepcopy(self.references)
             self.references["reference"]["sequence"]["seq"] = p_seq
@@ -1106,10 +1107,8 @@ class Description(object):
             output["errors"] = self.errors
         if self.infos:
             output["infos"] = self.infos
-        if self._get_selector_model():
-            output["selector_short"] = convert_selector_model(
-                self._get_selector_model()
-            )
+        if self.get_selector_model():
+            output["selector_short"] = convert_selector_model(self.get_selector_model())
         return output
 
     def print_models_summary(self):
