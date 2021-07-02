@@ -1,8 +1,10 @@
 import copy
+import itertools
 
 from Bio.Seq import Seq
 from Bio.SeqUtils import seq1, seq3
 from extractor import describe_dna
+from mutalyzer_backtranslate import BackTranslate
 from mutalyzer_hgvs_parser import to_model
 from mutalyzer_hgvs_parser.exceptions import UnexpectedCharacter, UnexpectedEnd
 from mutalyzer_mutator import mutate
@@ -114,6 +116,7 @@ class Description(object):
         self.references = {}
 
         self.equivalent = []
+        self.back_translated_descriptions = []
 
     def _check_input(self):
         if self.input_description and not self.input_model:
@@ -994,6 +997,50 @@ class Description(object):
         convert_amino_acids(self.internal_indexing_model, "1a")
         convert_amino_acids(self.internal_coordinates_model, "1a")
 
+    def _back_translate(self):
+        if not self._get_selector_id():
+            return
+        cds_seq = slice_to_selector(
+            retrieve_reference(get_reference_id(self.corrected_model)),
+            self._get_selector_id(),
+            True,
+            True,
+        )
+        bt = BackTranslate()
+        translated_vars = []
+        for variant in self.internal_indexing_model["variants"]:
+            if variant.get("type") == "substitution":
+                cds_start = get_start(variant) * 3
+                cds_end = get_end(variant) * 3
+                bt_options = bt.with_dna(
+                    cds_seq[cds_start:cds_end],
+                    variant["inserted"][0]["sequence"],
+                )
+                dna_var_options = []
+                for offset in bt_options:
+                    for v in bt_options[offset]:
+                        dna_var_options.append(
+                            "{}{}>{}".format(cds_start + offset + 1, v[0], v[1])
+                        )
+                translated_vars.append(dna_var_options)
+            else:
+                # TODO: Add error message.
+                return []
+        if self._get_selector_id() == get_reference_id(self.corrected_model):
+            reference = "{}".format(get_reference_id(self.corrected_model))
+        else:
+            reference = "{}({})".format(
+                get_reference_id(self.corrected_model),
+                self.get_selector_model()["mrna_id"],
+            )
+        bt_descriptions = []
+        for t in itertools.product(*translated_vars):
+            if len(t) > 1:
+                bt_descriptions.append("{}:c.([{}])".format(reference, ";".join(t)))
+            elif len(t) == 1:
+                bt_descriptions.append("{}:c.({})".format(reference, t[0]))
+        self.back_translated_descriptions = bt_descriptions
+
     def _normalize_protein(self):
         reference_id = self.corrected_model["reference"]["id"]
         self._check_amino_acids()
@@ -1048,6 +1095,7 @@ class Description(object):
         equivalent_1a_model = copy.deepcopy(self.de_hgvs_model)
         convert_amino_acids(equivalent_1a_model, "1a")
         self.equivalent = {"p": [model_to_string(equivalent_1a_model)]}
+        self._back_translate()
 
     def normalize(self):
         self.retrieve_references()
@@ -1109,6 +1157,8 @@ class Description(object):
             output["infos"] = self.infos
         if self.get_selector_model():
             output["selector_short"] = convert_selector_model(self.get_selector_model())
+        if self.back_translated_descriptions:
+            output["back_translated_descriptions"] = self.back_translated_descriptions
         return output
 
     def print_models_summary(self):

@@ -71,7 +71,6 @@ def back_translate(description):
         return []
     translated_descriptions = []
     for t in itertools.product(*translated_vars):
-        print(t)
         if len(t) > 1:
             translated_descriptions.append("{}:c.([{}])".format(reference, ";".join(t)))
         elif len(t) == 1:

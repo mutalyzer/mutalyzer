@@ -242,7 +242,6 @@ def get_internal_selector_model(reference_annotations, selector_id, fix_exon=Fal
     The model includes the selector type.
     :return: Dictionary.
     """
-    print(selector_id)
     feature_model = get_selector_feature(reference_annotations, selector_id)
     if feature_model:
         output = {
