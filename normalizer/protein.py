@@ -384,8 +384,9 @@ def get_protein_description(variants, references, selector_model):
 
     cds_stop = len(mutate({"reference": cds_seq}, cds_variants))
     description = protein_description(cds_stop, p_ref_seq, p_obs_seq)
-
-    if len(cds_variants) > 1:
+    print(cds_variants)
+    print(description)
+    if len(cds_variants) > 1 and "*" in description[0]:
         # TODO: This seems to happen in M2. Check why.
         return (
             "{}({}):{}".format(ref_id, protein_id, "p.?"),

@@ -1830,6 +1830,14 @@ M2_TESTS = [
         "protein_description": "NG_012337.1(NP_036591.2):p.(Arg2_Lys3insSer)",
         "to_test": True,
     },
+    {
+        "keywords": ["protein"],
+        "input": "LRG_199t1:c.235_237delinsTAT",
+        "genomic": "LRG_199:g.[499798A>T;499800G>T]",
+        "normalized": "LRG_199(t1):c.[235A>T;237G>T]",
+        "protein_description": "LRG_199(p1):p.(Lys79Tyr)",
+        "to_test": True,
+    },
     # All the IVS/EX tests are not any longer relevant.
 ]
 
