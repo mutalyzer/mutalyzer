@@ -849,6 +849,21 @@ TESTS = [
         ],
         "to_test": True,
     },
+    {
+        "keywords": [
+            "rna",
+            "allele",
+        ],
+        "input": "NG_012337.1(NM_003002.2):r.([274g>u;278u>g])",
+        "errors": [
+            {
+                "code": "ESEQUENCEMISMATCH",
+                "details": "u not found in the reference sequence, found a instead.",
+                "paths": [["variants", 1, "deleted"]],
+            }
+        ],
+        "to_test": True,
+    },
 ]
 
 
