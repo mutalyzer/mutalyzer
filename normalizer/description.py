@@ -601,14 +601,21 @@ class Description(object):
             rna_reference_model = to_rna_reference_model(
                 self.references["reference"], self._get_selector_id()
             )
-            rna_variants_coordinate = de_to_hgvs(
-                rna_variants_coordinate, self.get_sequences()
-            )
-            to_rna_sequences(rna_variants_coordinate)
             rna_references = {
                 get_reference_id(self.corrected_model): rna_reference_model,
                 "reference": rna_reference_model,
             }
+            rna_variants_coordinate = de_to_hgvs(
+                rna_variants_coordinate,
+                {
+                    k: str(
+                        Seq(rna_references[k]["sequence"]["seq"]).transcribe().lower()
+                    )
+                    for k in rna_references
+                },
+            )
+            to_rna_sequences(rna_variants_coordinate)
+
             rna_model = to_hgvs_locations(
                 {
                     "reference": self.de_hgvs_internal_indexing_model["reference"],

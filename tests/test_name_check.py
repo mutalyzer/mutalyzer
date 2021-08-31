@@ -70,6 +70,18 @@ def test_protein_equivalent(input_description, coding_protein_descriptions):
     assert coding_protein_descriptions.issubset(normalizer_descriptions)
 
 
+@pytest.mark.parametrize(
+    "input_description, rna_description",
+    get_tests(TESTS_ALL, "rna_description"),
+)
+def test_rna(input_description, rna_description):
+
+    normalized_output = name_check(input_description)
+    normalizer_protein = normalized_output["rna"]["description"]
+
+    assert normalizer_protein == rna_description
+
+
 @pytest.mark.parametrize("input_description, codes", get_tests(TESTS_ALL, "errors"))
 def test_errors(input_description, codes):
     assert codes == [error["code"] for error in name_check(input_description)["errors"]]
