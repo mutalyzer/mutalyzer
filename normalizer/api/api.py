@@ -12,7 +12,6 @@ from .map import ns as ns_map
 from .name_check import ns as ns_name_check
 from .position_convert import ns as ns_position_convert
 from .reference_model import ns as ns_reference_model
-from .syntax_check import ns as ns_syntax_check
 from .view_variants import ns as ns_view_variants
 
 logging.basicConfig(level=logging.INFO, filename=log_dir())
@@ -41,7 +40,6 @@ blueprint = Blueprint("api", __name__)
 api = PatchedApi(blueprint, version="1.0", title="Mutalyzer3 API")
 
 api.add_namespace(ns_map)
-api.add_namespace(ns_syntax_check)
 api.add_namespace(ns_name_check)
 api.add_namespace(ns_description_to_mdel)
 api.add_namespace(ns_reference_model)
