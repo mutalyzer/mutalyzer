@@ -4,6 +4,7 @@ from flask import Blueprint, url_for
 from flask_restx import Api, apidoc
 
 from ..util import log_dir
+from .back_translate import ns as ns_back_translate
 from .description_extract import ns as ns_description_extract
 from .description_to_model import ns as ns_description_to_mdel
 from .get_selectors import ns as ns_get_selectors
@@ -48,3 +49,4 @@ api.add_namespace(ns_position_convert)
 api.add_namespace(ns_description_extract)
 api.add_namespace(ns_get_selectors)
 api.add_namespace(ns_view_variants)
+api.add_namespace(ns_back_translate)

@@ -189,10 +189,28 @@ def sequence_mismatch(reference_sequence, deleted_sequence, path):
     }
 
 
+def amino_acid_mismatch(description_aa, reference_aa, path):
+    return {
+        "code": "EAMINOACIDMISMATCH",
+        "details": "{} not found in the reference sequence, found {} instead.".format(
+            description_aa, reference_aa
+        ),
+        "paths": [path],
+    }
+
+
 def no_dna(sequence, path):
     return {
         "code": "ENODNA",
         "details": "Sequence '{}' is not a DNA sequence.".format(sequence),
+        "paths": [path],
+    }
+
+
+def no_rna(sequence, path):
+    return {
+        "code": "ENORNA",
+        "details": "Sequence '{}' is not an RNA sequence.".format(sequence),
         "paths": [path],
     }
 
@@ -202,6 +220,16 @@ def repeat_not_supported(variant, path):
         "code": "EREPEATUNSUPPORTED",
         "details": "Repeat variant {} not supported.".format(
             variant_to_description(variant)
+        ),
+        "paths": [path],
+    }
+
+
+def variant_not_supported(variant, variant_type, path):
+    return {
+        "code": "EVARIANTNOTSUPPORTED",
+        "details": "Variant '{}' type '{}' not supported.".format(
+            variant_to_description(variant), variant_type
         ),
         "paths": [path],
     }
@@ -256,4 +284,12 @@ def no_to_selector(reference_id, selector_id):
         "details": "No {} selector found in reference {}.".format(
             selector_id, reference_id
         ),
+    }
+
+
+def splice_site(path):
+    return {
+        "code": "ESPLICESITE",
+        "details": "Splice site(s) affected.",
+        "paths": [path],
     }

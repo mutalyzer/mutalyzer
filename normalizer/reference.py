@@ -1,3 +1,4 @@
+import bisect
 import copy
 import json
 from functools import lru_cache
@@ -9,10 +10,12 @@ from mutalyzer_retriever.retriever import NoReferenceError, NoReferenceRetrieved
 
 from .util import cache_dir, get_end, get_start, get_submodel_by_path
 
-SELECTOR_MOL_TYPES_TYPES = ["mRNA", "ncRNA"]
+SELECTOR_MOL_TYPES_TYPES = ["mRNA", "ncRNA", "CDS"]
+SELECTOR_FEATURE_TYPES = ["mRNA", "ncRNA", "CDS"]
 COORDINATE_C_MOL_TYPES_TYPES = ["mRNA"]
 COORDINATE_N_MOL_TYPES_TYPES = ["ncRNA", "transcribed RNA"]
 COORDINATE_G_MOL_TYPES_TYPES = ["dna", "genomic DNA", "DNA"]
+COORDINATE_P_MOL_TYPES_TYPES = ["CDS", "unassigned"]
 
 
 @lru_cache(maxsize=32)
@@ -35,7 +38,14 @@ def _update_ensembl_ids(r_m):
             _update_ensembl_ids(feature)
 
 
-def _update_ensembl_locations(r_m, shift):
+def update_locations(r_m, shift):
+    """
+    Update the locations of all the features in the model by subtracting
+    the shift value.
+
+    :param r_m: Reference model.
+    :param shift: Value to be subtracted from locations.
+    """
     if r_m.get("location"):
         if r_m["location"].get("start") and r_m["location"]["start"].get("position"):
             r_m["location"]["start"]["position"] -= shift
@@ -43,7 +53,7 @@ def _update_ensembl_locations(r_m, shift):
             r_m["location"]["end"]["position"] -= shift
     if r_m.get("features"):
         for feature in r_m["features"]:
-            _update_ensembl_locations(feature, shift)
+            update_locations(feature, shift)
 
 
 def _fix_ensembl(r_m, r_id):
@@ -64,7 +74,7 @@ def _fix_ensembl(r_m, r_id):
     if r_m["annotations"].get("qualifiers") is None:
         r_m["annotations"]["qualifiers"] = {}
     r_m["annotations"]["qualifiers"]["mol_type"] = "genomic DNA"
-    _update_ensembl_locations(
+    update_locations(
         r_m["annotations"], r_m["annotations"]["location"]["start"]["position"]
     )
     return r_m
@@ -181,27 +191,18 @@ def get_selectors_ids(reference_annotations, coordinate_system=None):
     return list(ids)
 
 
-def is_id_equal(feature, feature_id):
+def get_selector_feature(feature_model, feature_id):
     """
-    Runs a series of checks to identify if the feature has the provided ID.
+    Extract the feature model corresponding to the feature_id that
+    can act as a selector.
     """
-    if feature_id == feature["id"]:
-        return True
-    # if '-' in feature['id'] and feature_id == feature['id'].split('-')[1]:
-    #     return True
-    return False
-
-
-def get_feature(reference_annotations, feature_id):
-    """
-    Extract the feature model, if found, otherwise None.
-    """
-    if reference_annotations.get("features"):
-        for feature in reference_annotations["features"]:
-            if feature["type"] == "gene" and feature.get("features"):
-                for sub_feature in feature["features"]:
-                    if is_id_equal(sub_feature, feature_id):
-                        return sub_feature
+    for sub_feature_model in yield_feature_models(feature_model):
+        if (
+            sub_feature_model.get("id")
+            and sub_feature_model["id"] == feature_id
+            and sub_feature_model.get("type") in SELECTOR_FEATURE_TYPES
+        ):
+            return sub_feature_model
 
 
 def get_feature_locations(feature):
@@ -223,7 +224,17 @@ def sort_locations(locations):
     return sorted_locations
 
 
-def get_selector_model(reference_annotations, selector_id, fix_exon=False):
+def _get_cds_id(feature_model):
+    """
+    Get any CDS sub feature contained in the feature model. Assumes there is
+    only one such feature, otherwise it will return the first instance only.
+    """
+    for sub_feature_model in yield_feature_models(feature_model, False):
+        if sub_feature_model.get("type") == "CDS":
+            return sub_feature_model
+
+
+def get_internal_selector_model(reference_annotations, selector_id, fix_exon=False):
     """
     Searches for the appropriate selector model:
     - exons and cds for coding selectors;
@@ -231,15 +242,31 @@ def get_selector_model(reference_annotations, selector_id, fix_exon=False):
     The model includes the selector type.
     :return: Dictionary.
     """
-    feature = get_feature(reference_annotations, selector_id)
-    if feature:
+    feature_model = get_selector_feature(reference_annotations, selector_id)
+    if feature_model:
         output = {
             "id": selector_id,
-            "type": feature["type"],
-            "inverted": is_feature_inverted(feature),
-            "location": feature["location"],
+            "type": feature_model["type"],
+            "inverted": is_feature_inverted(feature_model),
+            "location": feature_model["location"],
         }
-        output.update(sort_locations(get_feature_locations(feature)))
+        cds_sub_feature_model = _get_cds_id(feature_model)
+        if cds_sub_feature_model:
+            output["cds_id"] = cds_sub_feature_model["id"]
+            if cds_sub_feature_model.get("qualifiers") and cds_sub_feature_model[
+                "qualifiers"
+            ].get("translation_exception"):
+                output["translation_exception"] = cds_sub_feature_model["qualifiers"][
+                    "translation_exception"
+                ]
+        if feature_model["type"] == "CDS":
+            parent_model = get_feature_parent(
+                reference_annotations, feature_model["id"]
+            )
+            output["mrna_id"] = parent_model["id"]
+            output.update(sort_locations(get_feature_locations(parent_model)))
+        else:
+            output.update(sort_locations(get_feature_locations(feature_model)))
         if fix_exon and output.get("exon") is None:
             output["exon"] = [(get_start(output), get_end(output))]
         return output
@@ -250,8 +277,8 @@ def get_available_selectors(reference_annotations, coordinate_system):
 
 
 def get_protein_selector_model(reference, selector_id):
-    selector_model = get_selector_model(reference, selector_id, True)
-    mrna = get_feature(reference, selector_id)
+    selector_model = get_internal_selector_model(reference, selector_id, True)
+    mrna = get_selector_feature(reference, selector_id)
     protein_ids = []
     if mrna.get("features"):
         for feature in mrna["features"]:
@@ -261,27 +288,6 @@ def get_protein_selector_model(reference, selector_id):
         selector_model["protein_id"] = protein_ids[0]
         selector_model["transcript_id"] = selector_id
         return selector_model
-
-
-def get_protein_selector_models(reference):
-    """
-
-    :param reference: Reference annotations model (not the sequence).
-    :return:
-    """
-    selector_ids = get_selectors_ids(reference, "c")
-    for selector_id in selector_ids[:20]:
-        selector_model = get_selector_model(reference, selector_id, True)
-        mrna = get_feature(reference, selector_id)
-        protein_ids = []
-        if mrna.get("features"):
-            for feature in mrna["features"]:
-                if feature["type"] == "CDS":
-                    protein_ids.append(feature["id"])
-        if len(protein_ids) == 1:
-            selector_model["protein_id"] = protein_ids[0]
-            selector_model["transcript_id"] = selector_id
-            yield selector_model
 
 
 def extract_reference_id(references):
@@ -345,12 +351,29 @@ def yield_gene_models(model):
 def yield_selector_ids(model):
     for selector in yield_selectors(model):
         yield selector["id"]
+        if selector["type"] == "mRNA" and selector.get("features"):
+            for s in selector["features"]:
+                if s["type"] == "CDS":
+                    yield s["id"]
 
 
 def yield_selector_ids_coordinate_system(model, coordinate_system):
     for selector in yield_selectors(model):
         if coordinate_system_from_mol_type(selector.get("type")) == coordinate_system:
             yield selector["id"]
+
+
+def yield_feature_models(feature_model, include_top=True):
+    if include_top:
+        yield feature_model
+    if feature_model.get("features"):
+        for sub_feature in feature_model["features"]:
+            yield from yield_feature_models(sub_feature)
+
+
+def get_feature_parent(feature_model, feature_id):
+    path = get_feature_path(feature_model, feature_id)
+    return get_submodel_by_path(feature_model, path[:-2])
 
 
 def is_overlap(selector, start, end):
@@ -398,14 +421,14 @@ def yield_overlap_ids(model, start, end):
                         yield selector
 
 
-def get_only_selector_id(model, coordinate_system):
-    for selector_id in yield_selector_ids_coordinate_system(model, coordinate_system):
+def get_only_selector_id(model):
+    for selector_id in yield_selector_ids(model):
         return selector_id
 
 
-def is_only_one_selector(model, coordinate_system):
+def is_only_one_selector(model):
     i = 0
-    for selector_id in yield_selector_ids_coordinate_system(model, coordinate_system):
+    for selector_id in yield_selectors(model):
         if i > 1:
             break
         i += 1
@@ -448,11 +471,13 @@ def coordinate_system_from_mol_type(mol_type):
         return "c"
     elif mol_type in COORDINATE_N_MOL_TYPES_TYPES:
         return "n"
+    elif mol_type in COORDINATE_P_MOL_TYPES_TYPES:
+        return "p"
     return None
 
 
 def get_coordinate_system_from_selector_id(model, selector_id):
-    selector = get_feature(model["annotations"], selector_id)
+    selector = get_selector_feature(model["annotations"], selector_id)
     return coordinate_system_from_mol_type(selector.get("type"))
 
 
@@ -467,12 +492,51 @@ def get_coordinate_system_from_reference(reference):
     return coordinate_system_from_mol_type(mol_type)
 
 
-def slice_to_selector(model, selector_id, strand=False):
-    s_m = get_selector_model(model["annotations"], selector_id)
+def _get_exons_and_cds(s_m):
+    exons = [e for l in s_m["exon"] for e in l]
+    cds = [s_m["cds"][0][0], s_m["cds"][0][1]]
+    return exons, cds
+
+
+def _get_cds_into_exons(s_m):
+    exons, cds = _get_exons_and_cds(s_m)
+    l_index = bisect.bisect_right(exons, cds[0])
+    r_index = bisect.bisect_left(exons, cds[1])
+    new_exons = [cds[0]] + exons[l_index:r_index] + [cds[1]]
+    return list(zip(new_exons[0::2], new_exons[1::2]))
+
+
+def slice_to_selector(model, selector_id, strand=False, include_cds=False):
+    """
+    Slice the reference model sequence according to the exons and cds
+    locations of the selector with the provided id.
+
+    :arg dict model: Reference model.
+    :arg str selector_id: Id of the selector containing the slice locations.
+    :arg int strand: Reverse complement the sequence if selector is inverted.
+    :arg bool include_cds: Slice according to the CDS.
+    :returns: Sequence slice.
+    :rtype: str
+    """
+    s_m = get_internal_selector_model(model["annotations"], selector_id, True)
     output = ""
-    for slice in s_m["exon"]:
-        output += model["sequence"]["seq"][slice[0] : slice[1]]
-    print(s_m)
+    slices = s_m["exon"]
+    if include_cds and s_m.get("cds"):
+        slices = _get_cds_into_exons(s_m)
+    for s in slices:
+        output += model["sequence"]["seq"][s[0] : s[1]]
     if strand and s_m["inverted"]:
         output = reverse_complement(output)
     return output
+
+
+def yield_locations(annotations):
+    """
+    All locations present in the annotations and the feature to which they
+    correspond.
+    """
+    if annotations.get("location"):
+        yield annotations["location"], annotations["type"]
+    if annotations.get("features"):
+        for feature in annotations["features"]:
+            yield from yield_locations(feature)

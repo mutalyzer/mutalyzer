@@ -178,6 +178,17 @@ def yield_sub_model(model, keys, types=None, path=[]):
             yield from yield_sub_model(sub_model, keys, types, path + [i])
 
 
+def yield_values(model, keys, path=[]):
+    if isinstance(model, dict):
+        for k in model.keys():
+            if k in keys:
+                yield model[k], path + [k]
+            yield from yield_values(model[k], keys, path + [k])
+    elif isinstance(model, list):
+        for i, sub_model in enumerate(model):
+            yield from yield_values(sub_model, keys, path + [i])
+
+
 def get_locations_min_max(model):
     """
     Get the minimum and maximum positions from all the locations present in
@@ -196,7 +207,7 @@ def get_locations_min_max(model):
         return None, None
 
 
-def model_to_string(model, exclude_superfluous_selector=True):
+def model_to_string(model, exclude_superfluous_selector=True, aa="verbatim"):
     """
     Convert the variant description model to string.
     :param exclude_superfluous_selector: Do not include the selector_id
@@ -220,16 +231,20 @@ def model_to_string(model, exclude_superfluous_selector=True):
     else:
         coordinate_system = ""
     if isinstance(model.get("variants"), list):
-        return "{}:{}{}".format(
-            reference, coordinate_system, variants_to_description(model.get("variants"))
-        )
+        if model.get("type") == "description_protein":
+            variants = variants_to_description(model["variants"], True)
+        else:
+            variants = variants_to_description(model["variants"], False)
+        if model.get("predicted"):
+            variants = f"({variants})"
+        return "{}:{}{}".format(reference, coordinate_system, variants)
     if model.get("location"):
         return "{}:{}{}".format(
             reference, coordinate_system, location_to_description(model.get("location"))
         )
 
 
-def variants_to_description(variants):
+def variants_to_description(variants, protein=False, aa="verbatim"):
     """
     Convert a list of variant models to string.
     :param variants: Variant models.
@@ -240,14 +255,14 @@ def variants_to_description(variants):
             return "="
         variants_list = []
         for variant in variants:
-            variants_list.append(variant_to_description(variant))
+            variants_list.append(variant_to_description(variant, protein))
         if len(variants_list) > 1:
             return "[{}]".format(";".join(variants_list))
         elif len(variants_list) == 1:
             return variants_list[0]
 
 
-def variant_to_description(variant):
+def variant_to_description(variant, protein=False, aa="verbatim"):
     """
     Convert the variant dictionary model to string.
     :param variant: Variant model.
@@ -279,7 +294,9 @@ def variant_to_description(variant):
 
     variant_type = variant.get("type")
     if variant_type == "substitution":
-        variant_type = deleted + ">"
+        variant_type = deleted
+        if not protein:
+            variant_type += ">"
     elif variant_type == "deletion":
         variant_type = "del" + deleted
     elif variant_type == "deletion_insertion":
@@ -300,7 +317,7 @@ def variant_to_description(variant):
     return "{}{}{}".format(deleted_location, variant_type, inserted)
 
 
-def inserted_to_description(inserted):
+def inserted_to_description(inserted, aa="verbatim"):
     """
     Convert the inserted dictionary model to string.
     :param inserted: Inserted dictionary model.
@@ -326,7 +343,7 @@ def inserted_to_description(inserted):
         return descriptions[0]
 
 
-def location_to_description(location):
+def location_to_description(location, aa="verbatim"):
     """
     Convert the location dictionary model to string.
     :param location: Location dictionary.
@@ -347,13 +364,17 @@ def location_to_description(location):
             )
 
 
-def point_to_description(point):
+def point_to_description(point, aa="verbatim"):
     """
     Convert the position dictionary model to string.
     :param point: Position dictionary.
     :return: Equivalent position string representation.
     """
     outside_cds = offset = ""
+    if point.get("amino_acid"):
+        sequence = point.get("amino_acid")
+    else:
+        sequence = ""
     if point.get("outside_cds"):
         if point["outside_cds"] == "downstream":
             outside_cds = "*"
@@ -371,7 +392,7 @@ def point_to_description(point):
                 offset = "-?"
             elif point["offset"].get("downstream"):
                 offset = "+?"
-    return "{}{}{}".format(outside_cds, position, offset)
+    return "{}{}{}{}".format(sequence, outside_cds, position, offset)
 
 
 def length_to_description(length):

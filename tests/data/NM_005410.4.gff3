@@ -1,0 +1,16 @@
+##sequence-region NM_005410.4 1 2056
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=9606
+NM_005410.4	RefSeq	region	1	2056	.	+	.	ID=NM_005410.4:1..2056;Dbxref=taxon:9606;Name=5;chromosome=5;gbkey=Src;genome=genomic;map=5p12;mol_type=mRNA
+NM_005410.4	RefSeq	gene	1	2056	.	+	.	ID=gene-SELENOP;Dbxref=GeneID:6414,HGNC:HGNC:10751,MIM:601484;Name=SELENOP;description=selenoprotein P;gbkey=Gene;gene=SELENOP;gene_synonym=SELP,SeP,SEPP,SEPP1
+NM_005410.4	RefSeq	CDS	71	1216	.	+	0	ID=cds-NP_005401.3;Parent=gene-SELENOP;Dbxref=CCDS:CCDS43311.1,Genbank:NP_005401.3,GeneID:6414,HGNC:HGNC:10751,MIM:601484;Name=NP_005401.3;Note=UGA stop codons recoded as selenocysteine%3B isoform 1 precursor is encoded by transcript variant 1;gbkey=CDS;gene=SELENOP;product=selenoprotein P isoform 1 precursor;protein_id=NP_005401.3;transl_except=(pos:245..247%2Caa:Sec),(pos:968..970%2Caa:Sec),(pos:1022..1024%2Caa:Sec),(pos:1058..1060%2Caa:Sec),(pos:1103..1105%2Caa:Sec),(pos:1124..1126%2Caa:Sec),(pos:1169..1171%2Caa:Sec),(pos:1175..1177%2Caa:Sec),(pos:1196..1198%2Caa:Sec),(pos:1202..1204%2Caa:Sec)
+NM_005410.4	RefSeq	signal_peptide_region_of_CDS	71	133	.	+	.	ID=id-NP_005401.3:1..21;Parent=cds-NP_005401.3;gbkey=Prot;inference=COORDINATES: ab initio prediction:SignalP:4.0
+NM_005410.4	RefSeq	exon	1	57	.	+	.	ID=id-SELENOP;Parent=gene-SELENOP;Dbxref=GeneID:6414,HGNC:HGNC:10751,MIM:601484;gbkey=exon;gene=SELENOP;inference=alignment:Splign:2.1.0
+NM_005410.4	RefSeq	exon	58	273	.	+	.	ID=id-SELENOP-2;Parent=gene-SELENOP;Dbxref=GeneID:6414,HGNC:HGNC:10751,MIM:601484;gbkey=exon;gene=SELENOP;inference=alignment:Splign:2.1.0
+NM_005410.4	RefSeq	exon	274	486	.	+	.	ID=id-SELENOP-3;Parent=gene-SELENOP;Dbxref=GeneID:6414,HGNC:HGNC:10751,MIM:601484;gbkey=exon;gene=SELENOP;inference=alignment:Splign:2.1.0
+NM_005410.4	RefSeq	exon	487	604	.	+	.	ID=id-SELENOP-4;Parent=gene-SELENOP;Dbxref=GeneID:6414,HGNC:HGNC:10751,MIM:601484;gbkey=exon;gene=SELENOP;inference=alignment:Splign:2.1.0
+NM_005410.4	RefSeq	exon	605	2056	.	+	.	ID=id-SELENOP-5;Parent=gene-SELENOP;Dbxref=GeneID:6414,HGNC:HGNC:10751,MIM:601484;gbkey=exon;gene=SELENOP;inference=alignment:Splign:2.1.0
+NM_005410.4	RefSeq	polyA_site	2056	2056	.	+	.	ID=id-SELENOP-6;Parent=gene-SELENOP;Dbxref=GeneID:6414,HGNC:HGNC:10751,MIM:601484;Note=major polyA site;gbkey=polyA_site;gene=SELENOP
+NM_005410.4	RefSeq	recoding_stimulatory_region	1468	1550	.	+	.	ID=id-SELENOP-7;Parent=gene-SELENOP;Dbxref=GeneID:6414,HGNC:HGNC:10751,MIM:601484;Note=SECIS_element;function=essential for recoding UGA to specify selenocysteine;gbkey=regulatory;gene=SELENOP;regulatory_class=recoding_stimulatory_region
+NM_005410.4	RefSeq	recoding_stimulatory_region	1909	1974	.	+	.	ID=id-SELENOP-8;Parent=gene-SELENOP;Dbxref=GeneID:6414,HGNC:HGNC:10751,MIM:601484;Note=SECIS_element;function=essential for recoding UGA to specify selenocysteine;gbkey=regulatory;gene=SELENOP;regulatory_class=recoding_stimulatory_region
+NM_005410.4	RefSeq	polyA_signal_sequence	2037	2042	.	+	.	ID=id-SELENOP-9;Parent=gene-SELENOP;Dbxref=GeneID:6414,HGNC:HGNC:10751,MIM:601484;Note=hexamer: AATAAA;gbkey=regulatory;gene=SELENOP;regulatory_class=polyA_signal_sequence
+

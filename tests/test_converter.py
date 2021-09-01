@@ -1,16 +1,10 @@
 import pytest
-from mutalyzer_crossmapper import Coding, Genomic, NonCoding
 from mutalyzer_hgvs_parser import to_model
 
 from normalizer.converter.to_hgvs_coordinates import to_hgvs_locations
-from normalizer.converter.to_internal_coordinates import (
-    get_point_value,
-    point_to_internal,
-    point_to_x_coding,
-    to_internal_coordinates,
-)
+from normalizer.converter.to_internal_coordinates import to_internal_coordinates
 from normalizer.converter.to_internal_indexing import to_internal_indexing
-from normalizer.description_model import location_to_description, model_to_string
+from normalizer.description_model import model_to_string
 
 from .generator import append_transcript, generate_references
 

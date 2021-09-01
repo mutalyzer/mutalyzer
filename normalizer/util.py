@@ -35,8 +35,8 @@ def get_start(model):
         return model["position"]
 
 
-def set_start(location, start):
-    location["start"]["position"] = start
+def set_start(location, position):
+    location["start"]["position"] = position
 
 
 def get_end(model):
@@ -51,6 +51,10 @@ def get_end(model):
         return model["end"]["position"]
     elif model["type"] == "point":
         return model["position"]
+
+
+def set_end(location, position):
+    location["end"]["position"] = position
 
 
 def get_location_length(location):
@@ -245,7 +249,11 @@ def construct_sequence(slices, sequences):
         if slice.get("sequence"):
             slice_seq = slice["sequence"]
         elif slice.get("location"):
-            slice_seq = slice_sequence(slice["location"], sequences[slice["source"]])
+            if isinstance(slice["source"], str):
+                source = slice["source"]
+            elif isinstance(slice["source"], dict):
+                source = slice["source"]["id"]
+            slice_seq = slice_sequence(slice["location"], sequences[source])
         else:
             raise Exception("Unrecognized slice", slice)
         if slice.get("repeat_number") and slice["repeat_number"].get("type") == "point":

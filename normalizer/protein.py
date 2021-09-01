@@ -1,10 +1,12 @@
 from Bio.Seq import Seq
 from Bio.SeqUtils import seq3
+from mutalyzer_crossmapper import Coding
 from mutalyzer_mutator import mutate
 from mutalyzer_mutator.util import reverse_complement
 
-from .converter import to_cds_coordinate
+from .converter import to_rna_protein_coordinates
 from .reference import extract_sequences
+from .util import get_start
 
 
 def longest_common_prefix(s1, s2):
@@ -93,14 +95,14 @@ def in_frame_description(s1, s2):
 
     if s1 == s2:
         # Nothing happened.
-        return ("p.(=)", 0, 0, 0)
+        return "p.(=)", 0, 0, 0
 
     lcp = len(longest_common_prefix(s1, s2))
     lcs = len(longest_common_suffix(s1[lcp:], s2[lcp:]))
     s1_end = len(s1) - lcs
     s2_end = len(s2) - lcs
 
-    # Insertion / Duplication / Extention.
+    # Insertion / Duplication / Extension.
     if not s1_end - lcp:
         if len(s1) == lcp:
             # http://www.hgvs.org/mutnomen/FAQ.html#nostop
@@ -308,6 +310,27 @@ def slice_seq(seq, slices, start=None, end=None):
     return output[start:end]
 
 
+def get_protein_sequence(reference_model, selector_model):
+    exons = selector_model["exon"]
+    cds = [selector_model["cds"][0][0], selector_model["cds"][0][1]]
+    dna_ref_seq = reference_model["sequence"]["seq"]
+    cds_seq = slice_seq(dna_ref_seq, exons, cds[0], cds[1])
+    if selector_model["inverted"]:
+        cds_seq = reverse_complement(cds_seq)
+    seq = list(str(Seq(cds_seq).translate()))
+    if selector_model.get("translation_exception"):
+        x = Coding(
+            selector_model["exon"], selector_model["cds"][0], selector_model["inverted"]
+        )
+        for t_e in selector_model.get("translation_exception")["exceptions"]:
+            seq[x.coordinate_to_protein(get_start(t_e))[0] - 1] = t_e["amino_acid"]
+    return "".join(seq)
+
+
+def get_protein_references(references, selector_model):
+    pass
+
+
 def get_protein_description(variants, references, selector_model):
     """
     Retrieves the protein description.
@@ -336,7 +359,7 @@ def get_protein_description(variants, references, selector_model):
 
     p_ref_seq = str(Seq(cds_seq).translate())
 
-    cds_variants, splice_site_hits = to_cds_coordinate(
+    cds_variants, splice_site_hits = to_rna_protein_coordinates(
         variants, sequences, selector_model
     )
 
@@ -361,8 +384,9 @@ def get_protein_description(variants, references, selector_model):
 
     cds_stop = len(mutate({"reference": cds_seq}, cds_variants))
     description = protein_description(cds_stop, p_ref_seq, p_obs_seq)
-
-    if len(cds_variants) > 1:
+    print(cds_variants)
+    print(description)
+    if len(cds_variants) > 1 and "*" in description[0]:
         # TODO: This seems to happen in M2. Check why.
         return (
             "{}({}):{}".format(ref_id, protein_id, "p.?"),

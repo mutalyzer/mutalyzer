@@ -1,4 +1,10 @@
-from normalizer.reference import get_reference_model_segmented
+import pytest
+
+from normalizer.reference import (
+    get_internal_selector_model,
+    get_reference_model_segmented,
+    get_selector_feature,
+)
 
 from .commons import patch_retriever
 
@@ -497,3 +503,140 @@ def test_get_reference_model_segmented_gene_no_siblings():
     }
 
     assert feature_model == get_reference_model_segmented("NG_012337.1", "SDHD", False)
+
+
+@pytest.mark.parametrize(
+    "reference_id, feature_id, feature_model",
+    [
+        (
+            "NG_012337.1",
+            "NM_003002.2",
+            {
+                "id": "NM_003002.2",
+                "type": "mRNA",
+                "location": {
+                    "type": "range",
+                    "start": {"type": "point", "position": 5000},
+                    "end": {"type": "point", "position": 13948},
+                    "strand": 1,
+                },
+                "features": [
+                    {
+                        "id": "exon-NM_003002.2-1",
+                        "type": "exon",
+                        "location": {
+                            "type": "range",
+                            "start": {"type": "point", "position": 5000},
+                            "end": {"type": "point", "position": 5113},
+                            "strand": 1,
+                        },
+                    },
+                    {
+                        "id": "exon-NM_003002.2-2",
+                        "type": "exon",
+                        "location": {
+                            "type": "range",
+                            "start": {"type": "point", "position": 6010},
+                            "end": {"type": "point", "position": 6127},
+                            "strand": 1,
+                        },
+                    },
+                    {
+                        "id": "exon-NM_003002.2-3",
+                        "type": "exon",
+                        "location": {
+                            "type": "range",
+                            "start": {"type": "point", "position": 7020},
+                            "end": {"type": "point", "position": 7165},
+                            "strand": 1,
+                        },
+                    },
+                    {
+                        "id": "exon-NM_003002.2-4",
+                        "type": "exon",
+                        "location": {
+                            "type": "range",
+                            "start": {"type": "point", "position": 12958},
+                            "end": {"type": "point", "position": 13948},
+                            "strand": 1,
+                        },
+                    },
+                    {
+                        "id": "NP_002993.1",
+                        "type": "CDS",
+                        "location": {
+                            "type": "range",
+                            "start": {"type": "point", "position": 5061},
+                            "end": {"type": "point", "position": 13124},
+                            "strand": 1,
+                        },
+                    },
+                ],
+            },
+        ),
+        (
+            "NG_012337.1",
+            "NP_002993.1",
+            {
+                "id": "NP_002993.1",
+                "type": "CDS",
+                "location": {
+                    "type": "range",
+                    "start": {"type": "point", "position": 5061},
+                    "end": {"type": "point", "position": 13124},
+                    "strand": 1,
+                },
+            },
+        ),
+    ],
+)
+def test_get_feature(reference_id, feature_id, feature_model):
+    reference_model = get_reference_model_segmented(reference_id)["annotations"]
+    assert get_selector_feature(reference_model, feature_id) == feature_model
+
+
+@pytest.mark.parametrize(
+    "reference_id, feature_id, feature_model",
+    [
+        (
+            "NG_012337.1",
+            "NM_003002.2",
+            {
+                "id": "NM_003002.2",
+                "cds_id": "NP_002993.1",
+                "type": "mRNA",
+                "inverted": False,
+                "location": {
+                    "type": "range",
+                    "start": {"type": "point", "position": 5000},
+                    "end": {"type": "point", "position": 13948},
+                    "strand": 1,
+                },
+                "exon": [(5000, 5113), (6010, 6127), (7020, 7165), (12958, 13948)],
+                "cds": [(5061, 13124)],
+            },
+        ),
+        (
+            "NG_012337.1",
+            "NP_002993.1",
+            {
+                "id": "NP_002993.1",
+                "mrna_id": "NM_003002.2",
+                "type": "CDS",
+                "inverted": False,
+                "location": {
+                    "type": "range",
+                    "start": {"type": "point", "position": 5061},
+                    "end": {"type": "point", "position": 13124},
+                    "strand": 1,
+                },
+                "exon": [(5000, 5113), (6010, 6127), (7020, 7165), (12958, 13948)],
+                "cds": [(5061, 13124)],
+            },
+        ),
+    ],
+)
+def test_get_internal_selector_model(reference_id, feature_id, feature_model):
+    reference_model = get_reference_model_segmented(reference_id)["annotations"]
+    print(get_internal_selector_model(reference_model, feature_id))
+    assert get_internal_selector_model(reference_model, feature_id) == feature_model

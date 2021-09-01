@@ -95,6 +95,8 @@ class PositionConvert(object):
             self.description = Description(description_model=self.input_model)
 
         if self.description:
+            self.description.retrieve_references()
+            self.description.pre_conversion_checks()
             self.description.to_internal_indexing_model()
             self.errors += self.description.errors
             self.infos += self.description.infos

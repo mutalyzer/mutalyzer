@@ -1,11 +1,14 @@
 import copy
+import itertools
 
+from Bio.Seq import Seq
+from Bio.SeqUtils import seq1, seq3
 from extractor import describe_dna
+from mutalyzer_backtranslate import BackTranslate
 from mutalyzer_hgvs_parser import to_model
 from mutalyzer_hgvs_parser.exceptions import UnexpectedCharacter, UnexpectedEnd
 from mutalyzer_mutator import mutate
 from mutalyzer_mutator.util import reverse_complement
-from mutalyzer_retriever.retriever import NoReferenceError, NoReferenceRetrieved
 
 import normalizer.errors as errors
 import normalizer.infos as infos
@@ -15,8 +18,9 @@ from .checker import (
     contains_insert_length,
     contains_uncertain_locations,
     is_overlap,
+    splice_sites,
 )
-from .converter.extras import convert_selector_model
+from .converter.extras import convert_amino_acids, convert_selector_model
 from .converter.to_delins import to_delins, variants_to_delins
 from .converter.to_hgvs_coordinates import (
     crossmap_to_hgvs_setup,
@@ -25,41 +29,47 @@ from .converter.to_hgvs_coordinates import (
 )
 from .converter.to_internal_coordinates import (
     crossmap_to_internal_setup,
+    get_coordinate_system,
     point_to_internal,
     to_internal_coordinates,
 )
 from .converter.to_internal_indexing import to_internal_indexing
+from .converter.to_rna import to_rna_reference_model, to_rna_sequences, to_rna_variants
 from .converter.variants_de_to_hgvs import de_to_hgvs
 from .description_model import (
     get_locations_min_max,
     get_reference_id,
     get_selector_id,
     model_to_string,
-    variant_to_description,
-    variants_to_description,
     yield_reference_ids,
     yield_reference_selector_ids,
     yield_reference_selector_ids_coordinate_system,
     yield_sub_model,
+    yield_values,
 )
-from .protein import get_protein_description
+from .protein import (
+    get_protein_description,
+    get_protein_sequence,
+    in_frame_description,
+    protein_description,
+)
 from .reference import (
     get_coordinate_system_from_reference,
     get_coordinate_system_from_selector_id,
     get_gene_selectors,
     get_gene_selectors_hgnc,
+    get_internal_selector_model,
     get_only_selector_id,
     get_protein_selector_model,
     get_reference_id_from_model,
-    get_reference_model,
     get_reference_mol_type,
-    get_selector_model,
     get_selectors_ids,
     get_sequence_length,
     is_only_one_selector,
     is_selector_in_reference,
     overlap_min_max,
     retrieve_reference,
+    slice_to_selector,
     yield_overlap_ids,
 )
 from .util import (
@@ -70,6 +80,7 @@ from .util import (
     get_start,
     get_submodel_by_path,
     is_dna,
+    is_rna,
     point_in_insertion,
     reverse_path,
     set_by_path,
@@ -100,10 +111,12 @@ class Description(object):
         self.de_hgvs_model = {}
         self.normalized_description = None
         self.protein = None
+        self.rna = None
 
         self.references = {}
 
         self.equivalent = []
+        self.back_translated_descriptions = []
 
     def _check_input(self):
         if self.input_description and not self.input_model:
@@ -127,15 +140,15 @@ class Description(object):
         if self.corrected_model:
             return get_selector_id(self.corrected_model)
 
-    def _get_selector_model(self):
+    def get_selector_model(self):
         selector_id = self._get_selector_id()
         if self.references and selector_id:
-            return get_selector_model(
+            return get_internal_selector_model(
                 self.references["reference"]["annotations"], selector_id, True
             )
 
     def is_inverted(self):
-        selector_model = self._get_selector_model()
+        selector_model = self.get_selector_model()
         if (
             selector_model
             and selector_model.get("location")
@@ -327,18 +340,21 @@ class Description(object):
                 c_s_s = get_coordinate_system_from_selector_id(
                     self.references[r_id], s_id
                 )
-                if c_s_s != c_s and not (c_s_s == "c" and c_s == "r"):
+                if c_s_s != c_s and not (
+                    (c_s_s == "c" and c_s in ["r", "p"])
+                    or (c_s_s == "n" and c_s == "r")
+                ):
                     self._add_error(
                         errors.coordinate_system_mismatch(c_s, s_id, c_s_s, c_s_path)
                     )
             else:
                 r_c_s = get_coordinate_system_from_reference(self.references[r_id])
-                if not ((r_c_s == c_s) and (c_s in ["g", "m"])):
-                    if is_only_one_selector(self.references[r_id], c_s):
+                if not ((r_c_s == c_s) and (c_s in ["g", "m", "p"])):
+                    if is_only_one_selector(self.references[r_id]):
                         self._correct_selector_id_from_coordinate_system(
                             r_id,
                             r_path,
-                            get_only_selector_id(self.references[r_id], c_s),
+                            get_only_selector_id(self.references[r_id]),
                         )
                     else:
                         self._add_error(
@@ -370,12 +386,11 @@ class Description(object):
 
     @check_errors
     def _correct_points(self):
-        crossmap_to = crossmap_to_internal_setup(
-            self.corrected_model["coordinate_system"], self._get_selector_model()
-        )
+        c_s = get_coordinate_system(self.corrected_model, self.references)
+        crossmap_to = crossmap_to_internal_setup(c_s, self.get_selector_model())
         crossmap_from = crossmap_to_hgvs_setup(
-            self.corrected_model["coordinate_system"],
-            self._get_selector_model(),
+            c_s,
+            self.get_selector_model(),
             degenerate=True,
         )
 
@@ -442,6 +457,8 @@ class Description(object):
                     self.get_sequences(),
                 ),
             }
+            if self.corrected_model.get("predicted"):
+                self.de_hgvs_internal_indexing_model["predicted"] = True
 
     @check_errors
     def _construct_de_hgvs_coordinates_model(self):
@@ -456,6 +473,8 @@ class Description(object):
 
     def _construct_normalized_description(self):
         if self.de_hgvs_model:
+            if self.de_hgvs_model["coordinate_system"] == "r":
+                to_rna_sequences(self.de_hgvs_model)
             self.normalized_description = model_to_string(self.de_hgvs_model)
 
     def _construct_equivalent(self, other=None, as_description=True):
@@ -471,6 +490,7 @@ class Description(object):
             get_coordinate_system_from_reference(self.references["reference"])
             == "g"
             != self.corrected_model["coordinate_system"]
+            and self.corrected_model["coordinate_system"] != "r"
         ):
             converted_model = to_hgvs_locations(
                 model=from_model,
@@ -535,7 +555,13 @@ class Description(object):
 
     @check_errors
     def _construct_protein_description(self):
-        if self.de_hgvs_model["coordinate_system"] == "c":
+        if self.de_hgvs_model["coordinate_system"] == "c" or (
+            self.de_hgvs_model["coordinate_system"] == "r"
+            and get_coordinate_system_from_selector_id(
+                self.references["reference"], self._get_selector_id()
+            )
+            == "c"
+        ):
             self.protein = dict(
                 zip(
                     ["description", "reference", "predicted"],
@@ -551,6 +577,73 @@ class Description(object):
                     ),
                 )
             )
+
+    @check_errors
+    def _construct_rna_description(self):
+        if self.de_hgvs_model["coordinate_system"] in ["c", "n"]:
+            self.rna = {}
+            errors_splice, infos_splice = splice_sites(
+                variants_to_delins(self.de_hgvs_internal_indexing_model["variants"]),
+                self.get_sequences(),
+                self.get_selector_model(),
+            )
+            if infos_splice:
+                self.rna["infos"] = infos_splice
+            if errors_splice:
+                self.rna["errors"] = errors_splice
+                return
+
+            rna_variants_coordinate = to_rna_variants(
+                variants_to_delins(self.de_hgvs_internal_indexing_model["variants"]),
+                self.get_sequences(),
+                self.get_selector_model(),
+            )
+            rna_reference_model = to_rna_reference_model(
+                self.references["reference"], self._get_selector_id()
+            )
+            rna_references = {
+                get_reference_id(self.corrected_model): rna_reference_model,
+                "reference": rna_reference_model,
+            }
+            rna_variants_coordinate = de_to_hgvs(
+                rna_variants_coordinate,
+                {
+                    k: str(
+                        Seq(rna_references[k]["sequence"]["seq"]).transcribe().lower()
+                    )
+                    for k in rna_references
+                },
+            )
+            to_rna_sequences(rna_variants_coordinate)
+
+            rna_model = to_hgvs_locations(
+                {
+                    "reference": self.de_hgvs_internal_indexing_model["reference"],
+                    "coordinate_system": "i",
+                    "variants": rna_variants_coordinate,
+                },
+                rna_references,
+                self.corrected_model["coordinate_system"],
+                get_selector_id(self.corrected_model),
+                True,
+            )
+            rna_model["coordinate_system"] = "r"
+            rna_model["predicted"] = True
+            self.rna = {"description": model_to_string(rna_model)}
+
+    def _get_reference_id(self, model, path):
+        ref_id = get_reference_id(model)
+        for ins_or_del in ["inserted", "deleted"]:
+            if ins_or_del in path:
+                ins_or_del_ref = get_reference_id(
+                    get_submodel_by_path(
+                        model,
+                        path[: path.index(ins_or_del) + 2],
+                    )
+                )
+                if ins_or_del_ref:
+                    ref_id = ins_or_del_ref
+        return ref_id
 
     def _check_location_boundaries(self):
         for point, path in yield_sub_model(
@@ -730,6 +823,9 @@ class Description(object):
         else:
             seq_ref = slice_sequence(v_i["location"], sequences["reference"])
             seq_del = construct_sequence(v_i[ins_or_del], sequences)
+            if self.corrected_model["coordinate_system"] == "r":
+                seq_del = str(Seq(seq_del).transcribe().lower())
+                seq_ref = str(Seq(seq_ref).transcribe().lower())
             if seq_del and seq_ref and seq_del != seq_ref:
                 if self.is_inverted():
                     seq_del = reverse_complement(seq_del)
@@ -737,21 +833,67 @@ class Description(object):
                     path = reverse_path(self.internal_coordinates_model, path)
                 self._add_error(errors.sequence_mismatch(seq_ref, seq_del, path))
 
+    @check_errors
     def _check_and_correct_sequences(self):
-        for seq, path in yield_sub_model(self.corrected_model, ["sequence"]):
-            print(seq, path)
-            if seq.upper() != seq:
-                self._add_info(infos.corrected_sequence(seq, seq.upper()))
-                set_by_path(self.corrected_model, path, seq.upper())
-                set_by_path(self.internal_coordinates_model, path, seq.upper())
-                set_by_path(self.internal_indexing_model, path, seq.upper())
-            if not is_dna(seq.upper()):
-                self._add_error(errors.no_dna(seq.upper(), path))
+        for seq, path in yield_sub_model(
+            self.corrected_model, ["sequence", "amino_acid"]
+        ):
+            if self.corrected_model["coordinate_system"] in ["g", "c", "n"]:
+                if seq.upper() != seq:
+                    self._add_info(infos.corrected_sequence(seq, seq.upper()))
+                    set_by_path(self.corrected_model, path, seq.upper())
+                    if self.is_inverted():
+                        path = reverse_path(self.corrected_model, path)
+                    set_by_path(self.internal_coordinates_model, path, seq.upper())
+                    set_by_path(self.internal_indexing_model, path, seq.upper())
+                if not is_dna(seq.upper()):
+                    self._add_error(errors.no_dna(seq.upper(), path))
+            elif self.corrected_model["coordinate_system"] == "r":
+                if is_dna(seq):
+                    seq_rna = str(Seq(seq).transcribe()).lower()
+                    self._add_info(infos.corrected_sequence(seq, seq_rna))
+                    seq_dna = str(Seq(seq_rna).back_transcribe()).upper()
+                    set_by_path(self.corrected_model, path, seq_dna)
+                    if self.is_inverted():
+                        path = reverse_path(self.corrected_model, path)
+                    set_by_path(self.internal_coordinates_model, path, seq_dna)
+                    set_by_path(self.internal_indexing_model, path, seq_dna)
+                else:
+                    seq_lower = seq.lower()
+                    if seq_lower != seq:
+                        self._add_info(infos.corrected_sequence(seq, seq_lower))
+                    if not is_rna(seq_lower):
+                        self._add_error(errors.no_rna(seq_lower, path))
+                    seq_lower = str(Seq(seq).back_transcribe()).upper()
+                    # set_by_path(self.corrected_model, path, seq_lower)
+                    if self.is_inverted():
+                        path = reverse_path(self.corrected_model, path)
+                    set_by_path(self.internal_coordinates_model, path, seq_lower)
+                    set_by_path(self.internal_indexing_model, path, seq_lower)
+
+    @check_errors
+    def _check_location_amino_acids(self):
+        sequences = self.get_sequences()
+        for point, path in yield_sub_model(
+            self.internal_coordinates_model, ["location", "start", "end"], ["point"]
+        ):
+            ref_id = self._get_reference_id(self.internal_indexing_model, path)
+            if (
+                point.get("amino_acid")
+                and point.get("position")
+                and sequences[ref_id][point["position"]] != point["amino_acid"]
+            ):
+                self._add_error(
+                    errors.amino_acid_mismatch(
+                        point["amino_acid"], sequences[ref_id][point["position"]], path
+                    )
+                )
 
     @check_errors
     def check(self):
         self._check_location_boundaries()
         self._check_location_range()
+        self._check_location_amino_acids()
         for i, v in enumerate(self.internal_coordinates_model["variants"]):
             if v.get("deleted"):
                 self._check_superfluous(["variants", i, "deleted"])
@@ -779,10 +921,6 @@ class Description(object):
             self._add_error(errors.inserted_length())
 
     def to_internal_indexing_model(self):
-        self.retrieve_references()
-
-        self.pre_conversion_checks()
-
         self._construct_internal_coordinate_model()
         self._construct_internal_indexing_model()
 
@@ -811,35 +949,197 @@ class Description(object):
                 return False
         return True
 
-    def normalize(self):
+    @check_errors
+    def _rna(self):
+        if self.corrected_model["coordinate_system"] == "r":
+            errors_splice, infos_splice = splice_sites(
+                self.internal_indexing_model["variants"],
+                self.get_sequences(),
+                self.get_selector_model(),
+            )
+            self.infos += infos_splice
+            self.errors += errors_splice
+            if errors_splice:
+                return
+
+            self.internal_indexing_model["variants"] = to_rna_variants(
+                self.internal_indexing_model["variants"],
+                self.get_sequences(),
+                self.get_selector_model(),
+            )
+            rna_reference_model = to_rna_reference_model(
+                self.references["reference"], self._get_selector_id()
+            )
+            # self.delins_model["variants"] = variants
+            self.references = {
+                get_reference_id(self.corrected_model): rna_reference_model,
+                "reference": rna_reference_model,
+            }
+
+    def _check_amino_acids(self):
+        for sequence, path in yield_values(
+            self.corrected_model, ["sequence", "amino_acid"]
+        ):
+            seq_1a = str(seq1(sequence))
+            seq_3a = str(seq3(sequence))
+            if not ((sequence == str(seq3(seq_1a))) != (sequence == str(seq1(seq_3a)))):
+                self._add_error(
+                    {
+                        "code": "EAA",
+                        "details": f"Sequence '{sequence}' is a mix of 1 and 3 letter amino acids.",
+                    }
+                )
+
+    def _check_supported_variants(self, model):
+        for i, variant in enumerate(model["variants"]):
+            if variant.get("type") in ["frame_shift", "extension"]:
+                self._add_error(
+                    errors.variant_not_supported(
+                        variant, variant["type"], ["variants", i]
+                    )
+                )
+
+    @check_errors
+    def _convert_amino_acids(self):
+        convert_amino_acids(self.internal_indexing_model, "1a")
+        convert_amino_acids(self.internal_coordinates_model, "1a")
+
+    def _back_translate(self):
+        if not self._get_selector_id():
+            return
+        cds_seq = slice_to_selector(
+            retrieve_reference(get_reference_id(self.corrected_model)),
+            self._get_selector_id(),
+            True,
+            True,
+        )
+        bt = BackTranslate()
+        translated_vars = []
+        for variant in self.internal_indexing_model["variants"]:
+            if variant.get("type") == "substitution":
+                cds_start = get_start(variant) * 3
+                cds_end = get_end(variant) * 3
+                bt_options = bt.with_dna(
+                    cds_seq[cds_start:cds_end],
+                    variant["inserted"][0]["sequence"],
+                )
+                dna_var_options = []
+                for offset in bt_options:
+                    for v in bt_options[offset]:
+                        dna_var_options.append(
+                            "{}{}>{}".format(cds_start + offset + 1, v[0], v[1])
+                        )
+                translated_vars.append(dna_var_options)
+            else:
+                # TODO: Add error message.
+                return []
+        if self._get_selector_id() == get_reference_id(self.corrected_model):
+            reference = "{}".format(get_reference_id(self.corrected_model))
+        else:
+            reference = "{}({})".format(
+                get_reference_id(self.corrected_model),
+                self.get_selector_model()["mrna_id"],
+            )
+        bt_descriptions = []
+        for t in itertools.product(*translated_vars):
+            if len(t) > 1:
+                bt_descriptions.append("{}:c.([{}])".format(reference, ";".join(t)))
+            elif len(t) == 1:
+                bt_descriptions.append("{}:c.({})".format(reference, t[0]))
+        self.back_translated_descriptions = bt_descriptions
+
+    def _normalize_protein(self):
+        reference_id = self.corrected_model["reference"]["id"]
+        self._check_amino_acids()
+        if self.errors:
+            return
+        if self._get_selector_id():
+            # Convert references to protein model
+            p_seq = get_protein_sequence(
+                self.references["reference"], self.get_selector_model()
+            )
+            self.references = copy.deepcopy(self.references)
+            self.references["reference"]["sequence"]["seq"] = p_seq
+            self.references[reference_id]["sequence"]["seq"] = p_seq
+
         self.to_internal_indexing_model()
-
+        self._convert_amino_acids()
         self._correct_variants_type()
-        self._correct_points()
         self._check_and_correct_sequences()
-
         self.check()
+        self._check_supported_variants(self.corrected_model)
+
+        if self.errors:
+            return
 
         if self._only_equals() or self._no_operation():
-            self.de_hgvs_internal_indexing_model = self.internal_indexing_model
+            self.de_hgvs_model = copy.deepcopy(self.corrected_model)
+            convert_amino_acids(self.de_hgvs_model, "1a")
+            convert_amino_acids(self.de_hgvs_model, "3a")
             self.references["observed"] = {
                 "sequence": {"seq": self.references["reference"]["sequence"]["seq"]}
             }
-            self._construct_de_hgvs_coordinates_model()
-            self._construct_normalized_description()
-            self._construct_equivalent()
         else:
-            self._construct_delins_model()
-            self._mutate()
-            self._extract()
-            self._construct_de_hgvs_internal_indexing_model()
-            self._construct_de_hgvs_coordinates_model()
-            self._construct_normalized_description()
-            self._construct_protein_description()
-            self._construct_equivalent()
-        self._remove_superfluous_selector()
+            observed_sequence = mutate(
+                self.get_sequences(),
+                to_delins(self.internal_indexing_model)["variants"],
+            )
+            self.references["observed"] = {"sequence": {"seq": observed_sequence}}
+            selector_id = (
+                "({})".format(self._get_selector_id())
+                if self._get_selector_id()
+                else ""
+            )
+            p_description = "{}{}:{}".format(
+                reference_id,
+                selector_id,
+                in_frame_description(
+                    self.references["reference"]["sequence"]["seq"], observed_sequence
+                )[0],
+            )
+            self.de_hgvs_model = to_model(p_description)
+        self.normalized_description = model_to_string(self.de_hgvs_model)
+        equivalent_1a_model = copy.deepcopy(self.de_hgvs_model)
+        convert_amino_acids(equivalent_1a_model, "1a")
+        self.equivalent = {"p": [model_to_string(equivalent_1a_model)]}
+        self._back_translate()
 
-        # self.print_models_summary()
+    def normalize(self):
+        self.retrieve_references()
+        self.pre_conversion_checks()
+
+        if self.corrected_model.get("type") == "description_protein":
+            self._normalize_protein()
+        else:
+            self.to_internal_indexing_model()
+            self._correct_variants_type()
+            self._correct_points()
+            self._check_and_correct_sequences()
+
+            self.check()
+            self._rna()
+
+            if self._only_equals() or self._no_operation():
+                self.de_hgvs_internal_indexing_model = self.internal_indexing_model
+                self.references["observed"] = {
+                    "sequence": {"seq": self.references["reference"]["sequence"]["seq"]}
+                }
+                self._construct_de_hgvs_coordinates_model()
+                self._construct_normalized_description()
+                self._construct_equivalent()
+            else:
+                self._construct_delins_model()
+                self._mutate()
+                self._extract()
+                self._construct_de_hgvs_internal_indexing_model()
+                self._construct_de_hgvs_coordinates_model()
+                self._construct_normalized_description()
+                self._construct_protein_description()
+                self._construct_rna_description()
+                self._construct_equivalent()
+            self._remove_superfluous_selector()
+
+        self.print_models_summary()
 
     def output(self):
         output = {
@@ -854,16 +1154,18 @@ class Description(object):
 
         if self.protein:
             output["protein"] = self.protein
+        if self.rna:
+            output["rna"] = self.rna
         if self.equivalent:
             output["equivalent_descriptions"] = self.equivalent
         if self.errors:
             output["errors"] = self.errors
         if self.infos:
             output["infos"] = self.infos
-        if self._get_selector_model():
-            output["selector_short"] = convert_selector_model(
-                self._get_selector_model()
-            )
+        if self.get_selector_model():
+            output["selector_short"] = convert_selector_model(self.get_selector_model())
+        if self.back_translated_descriptions:
+            output["back_translated_descriptions"] = self.back_translated_descriptions
         return output
 
     def print_models_summary(self):
@@ -918,10 +1220,13 @@ class Description(object):
             print(model_to_string(self.de_hgvs_model))
         else:
             print("- No de hgvs model")
-        print("------")
-
         if self.errors:
+            print("---\nErrors:")
             print(self.errors)
+        if self.infos:
+            print("---\nInfos:")
+            print(self.infos)
+        print("------")
 
     def get_reference_summary(self):
         return {

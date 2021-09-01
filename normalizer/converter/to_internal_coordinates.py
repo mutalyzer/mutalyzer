@@ -5,12 +5,15 @@ from mutalyzer_crossmapper import Coding, Genomic, NonCoding
 from ..description_model import (
     get_reference_id,
     get_selector_id,
-    model_to_string,
     yield_inserted_other_reference,
     yield_point_locations_for_main_reference,
     yield_ranges_main_reference,
 )
-from ..reference import get_selector_model
+from ..reference import (
+    get_coordinate_system_from_reference,
+    get_coordinate_system_from_selector_id,
+    get_internal_selector_model,
+)
 from ..util import set_by_path
 
 
@@ -58,11 +61,13 @@ def point_to_coding(point, crossmap_function, point_function, inverted=False):
 
 def point_to_internal(point, crossmap):
     new_point = point_to_coding(point, **crossmap)
+    if point.get("amino_acid"):
+        new_point["amino_acid"] = point["amino_acid"]
     return new_point
 
 
 def crossmap_to_internal_setup(coordinate_system, selector_model=None):
-    if coordinate_system == "g":
+    if coordinate_system in ["g", "p"]:
         crossmap = Genomic()
         return {
             "crossmap_function": crossmap.genomic_to_coordinate,
@@ -123,12 +128,28 @@ def reverse_strand(internal_model):
         loc["start"], loc["end"] = loc["end"], loc["start"]
 
 
+def get_coordinate_system(model, references):
+    coordinate_system = model.get("coordinate_system")
+    if coordinate_system == "r":
+        if get_selector_id(model):
+            coordinate_system = get_coordinate_system_from_selector_id(
+                references[get_reference_id(model)], get_selector_id(model)
+            )
+        else:
+            coordinate_system = get_coordinate_system_from_reference(
+                references[get_reference_id(model)]
+            )
+    return coordinate_system
+
+
 def points_to_internal_coordinates(model, references):
     reference_id = get_reference_id(model)
-    coordinate_system = model.get("coordinate_system")
+    coordinate_system = get_coordinate_system(model, references)
     selector_id = get_selector_id(model)
     selector_model = (
-        get_selector_model(references[reference_id]["annotations"], selector_id, True)
+        get_internal_selector_model(
+            references[reference_id]["annotations"], selector_id, True
+        )
         if selector_id
         else None
     )
@@ -160,7 +181,9 @@ def to_internal_coordinates(model, references):
     reference_id = get_reference_id(model)
     selector_id = get_selector_id(model)
     selector_model = (
-        get_selector_model(references[reference_id]["annotations"], selector_id, True)
+        get_internal_selector_model(
+            references[reference_id]["annotations"], selector_id, True
+        )
         if selector_id
         else None
     )

@@ -1,5 +1,7 @@
-from ..description_model import location_to_description
-from ..util import create_exact_point_model
+from Bio.SeqUtils import seq1, seq3
+
+from ..description_model import location_to_description, yield_values
+from ..util import create_exact_point_model, set_by_path
 from .to_hgvs_coordinates import (
     crossmap_to_hgvs_setup,
     locations_to_hgvs_locations,
@@ -40,3 +42,19 @@ def convert_selector_model(s_m):
     exon_n = convert_tuples(s_m["exon"], x, s_m["inverted"])
 
     return {"exon": {"g": exon_g, "n": exon_n}}
+
+
+def convert_amino_acids(model, to):
+    for sequence, path in yield_values(model, ["sequence", "amino_acid"]):
+        if to == "1a":
+            seq_1a = str(seq1(sequence))
+            if sequence == str(seq3(seq_1a)):
+                set_by_path(model, path, seq_1a)
+            else:
+                pass
+        if to == "3a":
+            seq_3a = str(seq3(sequence))
+            if sequence == str(seq1(seq_3a)):
+                set_by_path(model, path, seq_3a)
+            else:
+                pass

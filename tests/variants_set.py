@@ -1830,6 +1830,14 @@ M2_TESTS = [
         "protein_description": "NG_012337.1(NP_036591.2):p.(Arg2_Lys3insSer)",
         "to_test": True,
     },
+    {
+        "keywords": ["protein"],
+        "input": "LRG_199t1:c.235_237delinsTAT",
+        "genomic": "LRG_199:g.[499798A>T;499800G>T]",
+        "normalized": "LRG_199(t1):c.[235A>T;237G>T]",
+        "protein_description": "LRG_199(p1):p.(Lys79Tyr)",
+        "to_test": True,
+    },
     # All the IVS/EX tests are not any longer relevant.
 ]
 
@@ -2277,6 +2285,16 @@ TESTS = [
         },
         "noncoding": ["NG_007485.1(NR_024274.1):n.616+26436_616+26437del"],
         "protein_description": "NG_007485.1(NP_478102.2):p.(Met48Alafs*14)",
+        "rna_description": "NG_007485.1(NM_058195.3):r.(141_142del)",
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NG_012337.1(NM_003002.2):c.169T>A",
+        "normalized": "NG_012337.1(NM_003002.2):c.169T>A",
+        "genomic": "NG_012337.1:g.6127T>A",
+        "protein_description": "NG_012337.1(NP_002993.1):p.(Ser57Thr)",
+        "rna_description": "NG_012337.1(NM_003002.2):r.(169u>a)",
         "to_test": True,
     },
     {
@@ -2402,6 +2420,7 @@ TESTS = [
             ),
         },
         "protein_description": "NG_009299.1(NP_060138.1):p.(Gln14Profs*68)",
+        "rna_description": "NG_009299.1(NM_017668.3):r.(40a>c)",
         "to_test": True,
     },
     {
@@ -2434,12 +2453,14 @@ TESTS = [
         "keywords": [],
         "input": "NG_012337.1(NM_012459.2):c.5_6delinsTAG",
         "protein_description": "NG_012337.1(NP_036591.2):p.(Arg2Leufs*23)",
+        "rna_description": "NG_012337.1(NM_012459.2):r.(5_6delinsuag)",
         "to_test": True,
     },
     {
         "keywords": [],
         "input": "NG_012337.1(NM_012459.2):c.4_6delinsGTA",
         "protein_description": "NG_012337.1(NP_036591.2):p.(Arg2Val)",
+        "rna_description": "NG_012337.1(NM_012459.2):r.(4_6delinsgua)",
         "to_test": True,
     },
     {
@@ -2482,6 +2503,15 @@ TESTS = [
         "to_test": True,
     },
     {
+        "keywords": [],
+        "input": "NG_012337.1(NM_003002.2):c.[274G>T;278A>G]",
+        "normalized": "NG_012337.1(NM_003002.2):c.([274G>T;278A>G])",
+        "genomic": "NG_012337.1:g.[7125G>T;7129A>G]",
+        "protein_description": "NG_012337.1(NP_002993.1):p.(Asp92_Tyr93delinsTyrCys)",
+        "rna_description": "NG_012337.1(NM_003002.2):r.([274g>u;278a>g])",
+        "to_test": True,
+    },
+    {
         "keywords": ["no operation"],
         "input": "NG_012337.1:274",
         "normalized": "NG_012337.1:g.274",
@@ -2500,6 +2530,7 @@ TESTS = [
         "normalized": "NG_012337.1(NM_012459.2):c.297_*1del",
         "genomic": "NG_012337.1:g.3448_3449del",
         "protein_description": "NG_012337.1(NP_036591.2):p.(*99Tyrext*6)",
+        "rna_description": "NG_012337.1(NM_012459.2):r.(297_*1del)",
         "to_test": True,
     },
     {
@@ -2508,6 +2539,7 @@ TESTS = [
         "normalized": "NG_012337.1(NM_012459.2):c.-35_*1del",
         "genomic": "NG_012337.1:g.3448_4957del",
         "protein_description": "NG_012337.1(NP_036591.2):p.?",
+        # "rna_description": "NG_012337.1(NM_012459.2):r.?",
         "to_test": True,
     },
     {
