@@ -2505,7 +2505,7 @@ TESTS = [
     {
         "keywords": [],
         "input": "NG_012337.1(NM_003002.2):c.[274G>T;278A>G]",
-        "normalized": "NG_012337.1(NM_003002.2):c.([274G>T;278A>G])",
+        "normalized": "NG_012337.1(NM_003002.2):c.[274G>T;278A>G]",
         "genomic": "NG_012337.1:g.[7125G>T;7129A>G]",
         "protein_description": "NG_012337.1(NP_002993.1):p.(Asp92_Tyr93delinsTyrCys)",
         "rna_description": "NG_012337.1(NM_003002.2):r.([274g>u;278a>g])",
