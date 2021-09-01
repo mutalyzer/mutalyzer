@@ -364,6 +364,18 @@ class Description(object):
                         )
 
     @check_errors
+    def _check_selector_models(self):
+        for reference_id, selector_id, path in yield_reference_selector_ids(
+            self.corrected_model
+        ):
+            if get_internal_selector_model(
+                self.references[reference_id]["annotations"], selector_id, True
+            ).get("whole_exon_transcript"):
+                self._add_info(
+                    infos.whole_transcript_exon(reference_id, selector_id, path)
+                )
+
+    @check_errors
     def _correct_variants_type(self):
         for i, v in enumerate(self.internal_indexing_model["variants"]):
             if v.get("type") == "substitution":
@@ -914,6 +926,7 @@ class Description(object):
         self._check_selectors_in_references()
         self._check_coordinate_systems()
         self._check_coordinate_system_consistency()
+        self._check_selector_models()
         self._check_location_extras()
         if contains_uncertain_locations(self.corrected_model):
             self._add_error(errors.uncertain())

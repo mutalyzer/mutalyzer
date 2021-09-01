@@ -269,6 +269,7 @@ def get_internal_selector_model(reference_annotations, selector_id, fix_exon=Fal
             output.update(sort_locations(get_feature_locations(feature_model)))
         if fix_exon and output.get("exon") is None:
             output["exon"] = [(get_start(output), get_end(output))]
+            output["whole_exon_transcript"] = True
         return output
 
 

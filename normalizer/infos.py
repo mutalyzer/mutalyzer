@@ -103,3 +103,13 @@ def splice_site_removed(path):
         "details": "Splice(s) sites removed.",
         "paths": [path],
     }
+
+
+def whole_transcript_exon(reference_id, selector_id, path):
+    return {
+        "code": "IWHOLETRANSCRIPTEXON",
+        "details": f"No exon features found in the '{reference_id}' reference"
+                   f" sequence for '{selector_id}'. The entire transcript was"
+                   f" assumed as one exon.",
+        "paths": [path],
+    }

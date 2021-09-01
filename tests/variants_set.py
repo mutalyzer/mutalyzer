@@ -151,7 +151,7 @@ M2_TESTS = [
         ],
         "input": "NM_003002.2:274del",
         "normalized": "NM_003002.2:c.274del",
-        "infos": ["ICORRECTEDCOORDINATESYSTEM"],
+        "infos": ["ICORRECTEDCOORDINATESYSTEM", "IWHOLETRANSCRIPTEXON"],
         "to_test": True,
     },
     # test_no_est_warning_nm_c: no longer relevant ?
@@ -2608,6 +2608,7 @@ TESTS = [
         "keywords": ["no operation (equal)"],
         "input": "NM_002001.2:c.=",
         "normalized": "NM_002001.2:c.=",
+        "infos": ["IWHOLETRANSCRIPTEXON"],
         "to_test": True,
     },
     {
@@ -2637,7 +2638,7 @@ TESTS = [
     {
         "keywords": [],
         "input": "NM_003002.2:c.[100del;200_201insNM_003002.2:274+20]",
-        "infos": ["ICORRECTEDCOORDINATESYSTEM"],
+        "infos": ["ICORRECTEDCOORDINATESYSTEM", "IWHOLETRANSCRIPTEXON", "IWHOLETRANSCRIPTEXON"],
         "errors": ["EINTRONIC"],
         "to_test": True,
     },

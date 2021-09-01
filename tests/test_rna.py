@@ -38,6 +38,14 @@ ISPLICESITEREMOVED = {
     "paths": [["variants", 0]],
 }
 
+IWHOLETRANSCRIPTEXON = {
+    "code": "IWHOLETRANSCRIPTEXON",
+    "details": "No exon features found in the 'NM_003002.2' reference sequence "
+               "for 'NM_003002.2'. The entire transcript was assumed as one "
+               "exon.",
+    "paths": [("reference", "selector", "id")],
+}
+
 TESTS = [
     {
         "keywords": ["rna", "equal", "genomic", "mRNA"],
@@ -63,6 +71,7 @@ TESTS = [
         "input": "NM_003002.2:r.275a>c",
         "normalized": "NM_003002.2:r.275a>c",
         "protein_description": "NM_003002.2(NP_002993.1):p.(Asp92Ala)",
+        "infos": [IWHOLETRANSCRIPTEXON],
         "to_test": True,
     },
     {
@@ -824,6 +833,7 @@ TESTS = [
             "mRNA",
         ],
         "input": "NM_003002.2:r.277g>u",
+        "infos": [IWHOLETRANSCRIPTEXON],
         "errors": [
             {
                 "code": "ESEQUENCEMISMATCH",
@@ -840,6 +850,7 @@ TESTS = [
             "mRNA",
         ],
         "input": "NM_003002.2:r.277t>u",
+        "infos": [IWHOLETRANSCRIPTEXON],
         "errors": [
             {
                 "code": "ENORNA",
