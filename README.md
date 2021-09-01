@@ -5,15 +5,14 @@
 Install the backend.
 
     mkvirtualenv -p /usr/bin/python3 normalizer
-    git clone git@github.com:mutalyzer/normalizer.git
+    git clone https://github.com/mutalyzer/normalizer.git
     cd normalizer
-    git checkout refactor
     pip install -e .
 
 Install the frontend.
 
-    git clone git@git.lumc.nl:mlefter/mutalyzer-visualization-vuetify.git
-    cd mutalyzer-visualization-vuetify
+    git clone https://github.com/mutalyzer/website.git
+    cd website
     npm install
 
 ### Enable the cache
@@ -25,7 +24,7 @@ Create a cache folder and a configuration file.
 
 Populate the cache.
 
-    retriever --reference_id NC_000022.11 --parse > cache/NC_000022.11
+    mutalyzer_retriever --id NC_000022.11 --parse > cache/NC_000022.11
 
 ### Running
 
