@@ -5,12 +5,7 @@ from normalizer.position_converter import position_convert
 ns = Namespace("/")
 
 _args = reqparse.RequestParser()
-_args.add_argument(
-    "description",
-    type=str,
-    help="Description on which the positions are considered.",
-    required=False,
-)
+
 _args.add_argument(
     "reference_id",
     type=str,
