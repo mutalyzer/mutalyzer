@@ -78,6 +78,7 @@ class PositionConvert(object):
         if self.position and not isinstance(self.position, str):
             self.errors.append(errors.position_invalid())
 
+
     @check_errors
     def _get_description(self):
         if self.input_description:
@@ -107,11 +108,7 @@ class PositionConvert(object):
 
         if self.from_selector_id:
             description_model["reference"]["selector"] = {"id": self.from_selector_id}
-
-        if (
-            self.from_coordinate_system
-            and self.from_coordinate_system.strip().lower() not in ["selector"]
-        ):
+        if self.from_coordinate_system:
             description_model["coordinate_system"] = self.from_coordinate_system
 
         try:
