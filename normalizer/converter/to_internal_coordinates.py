@@ -160,9 +160,6 @@ def points_to_internal_coordinates(model, references):
     for point, path in yield_point_locations_for_main_reference(model):
         set_by_path(internal_model, path, point_to_internal(point, crossmap))
 
-    # if selector_model and selector_model.get("inverted"):
-    #     reverse_strand(internal_model)
-
     return internal_model
 
 
@@ -178,17 +175,19 @@ def to_internal_coordinates(model, references):
         set_by_path(
             internal_model, path, points_to_internal_coordinates(inserted, references)
         )
+
     reference_id = get_reference_id(model)
     selector_id = get_selector_id(model)
-    selector_model = (
-        get_internal_selector_model(
-            references[reference_id]["annotations"], selector_id, True
+    if selector_id:
+        selector_model = (
+            get_internal_selector_model(
+                references[reference_id]["annotations"], selector_id, True
+            )
+            if selector_id
+            else None
         )
-        if selector_id
-        else None
-    )
 
-    if selector_model and selector_model.get("inverted"):
-        reverse_strand(internal_model)
+        if selector_model and selector_model.get("inverted"):
+            reverse_strand(internal_model)
 
     return internal_model

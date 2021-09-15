@@ -3,7 +3,7 @@ from algebra.algebra import compare as compare_core
 import normalizer.errors as e
 from normalizer.reference import retrieve_reference
 
-from .mutator import mutate
+from .mutator import mutate, mutate_sequence
 
 
 def compare(reference, reference_type, lhs, lhs_type, rhs, rhs_type):
@@ -31,12 +31,7 @@ def compare(reference, reference_type, lhs, lhs_type, rhs, rhs_type):
         else:
             obs_seq_1 = mutated["sequence"]["seq"]
     elif lhs_type == "variant":
-        errors.append(
-            {
-                "code": "ENOTSUPPORTED",
-                "details": "Not supported yet.",
-            }
-        )
+        obs_seq_1 = mutate_sequence(ref_seq, lhs)
 
     if rhs_type == "sequence":
         obs_seq_2 = rhs
@@ -47,12 +42,7 @@ def compare(reference, reference_type, lhs, lhs_type, rhs, rhs_type):
         else:
             obs_seq_2 = mutated["sequence"]["seq"]
     elif lhs_type == "variant":
-        errors.append(
-            {
-                "code": "ENOTSUPPORTED",
-                "details": "Not supported yet.",
-            }
-        )
+        obs_seq_2 = mutate_sequence(ref_seq, rhs)
     if not errors:
         return {"relation": compare_core(ref_seq, obs_seq_1, obs_seq_2)[0]}
     else:
