@@ -8,43 +8,37 @@ _args = reqparse.RequestParser()
 _args.add_argument(
     "reference",
     type=str,
-    help="Reference",
-    default="NG_012337.3",
-    required=True,
+    help="Reference id or sequence",
+    required=False,
 )
 _args.add_argument(
     "reference_type",
     type=str,
-    help="Reference",
-    default="id",
-    required=True,
+    help="Reference type",
+    required=False,
 )
 _args.add_argument(
     "lhs",
     type=str,
-    help="Description 1",
-    default="NG_012337.3:g.100del",
+    help="Left hand side operator",
     required=True,
 )
 _args.add_argument(
     "lhs_type",
     type=str,
-    help="Description 1",
-    default="hgvs",
+    help="Left hand side operator type",
     required=True,
 )
 _args.add_argument(
     "rhs",
     type=str,
-    help="Description 2",
-    default="NG_012337.3:g.99_101del",
+    help="Right hand side operator",
     required=True,
 )
 _args.add_argument(
     "rhs_type",
     type=str,
-    help="Description 2",
-    default="hgvs",
+    help="Right hand side operator type",
     required=True,
 )
 
@@ -54,4 +48,5 @@ class Compare(Resource):
     @ns.expect(_args)
     def get(self):
         """Retrieve the reference model."""
+        print(_args.parse_args())
         return compare(**_args.parse_args())
