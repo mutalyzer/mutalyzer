@@ -293,3 +293,21 @@ def splice_site(path):
         "details": "Splice site(s) affected.",
         "paths": [path],
     }
+
+
+def invalid_input(value, valid_options=None):
+    output = {
+        "code": "EINVALIDINPUT",
+        "details": f"'{value}' not valid."
+    }
+    if valid_options:
+        output["options"] = valid_options
+    return output
+
+
+def missing_parameter(value):
+    return {
+        "code": "EMISSINGPARAMETER",
+        "details": f"Missing required '{value}' parameter."
+    }
+
