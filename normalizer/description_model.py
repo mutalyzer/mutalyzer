@@ -219,13 +219,22 @@ def model_to_string(model, exclude_superfluous_selector=True, aa="verbatim"):
         reference_id = model["reference"]["id"]
     elif model.get("source"):
         reference_id = model["source"]["id"]
-    selector_id = get_selector_id(model)
-    if exclude_superfluous_selector and reference_id == selector_id:
-        selector_id = None
-    if selector_id:
-        reference = "{}({})".format(reference_id, selector_id)
     else:
-        reference = "{}".format(reference_id)
+        reference_id = None
+    if reference_id:
+        selector_id = get_selector_id(model)
+        if (
+            reference_id
+            and exclude_superfluous_selector
+            and reference_id == selector_id
+        ):
+            selector_id = None
+        if selector_id:
+            reference = "{}({})".format(reference_id, selector_id)
+        else:
+            reference = "{}".format(reference_id)
+    else:
+        reference = None
     if model.get("coordinate_system"):
         coordinate_system = model.get("coordinate_system") + "."
     else:
@@ -237,7 +246,10 @@ def model_to_string(model, exclude_superfluous_selector=True, aa="verbatim"):
             variants = variants_to_description(model["variants"], False)
         if model.get("predicted"):
             variants = f"({variants})"
-        return "{}:{}{}".format(reference, coordinate_system, variants)
+        if reference:
+            return "{}:{}{}".format(reference, coordinate_system, variants)
+        else:
+            return "{}".format(variants)
     if model.get("location"):
         return "{}:{}{}".format(
             reference, coordinate_system, location_to_description(model.get("location"))

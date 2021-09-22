@@ -41,6 +41,7 @@ from .description_model import (
     get_reference_id,
     get_selector_id,
     model_to_string,
+    variants_to_description,
     yield_reference_ids,
     yield_reference_selector_ids,
     yield_reference_selector_ids_coordinate_system,
@@ -90,15 +91,23 @@ from .util import (
 
 
 class Description(object):
-    def __init__(self, description=None, description_model=None, stop_on_error=False):
+    def __init__(
+        self,
+        description=None,
+        description_model=None,
+        only_variants=False,
+        sequence=None,
+        stop_on_error=False,
+    ):
 
         self.stop_on_errors = stop_on_error
 
         self.errors = []
         self.infos = []
-
         self.input_description = description if description else None
         self.input_model = description_model if description_model else {}
+        self.only_variants = only_variants
+        self.sequence = sequence
         self._check_input()
 
         self.corrected_model = copy.deepcopy(self.input_model)
@@ -159,12 +168,18 @@ class Description(object):
 
     @check_errors
     def _convert_description_to_model(self):
+        start_rule = "variants" if self.only_variants else "description"
         try:
-            self.input_model = to_model(self.input_description)
+            model = to_model(self.input_description, start_rule)
         except UnexpectedCharacter as e:
             self._add_error(errors.syntax_uc(e))
         except UnexpectedEnd as e:
             self._add_error(errors.syntax_ueof(e))
+        else:
+            if start_rule == "variants":
+                self.input_model = {"variants": model}
+            else:
+                self.input_model = model
 
     def _set_main_reference(self):
         reference_id = get_reference_id(self.corrected_model)
@@ -196,6 +211,8 @@ class Description(object):
         """
         if not self.corrected_model:
             return
+        if self.only_variants and self.sequence:
+            self.references["reference"] = {"sequence": {"seq": self.sequence}}
         for reference_id, path in yield_reference_ids(self.input_model):
             reference_model = retrieve_reference(reference_id)
             if reference_model is None:
@@ -450,25 +467,39 @@ class Description(object):
     @check_errors
     def _extract(self):
         self.de_model = {
-            "reference": copy.deepcopy(self.internal_indexing_model["reference"]),
-            "coordinate_system": "i",
             "variants": describe_dna(
                 self.references["reference"]["sequence"]["seq"],
                 self.references["observed"]["sequence"]["seq"],
             ),
         }
+        if not self.only_variants:
+            self.de_model.update(
+                {
+                    "reference": copy.deepcopy(
+                        self.internal_indexing_model["reference"]
+                    ),
+                    "coordinate_system": "i",
+                }
+            )
 
     @check_errors
     def _construct_de_hgvs_internal_indexing_model(self):
         if self.de_model:
             self.de_hgvs_internal_indexing_model = {
-                "reference": copy.deepcopy(self.internal_indexing_model["reference"]),
-                "coordinate_system": "i",
                 "variants": de_to_hgvs(
                     self.de_model["variants"],
                     self.get_sequences(),
                 ),
             }
+            if not self.only_variants:
+                self.de_hgvs_internal_indexing_model.update(
+                    {
+                        "reference": copy.deepcopy(
+                            self.internal_indexing_model["reference"]
+                        ),
+                        "coordinate_system": "i",
+                    }
+                )
             if self.corrected_model.get("predicted"):
                 self.de_hgvs_internal_indexing_model["predicted"] = True
 
@@ -478,18 +509,20 @@ class Description(object):
             self.de_hgvs_model = to_hgvs_locations(
                 self.de_hgvs_internal_indexing_model,
                 self.references,
-                self.corrected_model["coordinate_system"],
+                self.corrected_model.get("coordinate_system"),
                 get_selector_id(self.corrected_model),
                 True,
             )
 
     def _construct_normalized_description(self):
         if self.de_hgvs_model:
-            if self.de_hgvs_model["coordinate_system"] == "r":
+            if self.de_hgvs_model.get("coordinate_system") == "r":
                 to_rna_sequences(self.de_hgvs_model)
             self.normalized_description = model_to_string(self.de_hgvs_model)
 
     def _construct_equivalent(self, other=None, as_description=True):
+        if self.only_variants:
+            return
         if other is not None:
             from_model = other
         elif self.de_hgvs_internal_indexing_model:
@@ -567,8 +600,8 @@ class Description(object):
 
     @check_errors
     def _construct_protein_description(self):
-        if self.de_hgvs_model["coordinate_system"] == "c" or (
-            self.de_hgvs_model["coordinate_system"] == "r"
+        if self.de_hgvs_model.get("coordinate_system") == "c" or (
+            self.de_hgvs_model.get("coordinate_system") == "r"
             and get_coordinate_system_from_selector_id(
                 self.references["reference"], self._get_selector_id()
             )
@@ -592,7 +625,7 @@ class Description(object):
 
     @check_errors
     def _construct_rna_description(self):
-        if self.de_hgvs_model["coordinate_system"] in ["c", "n"]:
+        if self.de_hgvs_model.get("coordinate_system") in ["c", "n"]:
             self.rna = {}
             errors_splice, infos_splice = splice_sites(
                 variants_to_delins(self.de_hgvs_internal_indexing_model["variants"]),
@@ -939,7 +972,8 @@ class Description(object):
 
     def _remove_superfluous_selector(self):
         if (
-            self.de_hgvs_model
+            not self.only_variants
+            and self.de_hgvs_model
             and self.de_hgvs_model["reference"].get("selector")
             and self.de_hgvs_model["reference"]["selector"]["id"]
             == self.de_hgvs_model["reference"]["id"]
@@ -964,7 +998,7 @@ class Description(object):
 
     @check_errors
     def _rna(self):
-        if self.corrected_model["coordinate_system"] == "r":
+        if self.corrected_model.get("coordinate_system") == "r":
             errors_splice, infos_splice = splice_sites(
                 self.internal_indexing_model["variants"],
                 self.get_sequences(),
@@ -1152,7 +1186,7 @@ class Description(object):
                 self._construct_equivalent()
             self._remove_superfluous_selector()
 
-        self.print_models_summary()
+        # self.print_models_summary()
 
     def output(self):
         output = {
