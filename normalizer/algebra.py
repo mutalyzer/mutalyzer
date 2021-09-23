@@ -1,4 +1,5 @@
 from algebra.algebra import compare as compare_core
+from algebra.influence_interval import influence_interval
 
 import normalizer.errors as errors
 from normalizer.description import Description
@@ -128,6 +129,25 @@ def _input_types_check(reference_type, lhs_type, rhs_type):
     return output
 
 
+def _influence_interval(output, ref_seq, obs_seq, hs):
+    try:
+        min_pos, max_pos = influence_interval(ref_seq, obs_seq)
+    except Exception as e:
+        if "Equal to the reference" in str(e):
+            output[f"influence_{hs}"] = {"equal": True}
+    else:
+        output[f"influence_{hs}"] = {"min_pos": min_pos, "max_pos": max_pos}
+
+
+def _add_sequences(output, ref_seq, lhs_seq, rhs_seq, len_max=100):
+    if len(ref_seq) <= len_max:
+        output["ref_seq"] = ref_seq
+    if len(lhs_seq) <= len_max:
+        output["lhs_seq"] = lhs_seq
+    if len(rhs_seq) <= len_max:
+        output["rhs_seq"] = rhs_seq
+
+
 def compare(reference, reference_type, lhs, lhs_type, rhs, rhs_type):
     output = _input_types_check(reference_type, lhs_type, rhs_type)
     if output:
@@ -163,7 +183,12 @@ def compare(reference, reference_type, lhs, lhs_type, rhs, rhs_type):
         ref_seq = c_reference["sequence"]
     else:
         ref_seq = c_lhs["reference_sequence"]
-    obs_seq_1 = c_lhs["sequence"]
-    obs_seq_2 = c_rhs["sequence"]
+    lhs_seq = c_lhs["sequence"]
+    rhs_seq = c_rhs["sequence"]
 
-    return {"relation": compare_core(ref_seq, obs_seq_1, obs_seq_2)[0]}
+    output["relation"] = compare_core(ref_seq, lhs_seq, rhs_seq)[0]
+    _influence_interval(output, ref_seq, lhs_seq, "lhs")
+    _influence_interval(output, ref_seq, rhs_seq, "rhs")
+    _add_sequences(output, ref_seq, lhs_seq, rhs_seq)
+
+    return output

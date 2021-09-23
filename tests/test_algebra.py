@@ -88,7 +88,14 @@ def test_get_hgvs(description, expected):
     [
         (
             ("AAAAA", "sequence", "ATAAAAA", "sequence", "2_3insT", "variant"),
-            {"relation": "disjoint"},
+            {
+                "relation": "disjoint",
+                "influence_lhs": {"min_pos": 0, "max_pos": 5},
+                "influence_rhs": {"min_pos": 2, "max_pos": 2},
+                "ref_seq": "AAAAA",
+                "lhs_seq": "ATAAAAA",
+                "rhs_seq": "AATAAA",
+            },
         ),
         (
             (
@@ -99,7 +106,11 @@ def test_get_hgvs(description, expected):
                 "LRG_24:g.5525_5533del",
                 "hgvs",
             ),
-            {"relation": "is_contained"},
+            {
+                "relation": "is_contained",
+                "influence_lhs": {"min_pos": 5522, "max_pos": 5534},
+                "influence_rhs": {"min_pos": 5522, "max_pos": 5534},
+            },
         ),
         (
             (
@@ -110,7 +121,11 @@ def test_get_hgvs(description, expected):
                 "LRG_24:g.5525_5533del",
                 "hgvs",
             ),
-            {"relation": "is_contained"},
+            {
+                "relation": "is_contained",
+                "influence_lhs": {"min_pos": 5522, "max_pos": 5534},
+                "influence_rhs": {"min_pos": 5522, "max_pos": 5534},
+            },
         ),
         (
             (
@@ -121,7 +136,11 @@ def test_get_hgvs(description, expected):
                 "LRG_24:g.5525_5533del",
                 "hgvs",
             ),
-            {"relation": "is_contained"},
+            {
+                "relation": "is_contained",
+                "influence_lhs": {"min_pos": 5522, "max_pos": 5534},
+                "influence_rhs": {"min_pos": 5522, "max_pos": 5534},
+            },
         ),
         (
             (
@@ -132,7 +151,11 @@ def test_get_hgvs(description, expected):
                 "LRG_24:g.5525_5533del",
                 "hgvs",
             ),
-            {"relation": "is_contained"},
+            {
+                "relation": "is_contained",
+                "influence_lhs": {"min_pos": 5522, "max_pos": 5534},
+                "influence_rhs": {"min_pos": 5522, "max_pos": 5534},
+            },
         ),
         (
             (
@@ -143,7 +166,11 @@ def test_get_hgvs(description, expected):
                 "LRG_303:g.5525_5532del",
                 "hgvs",
             ),
-            {"relation": "equivalent"},
+            {
+                "relation": "equivalent",
+                "influence_lhs": {"min_pos": 5519, "max_pos": 5534},
+                "influence_rhs": {"min_pos": 5519, "max_pos": 5534},
+            },
         ),
         (
             (
@@ -154,7 +181,11 @@ def test_get_hgvs(description, expected):
                 "274del",
                 "variant",
             ),
-            {"relation": "contains"},
+            {
+                "relation": "contains",
+                "influence_lhs": {"min_pos": 272, "max_pos": 275},
+                "influence_rhs": {"min_pos": 274, "max_pos": 274},
+            },
         ),
         (
             (
@@ -165,7 +196,11 @@ def test_get_hgvs(description, expected):
                 "274del",
                 "variant",
             ),
-            {"relation": "contains"},
+            {
+                "relation": "contains",
+                "influence_lhs": {"min_pos": 272, "max_pos": 275},
+                "influence_rhs": {"min_pos": 274, "max_pos": 274},
+            },
         ),
     ],
 )
@@ -242,7 +277,4 @@ def test_compare(params, expected):
     ],
 )
 def test_compare_errors(params, expected):
-    # import json
-    #
-    # print(json.dumps(compare(*params), indent=2))
     assert compare(*params) == expected
