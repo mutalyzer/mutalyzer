@@ -186,6 +186,20 @@ def compare(reference, reference_type, lhs, lhs_type, rhs, rhs_type):
     lhs_seq = c_lhs["sequence"]
     rhs_seq = c_rhs["sequence"]
 
+    len_max = 100000
+    if len(ref_seq) > len_max:
+        _append_error(
+            output,
+            "reference",
+            {
+                "code": "ESEQUENCELENGTH",
+                "details": f"Sequence length {len(ref_seq)} too large (maximum supported is {len_max}).",
+            },
+        )
+
+    if output.get("errors"):
+        return output
+
     output["relation"] = compare_core(ref_seq, lhs_seq, rhs_seq)[0]
     _influence_interval(output, ref_seq, lhs_seq, "lhs")
     _influence_interval(output, ref_seq, rhs_seq, "rhs")
