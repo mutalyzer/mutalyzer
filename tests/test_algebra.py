@@ -1,6 +1,6 @@
 import pytest
 
-from normalizer.algebra import _get_hgvs, _get_id, compare
+from normalizer.algebra import _get_hgvs_and_variant, _get_id, compare
 from normalizer.reference import retrieve_reference
 
 from .commons import code_in, patch_retriever
@@ -56,11 +56,11 @@ def test_get_id_no_ref(reference_id):
                 "TTGTTACTAAGCAGATTTAAGGGTCAGTGGGGGAAGGCTATCAACCCATTGTCAGATCAGCA"
                 "TCAGGCTGTTATCAAGTCTGTTGGTGCTAAAAAGTAAAAGATGAAATGTTCAAAGAGTGAAA"
                 "TTTATTTATTTGGAATTCAGAAATTCCAGGTTGTATGACATCAGTTACTCAATAAGTGTGAA"
-                 "TTCTCCAACTCTTCTTTTAATCCCATTTTAGAATTTAATATAGAGATCTCTGATTGGCAGG"
-                 "AACACTAGAAATAAATGTTCCATGGCCAGTAGTGCAAATGGGGGATTGTAGGTTTTGAAAA"
-                 "ACCACCCTAAGCCATATTAAGGGGGTTGGAAGAACCATCGAAGCCTAAGGCATAGAAGAAA"
-                 "ATTTGGGGTTAAGAAAGATGAAGAACAAAAAACAGCTTTATTGCTTATACATGACCAAGAA"
-                 "AAGGAAAACATGGCAAAAAAAAAAAAAAAAAA",
+                "TTCTCCAACTCTTCTTTTAATCCCATTTTAGAATTTAATATAGAGATCTCTGATTGGCAGGA"
+                "ACACTAGAAATAAATGTTCCATGGCCAGTAGTGCAAATGGGGGATTGTAGGTTTTGAAAAAC"
+                "CACCCTAAGCCATATTAAGGGGGTTGGAAGAACCATCGAAGCCTAAGGCATAGAAGAAAATT"
+                "TGGGGTTAAGAAAGATGAAGAACAAAAAACAGCTTTATTGCTTATACATGACCAAGAAAAGG"
+                "AAAACATGGCAAAAAAAAAAAAAAAAAA",
                 "reference_sequence": "AAGTCGAGAGGCGGTGCACACCCGTCGCGCATGCGCAAAC"
                 "ACAGCTGTCGGAAGGTGGCGAGCCTGAGGCGAACAATGGCGGAGCTGGGCGAAGCCGATGA"
                 "AGCGGAGTTGCAGCGCCTGGTGGCCGCCGAGCAGCAGAAGGCGCAGTTTACTGCACAGGTG"
@@ -80,7 +80,7 @@ def test_get_id_no_ref(reference_id):
     ],
 )
 def test_get_hgvs(description, expected):
-    assert _get_hgvs(description) == expected
+    assert _get_hgvs_and_variant(description) == expected
 
 
 @pytest.mark.parametrize(
@@ -156,6 +156,17 @@ def test_get_hgvs(description, expected):
             ),
             {"relation": "contains"},
         ),
+        (
+            (
+                None,
+                None,
+                "NG_012337.3:g.274>A",
+                "hgvs",
+                "274del",
+                "variant",
+            ),
+            {"relation": "contains"},
+        ),
     ],
 )
 def test_compare(params, expected):
@@ -180,37 +191,25 @@ def test_compare(params, expected):
                         {
                             "code": "EINVALIDINPUT",
                             "details": "'hgvs' not valid.",
-                            "options": [
-                                "sequence",
-                                "id"
-                            ]
+                            "options": ["sequence", "id"],
                         }
                     ],
                     "lhs_type": [
                         {
                             "code": "EINVALIDINPUT",
                             "details": "'HGVS' not valid.",
-                            "options": [
-                                "sequence",
-                                "variant",
-                                "hgvs"
-                            ]
+                            "options": ["sequence", "variant", "hgvs"],
                         }
                     ],
                     "rhs_type": [
                         {
                             "code": "EINVALIDINPUT",
                             "details": "'varianT' not valid.",
-                            "options": [
-                                "sequence",
-                                "variant",
-                                "hgvs"
-                            ]
+                            "options": ["sequence", "variant", "hgvs"],
                         }
-                    ]
+                    ],
                 }
-            }
-            ,
+            },
         ),
         (
             (

@@ -1,55 +1,22 @@
 from algebra.algebra import compare as compare_core
-from mutalyzer_hgvs_parser import to_model
-from mutalyzer_hgvs_parser.exceptions import UnexpectedCharacter, UnexpectedEnd
-from mutalyzer_mutator import mutate as mutalyzer_mutator
 
 import normalizer.errors as errors
 from normalizer.description import Description
 from normalizer.reference import retrieve_reference
 
-from .converter.to_delins import to_delins
-from .converter.to_internal_coordinates import to_internal_coordinates
-from .converter.to_internal_indexing import to_internal_indexing
 
+def _get_hgvs_and_variant(variant, only_variants=False, ref_seq=None):
+    output = {"input": variant, "type": "variant" if only_variants else "hgvs"}
 
-def _get_variant(variant, ref_seq):
-    output = {"input": variant, "type": "variant"}
-
-    try:
-        variants_model = to_model(variant, "variants")
-    except UnexpectedCharacter as e:
-        output["errors"] = [errors.syntax_uc(e)]
-        return output
-    except UnexpectedEnd as e:
-        output["errors"] = [errors.syntax_ueof(e)]
-        return output
-
-    artificial_model = {
-        "coordinate_system": "g",
-        "variants": variants_model,
-    }
-    sequence = {"sequence": {"seq": ref_seq}}
-    delins_model = to_delins(
-        to_internal_indexing(to_internal_coordinates(artificial_model, sequence))
-    )
-    output["sequence"] = mutalyzer_mutator(
-        {"reference": ref_seq}, delins_model["variants"]
-    )
-    return output
-
-
-def _get_hgvs(description):
-    output = {"input": description, "type": "hgvs"}
-    d = Description(description)
-
+    d = Description(description=variant, only_variants=only_variants, sequence=ref_seq)
     d.normalize()
+
     status = d.output()
-    if status.get("input_model"):
+    if status.get("input_model") and status["input_model"].get("reference"):
         output["reference"] = status["input_model"]["reference"]
     if status.get("errors"):
         output["errors"] = status["errors"]
         return output
-
     if status.get("infos"):
         output["infos"] = status["infos"]
 
@@ -88,9 +55,9 @@ def _get_operator(m_input, m_type, reference):
     if m_type == "sequence":
         return _get_sequence(m_input)
     elif m_type == "hgvs":
-        return _get_hgvs(m_input)
+        return _get_hgvs_and_variant(m_input)
     elif m_type == "variant":
-        return _get_variant(m_input, reference)
+        return _get_hgvs_and_variant(m_input, True, reference)
 
 
 def _sort(d):
@@ -99,9 +66,7 @@ def _sort(d):
             _sort(v)
     if isinstance(d, dict):
         for k in d:
-            print(k)
             if isinstance(d[k], list):
-                print("sorted")
                 d[k] = sorted(d[k])
             if isinstance(d[k], dict):
                 _sort(d[k])
@@ -174,13 +139,8 @@ def compare(reference, reference_type, lhs, lhs_type, rhs, rhs_type):
         _append_error(output, "reference", errors.missing_parameter("reference"))
         return output
 
-    if reference_type == "sequence":
-        c_reference = _get_sequence(reference)
-        ref_seq = reference
-        c_lhs = _get_operator(lhs, lhs_type, ref_seq)
-        c_rhs = _get_operator(rhs, rhs_type, ref_seq)
-    elif reference_type == "id":
-        c_reference = _get_id(reference)
+    if reference_type in ["sequence", "id"]:
+        c_reference = _get_reference(reference, reference_type)
         if c_reference.get("errors"):
             _extend_errors(output, "reference", c_reference["errors"])
             return output
@@ -188,7 +148,7 @@ def compare(reference, reference_type, lhs, lhs_type, rhs, rhs_type):
         c_lhs = _get_operator(lhs, lhs_type, ref_seq)
         c_rhs = _get_operator(rhs, rhs_type, ref_seq)
     elif lhs_type == "hgvs":
-        c_lhs = _get_hgvs(lhs)
+        c_lhs = _get_hgvs_and_variant(lhs)
         if c_lhs.get("errors"):
             _extend_errors(output, "lhs", c_lhs["errors"])
             return output

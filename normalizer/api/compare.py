@@ -48,5 +48,4 @@ class Compare(Resource):
     @ns.expect(_args)
     def get(self):
         """Retrieve the reference model."""
-        print(_args.parse_args())
         return compare(**_args.parse_args())

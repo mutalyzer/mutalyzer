@@ -868,7 +868,7 @@ class Description(object):
         else:
             seq_ref = slice_sequence(v_i["location"], sequences["reference"])
             seq_del = construct_sequence(v_i[ins_or_del], sequences)
-            if self.corrected_model["coordinate_system"] == "r":
+            if self.corrected_model.get("coordinate_system") == "r":
                 seq_del = str(Seq(seq_del).transcribe().lower())
                 seq_ref = str(Seq(seq_ref).transcribe().lower())
             if seq_del and seq_ref and seq_del != seq_ref:
@@ -883,7 +883,7 @@ class Description(object):
         for seq, path in yield_sub_model(
             self.corrected_model, ["sequence", "amino_acid"]
         ):
-            if self.corrected_model["coordinate_system"] in ["g", "c", "n"]:
+            if self.corrected_model.get("coordinate_system") in ["g", "c", "n", None]:
                 if seq.upper() != seq:
                     self._add_info(infos.corrected_sequence(seq, seq.upper()))
                     set_by_path(self.corrected_model, path, seq.upper())
@@ -893,7 +893,7 @@ class Description(object):
                     set_by_path(self.internal_indexing_model, path, seq.upper())
                 if not is_dna(seq.upper()):
                     self._add_error(errors.no_dna(seq.upper(), path))
-            elif self.corrected_model["coordinate_system"] == "r":
+            elif self.corrected_model.get("coordinate_system") == "r":
                 if is_dna(seq):
                     seq_rna = str(Seq(seq).transcribe()).lower()
                     self._add_info(infos.corrected_sequence(seq, seq_rna))
