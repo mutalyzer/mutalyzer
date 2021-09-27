@@ -41,8 +41,8 @@ ISPLICESITEREMOVED = {
 IWHOLETRANSCRIPTEXON = {
     "code": "IWHOLETRANSCRIPTEXON",
     "details": "No exon features found in the 'NM_003002.2' reference sequence "
-               "for 'NM_003002.2'. The entire transcript was assumed as one "
-               "exon.",
+    "for 'NM_003002.2'. The entire transcript was assumed as one "
+    "exon.",
     "paths": [("reference", "selector", "id")],
 }
 
@@ -895,7 +895,7 @@ def get_tests(tests, t_type):
 )
 def test_rna(input_description, normalized):
     d = name_check(input_description)
-    assert d["normalized_description"] == normalized
+    assert d.get("normalized_description") == normalized
 
 
 @pytest.mark.parametrize(

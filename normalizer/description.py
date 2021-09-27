@@ -1189,16 +1189,18 @@ class Description(object):
         # self.print_models_summary()
 
     def output(self):
-        output = {
-            "input_model": self.input_model,
-        }
+        output = {}
+        if self.input_description:
+            output["input_description"] = self.input_description
+        if self.input_model:
+            output["input_model"] = self.input_model
         if self.corrected_model:
             output["corrected_model"] = self.corrected_model
             output["corrected_description"] = model_to_string(self.corrected_model)
-        output["normalized_description"] = self.normalized_description
-        output["normalized_model"] = self.de_hgvs_model
-        output["input_description"] = self.input_description
-
+        if self.normalized_description:
+            output["normalized_description"] = self.normalized_description
+        if self.de_hgvs_model:
+            output["normalized_model"] = self.de_hgvs_model
         if self.protein:
             output["protein"] = self.protein
         if self.rna:

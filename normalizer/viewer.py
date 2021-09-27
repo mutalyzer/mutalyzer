@@ -23,6 +23,8 @@ def shrink_seq(seq, limit=100, left=50, right=50):
 def view_variants(description, left=20, right=20):
     d = Description(description)
     d.normalize()
+    if d.errors:
+        return d.output()
     sequences = d.get_sequences()
     output = []
     for i, variant in enumerate(d.internal_indexing_model["variants"]):
