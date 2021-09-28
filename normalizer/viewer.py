@@ -20,8 +20,10 @@ def shrink_seq(seq, limit=100, left=50, right=50):
         return {"seq": seq}
 
 
-def view_variants(description, left=20, right=20):
-    d = Description(description)
+def view_variants(description, only_variants=False, sequence=None, left=20, right=20):
+    d = Description(
+        description=description, only_variants=only_variants, sequence=sequence
+    )
     d.normalize()
     if d.errors:
         return d.output()
