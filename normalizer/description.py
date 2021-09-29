@@ -1194,6 +1194,10 @@ class Description(object):
             output["input_description"] = self.input_description
         if self.input_model:
             output["input_model"] = self.input_model
+        if self.only_variants:
+            output["only_variants"] = self.only_variants
+            if self.sequence:
+                output["sequence"] = self.sequence
         if self.corrected_model:
             output["corrected_model"] = self.corrected_model
             output["corrected_description"] = model_to_string(self.corrected_model)
