@@ -4,6 +4,9 @@ from algebra.influence_interval import influence_interval
 import normalizer.errors as errors
 from normalizer.description import Description
 from normalizer.reference import retrieve_reference
+from normalizer.description_extractor import description_extractor
+from .util import get_end, get_inserted_sequence, get_start, slice_sequence
+from normalizer.description_model import variant_to_description
 
 
 def _get_hgvs_and_variant(variant, only_variants=False, ref_seq=None):
@@ -148,6 +151,77 @@ def _add_sequences(output, ref_seq, lhs_seq, rhs_seq, len_max=100):
         output["rhs_seq"] = rhs_seq
 
 
+def _influence(ref_seq, obs_seq):
+    influence = {}
+    try:
+        min_pos, max_pos = influence_interval(ref_seq, obs_seq)
+    except Exception as e:
+        if "Equal to the reference" in str(e):
+            influence = {"equal": True}
+    else:
+        influence = {"min_pos": min_pos, "max_pos": max_pos}
+
+
+def _get_segments(variants, ref_seq):
+    points = []
+    for variant in variants:
+        points += [get_start(variant), get_end(variant)]
+    points = [0] + points + [len(ref_seq)]
+    return [(points[i - 1], points[i]) for i in range(len(points))[1:]]
+
+
+def _get_sequence_view(seq, l_l=2, l_r=2):
+    s = 0
+    e = len(seq)
+    if e - s > l_l + l_r:
+        return {"left": seq[s : s + l_l], "right": seq[e - l_l : e]}
+    if 0 < e - s <= l_l + l_r:
+        return {"sequence": seq[s:e]}
+
+
+def _get_view_outside(s, e, ref_seq, l_l=2, l_r=2):
+    view = {"start": s, "end": e, "type": "outside"}
+    if e - s > l_l + l_r:
+        view["left"] = ref_seq[s : s + l_l]
+        view["right"] = ref_seq[e - l_l : e]
+    if 0 < e - s <= l_l + l_r:
+        view["sequence"] = ref_seq[s:e]
+    return view
+
+
+def _get_view_inside(s, e, ref_seq, variant, l_l=2, l_r=2):
+    view = {"start": s, "end": e, "type": "variant"}
+    if e - s > l_l + l_r:
+        view["deleted"] = {"left": ref_seq[s : s + l_l], "right": ref_seq[e - l_l : e]}
+    if 0 < e - s <= l_l + l_r:
+        view["deleted"] = {"sequence": ref_seq[s:e]}
+    ins_seq = get_inserted_sequence(variant, {"reference": ref_seq})
+    if ins_seq:
+        view["inserted"] = _get_sequence_view(ins_seq)
+    return view
+
+
+def details(ref_seq, obs_seq):
+    # influence = _influence(ref_seq, obs_seq)
+    variants = description_extractor(ref_seq, obs_seq)
+    d = Description(variants, only_variants=True, sequence=ref_seq)
+    d.normalize()
+    segments = _get_segments(d.delins_model["variants"], ref_seq)
+    view = []
+    for i, segment in enumerate(segments):
+        if i % 2 == 0:
+            view.append(_get_view_outside(*segment, ref_seq))
+        else:
+            view.append(
+                _get_view_inside(*segment, ref_seq, d.delins_model["variants"][i // 2])
+            )
+    return view
+
+
+def add_details():
+    pass
+
+
 def compare(reference, reference_type, lhs, lhs_type, rhs, rhs_type):
     output = _input_types_check(reference_type, lhs_type, rhs_type)
     if output:
@@ -204,5 +278,8 @@ def compare(reference, reference_type, lhs, lhs_type, rhs, rhs_type):
     _influence_interval(output, ref_seq, lhs_seq, "lhs")
     _influence_interval(output, ref_seq, rhs_seq, "rhs")
     _add_sequences(output, ref_seq, lhs_seq, rhs_seq)
+
+    output["view_lhs"] = details(ref_seq, lhs_seq)
+    output["view_rhs"] = details(ref_seq, rhs_seq)
 
     return output
