@@ -170,7 +170,7 @@ def _get_segments(variants, ref_seq):
     return [(points[i - 1], points[i]) for i in range(len(points))[1:]]
 
 
-def _get_sequence_view(seq, l_l=2, l_r=2):
+def _get_sequence_view(seq, l_l=10, l_r=10):
     s = 0
     e = len(seq)
     if e - s > l_l + l_r:
@@ -179,25 +179,23 @@ def _get_sequence_view(seq, l_l=2, l_r=2):
         return {"sequence": seq[s:e]}
 
 
-def _get_view_outside(s, e, ref_seq, l_l=2, l_r=2):
+def _get_view_outside(s, e, ref_seq):
     view = {"start": s, "end": e, "type": "outside"}
-    if e - s > l_l + l_r:
-        view["left"] = ref_seq[s : s + l_l]
-        view["right"] = ref_seq[e - l_l : e]
-    if 0 < e - s <= l_l + l_r:
-        view["sequence"] = ref_seq[s:e]
+    seq = ref_seq[s:e]
+    if seq:
+        view.update(_get_sequence_view(seq))
     return view
 
 
-def _get_view_inside(s, e, ref_seq, variant, l_l=2, l_r=2):
+def _get_view_inside(s, e, ref_seq, variant):
     view = {"start": s, "end": e, "type": "variant"}
-    if e - s > l_l + l_r:
-        view["deleted"] = {"left": ref_seq[s : s + l_l], "right": ref_seq[e - l_l : e]}
-    if 0 < e - s <= l_l + l_r:
-        view["deleted"] = {"sequence": ref_seq[s:e]}
+    del_seq = ref_seq[s:e]
+    if del_seq:
+        view["deleted"] = _get_sequence_view(del_seq)
     ins_seq = get_inserted_sequence(variant, {"reference": ref_seq})
     if ins_seq:
         view["inserted"] = _get_sequence_view(ins_seq)
+        view["inserted"]["length"] = len(ins_seq)
     return view
 
 
@@ -212,9 +210,9 @@ def details(ref_seq, obs_seq):
         if i % 2 == 0:
             view.append(_get_view_outside(*segment, ref_seq))
         else:
-            view.append(
-                _get_view_inside(*segment, ref_seq, d.delins_model["variants"][i // 2])
-            )
+            v = {"description": variant_to_description(d.corrected_model["variants"][i // 2])}
+            v.update(_get_view_inside(*segment, ref_seq, d.delins_model["variants"][i // 2]))
+            view.append(v)
     return view
 
 
