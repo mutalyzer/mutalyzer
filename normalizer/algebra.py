@@ -200,23 +200,23 @@ def _get_view_inside(s, e, ref_seq, variant):
 
 
 def details(ref_seq, obs_seq):
-    # influence = _influence(ref_seq, obs_seq)
     variants = description_extractor(ref_seq, obs_seq)
     d = Description(variants, only_variants=True, sequence=ref_seq)
     d.normalize()
     segments = _get_segments(d.delins_model["variants"], ref_seq)
-    view = []
+    views = []
     for i, segment in enumerate(segments):
         if i % 2 == 0:
-            view.append(_get_view_outside(*segment, ref_seq))
+            views.append(_get_view_outside(*segment, ref_seq))
         else:
             v = {"description": variant_to_description(d.corrected_model["variants"][i // 2])}
             v.update(_get_view_inside(*segment, ref_seq, d.delins_model["variants"][i // 2]))
-            view.append(v)
-    return view
+            views.append(v)
+
+    return {"views": views, "seq_length": len(ref_seq)}
 
 
-def add_details():
+def add_variants_views():
     pass
 
 
