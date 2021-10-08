@@ -4,9 +4,7 @@ from algebra.influence_interval import influence_interval
 import normalizer.errors as errors
 from normalizer.description import Description
 from normalizer.reference import retrieve_reference
-from normalizer.description_extractor import description_extractor
-from .util import get_end, get_inserted_sequence, get_start, slice_sequence
-from normalizer.description_model import variant_to_description
+from normalizer.viewer import view_variants
 
 
 def _get_hgvs_and_variant(variant, only_variants=False, ref_seq=None):
@@ -27,6 +25,9 @@ def _get_hgvs_and_variant(variant, only_variants=False, ref_seq=None):
     sequences = d.get_sequences()
     output["sequence"] = sequences["observed"]
     output["reference_sequence"] = sequences["reference"]
+    output["view"] = view_variants(
+        description=variant, only_variants=only_variants, sequence=ref_seq
+    )
 
     return output
 
@@ -142,82 +143,28 @@ def _influence_interval(output, ref_seq, obs_seq, hs):
         output[f"influence_{hs}"] = {"min_pos": min_pos, "max_pos": max_pos}
 
 
-def _add_sequences(output, ref_seq, lhs_seq, rhs_seq, len_max=100):
-    if len(ref_seq) <= len_max:
-        output["ref_seq"] = ref_seq
-    if len(lhs_seq) <= len_max:
-        output["lhs_seq"] = lhs_seq
-    if len(rhs_seq) <= len_max:
-        output["rhs_seq"] = rhs_seq
+def _check_sequences_equality(output, lhs, rhs):
+    if lhs["reference_sequence"] != rhs["reference_sequence"]:
+        _append_error(
+            output,
+            "reference",
+            {
+                "code": "ESEQUENCEMISMATCH",
+                "details": f"Different reference sequences for LHS and RHS.",
+            },
+        )
 
 
-def _influence(ref_seq, obs_seq):
-    influence = {}
-    try:
-        min_pos, max_pos = influence_interval(ref_seq, obs_seq)
-    except Exception as e:
-        if "Equal to the reference" in str(e):
-            influence = {"equal": True}
-    else:
-        influence = {"min_pos": min_pos, "max_pos": max_pos}
-
-
-def _get_segments(variants, ref_seq):
-    points = []
-    for variant in variants:
-        points += [get_start(variant), get_end(variant)]
-    points = [0] + points + [len(ref_seq)]
-    return [(points[i - 1], points[i]) for i in range(len(points))[1:]]
-
-
-def _get_sequence_view(seq, l_l=10, l_r=10):
-    s = 0
-    e = len(seq)
-    if e - s > l_l + l_r:
-        return {"left": seq[s : s + l_l], "right": seq[e - l_l : e]}
-    if 0 < e - s <= l_l + l_r:
-        return {"sequence": seq[s:e]}
-
-
-def _get_view_outside(s, e, ref_seq):
-    view = {"start": s, "end": e, "type": "outside"}
-    seq = ref_seq[s:e]
-    if seq:
-        view.update(_get_sequence_view(seq))
-    return view
-
-
-def _get_view_inside(s, e, ref_seq, variant):
-    view = {"start": s, "end": e, "type": "variant"}
-    del_seq = ref_seq[s:e]
-    if del_seq:
-        view["deleted"] = _get_sequence_view(del_seq)
-    ins_seq = get_inserted_sequence(variant, {"reference": ref_seq})
-    if ins_seq:
-        view["inserted"] = _get_sequence_view(ins_seq)
-        view["inserted"]["length"] = len(ins_seq)
-    return view
-
-
-def details(ref_seq, obs_seq):
-    variants = description_extractor(ref_seq, obs_seq)
-    d = Description(variants, only_variants=True, sequence=ref_seq)
-    d.normalize()
-    segments = _get_segments(d.delins_model["variants"], ref_seq)
-    views = []
-    for i, segment in enumerate(segments):
-        if i % 2 == 0:
-            views.append(_get_view_outside(*segment, ref_seq))
-        else:
-            v = {"description": variant_to_description(d.corrected_model["variants"][i // 2])}
-            v.update(_get_view_inside(*segment, ref_seq, d.delins_model["variants"][i // 2]))
-            views.append(v)
-
-    return {"views": views, "seq_length": len(ref_seq)}
-
-
-def add_variants_views():
-    pass
+def _check_sequence_length(output, ref_seq, len_max):
+    if len(ref_seq) > len_max:
+        _append_error(
+            output,
+            "reference",
+            {
+                "code": "ESEQUENCELENGTH",
+                "details": f"Sequence length {len(ref_seq)} too large (maximum supported is {len_max}).",
+            },
+        )
 
 
 def compare(reference, reference_type, lhs, lhs_type, rhs, rhs_type):
@@ -258,16 +205,8 @@ def compare(reference, reference_type, lhs, lhs_type, rhs, rhs_type):
     lhs_seq = c_lhs["sequence"]
     rhs_seq = c_rhs["sequence"]
 
-    len_max = 100000
-    if len(ref_seq) > len_max:
-        _append_error(
-            output,
-            "reference",
-            {
-                "code": "ESEQUENCELENGTH",
-                "details": f"Sequence length {len(ref_seq)} too large (maximum supported is {len_max}).",
-            },
-        )
+    _check_sequence_length(output, ref_seq, 100000)
+    _check_sequences_equality(output, c_lhs, c_rhs)
 
     if output.get("errors"):
         return output
@@ -275,9 +214,8 @@ def compare(reference, reference_type, lhs, lhs_type, rhs, rhs_type):
     output["relation"] = compare_core(ref_seq, lhs_seq, rhs_seq)[0]
     _influence_interval(output, ref_seq, lhs_seq, "lhs")
     _influence_interval(output, ref_seq, rhs_seq, "rhs")
-    _add_sequences(output, ref_seq, lhs_seq, rhs_seq)
 
-    output["view_lhs"] = details(ref_seq, lhs_seq)
-    output["view_rhs"] = details(ref_seq, rhs_seq)
+    output["view_lhs"] = c_lhs["view"]
+    output["view_rhs"] = c_rhs["view"]
 
     return output
