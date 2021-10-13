@@ -15,6 +15,7 @@ from .name_check import ns as ns_name_check
 from .position_convert import ns as ns_position_convert
 from .reference_model import ns as ns_reference_model
 from .related_references import ns as ns_related_references
+from .spdi_converter import ns as ns_spdi_converter
 from .view_variants import ns as ns_view_variants
 
 logging.basicConfig(level=logging.INFO, filename=log_dir())
@@ -53,4 +54,5 @@ api.add_namespace(ns_position_convert)
 api.add_namespace(ns_description_extract)
 api.add_namespace(ns_get_selectors)
 api.add_namespace(ns_view_variants)
+api.add_namespace(ns_spdi_converter)
 api.add_namespace(ns_back_translate)
