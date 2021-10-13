@@ -24,7 +24,12 @@ def spdi_converter(description):
         "reference": {"id": m["reference"]["id"]},
         "coordinate_system": "i",
     }
-    n_m = to_hgvs_locations(d_h_m, {m["reference"]["id"]: r_m}, c_s)
+    if c_s == "c":
+        n_m = to_hgvs_locations(
+            d_h_m, {m["reference"]["id"]: r_m}, c_s, m["reference"]["id"]
+        )
+    else:
+        n_m = to_hgvs_locations(d_h_m, {m["reference"]["id"]: r_m}, c_s)
     n_d = model_to_string(n_m)
 
     return {"input_model": m, "normalized_description": n_d}
