@@ -147,7 +147,7 @@ def map_description(
     reference_id,
     selector_id=None,
     slice_to=None,
-    clean=False,
+    filter=False,
 ):
     # Get the observed sequence
     d = Description(description)
@@ -180,7 +180,7 @@ def map_description(
     # Get the description extractor hgvs internal indexing variants
     variants = _extract_hgvs_internal_model(obs_seq, r_model)
 
-    if clean:
+    if filter:
         raw_de_variants = extractor.describe_dna(ref_seq1, ref_seq2)
         seq_variants = de_to_hgvs(
             raw_de_variants,
@@ -194,4 +194,4 @@ def map_description(
             }
         variants = [v for v in variants if v not in seq_variants]
 
-    return _get_description(variants, r_model, selector_id)
+    return {"mapped_description": _get_description(variants, r_model, selector_id)}
