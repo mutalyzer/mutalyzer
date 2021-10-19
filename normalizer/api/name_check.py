@@ -2,6 +2,8 @@ from flask_restx import Namespace, Resource, inputs, reqparse
 
 from normalizer.name_checker import name_check
 
+from .common import errors
+
 ns = Namespace("/")
 
 
@@ -25,6 +27,7 @@ _args.add_argument(
 
 @ns.route("/name_check/<string:description>")
 class NameCheck(Resource):
+    @errors
     @ns.expect(_args)
     def get(self, description):
         """Normalize a variant description."""
