@@ -1558,7 +1558,7 @@ def test_splice_sites(variant, error, info):
     )
     # exons: [135, 189, 618, 1200]
     errors, infos = splice_sites([variant], sequences, selector_model)
-    print(selector_model)
+
     if error:
         assert errors[0]["code"] == error[0]
     if info:

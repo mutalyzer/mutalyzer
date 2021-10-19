@@ -44,7 +44,12 @@ def _get_id(reference_id):
 
 
 def _get_sequence(seq):
-    return {"input": seq, "type": "sequence", "sequence": seq}
+    return {
+        "input": seq,
+        "type": "sequence",
+        "sequence": seq,
+        "reference_sequence": seq,
+    }
 
 
 def _get_reference(reference, reference_type):
@@ -186,6 +191,8 @@ def compare(reference, reference_type, lhs, lhs_type, rhs, rhs_type):
         ref_seq = c_reference["sequence"]
         c_lhs = _get_operator(lhs, lhs_type, ref_seq)
         c_rhs = _get_operator(rhs, rhs_type, ref_seq)
+        c_lhs["reference_sequence"] = ref_seq
+        c_rhs["reference_sequence"] = ref_seq
     elif lhs_type == "hgvs":
         c_lhs = _get_hgvs_and_variant(lhs)
         if c_lhs.get("errors"):
@@ -215,7 +222,9 @@ def compare(reference, reference_type, lhs, lhs_type, rhs, rhs_type):
     _influence_interval(output, ref_seq, lhs_seq, "lhs")
     _influence_interval(output, ref_seq, rhs_seq, "rhs")
 
-    output["view_lhs"] = c_lhs["view"]
-    output["view_rhs"] = c_rhs["view"]
+    if c_lhs.get("view"):
+        output["view_lhs"] = c_lhs["view"]
+    if c_rhs.get("view"):
+        output["view_rhs"] = c_rhs["view"]
 
     return output

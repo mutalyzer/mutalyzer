@@ -638,5 +638,4 @@ def test_get_feature(reference_id, feature_id, feature_model):
 )
 def test_get_internal_selector_model(reference_id, feature_id, feature_model):
     reference_model = get_reference_model_segmented(reference_id)["annotations"]
-    print(get_internal_selector_model(reference_model, feature_id))
     assert get_internal_selector_model(reference_model, feature_id) == feature_model
