@@ -177,6 +177,27 @@ def map_description(
 
     ref_seq1 = r_model["sequence"]["seq"]
 
+    len_max = 100000
+    if len(ref_seq1) > len_max:
+        return {
+            "errors": [
+                {
+                    "code": "ESEQUENCELENGTH",
+                    "details": f"Sequence length {len(ref_seq1)} too large (maximum supported is {len_max}).",
+                },
+            ]
+        }
+
+    if len(obs_seq) > len_max:
+        return {
+            "errors": [
+                {
+                    "code": "ESEQUENCELENGTH",
+                    "details": f"Sequence length {len(obs_seq)} too large (maximum supported is {len_max}).",
+                },
+            ]
+        }
+
     # Get the description extractor hgvs internal indexing variants
     variants = _extract_hgvs_internal_model(obs_seq, r_model)
 
