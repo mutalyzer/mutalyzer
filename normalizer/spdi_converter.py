@@ -8,8 +8,11 @@ from .description_model import model_to_string
 from .reference import get_coordinate_system_from_reference, retrieve_reference
 
 
-def spdi_converter(description):
-    m = spdi_to_hgvs(description)
+def spdi_converter(description=None, description_model=None):
+    if description:
+        m = spdi_to_hgvs(description)
+    elif description_model:
+        m = description_model
 
     r_m = retrieve_reference(m["reference"]["id"])
     c_s = get_coordinate_system_from_reference(r_m)

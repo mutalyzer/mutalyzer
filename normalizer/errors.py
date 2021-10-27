@@ -55,7 +55,7 @@ def coordinate_system_mismatch(
     return {
         "code": "ECOORDINATESYSTEMMISMATCH",
         "details": "Coordinate system {} does not match with {} "
-        "{} coordinate system. ".format(
+        "{} coordinate system.".format(
             coordinate_system, mismatch_id, mismatch_coordinate_system
         ),
         "paths": [path],
