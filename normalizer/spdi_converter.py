@@ -14,6 +14,10 @@ def spdi_converter(description=None, description_model=None):
     elif description_model:
         m = description_model
 
+    # TODO: Move in the spdi-parser or support for non inserted in mutator.
+    if not m["variants"][0].get("inserted"):
+        m["variants"][0]["inserted"] = []
+
     r_m = retrieve_reference(m["reference"]["id"])
     c_s = get_coordinate_system_from_reference(r_m)
 
