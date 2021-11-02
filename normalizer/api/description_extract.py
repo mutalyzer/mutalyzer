@@ -1,4 +1,4 @@
-from flask_restx import Namespace, Resource, inputs, reqparse
+from flask_restx import Namespace, Resource, reqparse
 
 from normalizer.description_extractor import description_extractor
 
