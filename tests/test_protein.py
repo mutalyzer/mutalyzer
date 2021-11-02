@@ -127,7 +127,7 @@ def get_tests(tests, t_type):
 )
 def test_protein(input_description, normalized):
     d = name_check(input_description)
-    assert d["normalized_description"] == normalized
+    assert d.get("normalized_description") == normalized
 
 
 @pytest.mark.parametrize(

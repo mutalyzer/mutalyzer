@@ -10,17 +10,33 @@ from .commons import patch_retriever
     [
         (
             "NM_003002.2:r.274g>u",
-            [
-                {
-                    "description": "274g>u",
-                    "seq_length": 1382,
-                    "left": "ugaauccuugcucugcgaug",
-                    "deleted": {"seq": "g"},
-                    "inserted": {"seq": "u"},
-                    "right": "acuauucccuggcugcagcc",
-                    "start": 314,
-                }
-            ],
+            {
+                "views": [
+                    {
+                        "start": 0,
+                        "end": 334,
+                        "type": "outside",
+                        "left": "gugggaauug",
+                        "right": "cucugcgaug",
+                    },
+                    {
+                        "description": "274g>u",
+                        "start": 334,
+                        "end": 335,
+                        "type": "variant",
+                        "deleted": {"sequence": "g"},
+                        "inserted": {"sequence": "u", "length": 1},
+                    },
+                    {
+                        "start": 335,
+                        "end": 1382,
+                        "type": "outside",
+                        "left": "acuauucccu",
+                        "right": "aaaaaaaaaa",
+                    },
+                ],
+                "seq_length": 1382,
+            },
         )
     ],
 )

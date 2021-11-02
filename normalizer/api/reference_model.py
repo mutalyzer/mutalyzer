@@ -2,6 +2,8 @@ from flask_restx import Namespace, Resource, inputs, reqparse
 
 from normalizer.reference import get_reference_model_segmented
 
+from .common import errors
+
 ns = Namespace("/")
 
 _args = reqparse.RequestParser()
@@ -44,6 +46,7 @@ _args.add_argument(
 
 @ns.route("/reference_model/")
 class ReferenceModel(Resource):
+    @errors
     @ns.expect(_args)
     def get(self):
         """Retrieve the reference model."""

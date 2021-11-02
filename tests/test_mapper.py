@@ -4,7 +4,6 @@ from normalizer.mapper import map_description
 
 from .commons import code_in, patch_retriever
 
-
 TEST_SET = [
     (
         # Transcript to same transcript.
@@ -41,9 +40,7 @@ TEST_SET = [
 
 @pytest.mark.parametrize("input_params, correct_output", TEST_SET)
 def test_mapper(input_params, correct_output):
-    print(input_params)
-    print(correct_output)
-    assert map_description(*input_params) == correct_output
+    assert map_description(*input_params)["mapped_description"] == correct_output
 
 
 TEST_ERROR = [
@@ -52,15 +49,12 @@ TEST_ERROR = [
         "EMAPFILTER",
     ),
     (
-        ("NM_003002.2:c.-31del", "NG_012337.3", "NM_003002.2", "transcript",
-         True),
+        ("NM_003002.2:c.-31del", "NG_012337.3", "NM_003002.2", "transcript", True),
         "ENOSELECTORFOUND",
     ),
 ]
 
 
 @pytest.mark.parametrize("input_params, error_code", TEST_ERROR)
-def test_mapper_error(input_params,error_code):
-    print(input_params)
-    print(error_code)
+def test_mapper_error(input_params, error_code):
     assert code_in(error_code, map_description(*input_params)["errors"])

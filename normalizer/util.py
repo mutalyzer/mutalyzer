@@ -73,7 +73,13 @@ def get_location_as_list(location):
 
 
 def sort_variants(variants):
-    return sorted(variants, key=lambda variant: get_start(variant["location"]))
+    return sorted(
+        variants,
+        key=lambda variant: (
+            get_start(variant["location"]),
+            get_end(variant["location"]),
+        ),
+    )
 
 
 def roll(s, first, last):

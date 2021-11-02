@@ -90,3 +90,18 @@ def test_errors(input_description, codes):
 @pytest.mark.parametrize("input_description, codes", get_tests(TESTS_ALL, "infos"))
 def test_infos(input_description, codes):
     assert codes == [info["code"] for info in name_check(input_description)["infos"]]
+
+
+@pytest.mark.parametrize(
+    "description, sequence, normalized",
+    [
+        ("2del", "AAAT", "3del"),
+        ("[2del]", "AAAT", "3del"),
+        ("[1del;2del]", "AAAT", "2_3del"),
+        ("1_2insNG_012337.1:g.100", "AAAT", "1_2insT"),
+    ],
+)
+def test_only_variants(description, sequence, normalized):
+    assert (
+        name_check(description, True, sequence)["normalized_description"] == normalized
+    )

@@ -10,12 +10,11 @@ def are_sorted(variants):
     """
     Check if the provided variants list is sorted.
     """
-    current_position = 0
-    for variant in variants:
-        if get_start(variant["location"]) < current_position:
-            return False
-        current_position = get_start(variant["location"])
-    return True
+    sorted_variants = sort_variants(variants)
+    if sorted_variants == variants:
+        return True
+    else:
+        False
 
 
 def is_overlap(variants):
@@ -27,7 +26,7 @@ def is_overlap(variants):
     sorted_variants = sort_variants(variants)
     positions = []
     for point, path in yield_sub_model(
-        variants, ["location", "start", "end"], ["point"]
+        sorted_variants, ["location", "start", "end"], ["point"]
     ):
         if point.get("position") is not None:
             positions.append(point["position"])

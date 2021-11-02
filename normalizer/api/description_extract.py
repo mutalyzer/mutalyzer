@@ -1,6 +1,8 @@
-from flask_restx import Namespace, Resource, inputs, reqparse
+from flask_restx import Namespace, Resource, reqparse
 
 from normalizer.description_extractor import description_extractor
+
+from .common import errors
 
 ns = Namespace("/")
 
@@ -23,6 +25,7 @@ _args.add_argument(
 
 @ns.route("/description_extract/")
 class DescriptionExtract(Resource):
+    @errors
     @ns.expect(_args)
     def get(self):
         """Generates the HGVS variant description from a reference sequence
