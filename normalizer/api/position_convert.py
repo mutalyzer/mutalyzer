@@ -2,6 +2,8 @@ from flask_restx import Namespace, Resource, inputs, reqparse
 
 from normalizer.position_converter import position_convert
 
+from .common import errors
+
 ns = Namespace("/")
 
 _args = reqparse.RequestParser()
@@ -57,6 +59,7 @@ _args.add_argument(
 
 @ns.route("/position_convert/")
 class PositionConvert(Resource):
+    @errors
     @ns.expect(_args)
     def get(self):
         """Converts reference positions to selector orientated

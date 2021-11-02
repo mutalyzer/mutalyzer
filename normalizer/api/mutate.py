@@ -2,6 +2,8 @@ from flask_restx import Namespace, Resource, reqparse
 
 from normalizer.mutator import mutate
 
+from .common import errors
+
 ns = Namespace("/")
 
 

@@ -2,6 +2,8 @@ from flask_restx import Namespace, Resource, inputs, reqparse
 
 from normalizer.viewer import view_variants
 
+from .common import errors
+
 ns = Namespace("/")
 
 
@@ -25,6 +27,7 @@ _args.add_argument(
 
 @ns.route("/view_variants/<string:description>")
 class ViewVariants(Resource):
+    @errors
     @ns.expect(_args)
     def get(self, description):
         """Visualize a variant description."""

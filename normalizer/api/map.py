@@ -2,6 +2,8 @@ from flask_restx import Namespace, Resource, inputs, reqparse
 
 from normalizer.mapper import map_description
 
+from .common import errors
+
 ns = Namespace("/")
 
 _args = reqparse.RequestParser()
@@ -47,6 +49,7 @@ _args.add_argument(
 
 @ns.route("/map/")
 class Map(Resource):
+    @errors
     @ns.expect(_args)
     def get(self):
         """Map a description to another reference."""
