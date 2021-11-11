@@ -27,8 +27,8 @@ _args.add_argument(
 
 @ns.route("/view_variants/<string:description>")
 class ViewVariants(Resource):
-    @errors
     @ns.expect(_args)
+    @errors
     def get(self, description):
         """Visualize a variant description."""
         return view_variants(description, **_args.parse_args())

@@ -59,8 +59,8 @@ _args.add_argument(
 
 @ns.route("/position_convert/")
 class PositionConvert(Resource):
-    @errors
     @ns.expect(_args)
+    @errors
     def get(self):
         """Converts reference positions to selector orientated
         positions and vice versa."""

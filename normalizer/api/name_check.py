@@ -27,8 +27,8 @@ _args.add_argument(
 
 @ns.route("/name_check/<string:description>")
 class NameCheck(Resource):
-    @errors
     @ns.expect(_args)
+    @errors
     def get(self, description):
         """Normalize a variant description."""
         return name_check(description, **_args.parse_args())

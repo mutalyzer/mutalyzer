@@ -46,8 +46,8 @@ _args.add_argument(
 
 @ns.route("/reference_model/")
 class ReferenceModel(Resource):
-    @errors
     @ns.expect(_args)
+    @errors
     def get(self):
         """Retrieve the reference model."""
         return get_reference_model_segmented(**_args.parse_args())

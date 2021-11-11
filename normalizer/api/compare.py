@@ -47,8 +47,8 @@ _args.add_argument(
 
 @ns.route("/compare/")
 class Compare(Resource):
-    @errors
     @ns.expect(_args)
+    @errors
     def get(self):
         """Compute the relation between variants."""
         return compare(**_args.parse_args())

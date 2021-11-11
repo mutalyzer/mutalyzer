@@ -49,8 +49,8 @@ _args.add_argument(
 
 @ns.route("/map/")
 class Map(Resource):
-    @errors
     @ns.expect(_args)
+    @errors
     def get(self):
         """Map a description to another reference."""
         return map_description(**_args.parse_args())

@@ -25,8 +25,8 @@ _args.add_argument(
 
 @ns.route("/description_extract/")
 class DescriptionExtract(Resource):
-    @errors
     @ns.expect(_args)
+    @errors
     def get(self):
         """Generates the HGVS variant description from a reference sequence
         and an observed sequence."""
