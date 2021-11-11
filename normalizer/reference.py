@@ -489,8 +489,16 @@ def get_reference_mol_type(model):
 
 
 def get_coordinate_system_from_reference(reference):
-    mol_type = get_reference_mol_type(reference)
-    return coordinate_system_from_mol_type(mol_type)
+    c_s_m = coordinate_system_from_mol_type(get_reference_mol_type(reference))
+
+    if (
+        c_s_m == "g"
+        and reference["annotations"].get("qualifiers")
+        and reference["annotations"]["qualifiers"].get("genome") == "mitochondrion"
+    ):
+        return "m"
+    else:
+        return c_s_m
 
 
 def _get_exons_and_cds(s_m):

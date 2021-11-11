@@ -2742,6 +2742,19 @@ TESTS = [
         "infos": ["ISORTEDVARIANTS"],
         "to_test": True,
     },
+    {
+        "keywords": ["#49", "mitochondrion"],
+        "input": "NC_012920.1:g.3243A>G",
+        "normalized": "NC_012920.1:m.3243A>G",
+        "infos": ["ICORRECTEDCOORDINATESYSTEM"],
+        "to_test": True,
+    },
+    {
+        "keywords": ["#49", "mitochondrion"],
+        "input": "NC_012920.1:m.3243A>G",
+        "normalized": "NC_012920.1:m.3243A>G",
+        "to_test": True,
+    },
     # {
     #     "keywords": [
     #

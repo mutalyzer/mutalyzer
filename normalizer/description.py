@@ -373,6 +373,10 @@ class Description(object):
                             r_path,
                             get_only_selector_id(self.references[r_id]),
                         )
+                    elif r_c_s == "m" and c_s == "g":
+                        self._correct_coordinate_system(
+                            r_c_s, c_s_path, r_id + " reference"
+                        )
                     else:
                         self._add_error(
                             errors.coordinate_system_mismatch(

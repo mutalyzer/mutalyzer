@@ -24,6 +24,7 @@ def test_get_reference_model_segmented_record_no_siblings_ancestors_no_descendan
             "dbxref": "taxon:9606",
             "map": "11q23",
             "name": "11",
+            "genome": "genomic",
         },
     }
     assert feature_model == get_reference_model_segmented(
@@ -46,6 +47,7 @@ def test_get_reference_model_segmented_transcript_no_siblings_ancestors_descenda
             "dbxref": "taxon:9606",
             "map": "11q23",
             "name": "11",
+            "genome": "genomic",
         },
         "features": [
             {
@@ -123,6 +125,7 @@ def test_get_reference_model_segmented_transcript_no_siblings_ancestors_no_desce
             "dbxref": "taxon:9606",
             "map": "11q23",
             "name": "11",
+            "genome": "genomic",
         },
         "features": [
             {
@@ -234,6 +237,7 @@ def test_get_reference_model_segmented_transcript_include_siblings():
             "dbxref": "taxon:9606",
             "map": "11q23",
             "name": "11",
+            "genome": "genomic",
         },
         "features": [
             {
@@ -378,6 +382,7 @@ def test_get_reference_model_segmented_gene_no_siblings():
             "dbxref": "taxon:9606",
             "map": "11q23",
             "name": "11",
+            "genome": "genomic",
         },
         "features": [
             {

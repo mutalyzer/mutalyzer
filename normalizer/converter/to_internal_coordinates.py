@@ -67,7 +67,7 @@ def point_to_internal(point, crossmap):
 
 
 def crossmap_to_internal_setup(coordinate_system, selector_model=None):
-    if coordinate_system in ["g", "p", None]:
+    if coordinate_system in ["g", "m", "p", None]:
         crossmap = Genomic()
         return {
             "crossmap_function": crossmap.genomic_to_coordinate,
