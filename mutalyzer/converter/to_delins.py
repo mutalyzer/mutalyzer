@@ -1,6 +1,6 @@
 import copy
 
-from normalizer.util import get_end, get_location_length, set_start
+from mutalyzer.util import get_end, get_location_length, set_start
 
 
 def substitution_to_delins(variant):

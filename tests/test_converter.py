@@ -1,10 +1,10 @@
 import pytest
 from mutalyzer_hgvs_parser import to_model
 
-from normalizer.converter.to_hgvs_coordinates import to_hgvs_locations
-from normalizer.converter.to_internal_coordinates import to_internal_coordinates
-from normalizer.converter.to_internal_indexing import to_internal_indexing
-from normalizer.description_model import model_to_string
+from mutalyzer.converter.to_hgvs_coordinates import to_hgvs_locations
+from mutalyzer.converter.to_internal_coordinates import to_internal_coordinates
+from mutalyzer.converter.to_internal_indexing import to_internal_indexing
+from mutalyzer.description_model import model_to_string
 
 from .generator import append_transcript, generate_references
 

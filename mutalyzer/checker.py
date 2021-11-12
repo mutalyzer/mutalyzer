@@ -1,5 +1,5 @@
-import normalizer.errors as errors
-import normalizer.infos as infos
+import mutalyzer.errors as errors
+import mutalyzer.infos as infos
 
 from .converter.to_rna import get_position_type
 from .description_model import yield_sub_model

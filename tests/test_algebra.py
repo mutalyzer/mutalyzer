@@ -1,7 +1,7 @@
 import pytest
 
-from normalizer.algebra import _get_hgvs_and_variant, _get_id, compare
-from normalizer.reference import retrieve_reference
+from mutalyzer.algebra import _get_hgvs_and_variant, _get_id, compare
+from mutalyzer.reference import retrieve_reference
 
 from .commons import code_in, patch_retriever
 

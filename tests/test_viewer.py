@@ -1,6 +1,6 @@
 import pytest
 
-from normalizer.viewer import view_variants
+from mutalyzer.viewer import view_variants
 
 from .commons import patch_retriever
 

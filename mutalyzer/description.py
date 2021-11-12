@@ -10,8 +10,8 @@ from mutalyzer_hgvs_parser.exceptions import UnexpectedCharacter, UnexpectedEnd
 from mutalyzer_mutator import mutate
 from mutalyzer_mutator.util import reverse_complement
 
-import normalizer.errors as errors
-import normalizer.infos as infos
+import mutalyzer.errors as errors
+import mutalyzer.infos as infos
 
 from .checker import (
     are_sorted,

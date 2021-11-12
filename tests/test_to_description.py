@@ -1,7 +1,7 @@
 import pytest
 from mutalyzer_hgvs_parser import to_model
 
-from normalizer.description_model import model_to_string
+from mutalyzer.description_model import model_to_string
 
 from .variants_set import TESTS_ALL
 

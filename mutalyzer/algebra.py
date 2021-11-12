@@ -1,10 +1,10 @@
 from algebra.algebra import compare as compare_core
 from algebra.influence_interval import influence_interval
 
-import normalizer.errors as errors
-from normalizer.description import Description
-from normalizer.reference import retrieve_reference
-from normalizer.viewer import view_variants
+import mutalyzer.errors as errors
+from mutalyzer.description import Description
+from mutalyzer.reference import retrieve_reference
+from mutalyzer.viewer import view_variants
 
 
 def _get_hgvs_and_variant(variant, only_variants=False, ref_seq=None):

@@ -1,7 +1,7 @@
 import pytest
 
-from normalizer.name_checker import name_check
-from normalizer.reference import retrieve_reference, slice_to_selector
+from mutalyzer.name_checker import name_check
+from mutalyzer.reference import retrieve_reference, slice_to_selector
 
 from .commons import code_in, patch_retriever
 from .variants_set import TESTS_ALL

@@ -1,6 +1,6 @@
 import pytest
 
-from normalizer.mapper import map_description
+from mutalyzer.mapper import map_description
 
 from .commons import code_in, patch_retriever
 

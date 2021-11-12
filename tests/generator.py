@@ -1,6 +1,6 @@
 import json
 
-from normalizer.util import add_to_dict, create_exact_range_model
+from mutalyzer.util import add_to_dict, create_exact_range_model
 
 
 def generate_reference_selector_model(selector_model):

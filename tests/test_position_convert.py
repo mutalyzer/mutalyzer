@@ -1,7 +1,7 @@
 from mutalyzer_hgvs_parser import to_model
 
-from normalizer.description_model import model_to_string
-from normalizer.position_converter import position_convert
+from mutalyzer.description_model import model_to_string
+from mutalyzer.position_converter import position_convert
 
 from .commons import code_in, get_codes, patch_retriever
 

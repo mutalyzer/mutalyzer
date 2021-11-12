@@ -1,6 +1,6 @@
 import copy
 
-from normalizer.util import (
+from mutalyzer.util import (
     get_end,
     get_inserted_sequence,
     get_location_length,

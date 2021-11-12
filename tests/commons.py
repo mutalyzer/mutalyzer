@@ -33,7 +33,7 @@ def retrieve_raw(
 @pytest.fixture(autouse=True)
 def patch_retriever(monkeypatch):
     monkeypatch.setattr("mutalyzer_retriever.retriever.retrieve_raw", retrieve_raw)
-    monkeypatch.setattr("normalizer.util.configuration", lambda: None)
+    monkeypatch.setattr("mutalyzer.util.configuration", lambda: None)
 
 
 def code_in(code, messages):

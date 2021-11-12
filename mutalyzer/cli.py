@@ -1,8 +1,8 @@
 import argparse
 import json
 
-from normalizer.name_checker import name_check
-from normalizer.normalizer import normalize
+from mutalyzer.name_checker import name_check
+from mutalyzer.normalizer import normalize
 
 
 def main():

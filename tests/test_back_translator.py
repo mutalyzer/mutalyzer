@@ -1,6 +1,6 @@
 import pytest
 
-from normalizer.back_translator import back_translate
+from mutalyzer.back_translator import back_translate
 
 from .commons import code_in, patch_retriever
 

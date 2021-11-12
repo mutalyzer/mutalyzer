@@ -1,8 +1,8 @@
 from mutalyzer_hgvs_parser import to_model
 from mutalyzer_hgvs_parser.exceptions import UnexpectedCharacter, UnexpectedEnd
 
-import normalizer.errors as errors
-import normalizer.infos as infos
+import mutalyzer.errors as errors
+import mutalyzer.infos as infos
 
 from .converter.to_hgvs_coordinates import to_hgvs_locations
 from .description import Description

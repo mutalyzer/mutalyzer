@@ -1,6 +1,6 @@
 import pytest
 
-from normalizer.reference import (
+from mutalyzer.reference import (
     get_internal_selector_model,
     get_reference_model_segmented,
     get_selector_feature,

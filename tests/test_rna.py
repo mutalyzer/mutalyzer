@@ -1,16 +1,16 @@
 import pytest
 from mutalyzer_hgvs_parser import to_model
 
-from normalizer.checker import splice_sites
-from normalizer.converter.to_rna import (
+from mutalyzer.checker import splice_sites
+from mutalyzer.converter.to_rna import (
     _get_location_type,
     _trim_to_exons,
     get_position_type,
     to_rna_reference_model,
     to_rna_variants,
 )
-from normalizer.name_checker import name_check
-from normalizer.reference import get_internal_selector_model, retrieve_reference
+from mutalyzer.name_checker import name_check
+from mutalyzer.reference import get_internal_selector_model, retrieve_reference
 
 from .commons import code_in, patch_retriever
 
