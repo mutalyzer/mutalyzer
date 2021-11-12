@@ -1,4 +1,4 @@
-from .description_model import point_to_description
+from .description_model import point_to_description, variant_to_description
 
 
 def corrected_reference_id(original_id, corrected_id, path):
@@ -109,7 +109,17 @@ def whole_transcript_exon(reference_id, selector_id, path):
     return {
         "code": "IWHOLETRANSCRIPTEXON",
         "details": f"No exon features found in the '{reference_id}' reference"
-                   f" sequence for '{selector_id}'. The entire transcript was"
-                   f" assumed as one exon.",
+        f" sequence for '{selector_id}'. The entire transcript was"
+        f" assumed as one exon.",
         "paths": [path],
+    }
+
+
+def insertions_same_location(variants, paths):
+    plural = "s" if len(variants) > 1 else ""
+    variants = ", ".join([variant_to_description(v) for v in variants])
+    return {
+        "code": "IINSERTIONSSAMELOCATION",
+        "details": f"The following insertion{plural} {variants} are at the same location.",
+        "paths": paths,
     }

@@ -2755,6 +2755,30 @@ TESTS = [
         "normalized": "NC_012920.1:m.3243A>G",
         "to_test": True,
     },
+    {
+        "keywords": [],
+        "input": "NG_012337.1:g.[4_5insT;4insA;4_5insA]",
+        "infos": ["IINSERTIONSSAMELOCATION"],
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NG_012337.1:g.[4del;4_5insT;4insA;4_5insA]",
+        "infos": ["IINSERTIONSSAMELOCATION"],
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NG_012337.1:g.[4_5insT;4insA;4_5insA;5del]",
+        "infos": ["IINSERTIONSSAMELOCATION"],
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NG_012337.1:g.[4del;4_5insT;4insA;4_5insA;5del]",
+        "infos": ["IINSERTIONSSAMELOCATION"],
+        "to_test": True,
+    },
     # {
     #     "keywords": [
     #
