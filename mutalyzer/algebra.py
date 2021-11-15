@@ -155,7 +155,7 @@ def _check_sequences_equality(output, lhs, rhs):
             "reference",
             {
                 "code": "ESEQUENCEMISMATCH",
-                "details": f"Different reference sequences for LHS and RHS.",
+                "details": "Different reference sequences for LHS and RHS.",
             },
         )
 

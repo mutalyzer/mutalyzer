@@ -502,7 +502,7 @@ def get_coordinate_system_from_reference(reference):
 
 
 def _get_exons_and_cds(s_m):
-    exons = [e for l in s_m["exon"] for e in l]
+    exons = [e for t in s_m["exon"] for e in t]
     cds = [s_m["cds"][0][0], s_m["cds"][0][1]]
     return exons, cds
 

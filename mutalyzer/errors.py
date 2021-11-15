@@ -124,7 +124,7 @@ def out_of_boundary_greater(point, shift, sequence_length, path):
 def range_reversed(location, path):
     return {
         "code": "ERANGEREVERSED",
-        "details": "Range start position greater than the end position.".format(
+        "details": "Range start position greater than the end position in {}.".format(
             location_to_description(location)
         ),
         "paths": [path],
@@ -310,4 +310,3 @@ def missing_parameter(value):
         "code": "EMISSINGPARAMETER",
         "details": f"Missing required '{value}' parameter."
     }
-

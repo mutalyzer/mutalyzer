@@ -354,7 +354,7 @@ def _splice_site_removal(location, exons):
 
 
 def _get_exons_and_cds(selector_model):
-    exons = [e for l in selector_model["exon"] for e in l]
+    exons = [e for t in selector_model["exon"] for e in t]
     cds = [selector_model["cds"][0][0], selector_model["cds"][0][1]]
     if selector_model.get("inverted"):
         cds[0] = exons[0]
@@ -364,7 +364,7 @@ def _get_exons_and_cds(selector_model):
 
 
 def _get_exons_and_cds_2(s_m):
-    exons = [e for l in s_m["exon"] for e in l]
+    exons = [e for t in s_m["exon"] for e in t]
     cds = [s_m["cds"][0][0], s_m["cds"][0][1]]
     return exons, cds
 

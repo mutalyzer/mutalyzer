@@ -78,7 +78,6 @@ class PositionConvert(object):
         if self.position and not isinstance(self.position, str):
             self.errors.append(errors.position_invalid())
 
-
     @check_errors
     def _get_description(self):
         if self.input_description:
