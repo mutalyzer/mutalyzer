@@ -319,8 +319,6 @@ M2_TESTS = [
         "input": "NG_012772.1(BRCA2_v001):c.632-5_670del",
         "normalized": "NG_012772.1(NM_000059.3):c.632-5_670del",
         "genomic": "NG_012772.1:g.18959_19002del",
-        "protein_description": "NG_012772.1(NP_000050.2):p.?",
-        # TODO: Add splice site warning?
         "to_test": True,
     },
     {
@@ -331,8 +329,6 @@ M2_TESTS = [
         "input": "NG_012772.1(BRCA2_v001):c.632-5_681+7del",
         "normalized": "NG_012772.1(NM_000059.3):c.632-5_681+7del",
         "genomic": "NG_012772.1:g.18959_19020del",
-        "protein_description": "NG_012772.1(NP_000050.2):p.(Val211Glufs*10)",
-        # TODO: Add splice site warning?
         "to_test": True,
     },
     {
@@ -360,8 +356,6 @@ M2_TESTS = [
         "input": "NG_012772.1(BRCA2_v001):c.68-7_316+7del",
         "normalized": "NG_012772.1(NM_000059.3):c.68-7_316+7del",
         "genomic": "NG_012772.1:g.8591_8853del",
-        "protein_description": "NG_012772.1(NP_000050.2):p.(Asp23_Leu105del)",
-        # TODO: Add splice site warning?
         "to_test": True,
     },
     {
@@ -372,8 +366,6 @@ M2_TESTS = [
         "input": "NG_012772.1(BRCA2_v001):c.632-5_793+7del",
         "normalized": "NG_012772.1(NM_000059.3):c.632-5_793+7del",
         "genomic": "NG_012772.1:g.18959_20558del",
-        "protein_description": "NG_012772.1(NP_000050.2):p.(Val211_His264del)",
-        # TODO: Add splice site warning?
         "to_test": True,
     },
     {
@@ -396,8 +388,6 @@ M2_TESTS = [
         "input": "NG_012772.1(BRCA2_v001):c.681+1_682-1del",
         "normalized": "NG_012772.1(NM_000059.3):c.681+1_682-1del",
         "genomic": "NG_012772.1:g.19014_20439del",
-        "protein_description": "NG_012772.1(NP_000050.2):p.(=)",
-        # TODO: Add splice site warning?
         "to_test": True,
     },
     {
@@ -2538,8 +2528,6 @@ TESTS = [
         "input": "NG_012337.1(NM_012459.2):c.-35_*1del",
         "normalized": "NG_012337.1(NM_012459.2):c.-35_*1del",
         "genomic": "NG_012337.1:g.3448_4957del",
-        "protein_description": "NG_012337.1(NP_036591.2):p.?",
-        # "rna_description": "NG_012337.1(NM_012459.2):r.?",
         "to_test": True,
     },
     {

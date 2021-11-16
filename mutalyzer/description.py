@@ -611,21 +611,24 @@ class Description(object):
             )
             == "c"
         ):
-            self.protein = dict(
-                zip(
-                    ["description", "reference", "predicted"],
-                    get_protein_description(
-                        variants_to_delins(
-                            self.de_hgvs_internal_indexing_model["variants"]
+            if self.rna and self.rna.get("errors"):
+                self.protein = {"errors": self.rna["errors"]}
+            else:
+                self.protein = dict(
+                    zip(
+                        ["description", "reference", "predicted"],
+                        get_protein_description(
+                            variants_to_delins(
+                                self.de_hgvs_internal_indexing_model["variants"]
+                            ),
+                            self.references,
+                            get_protein_selector_model(
+                                self.references["reference"]["annotations"],
+                                get_selector_id(self.de_hgvs_model),
+                            ),
                         ),
-                        self.references,
-                        get_protein_selector_model(
-                            self.references["reference"]["annotations"],
-                            get_selector_id(self.de_hgvs_model),
-                        ),
-                    ),
+                    )
                 )
-            )
 
     @check_errors
     def _construct_rna_description(self):
@@ -664,7 +667,6 @@ class Description(object):
                 },
             )
             to_rna_sequences(rna_variants_coordinate)
-
             rna_model = to_hgvs_locations(
                 {
                     "reference": self.de_hgvs_internal_indexing_model["reference"],
@@ -1204,8 +1206,8 @@ class Description(object):
                 self._construct_de_hgvs_internal_indexing_model()
                 self._construct_de_hgvs_coordinates_model()
                 self._construct_normalized_description()
-                self._construct_protein_description()
                 self._construct_rna_description()
+                self._construct_protein_description()
                 self._construct_equivalent()
             self._remove_superfluous_selector()
 
