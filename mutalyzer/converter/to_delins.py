@@ -86,6 +86,8 @@ def variant_to_delins(variant):
         return insertion_to_delins(variant)
     elif variant.get("type") == "inversion":
         return inversion_to_delins(variant)
+    elif variant.get("type") == "conversion":
+        return conversion_to_delins(variant)
     elif variant.get("type") == "deletion_insertion":
         return deletion_insertion_to_delins(variant)
     elif variant.get("type") == "equal":
