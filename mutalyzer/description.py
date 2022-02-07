@@ -940,7 +940,7 @@ class Description(object):
                     )
                 )
 
-    def _check_insertions_same_location(self):
+    def _insertions_same_location(self):
         insertions = {}
         variants = self.internal_coordinates_model["variants"]
         for i, v in enumerate(variants):
@@ -951,12 +951,8 @@ class Description(object):
                 insertions[s_e].append(i)
         for insertion in insertions.values():
             if len(insertion) > 1:
-                self._add_info(
-                    infos.insertions_same_location(
-                        [variants[i] for i in insertion],
-                        [["variants", i] for i in insertion],
-                    )
-                )
+                return True
+        return False
 
     @check_errors
     def check(self):
@@ -975,9 +971,11 @@ class Description(object):
 
             if v.get("type") == "repeat":
                 self._check_repeat(["variants", i])
-        if is_overlap(self.internal_indexing_model["variants"]):
+        if (
+            is_overlap(self.internal_indexing_model["variants"])
+            or self._insertions_same_location()
+        ):
             self._add_error(errors.overlap())
-        self._check_insertions_same_location()
 
     @check_errors
     def pre_conversion_checks(self):

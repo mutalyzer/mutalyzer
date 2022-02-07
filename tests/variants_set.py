@@ -2746,25 +2746,49 @@ TESTS = [
     {
         "keywords": [],
         "input": "NG_012337.1:g.[4_5insT;4insA;4_5insA]",
-        "infos": ["IINSERTIONSSAMELOCATION"],
+        "errors": ["EINSERTIONRANGE", "EOVERLAP"],
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NG_012337.1:g.[4_5insT;4_5insA]",
+        "errors": ["EOVERLAP"],
         "to_test": True,
     },
     {
         "keywords": [],
         "input": "NG_012337.1:g.[4del;4_5insT;4insA;4_5insA]",
-        "infos": ["IINSERTIONSSAMELOCATION"],
+        "errors": ["EINSERTIONRANGE", "EOVERLAP"],
         "to_test": True,
     },
     {
         "keywords": [],
         "input": "NG_012337.1:g.[4_5insT;4insA;4_5insA;5del]",
-        "infos": ["IINSERTIONSSAMELOCATION"],
+        "errors": ["EINSERTIONRANGE", "EOVERLAP"],
         "to_test": True,
     },
     {
         "keywords": [],
         "input": "NG_012337.1:g.[4del;4_5insT;4insA;4_5insA;5del]",
-        "infos": ["IINSERTIONSSAMELOCATION"],
+        "errors": ["EINSERTIONRANGE", "EOVERLAP"],
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NG_012337.1(NM_003002.2):c.[273_274insT;274G>T;274_275insA]",
+        "normalized": "NG_012337.1(NM_003002.2):c.274delinsTTA",
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NG_012337.1(NM_003002.2):c.[274_275delinsT;274_275insA]",
+        "errors": ["EOVERLAP"],
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NG_012337.1(NM_003002.2):c.[273_274insT;274G>T;274_275insA]",
+        "normalized": "NG_012337.1(NM_003002.2):c.274delinsTTA",
         "to_test": True,
     },
     # {
