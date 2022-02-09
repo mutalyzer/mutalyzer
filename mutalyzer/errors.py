@@ -296,10 +296,7 @@ def splice_site(path):
 
 
 def invalid_input(value, valid_options=None):
-    output = {
-        "code": "EINVALIDINPUT",
-        "details": f"'{value}' not valid."
-    }
+    output = {"code": "EINVALIDINPUT", "details": f"'{value}' not valid."}
     if valid_options:
         output["options"] = valid_options
     return output
@@ -308,5 +305,12 @@ def invalid_input(value, valid_options=None):
 def missing_parameter(value):
     return {
         "code": "EMISSINGPARAMETER",
-        "details": f"Missing required '{value}' parameter."
+        "details": f"Missing required '{value}' parameter.",
+    }
+
+
+def sequence_length(seq, len_max):
+    return {
+        "code": "ESEQUENCELENGTH",
+        "details": f"Sequence length {len(seq)} too large (maximum supported is {len_max}).",
     }

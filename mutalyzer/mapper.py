@@ -9,7 +9,7 @@ from .converter import de_to_hgvs
 from .converter.to_hgvs_coordinates import to_hgvs_locations
 from .description import Description
 from .description_model import model_to_string, variants_to_description
-from .errors import no_selector_found, reference_not_retrieved
+from .errors import no_selector_found, reference_not_retrieved, sequence_length
 from .reference import (
     extract_feature_model,
     get_coordinate_system_from_reference,
@@ -123,8 +123,7 @@ def _get_description(de_hgvs_internal_indexing_variants, r_model, selector_id=No
     return model_to_string(de_hgvs_model)
 
 
-def _extract_hgvs_internal_model(obs_seq, r_model):
-    ref_seq = r_model["sequence"]["seq"]
+def _extract_hgvs_internal_model(obs_seq, ref_seq):
     de_variants = extractor.describe_dna(ref_seq, obs_seq)
 
     return de_to_hgvs(
@@ -148,6 +147,7 @@ def map_description(
     selector_id=None,
     slice_to=None,
     filter=False,
+    len_max=100000,
 ):
     # Get the observed sequence
     d = Description(description)
@@ -158,14 +158,16 @@ def map_description(
         return {"errors": [{"details": "No observed sequence or other error occured."}]}
     obs_seq = d.references["observed"]["sequence"]["seq"]
 
-    r_model = retrieve_reference(reference_id)
-    if r_model is None:
+    to_r_model = retrieve_reference(reference_id)
+    if to_r_model is None:
         return {"errors": [reference_not_retrieved(reference_id, [])]}
 
     ref_seq2 = d.references["reference"]["sequence"]["seq"]
 
     if selector_id:
-        s_model = get_internal_selector_model(r_model["annotations"], selector_id, True)
+        s_model = get_internal_selector_model(
+            to_r_model["annotations"], selector_id, True
+        )
         if s_model is None:
             return {"errors": [no_selector_found(reference_id, selector_id, [])]}
         if s_model["inverted"]:
@@ -173,33 +175,17 @@ def map_description(
             ref_seq2 = reverse_complement(ref_seq2)
 
     if slice_to:
-        r_model = _get_reference_model(r_model, selector_id, slice_to)
+        to_r_model = _get_reference_model(to_r_model, selector_id, slice_to)
 
-    ref_seq1 = r_model["sequence"]["seq"]
+    ref_seq1 = to_r_model["sequence"]["seq"]
 
-    len_max = 100000
     if len(ref_seq1) > len_max:
-        return {
-            "errors": [
-                {
-                    "code": "ESEQUENCELENGTH",
-                    "details": f"Sequence length {len(ref_seq1)} too large (maximum supported is {len_max}).",
-                },
-            ]
-        }
-
+        return {"errors": [sequence_length(ref_seq1, len_max)]}
     if len(obs_seq) > len_max:
-        return {
-            "errors": [
-                {
-                    "code": "ESEQUENCELENGTH",
-                    "details": f"Sequence length {len(obs_seq)} too large (maximum supported is {len_max}).",
-                },
-            ]
-        }
+        return {"errors": [sequence_length(obs_seq, len_max)]}
 
     # Get the description extractor hgvs internal indexing variants
-    variants = _extract_hgvs_internal_model(obs_seq, r_model)
+    variants = _extract_hgvs_internal_model(obs_seq, ref_seq1)
 
     if filter:
         raw_de_variants = extractor.describe_dna(ref_seq1, ref_seq2)
@@ -215,4 +201,4 @@ def map_description(
             }
         variants = [v for v in variants if v not in seq_variants]
 
-    return {"mapped_description": _get_description(variants, r_model, selector_id)}
+    return {"mapped_description": _get_description(variants, to_r_model, selector_id)}

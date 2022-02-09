@@ -52,6 +52,21 @@ TEST_ERROR = [
         ("NM_003002.2:c.-31del", "NG_012337.3", "NM_003002.2", "transcript", True),
         "ENOSELECTORFOUND",
     ),
+    (
+        (
+            "NM_003002.2:c.274G>T",
+            "NG_012337.3",
+            "NM_003002.4",
+            "transcript",
+            True,
+            1000,
+        ),
+        "ESEQUENCELENGTH",
+    ),
+    (
+        ("NG_012337.3(NM_003002.4):c.274G>T", "NM_003002.4", None, None, False, 10000),
+        "ESEQUENCELENGTH",
+    ),
 ]
 
 
