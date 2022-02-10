@@ -3,8 +3,8 @@ from mutalyzer_hgvs_parser import to_model
 
 from mutalyzer.checker import splice_sites
 from mutalyzer.converter.to_rna import (
-    _get_location_type,
     _trim_to_exons,
+    get_location_type,
     get_position_type,
     to_rna_reference_model,
     to_rna_variants,
@@ -1495,7 +1495,7 @@ def test_to_rna_variants(variants, expected):
 )
 def test_get_location_type(location, exons, location_type):
     location = to_model(location, "location")
-    assert _get_location_type(location, exons) == location_type
+    assert get_location_type(location, exons) == location_type
 
 
 @pytest.mark.parametrize(

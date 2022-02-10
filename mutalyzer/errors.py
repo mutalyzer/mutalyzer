@@ -314,3 +314,24 @@ def sequence_length(seq, len_max):
         "code": "ESEQUENCELENGTH",
         "details": f"Sequence length {len(seq)} too large (maximum supported is {len_max}).",
     }
+
+
+def slice_option(slice_to):
+    return {
+        "code": "ESLICEOPTION",
+        "details": f'Slice "{slice_to}" not supported.',
+    }
+
+
+def location_slice(location):
+    return {
+        "code": "ELOCATIONSLICE",
+        "details": f'Location "{location_to_description(location)}" cannot be sliced.',
+    }
+
+
+def lengths_difference(length):
+    return {
+        "code": "ELENGTHSDIFFERENCE",
+        "details": f'The difference of sequences length of "{length}" bases is too large.',
+    }
