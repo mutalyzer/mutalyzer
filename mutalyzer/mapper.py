@@ -1,15 +1,19 @@
+import bisect
 from copy import deepcopy
 
 import extractor
 from mutalyzer_crossmapper import NonCoding
+from mutalyzer_mutator import mutate
 from mutalyzer_mutator.util import reverse_complement
 from mutalyzer_retriever.retriever import NoReferenceError, NoReferenceRetrieved
 
+import mutalyzer.errors as errors
+
 from .converter import de_to_hgvs
 from .converter.to_hgvs_coordinates import to_hgvs_locations
+from .converter.to_rna import get_location_type
 from .description import Description
 from .description_model import model_to_string, variants_to_description
-from .errors import no_selector_found, reference_not_retrieved
 from .reference import (
     extract_feature_model,
     get_coordinate_system_from_reference,
@@ -19,6 +23,7 @@ from .reference import (
     get_selector_feature,
     retrieve_reference,
 )
+from .util import get_end, get_inserted_sequence, get_start, set_end, set_start
 
 
 def _slice_seq(seq, slices):
@@ -123,8 +128,7 @@ def _get_description(de_hgvs_internal_indexing_variants, r_model, selector_id=No
     return model_to_string(de_hgvs_model)
 
 
-def _extract_hgvs_internal_model(obs_seq, r_model):
-    ref_seq = r_model["sequence"]["seq"]
+def _extract_hgvs_internal_model(obs_seq, ref_seq):
     de_variants = extractor.describe_dna(ref_seq, obs_seq)
 
     return de_to_hgvs(
@@ -142,12 +146,42 @@ def _filter(variants, ref_seq1, ref_seq2):
     return [v for v in variants if v not in seq_variants]
 
 
+def _slice_from(variants, exons, sequences):
+    sliced = []
+    unsliced = []
+    x = NonCoding(exons).coordinate_to_noncoding
+    for i, v in enumerate(variants):
+        slice_v = deepcopy(v)
+        if v.get("location"):
+            if get_location_type(v["location"], exons, 0, 0) in [
+                "same exon",
+                "exon exon",
+            ]:
+                set_start(slice_v["location"], x(get_start(slice_v))[0] - 1)
+                set_end(
+                    slice_v["location"],
+                    x(get_end(slice_v))[0] + x(get_end(slice_v))[1] - 1,
+                )
+                if slice_v.get("inserted"):
+                    slice_v["inserted"] = [
+                        {
+                            "source": "description",
+                            "sequence": get_inserted_sequence(slice_v, sequences),
+                        }
+                    ]
+                sliced.append(slice_v)
+            else:
+                unsliced.append(i)
+    return sliced, unsliced
+
+
 def map_description(
     description,
     reference_id,
     selector_id=None,
     slice_to=None,
     filter=False,
+    len_max=100000,
 ):
     # Get the observed sequence
     d = Description(description)
@@ -158,48 +192,81 @@ def map_description(
         return {"errors": [{"details": "No observed sequence or other error occured."}]}
     obs_seq = d.references["observed"]["sequence"]["seq"]
 
-    r_model = retrieve_reference(reference_id)
-    if r_model is None:
-        return {"errors": [reference_not_retrieved(reference_id, [])]}
+    to_r_model = retrieve_reference(reference_id)
+    if to_r_model is None:
+        return {"errors": [errors.reference_not_retrieved(reference_id, [])]}
 
     ref_seq2 = d.references["reference"]["sequence"]["seq"]
 
+    if slice_to == "transcript":
+        sliced_variants, unsliced_variants = _slice_from(
+            d.delins_model["variants"],
+            d.get_selector_model()["exon"],
+            d.get_sequences(),
+        )
+        if unsliced_variants:
+            errs = []
+            for v in unsliced_variants:
+                errs.append(
+                    errors.location_slice(d.corrected_model["variants"][v]["location"])
+                )
+            return {"errors": errs}
+        from_r_model = _get_reference_model(
+            d.references["reference"], d.get_selector_id(), slice_to
+        )
+        ref_seq2 = from_r_model["sequence"]["seq"]
+        obs_seq = mutate({"reference": ref_seq2}, sliced_variants)
+    elif slice_to == "gene":
+        new_r_model = {
+            "annotations": deepcopy(
+                extract_feature_model(
+                    d.references["reference"]["annotations"], d.get_selector_id()
+                )[0]
+            )
+        }
+        g_l = _get_gene_locations(new_r_model)
+        ref_seq2 = _slice_seq(d.references["reference"]["sequence"]["seq"], [g_l])
+        sliced_variants, unsliced_variants = _slice_from(
+            d.delins_model["variants"], [g_l], {"reference": ref_seq2}
+        )
+        if unsliced_variants:
+            errs = []
+            for v in unsliced_variants:
+                errs.append(
+                    errors.location_slice(d.corrected_model["variants"][v]["location"])
+                )
+            return {"errors": errs}
+        obs_seq = mutate({"reference": ref_seq2}, sliced_variants)
+    elif slice_to is not None:
+        return {"errors": [errors.slice_option(slice_to)]}
+
     if selector_id:
-        s_model = get_internal_selector_model(r_model["annotations"], selector_id, True)
+        s_model = get_internal_selector_model(
+            to_r_model["annotations"], selector_id, True
+        )
         if s_model is None:
-            return {"errors": [no_selector_found(reference_id, selector_id, [])]}
-        if s_model["inverted"]:
+            return {"errors": [errors.no_selector_found(reference_id, selector_id, [])]}
+        if s_model["inverted"] and not (
+            d.get_selector_model() and d.get_selector_model()["inverted"]
+        ):
             obs_seq = reverse_complement(obs_seq)
             ref_seq2 = reverse_complement(ref_seq2)
-
     if slice_to:
-        r_model = _get_reference_model(r_model, selector_id, slice_to)
+        to_r_model = _get_reference_model(to_r_model, selector_id, slice_to)
 
-    ref_seq1 = r_model["sequence"]["seq"]
+    ref_seq1 = to_r_model["sequence"]["seq"]
 
-    len_max = 100000
     if len(ref_seq1) > len_max:
-        return {
-            "errors": [
-                {
-                    "code": "ESEQUENCELENGTH",
-                    "details": f"Sequence length {len(ref_seq1)} too large (maximum supported is {len_max}).",
-                },
-            ]
-        }
-
+        return {"errors": [errors.sequence_length(ref_seq1, len_max)]}
     if len(obs_seq) > len_max:
-        return {
-            "errors": [
-                {
-                    "code": "ESEQUENCELENGTH",
-                    "details": f"Sequence length {len(obs_seq)} too large (maximum supported is {len_max}).",
-                },
-            ]
-        }
+        return {"errors": [errors.sequence_length(obs_seq, len_max)]}
 
+    if len(ref_seq1) < len(obs_seq) and abs(len(ref_seq1) - len(obs_seq)) > 1000:
+        return {
+            "errors": [errors.lengths_difference(abs(len(ref_seq1) - len(obs_seq)))]
+        }
     # Get the description extractor hgvs internal indexing variants
-    variants = _extract_hgvs_internal_model(obs_seq, r_model)
+    variants = _extract_hgvs_internal_model(obs_seq, ref_seq1)
 
     if filter:
         raw_de_variants = extractor.describe_dna(ref_seq1, ref_seq2)
@@ -215,4 +282,4 @@ def map_description(
             }
         variants = [v for v in variants if v not in seq_variants]
 
-    return {"mapped_description": _get_description(variants, r_model, selector_id)}
+    return {"mapped_description": _get_description(variants, to_r_model, selector_id)}

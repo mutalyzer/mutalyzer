@@ -26,14 +26,80 @@ TEST_SET = [
         "NG_012337.3(NM_003002.4):c.[-34_-32delinsTGGGAATTGTCGCCTAAGTGGTTCCGGG;*824A[18]]",
     ),
     (
+        (
+            "NG_012337.3(NM_003002.4):c.[171del;274G>T]",
+            "NG_012337.1",
+            "NM_003002.2",
+            "transcript",
+            False,
+        ),
+        "NG_012337.1(NM_003002.2):c.[-60_-35del;171del;274G>T]",
+    ),
+    (
+        (
+            "NG_012337.3(NM_003002.4):c.[171del;274G>T]",
+            "NG_012337.1",
+            "NM_003002.2",
+            "transcript",
+            True,
+        ),
+        "NG_012337.1(NM_003002.2):c.[171del;274G>T]",
+    ),
+    (
+        (
+            "NG_012337.3(NM_003002.4):c.[171del;274G>T]",
+            "NG_012337.1",
+            "NM_003002.2",
+            "gene",
+            False,
+        ),
+        "NG_012337.1(NM_003002.2):c.[-60_-35del;171del;274G>T]",
+    ),
+    (
+        (
+            "NG_012337.3(NM_003002.4):c.[171del;274G>T]",
+            "NG_012337.1",
+            "NM_003002.2",
+            "gene",
+            True,
+        ),
+        "NG_012337.1(NM_003002.2):c.[171del;274G>T]",
+    ),
+    (
         # Reverse strand.
         ("NM_012459.2:c.-20del", "NG_012337.1", "NM_012459.2", "transcript", False),
-        "NG_012337.1(NM_012459.2):c.[-20del;*496dup]",
+        "NG_012337.1(NM_012459.2):c.-20del",
     ),
     (
         # Reverse strand.
         ("NM_012459.2:c.-20del", "NG_012337.1", "NM_012459.2", "transcript", True),
         "NG_012337.1(NM_012459.2):c.-20del",
+    ),
+    (
+        # Reverse strand.
+        ("NM_012459.2:c.-20del", "NG_012337.1", "NM_012459.2", None, False),
+        "NG_012337.1(NM_012459.2):c.[-11025_-30del;-20del;129+5_133del;*496_*3448delinsA]",
+    ),
+    (
+        # Reverse strand.
+        ("NM_012459.2:c.-20del", "NG_012337.1", "NM_012459.2", "transcript", False),
+        "NG_012337.1(NM_012459.2):c.-20del",
+    ),
+    (
+        # Reverse strand.
+        (
+            "NG_012337.1(NM_012459.2):c.-20del",
+            "NG_012337.3",
+            "NM_012459.4",
+            None,
+            False,
+        ),
+        "NG_012337.3(NM_012459.4):c.[-34907_-11072del;-65del]",
+    ),
+    (
+        # Reverse strand.
+        ("NG_012337.1(NM_012459.2):c.-20del", "NG_012337.3", "NM_012459.4", None, True),
+        "NG_012337.3(NM_012459.4):c.-65del",
     ),
 ]
 
@@ -51,6 +117,54 @@ TEST_ERROR = [
     (
         ("NM_003002.2:c.-31del", "NG_012337.3", "NM_003002.2", "transcript", True),
         "ENOSELECTORFOUND",
+    ),
+    (
+        (
+            "NM_003002.2:c.274G>T",
+            "NG_012337.3",
+            "NM_003002.4",
+            "transcript",
+            True,
+            1000,
+        ),
+        "ESEQUENCELENGTH",
+    ),
+    (
+        ("NG_012337.3(NM_003002.4):c.274G>T", "NM_003002.4", None, None, False, 10000),
+        "ESEQUENCELENGTH",
+    ),
+    (
+        (
+            "NG_012337.3(NM_003002.4):c.[-2000del;52_53del;168_169+10del;170-2_170del;171del;274G>T]",
+            "NG_012337.1",
+            "NM_003002.2",
+            "gene",
+            False,
+            10000,
+        ),
+        "ELOCATIONSLICE",
+    ),
+    (
+        (
+            "NG_012337.3(NM_003002.4):c.[52_53del;168_169+10del;170-2_170del;171del;274G>T]",
+            "NG_012337.1",
+            "NM_003002.2",
+            "transcript",
+            False,
+            10000,
+        ),
+        "ELOCATIONSLICE",
+    ),
+    (
+        (
+            "NG_012337.3(NM_003002.4):c.[52_53del;168_169+10del;170-2_170del;171del;274G>T]",
+            "NG_012337.1",
+            "NM_003002.2",
+            "transcr",
+            False,
+            10000,
+        ),
+        "ESLICEOPTION",
     ),
 ]
 

@@ -145,12 +145,12 @@ class Description(object):
     def _add_info(self, info):
         self.infos.append(info)
 
-    def _get_selector_id(self):
+    def get_selector_id(self):
         if self.corrected_model:
             return get_selector_id(self.corrected_model)
 
     def get_selector_model(self):
-        selector_id = self._get_selector_id()
+        selector_id = self.get_selector_id()
         if self.references and selector_id:
             return get_internal_selector_model(
                 self.references["reference"]["annotations"], selector_id, True
@@ -561,7 +561,7 @@ class Description(object):
 
         l_min, l_max = overlap_min_max(self.references["reference"], l_min, l_max)
         for selector in yield_overlap_ids(self.references["reference"], l_min, l_max):
-            if selector["id"] != self._get_selector_id():
+            if selector["id"] != self.get_selector_id():
                 converted_model = to_hgvs_locations(
                     model=from_model,
                     references=self.references,
@@ -607,7 +607,7 @@ class Description(object):
         if self.de_hgvs_model.get("coordinate_system") == "c" or (
             self.de_hgvs_model.get("coordinate_system") == "r"
             and get_coordinate_system_from_selector_id(
-                self.references["reference"], self._get_selector_id()
+                self.references["reference"], self.get_selector_id()
             )
             == "c"
         ):
@@ -651,7 +651,7 @@ class Description(object):
                 self.get_selector_model(),
             )
             rna_reference_model = to_rna_reference_model(
-                self.references["reference"], self._get_selector_id()
+                self.references["reference"], self.get_selector_id()
             )
             rna_references = {
                 get_reference_id(self.corrected_model): rna_reference_model,
@@ -1038,7 +1038,7 @@ class Description(object):
                 self.get_selector_model(),
             )
             rna_reference_model = to_rna_reference_model(
-                self.references["reference"], self._get_selector_id()
+                self.references["reference"], self.get_selector_id()
             )
             # self.delins_model["variants"] = variants
             self.references = {
@@ -1075,11 +1075,11 @@ class Description(object):
         convert_amino_acids(self.internal_coordinates_model, "1a")
 
     def _back_translate(self):
-        if not self._get_selector_id():
+        if not self.get_selector_id():
             return
         cds_seq = slice_to_selector(
             retrieve_reference(get_reference_id(self.corrected_model)),
-            self._get_selector_id(),
+            self.get_selector_id(),
             True,
             True,
         )
@@ -1103,7 +1103,7 @@ class Description(object):
             else:
                 # TODO: Add error message.
                 return []
-        if self._get_selector_id() == get_reference_id(self.corrected_model):
+        if self.get_selector_id() == get_reference_id(self.corrected_model):
             reference = "{}".format(get_reference_id(self.corrected_model))
         else:
             reference = "{}({})".format(
@@ -1123,7 +1123,7 @@ class Description(object):
         self._check_amino_acids()
         if self.errors:
             return
-        if self._get_selector_id():
+        if self.get_selector_id():
             # Convert references to protein model
             p_seq = get_protein_sequence(
                 self.references["reference"], self.get_selector_model()
@@ -1156,9 +1156,7 @@ class Description(object):
             )
             self.references["observed"] = {"sequence": {"seq": observed_sequence}}
             selector_id = (
-                "({})".format(self._get_selector_id())
-                if self._get_selector_id()
-                else ""
+                "({})".format(self.get_selector_id()) if self.get_selector_id() else ""
             )
             p_description = "{}{}:{}".format(
                 reference_id,

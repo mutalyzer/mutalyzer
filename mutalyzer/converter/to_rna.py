@@ -111,7 +111,7 @@ def get_position_type(position, exons, len_ss=2, len_as=5):
         return bisect.bisect_left(exons, position), 0
 
 
-def _get_location_type(location, exons):
+def get_location_type(location, exons, len_ss=2, len_as=5):
     """
     Returns the location spanning with respect to the exons/introns. Currently
     the supported types are: same exon (start and end in the same exon),
@@ -123,8 +123,8 @@ def _get_location_type(location, exons):
     :returns: Location type within the exons/introns.
     :rtype: str
     """
-    start_i = get_position_type(get_start(location), exons)
-    end_i = get_position_type(get_end(location) - 1, exons)
+    start_i = get_position_type(get_start(location), exons, len_ss, len_as)
+    end_i = get_position_type(get_end(location) - 1, exons, len_ss, len_as)
     if get_start(location) == get_end(location):
         # this is an insertion
         if start_i[0] % 2 == 1:
@@ -142,6 +142,10 @@ def _get_location_type(location, exons):
             return "same intron"
         if start_i[0] != end_i[0] and start_i[1] == 0 and end_i[1] == 0:
             return "intron intron"
+    elif start_i[0] % 2 == 1 and end_i[0] % 2 == 0:
+        return "exon intron"
+    elif start_i[0] % 2 == 0 and end_i[0] % 2 == 1:
+        return "intron exon"
 
 
 def _get_flatten_exons(exons):
@@ -210,7 +214,7 @@ def _trim_to_exons(variants, exons, sequences):
     for v in variants:
         new_v = deepcopy(v)
         if v.get("location"):
-            location_type = _get_location_type(v["location"], exons)
+            location_type = get_location_type(v["location"], exons)
             if location_type == "intron intron" and not (
                 v.get("inserted") and construct_sequence(v["inserted"], sequences)
             ):

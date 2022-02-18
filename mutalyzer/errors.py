@@ -296,10 +296,7 @@ def splice_site(path):
 
 
 def invalid_input(value, valid_options=None):
-    output = {
-        "code": "EINVALIDINPUT",
-        "details": f"'{value}' not valid."
-    }
+    output = {"code": "EINVALIDINPUT", "details": f"'{value}' not valid."}
     if valid_options:
         output["options"] = valid_options
     return output
@@ -308,5 +305,33 @@ def invalid_input(value, valid_options=None):
 def missing_parameter(value):
     return {
         "code": "EMISSINGPARAMETER",
-        "details": f"Missing required '{value}' parameter."
+        "details": f"Missing required '{value}' parameter.",
+    }
+
+
+def sequence_length(seq, len_max):
+    return {
+        "code": "ESEQUENCELENGTH",
+        "details": f"Sequence length {len(seq)} too large (maximum supported is {len_max}).",
+    }
+
+
+def slice_option(slice_to):
+    return {
+        "code": "ESLICEOPTION",
+        "details": f'Slice "{slice_to}" not supported.',
+    }
+
+
+def location_slice(location):
+    return {
+        "code": "ELOCATIONSLICE",
+        "details": f'Location "{location_to_description(location)}" cannot be sliced.',
+    }
+
+
+def lengths_difference(length):
+    return {
+        "code": "ELENGTHSDIFFERENCE",
+        "details": f'The difference of sequences length of "{length}" bases is too large.',
     }
