@@ -963,7 +963,7 @@ class Description(object):
             if v.get("deleted"):
                 self._check_superfluous(["variants", i, "deleted"])
 
-            if v.get("type") == "duplication" and v.get("inserted"):
+            if v.get("type") in ["duplication", "inversion"] and v.get("inserted"):
                 self._check_superfluous(["variants", i, "inserted"])
 
             if v.get("type") == "insertion":

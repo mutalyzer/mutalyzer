@@ -62,8 +62,8 @@ def contains_insert_length(model):
     if model.get("variants"):
         for v in model["variants"]:
             if v.get("inserted"):
-                if v["type"] != "duplication" or (
-                    v["type"] == "duplication" and len(v["inserted"]) > 1
+                if v["type"] not in ["duplication", "inversion"] or (
+                    v["type"] in ["duplication", "inversion"] and len(v["inserted"]) > 1
                 ):
                     for i in v["inserted"]:
                         if i.get("length"):
