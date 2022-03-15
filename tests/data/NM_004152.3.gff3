@@ -1,0 +1,22 @@
+##sequence-region NM_004152.3 1 1195
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=9606
+NM_004152.3	RefSeq	region	1	1195	.	+	.	ID=NM_004152.3:1..1195;Dbxref=taxon:9606;Name=19;chromosome=19;gbkey=Src;genome=genomic;map=19p13.3;mol_type=mRNA
+NM_004152.3	RefSeq	gene	1	1195	.	+	.	ID=gene-OAZ1;Dbxref=GeneID:4946,HGNC:HGNC:8095,MIM:601579;Name=OAZ1;description=ornithine decarboxylase antizyme 1;gbkey=Gene;gene=OAZ1;gene_synonym=AZ1,AZI,OAZ
+NM_004152.3	RefSeq	CDS	114	317	.	+	0	ID=cds-NP_004143.1;Parent=gene-OAZ1;Dbxref=CCDS:CCDS58639.1,Genbank:NP_004143.1,GeneID:4946,HGNC:HGNC:8095,MIM:601579;Name=NP_004143.1;Note=protein translation is dependent on +1 polyamine-induced ribosomal frameshift%3B isoform 1 is encoded by transcript variant 1;exception=ribosomal slippage;gbkey=CDS;gene=OAZ1;product=ornithine decarboxylase antizyme 1 isoform 1;protein_id=NP_004143.1
+NM_004152.3	RefSeq	CDS	319	801	.	+	0	ID=cds-NP_004143.1;Parent=gene-OAZ1;Dbxref=CCDS:CCDS58639.1,Genbank:NP_004143.1,GeneID:4946,HGNC:HGNC:8095,MIM:601579;Name=NP_004143.1;Note=protein translation is dependent on +1 polyamine-induced ribosomal frameshift%3B isoform 1 is encoded by transcript variant 1;exception=ribosomal slippage;gbkey=CDS;gene=OAZ1;product=ornithine decarboxylase antizyme 1 isoform 1;protein_id=NP_004143.1
+NM_004152.3	RefSeq	exon	1	259	.	+	.	ID=id-OAZ1;Parent=gene-OAZ1;Dbxref=GeneID:4946,HGNC:HGNC:8095,MIM:601579;gbkey=exon;gene=OAZ1;inference=alignment:Splign:2.1.0
+NM_004152.3	RefSeq	exon	260	405	.	+	.	ID=id-OAZ1-2;Parent=gene-OAZ1;Dbxref=GeneID:4946,HGNC:HGNC:8095,MIM:601579;gbkey=exon;gene=OAZ1;inference=alignment:Splign:2.1.0
+NM_004152.3	RefSeq	exon	406	578	.	+	.	ID=id-OAZ1-3;Parent=gene-OAZ1;Dbxref=GeneID:4946,HGNC:HGNC:8095,MIM:601579;gbkey=exon;gene=OAZ1;inference=alignment:Splign:2.1.0
+NM_004152.3	RefSeq	exon	579	664	.	+	.	ID=id-OAZ1-4;Parent=gene-OAZ1;Dbxref=GeneID:4946,HGNC:HGNC:8095,MIM:601579;gbkey=exon;gene=OAZ1;inference=alignment:Splign:2.1.0
+NM_004152.3	RefSeq	exon	665	1181	.	+	.	ID=id-OAZ1-5;Parent=gene-OAZ1;Dbxref=GeneID:4946,HGNC:HGNC:8095,MIM:601579;gbkey=exon;gene=OAZ1;inference=alignment:Splign:2.1.0
+NM_004152.3	RefSeq	sequence_feature	9	11	.	+	.	ID=id-OAZ1-6;Dbxref=GeneID:4946,HGNC:HGNC:8095,MIM:601579;Note=upstream in-frame stop codon;gbkey=misc_feature;gene=OAZ1
+NM_004152.3	RefSeq	sequence_feature	315	321	.	+	.	ID=id-OAZ1-7;Dbxref=GeneID:4946,HGNC:HGNC:8095,MIM:601579;Note=conserved_region%3B plus one ribosomal frameshifting element;gbkey=misc_feature;gene=OAZ1
+NM_004152.3	RefSeq	polyA_site	934	934	.	+	.	ID=id-OAZ1-8;Parent=gene-OAZ1;Dbxref=GeneID:4946,HGNC:HGNC:8095,MIM:601579;Note=major polyA site;gbkey=polyA_site;gene=OAZ1
+NM_004152.3	RefSeq	polyA_site	1018	1018	.	+	.	ID=id-OAZ1-9;Parent=gene-OAZ1;Dbxref=GeneID:4946,HGNC:HGNC:8095,MIM:601579;gbkey=polyA_site;gene=OAZ1
+NM_004152.3	RefSeq	polyA_site	1181	1181	.	+	.	ID=id-OAZ1-10;Parent=gene-OAZ1;Dbxref=GeneID:4946,HGNC:HGNC:8095,MIM:601579;Note=major polyA site;gbkey=polyA_site;gene=OAZ1
+NM_004152.3	RefSeq	recoding_stimulatory_region	324	376	.	+	.	ID=id-OAZ1-11;Parent=gene-OAZ1;Dbxref=GeneID:4946,HGNC:HGNC:8095,MIM:601579;Note=recoding_pseudoknot;function=stimulates +1 ribosomal frameshifting;gbkey=regulatory;gene=OAZ1;regulatory_class=recoding_stimulatory_region
+NM_004152.3	RefSeq	polyA_signal_sequence	916	921	.	+	.	ID=id-OAZ1-12;Parent=gene-OAZ1;Dbxref=GeneID:4946,HGNC:HGNC:8095,MIM:601579;Note=hexamer: AATAAA;gbkey=regulatory;gene=OAZ1;regulatory_class=polyA_signal_sequence
+NM_004152.3	RefSeq	polyA_signal_sequence	1000	1005	.	+	.	ID=id-OAZ1-13;Parent=gene-OAZ1;Dbxref=GeneID:4946,HGNC:HGNC:8095,MIM:601579;Note=hexamer: AATAAA;gbkey=regulatory;gene=OAZ1;regulatory_class=polyA_signal_sequence
+NM_004152.3	RefSeq	polyA_signal_sequence	1162	1167	.	+	.	ID=id-OAZ1-14;Parent=gene-OAZ1;Dbxref=GeneID:4946,HGNC:HGNC:8095,MIM:601579;Note=hexamer: AATAAA;gbkey=regulatory;gene=OAZ1;regulatory_class=polyA_signal_sequence
+
+

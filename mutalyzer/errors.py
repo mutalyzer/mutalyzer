@@ -335,3 +335,10 @@ def lengths_difference(length):
         "code": "ELENGTHSDIFFERENCE",
         "details": f'The difference of sequences length of "{length}" bases is too large.',
     }
+
+
+def cds_slices(exception_message):
+    return {
+        "code": "ECDSSLICES",
+        "details": f"CDS slices not consecutive. {exception_message}",
+    }

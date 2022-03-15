@@ -209,7 +209,7 @@ def get_feature_locations(feature):
     sub_features_locations = {}
     if feature.get("features"):
         for sub_feature in feature["features"]:
-            if sub_feature["type"] not in sub_features_locations:
+            if sub_feature["type"].lower() not in sub_features_locations:
                 sub_features_locations[sub_feature["type"].lower()] = []
             sub_features_locations[sub_feature["type"].lower()].append(
                 (get_start(sub_feature), get_end(sub_feature))
@@ -243,6 +243,8 @@ def get_internal_selector_model(reference_annotations, selector_id, fix_exon=Fal
     :return: Dictionary.
     """
     feature_model = get_selector_feature(reference_annotations, selector_id)
+    import json
+
     if feature_model:
         output = {
             "id": selector_id,
@@ -253,12 +255,15 @@ def get_internal_selector_model(reference_annotations, selector_id, fix_exon=Fal
         cds_sub_feature_model = _get_cds_id(feature_model)
         if cds_sub_feature_model:
             output["cds_id"] = cds_sub_feature_model["id"]
-            if cds_sub_feature_model.get("qualifiers") and cds_sub_feature_model[
-                "qualifiers"
-            ].get("translation_exception"):
-                output["translation_exception"] = cds_sub_feature_model["qualifiers"][
-                    "translation_exception"
-                ]
+            if cds_sub_feature_model.get("qualifiers"):
+                if cds_sub_feature_model["qualifiers"].get("translation_exception"):
+                    output["translation_exception"] = cds_sub_feature_model[
+                        "qualifiers"
+                    ]["translation_exception"]
+                if cds_sub_feature_model["qualifiers"].get("exception"):
+                    output["exception"] = cds_sub_feature_model["qualifiers"][
+                        "exception"
+                    ]
         if feature_model["type"] == "CDS":
             parent_model = get_feature_parent(
                 reference_annotations, feature_model["id"]
@@ -280,13 +285,13 @@ def get_available_selectors(reference_annotations, coordinate_system):
 def get_protein_selector_model(reference, selector_id):
     selector_model = get_internal_selector_model(reference, selector_id, True)
     mrna = get_selector_feature(reference, selector_id)
-    protein_ids = []
+    protein_ids = set()
     if mrna.get("features"):
         for feature in mrna["features"]:
             if feature["type"] == "CDS":
-                protein_ids.append(feature["id"])
+                protein_ids.add(feature["id"])
     if len(protein_ids) == 1:
-        selector_model["protein_id"] = protein_ids[0]
+        selector_model["protein_id"] = list(protein_ids)[0]
         selector_model["transcript_id"] = selector_id
         return selector_model
 
@@ -503,7 +508,7 @@ def get_coordinate_system_from_reference(reference):
 
 def _get_exons_and_cds(s_m):
     exons = [e for t in s_m["exon"] for e in t]
-    cds = [s_m["cds"][0][0], s_m["cds"][0][1]]
+    cds = [s_m["cds"][0][0], s_m["cds"][-1][1]]
     return exons, cds
 
 

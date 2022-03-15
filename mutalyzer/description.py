@@ -389,9 +389,22 @@ class Description(object):
         for reference_id, selector_id, path in yield_reference_selector_ids(
             self.corrected_model
         ):
-            if get_internal_selector_model(
+            selector_model = get_internal_selector_model(
                 self.references[reference_id]["annotations"], selector_id, True
-            ).get("whole_exon_transcript"):
+            )
+            if (
+                self.corrected_model["coordinate_system"] in ["c", "p"]
+                and selector_model.get("cds")
+                and len(selector_model["cds"]) > 1
+                and selector_model.get("exception")
+                and selector_model.get("exception") == "ribosomal slippage"
+            ):
+                self._add_error(
+                    errors.cds_slices(
+                        f"Expcetion: \"{selector_model.get('exception')}\"."
+                    )
+                )
+            if selector_model.get("whole_exon_transcript"):
                 self._add_info(
                     infos.whole_transcript_exon(reference_id, selector_id, path)
                 )
@@ -614,21 +627,23 @@ class Description(object):
             if self.rna and self.rna.get("errors"):
                 self.protein = {"errors": self.rna["errors"]}
             else:
-                self.protein = dict(
-                    zip(
-                        ["description", "reference", "predicted"],
-                        get_protein_description(
-                            variants_to_delins(
-                                self.de_hgvs_internal_indexing_model["variants"]
-                            ),
-                            self.references,
-                            get_protein_selector_model(
-                                self.references["reference"]["annotations"],
-                                get_selector_id(self.de_hgvs_model),
-                            ),
-                        ),
-                    )
+                protein_selector_model = get_protein_selector_model(
+                    self.references["reference"]["annotations"],
+                    get_selector_id(self.de_hgvs_model),
                 )
+                if protein_selector_model:
+                    self.protein = dict(
+                        zip(
+                            ["description", "reference", "predicted"],
+                            get_protein_description(
+                                variants_to_delins(
+                                    self.de_hgvs_internal_indexing_model["variants"]
+                                ),
+                                self.references,
+                                protein_selector_model,
+                            ),
+                        )
+                    )
 
     @check_errors
     def _construct_rna_description(self):

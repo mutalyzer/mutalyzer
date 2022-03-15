@@ -100,6 +100,9 @@ def test_get_reference_model_segmented_transcript_no_siblings_ancestors_descenda
                                     "end": {"type": "point", "position": 1126},
                                     "strand": 1,
                                 },
+                                "qualifiers": {
+                                    "exception": "annotated by transcript or proteomic data"
+                                },
                             },
                         ],
                     },
@@ -197,6 +200,9 @@ def test_get_reference_model_segmented_transcript_no_siblings_no_ancestors_desce
                     "start": {"type": "point", "position": 135},
                     "end": {"type": "point", "position": 1126},
                     "strand": 1,
+                },
+                "qualifiers": {
+                    "exception": "annotated by transcript or proteomic data"
                 },
             },
         ],
