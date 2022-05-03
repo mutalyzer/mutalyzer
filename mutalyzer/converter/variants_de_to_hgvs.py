@@ -129,6 +129,8 @@ def is_repeat(variant, sequences):
     Note that it works only in the context of the `de_to_hgvs` function flow.
     """
     inserted_sequence = get_inserted_sequence(variant, sequences)
+    if len(inserted_sequence) > 2000:
+        return False
     repeat_seq, repeat_number = seq_present_before(
         sequences["reference"],
         inserted_sequence,
