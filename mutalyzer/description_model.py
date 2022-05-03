@@ -33,6 +33,7 @@ def get_selector_id(model):
         return model["reference"]["selector"]["id"]
     elif (
         model.get("source")
+        and isinstance(model["source"], dict)
         and model["source"].get("selector")
         and model["source"]["selector"].get("id")
     ):

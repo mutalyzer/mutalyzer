@@ -2791,6 +2791,71 @@ TESTS = [
         "normalized": "NG_012337.1(NM_003002.2):c.274delinsTTA",
         "to_test": True,
     },
+    {
+        "keywords": [],
+        "input": "NG_012337.1(NM_003002.2):c.pterdel",
+        "normalized": "NG_012337.1(NM_003002.2):c.-5059del",
+        "genomic": "NG_012337.1:g.3del",
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NG_012337.1:g.pterdel",
+        "normalized": "NG_012337.1:g.3del",
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NG_012337.1(NM_003002.2):c.qterdel",
+        "normalized": "NG_012337.1(NM_003002.2):c.*2824del",
+        "genomic": "NG_012337.1:g.15948del",
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NM_003002.2:c.pterdel",
+        "normalized": "NM_003002.2:c.-61del",
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NM_003002.2:c.qterdel",
+        "normalized": "NM_003002.2:c.*841del",
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "LRG_24:g.5525_5532delinsNM_003002.2:c.pter_-51",
+        "normalized": "LRG_24:g.5525_5532delinsGTGGGAATTGT",
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "LRG_24:g.5525_5532delinsNM_003002.2:c.*835_qter",
+        "normalized": "LRG_24:g.5525_5532delinsAAAAAAA",
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "LRG_24(t1):c.126_133delins[NM_003002.2:c.pter_-51;NM_003002.2:c.*835_qter]",
+        "normalized": "LRG_24(t1):c.126_133delinsGTGGGAATTGTAAAAAAA",
+        "genomic": "LRG_24:g.5525_5532delinsGTGGGAATTGTAAAAAAA",
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "LRG_24(t1):c.pter_qterdelinspter_qter",
+        "normalized": "LRG_24(t1):c.=",
+        "genomic": "LRG_24:g.=",
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "LRG_24(t1):c.pter_qterdelins[pter_qter;NM_003002.2:c.*835_qter]",
+        "normalized": "LRG_24(t1):c.*2327_*2328insAAAAAAA",
+        "genomic": "LRG_24:g.11486_11487insAAAAAAA",
+        "to_test": True,
+    },
     # {
     #     "keywords": [
     #

@@ -664,7 +664,7 @@ def test_compare(params, expected):
                         {
                             "code": "ESYNTAXUEOF",
                             "details": "Unexpected end of input.",
-                            "pos_in_stream": 7,
+                            "pos_in_stream": 6,
                             "unexpected_character": "e",
                             "description": "1delete",
                             "expecting": [

@@ -431,6 +431,44 @@ class Description(object):
                     )
 
     @check_errors
+    def _correct_chromosome_points(self):
+        for point, path in yield_sub_model(
+            self.corrected_model, ["location", "start", "end"], ["point"]
+        ):
+            if point["position"] in ["pter", "qter"]:
+                ref_id = self.corrected_model["reference"]["id"]
+                sel_id = self.get_selector_id()
+                c_s = get_coordinate_system(self.corrected_model, self.references)
+                for ins_or_del in ["inserted", "deleted"]:
+                    if ins_or_del in path:
+                        ins_or_del_model = get_submodel_by_path(
+                            self.corrected_model,
+                            path[: path.index(ins_or_del) + 2],
+                        )
+                        ins_or_del_ref_id = get_reference_id(ins_or_del_model)
+                        ins_or_del_sel_id = get_selector_id(ins_or_del_model)
+                        ins_or_del_c_s = ins_or_del_model.get("coordinate_system")
+                        if ins_or_del_ref_id:
+                            ref_id = ins_or_del_ref_id
+                        if ins_or_del_sel_id:
+                            sel_id = ins_or_del_sel_id
+                        if ins_or_del_c_s:
+                            c_s = ins_or_del_c_s
+                sel_model = get_internal_selector_model(
+                    self.references[ref_id]["annotations"], sel_id, True
+                )
+                crossmap_from = crossmap_to_hgvs_setup(c_s, sel_model, degenerate=True)
+                if point["position"] == "pter":
+                    to_correct = 0
+                else:
+                    to_correct = get_sequence_length(self.references, ref_id) - 1
+                corrected = point_to_hgvs(
+                    {"type": "point", "position": to_correct}, **crossmap_from
+                )
+                set_by_path(self.corrected_model, path, corrected)
+                self._add_info(infos.corrected_point(point, corrected, path))
+
+    @check_errors
     def _correct_points(self):
         c_s = get_coordinate_system(self.corrected_model, self.references)
         crossmap_to = crossmap_to_internal_setup(c_s, self.get_selector_model())
@@ -1194,6 +1232,7 @@ class Description(object):
         if self.corrected_model.get("type") == "description_protein":
             self._normalize_protein()
         else:
+            self._correct_chromosome_points()
             self.to_internal_indexing_model()
             self._correct_variants_type()
             self._correct_points()
