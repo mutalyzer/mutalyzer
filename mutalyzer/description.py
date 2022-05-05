@@ -1240,7 +1240,7 @@ class Description(object):
 
             self.check()
             self._rna()
-
+            self._construct_delins_model()
             if self._only_equals() or self._no_operation():
                 self.de_hgvs_internal_indexing_model = self.internal_indexing_model
                 self.references["observed"] = {
@@ -1250,7 +1250,6 @@ class Description(object):
                 self._construct_normalized_description()
                 self._construct_equivalent()
             else:
-                self._construct_delins_model()
                 self._mutate()
                 self._extract()
                 self._construct_de_hgvs_internal_indexing_model()

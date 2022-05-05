@@ -7,7 +7,7 @@ from .description_model import variant_to_description
 from .util import get_end, get_inserted_sequence, get_start
 
 
-def _get_sequence_view(seq, l_l=10, l_r=10):
+def _get_sequence_view(seq, l_l=15, l_r=15):
     s = 0
     e = len(seq)
     if e - s > l_l + l_r:
