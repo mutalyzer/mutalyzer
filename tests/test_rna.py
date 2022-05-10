@@ -1358,7 +1358,7 @@ def test_rna_protein(input_description, protein_description):
     ],
 )
 def test_to_rna_reference_model(r_id, s_id, expected):
-    model = retrieve_reference(r_id)
+    model = retrieve_reference(r_id)[0]
     rna_model = to_rna_reference_model(model, s_id, transcribe=True)
     assert rna_model == expected
 
@@ -1441,11 +1441,11 @@ TESTS_VARIANTS = [
 )
 def test_trim_to_exons(variants, expected):
     sequences = {
-        "TEST_REF": retrieve_reference("TEST_REF"),
-        "reference": retrieve_reference("TEST_REF"),
+        "TEST_REF": retrieve_reference("TEST_REF")[0],
+        "reference": retrieve_reference("TEST_REF")[0],
     }
     selector_model = get_internal_selector_model(
-        retrieve_reference("TEST_REF")["annotations"], "NM_PLUS"
+        retrieve_reference("TEST_REF")[0]["annotations"], "NM_PLUS"
     )
 
     # exons: [135, 189, 618, 1200]
@@ -1458,11 +1458,11 @@ def test_trim_to_exons(variants, expected):
 )
 def test_to_rna_variants(variants, expected):
     sequences = {
-        "TEST_REF": retrieve_reference("TEST_REF"),
-        "reference": retrieve_reference("TEST_REF"),
+        "TEST_REF": retrieve_reference("TEST_REF")[0],
+        "reference": retrieve_reference("TEST_REF")[0],
     }
     selector_model = get_internal_selector_model(
-        retrieve_reference("TEST_REF")["annotations"], "NM_PLUS"
+        retrieve_reference("TEST_REF")[0]["annotations"], "NM_PLUS"
     )
     # exons: [135, 189, 618, 1200]
     assert to_rna_variants(variants, sequences, selector_model) == expected
@@ -1550,11 +1550,11 @@ def test_get_position_type(position, exons, position_type):
 )
 def test_splice_sites(variant, error, info):
     sequences = {
-        "TEST_REF": retrieve_reference("TEST_REF"),
-        "reference": retrieve_reference("TEST_REF"),
+        "TEST_REF": retrieve_reference("TEST_REF")[0],
+        "reference": retrieve_reference("TEST_REF")[0],
     }
     selector_model = get_internal_selector_model(
-        retrieve_reference("TEST_REF")["annotations"], "NM_PLUS"
+        retrieve_reference("TEST_REF")[0]["annotations"], "NM_PLUS"
     )
     # exons: [135, 189, 618, 1200]
     errors, infos = splice_sites([variant], sequences, selector_model)

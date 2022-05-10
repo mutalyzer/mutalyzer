@@ -10,7 +10,7 @@ def _get_content(relative_location):
         with open(str(data_file), "r") as file:
             content = file.read()
     except FileNotFoundError:
-        raise NoReferenceError({})
+        raise NoReferenceError({}, [])
     return content
 
 

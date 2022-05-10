@@ -22,8 +22,10 @@ COORDINATE_P_MOL_TYPES_TYPES = ["CDS", "unassigned"]
 def get_reference_model(r_id):
     cache = cache_dir()
     if cache and (Path(cache) / r_id).is_file():
+        # print(f" - from cache {r_id}")
         with open(Path(cache) / r_id) as json_file:
             return json.load(json_file)
+    # print(f" - not from cache {r_id}")
     return retrieve_model(r_id, timeout=10)
 
 
@@ -83,17 +85,19 @@ def _fix_ensembl(r_m, r_id):
 def retrieve_reference(reference_id):
     try:
         r_m = get_reference_model(reference_id)
-    except (NoReferenceError, NoReferenceRetrieved):
-        return None
+    except NoReferenceRetrieved:
+        return None, None
+    except NoReferenceError as e:
+        return None, e
     if reference_id.startswith("ENS"):
         r_m = _fix_ensembl(copy.deepcopy(r_m), reference_id)
-    return r_m
+    return r_m, None
 
 
 def get_reference_model_segmented(
     reference_id, feature_id=None, siblings=False, ancestors=True, descendants=True
 ):
-    reference_model = retrieve_reference(reference_id)
+    reference_model = retrieve_reference(reference_id)[0]
     if feature_id is not None:
         return extract_feature_model(
             reference_model["annotations"],

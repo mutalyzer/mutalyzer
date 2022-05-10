@@ -214,11 +214,11 @@ class Description(object):
         if self.only_variants and self.sequence:
             self.references["reference"] = {"sequence": {"seq": self.sequence}}
         for reference_id, path in yield_reference_ids(self.input_model):
-            reference_model = retrieve_reference(reference_id)
+            reference_model = retrieve_reference(reference_id)[0]
             if reference_model is None:
                 lrg = self._check_if_lrg_reference(reference_id)
                 if lrg:
-                    reference_model = retrieve_reference(lrg["id"])
+                    reference_model = retrieve_reference(lrg["id"])[0]
                     if reference_model:
                         self._correct_lrg_reference_id(reference_id, lrg, path)
                         reference_id = lrg["id"]
@@ -1131,7 +1131,7 @@ class Description(object):
         if not self.get_selector_id():
             return
         cds_seq = slice_to_selector(
-            retrieve_reference(get_reference_id(self.corrected_model)),
+            retrieve_reference(get_reference_id(self.corrected_model))[0],
             self.get_selector_id(),
             True,
             True,

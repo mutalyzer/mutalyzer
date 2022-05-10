@@ -34,8 +34,8 @@ def test_ensembl(input_description, normalized):
 )
 def test_ensembl_mane_transcript(id_ncbi, id_ensembl):
 
-    m_ncbi = retrieve_reference(id_ncbi)
-    m_ensembl = retrieve_reference(id_ensembl)
+    m_ncbi = retrieve_reference(id_ncbi)[0]
+    m_ensembl = retrieve_reference(id_ensembl)[0]
 
     assert m_ncbi["sequence"]["seq"] == slice_to_selector(m_ensembl, id_ensembl, True)
 
@@ -48,8 +48,8 @@ def test_ensembl_mane_transcript(id_ncbi, id_ensembl):
     ],
 )
 def test_ensembl_mane_gene_transcript(id_ncbi, id_ensembl_gene, id_ensembl_transcript):
-    m_ncbi = retrieve_reference(id_ncbi)
-    m_ensembl = retrieve_reference(id_ensembl_gene)
+    m_ncbi = retrieve_reference(id_ncbi)[0]
+    m_ensembl = retrieve_reference(id_ensembl_gene)[0]
 
     assert m_ncbi["sequence"]["seq"] == slice_to_selector(
         m_ensembl, id_ensembl_transcript, True

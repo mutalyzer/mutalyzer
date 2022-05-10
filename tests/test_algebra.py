@@ -15,7 +15,7 @@ def test_get_id(reference_id):
         "input": reference_id,
         "type": "id",
         "reference": {"id": reference_id},
-        "sequence": retrieve_reference(reference_id)["sequence"]["seq"],
+        "sequence": retrieve_reference(reference_id)[0]["sequence"]["seq"],
     }
 
 

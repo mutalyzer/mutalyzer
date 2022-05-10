@@ -18,7 +18,7 @@ def spdi_converter(description=None, description_model=None):
     if not m["variants"][0].get("inserted"):
         m["variants"][0]["inserted"] = []
 
-    r_m = retrieve_reference(m["reference"]["id"])
+    r_m = retrieve_reference(m["reference"]["id"])[0]
     c_s = get_coordinate_system_from_reference(r_m)
 
     ref_seq = r_m["sequence"]["seq"]

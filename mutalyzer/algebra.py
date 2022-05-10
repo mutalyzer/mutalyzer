@@ -34,7 +34,7 @@ def _get_hgvs_and_variant(variant, only_variants=False, ref_seq=None):
 
 def _get_id(reference_id):
     output = {"input": reference_id, "type": "id", "reference": {"id": reference_id}}
-    reference_model = retrieve_reference(reference_id)
+    reference_model = retrieve_reference(reference_id)[0]
     # TODO: update the reference id if different in the model?
     if reference_model is None:
         output["errors"] = [errors.reference_not_retrieved(reference_id, [])]
