@@ -1,5 +1,5 @@
-from algebra.algebra import compare as compare_core
-from algebra.influence_interval import influence_interval
+from algebra import compare as compare_core
+from algebra.lcs import edit, lcs_graph, maximal_variant
 
 import mutalyzer.errors as errors
 from mutalyzer.description import Description
@@ -140,9 +140,13 @@ def _input_types_check(reference_type, lhs_type, rhs_type):
 
 def _influence_interval(output, ref_seq, obs_seq, hs):
     try:
-        min_pos, max_pos = influence_interval(ref_seq, obs_seq)
-    except Exception as e:
-        if "Equal to the reference" in str(e):
+        _, lcs_nodes = edit(ref_seq, obs_seq)
+        _, edges = lcs_graph(ref_seq, obs_seq, lcs_nodes)
+        var = maximal_variant(ref_seq, obs_seq, edges)
+        min_pos = var.start
+        max_pos = var.end
+    except ValueError as e:
+        if "No variants" in str(e):
             output[f"influence_{hs}"] = {"equal": True}
     else:
         output[f"influence_{hs}"] = {"min_pos": min_pos, "max_pos": max_pos}
@@ -218,7 +222,7 @@ def compare(reference, reference_type, lhs, lhs_type, rhs, rhs_type):
     if output.get("errors"):
         return output
 
-    output["relation"] = compare_core(ref_seq, lhs_seq, rhs_seq)[0]
+    output["relation"] = compare_core(ref_seq, lhs_seq, rhs_seq).value
     _influence_interval(output, ref_seq, lhs_seq, "lhs")
     _influence_interval(output, ref_seq, rhs_seq, "rhs")
 

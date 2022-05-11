@@ -144,8 +144,8 @@ def test_get_hgvs(description, expected):
             ),
             {
                 "relation": "is_contained",
-                "influence_lhs": {"min_pos": 5522, "max_pos": 5534},
-                "influence_rhs": {"min_pos": 5522, "max_pos": 5534},
+                "influence_lhs": {"min_pos": 5521, "max_pos": 5534},
+                "influence_rhs": {"min_pos": 5521, "max_pos": 5534},
                 "view_lhs": {
                     "views": [
                         {
@@ -211,8 +211,8 @@ def test_get_hgvs(description, expected):
             ),
             {
                 "relation": "is_contained",
-                "influence_lhs": {"min_pos": 5522, "max_pos": 5534},
-                "influence_rhs": {"min_pos": 5522, "max_pos": 5534},
+                "influence_lhs": {"min_pos": 5521, "max_pos": 5534},
+                "influence_rhs": {"min_pos": 5521, "max_pos": 5534},
                 "view_lhs": {
                     "views": [
                         {
@@ -278,8 +278,8 @@ def test_get_hgvs(description, expected):
             ),
             {
                 "relation": "is_contained",
-                "influence_lhs": {"min_pos": 5522, "max_pos": 5534},
-                "influence_rhs": {"min_pos": 5522, "max_pos": 5534},
+                "influence_lhs": {"min_pos": 5521, "max_pos": 5534},
+                "influence_rhs": {"min_pos": 5521, "max_pos": 5534},
                 "view_lhs": {
                     "views": [
                         {
@@ -345,8 +345,8 @@ def test_get_hgvs(description, expected):
             ),
             {
                 "relation": "is_contained",
-                "influence_lhs": {"min_pos": 5522, "max_pos": 5534},
-                "influence_rhs": {"min_pos": 5522, "max_pos": 5534},
+                "influence_lhs": {"min_pos": 5521, "max_pos": 5534},
+                "influence_rhs": {"min_pos": 5521, "max_pos": 5534},
                 "view_lhs": {
                     "views": [
                         {
@@ -412,8 +412,8 @@ def test_get_hgvs(description, expected):
             ),
             {
                 "relation": "equivalent",
-                "influence_lhs": {"min_pos": 5519, "max_pos": 5534},
-                "influence_rhs": {"min_pos": 5519, "max_pos": 5534},
+                "influence_lhs": {"min_pos": 5518, "max_pos": 5534},
+                "influence_rhs": {"min_pos": 5518, "max_pos": 5534},
                 "view_lhs": {
                     "views": [
                         {
@@ -480,7 +480,7 @@ def test_get_hgvs(description, expected):
             {
                 "relation": "contains",
                 "influence_lhs": {"min_pos": 272, "max_pos": 275},
-                "influence_rhs": {"min_pos": 274, "max_pos": 274},
+                "influence_rhs": {"min_pos": 273, "max_pos": 274},
                 "view_lhs": {
                     "views": [
                         {
@@ -548,7 +548,7 @@ def test_get_hgvs(description, expected):
             {
                 "relation": "contains",
                 "influence_lhs": {"min_pos": 272, "max_pos": 275},
-                "influence_rhs": {"min_pos": 274, "max_pos": 274},
+                "influence_rhs": {"min_pos": 273, "max_pos": 274},
                 "view_lhs": {
                     "views": [
                         {
