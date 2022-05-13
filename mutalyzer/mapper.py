@@ -198,9 +198,14 @@ def map_description(
 
     ref_seq2 = d.references["reference"]["sequence"]["seq"]
 
+    if d._only_equals() or d._no_operation():
+        variants = []
+    else:
+        variants = d.delins_model["variants"]
+
     if slice_to == "transcript":
         sliced_variants, unsliced_variants = _slice_from(
-            d.delins_model["variants"],
+            variants,
             d.get_selector_model()["exon"],
             d.get_sequences(),
         )
@@ -227,7 +232,7 @@ def map_description(
         g_l = _get_gene_locations(new_r_model)
         ref_seq2 = _slice_seq(d.references["reference"]["sequence"]["seq"], [g_l])
         sliced_variants, unsliced_variants = _slice_from(
-            d.delins_model["variants"], [g_l], {"reference": ref_seq2}
+            variants, [g_l], {"reference": ref_seq2}
         )
         if unsliced_variants:
             errs = []
