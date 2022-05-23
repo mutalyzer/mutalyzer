@@ -2856,6 +2856,20 @@ TESTS = [
         "genomic": "LRG_24:g.11486_11487insAAAAAAA",
         "to_test": True,
     },
+    {
+        "keywords": [],
+        "input": "NG_012337.1(NM_003002.2):c.[274=;275del]",
+        "normalized": "NG_012337.1(NM_003002.2):c.275del",
+        "genomic": "NG_012337.1:g.7126del",
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NG_012337.1(NM_003002.2):c.[274del;275=]",
+        "normalized": "NG_012337.1(NM_003002.2):c.274del",
+        "genomic": "NG_012337.1:g.7125del",
+        "to_test": True,
+    },
     # {
     #     "keywords": [
     #

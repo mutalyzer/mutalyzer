@@ -65,8 +65,12 @@ def equal_to_delins(variant):
     """
     Only works for variants using internal indexing
     """
+    if variant.get("location") is None:
+        return
     new_variant = copy.deepcopy(variant)
-    new_variant["inserted"] = []
+    new_variant["inserted"] = [
+        {"location": new_variant["location"], "source": "reference"}
+    ]
     new_variant["type"] = "deletion_insertion"
     return new_variant
 
