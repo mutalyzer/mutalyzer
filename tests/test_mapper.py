@@ -101,6 +101,18 @@ TEST_SET = [
         ("NG_012337.1(NM_012459.2):c.-20del", "NG_012337.3", "NM_012459.4", None, True),
         "NG_012337.3(NM_012459.4):c.-65del",
     ),
+    (
+        ("NM_003002.4:c.[171del;274G>T]", "NG_012337.3", None, "gene", False),
+        "NG_012337.3:g.[4_5029del;5114_6010del;6128_7022delinsC;7125G>T;7167_12959del;13949_39784del]",
+    ),
+    (
+        ("NM_003002.4:c.[171del;274G>T]", "NG_012337.3", None, "transcript", False),
+        "NG_012337.3:g.[4_5029del;5114_6010del;6128_7022delinsC;7125G>T;7167_12959del;13949_39784del]",
+    ),
+    (
+        ("NM_003002.4:c.274G>T", "NG_012337.3", None, "transcript", True),
+        "NG_012337.3:g.7125G>T",
+    ),
 ]
 
 
@@ -165,6 +177,39 @@ TEST_ERROR = [
             10000,
         ),
         "ESLICEOPTION",
+    ),
+    (
+        (
+            "NG_012337.3:g.7125G>T",
+            "NM_003002.4",
+            None,
+            None,
+            False,
+            100000,
+        ),
+        "ELENGTHSDIFFERENCE",
+    ),
+    (
+        (
+            "NG_012337.3:g.7125G>T",
+            "NM_003002.4",
+            None,
+            "gene",
+            False,
+            100000,
+        ),
+        "ELENGTHSDIFFERENCE",
+    ),
+    (
+        (
+            "NG_012337.3:g.7125G>T",
+            "NM_003002.4",
+            None,
+            "transcript",
+            False,
+            100000,
+        ),
+        "ELENGTHSDIFFERENCE",
     ),
 ]
 

@@ -854,7 +854,7 @@ TESTS = [
         "errors": [
             {
                 "code": "ENORNA",
-                "details": "Sequence 't' is not an RNA sequence.",
+                "details": "Sequence t is not an RNA sequence.",
                 "paths": [["variants", 0, "deleted", 0, "sequence"]],
             }
         ],

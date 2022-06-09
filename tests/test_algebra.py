@@ -627,21 +627,21 @@ def test_compare(params, expected):
                     "reference_type": [
                         {
                             "code": "EINVALIDINPUT",
-                            "details": "'hgvs' not valid.",
+                            "details": "hgvs not valid.",
                             "options": ["sequence", "id"],
                         }
                     ],
                     "lhs_type": [
                         {
                             "code": "EINVALIDINPUT",
-                            "details": "'HGVS' not valid.",
+                            "details": "HGVS not valid.",
                             "options": ["sequence", "variant", "hgvs"],
                         }
                     ],
                     "rhs_type": [
                         {
                             "code": "EINVALIDINPUT",
-                            "details": "'varianT' not valid.",
+                            "details": "varianT not valid.",
                             "options": ["sequence", "variant", "hgvs"],
                         }
                     ],

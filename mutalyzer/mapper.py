@@ -182,6 +182,7 @@ def map_description(
     slice_to=None,
     filter=False,
     len_max=100000,
+    diff_max=1000,
 ):
     # Get the observed sequence
     d = Description(description)
@@ -204,44 +205,48 @@ def map_description(
         variants = d.delins_model["variants"]
 
     if slice_to == "transcript":
-        sliced_variants, unsliced_variants = _slice_from(
-            variants,
-            d.get_selector_model()["exon"],
-            d.get_sequences(),
-        )
-        if unsliced_variants:
-            errs = []
-            for v in unsliced_variants:
-                errs.append(
-                    errors.location_slice(d.corrected_model["variants"][v]["location"])
-                )
-            return {"errors": errs}
-        from_r_model = _get_reference_model(
-            d.references["reference"], d.get_selector_id(), slice_to
-        )
-        ref_seq2 = from_r_model["sequence"]["seq"]
-        obs_seq = mutate({"reference": ref_seq2}, sliced_variants)
-    elif slice_to == "gene":
-        new_r_model = {
-            "annotations": deepcopy(
-                extract_feature_model(
-                    d.references["reference"]["annotations"], d.get_selector_id()
-                )[0]
+        selector_model = d.get_selector_model()
+        if selector_model:
+            sliced_variants, unsliced_variants = _slice_from(
+                variants,
+                selector_model["exon"],
+                d.get_sequences(),
             )
-        }
-        g_l = _get_gene_locations(new_r_model)
-        ref_seq2 = _slice_seq(d.references["reference"]["sequence"]["seq"], [g_l])
-        sliced_variants, unsliced_variants = _slice_from(
-            variants, [g_l], {"reference": ref_seq2}
-        )
-        if unsliced_variants:
-            errs = []
-            for v in unsliced_variants:
-                errs.append(
-                    errors.location_slice(d.corrected_model["variants"][v]["location"])
-                )
-            return {"errors": errs}
-        obs_seq = mutate({"reference": ref_seq2}, sliced_variants)
+            if unsliced_variants:
+                errs = []
+                for v in unsliced_variants:
+                    errs.append(
+                        errors.location_slice(
+                            d.corrected_model["variants"][v]["location"]
+                        )
+                    )
+                return {"errors": errs}
+            from_r_model = _get_reference_model(
+                d.references["reference"], d.get_selector_id(), slice_to
+            )
+            ref_seq2 = from_r_model["sequence"]["seq"]
+            obs_seq = mutate({"reference": ref_seq2}, sliced_variants)
+    elif slice_to == "gene":
+        gene = extract_feature_model(
+            d.references["reference"]["annotations"], d.get_selector_id()
+        )[0]
+        if gene:
+            new_r_model = {"annotations": deepcopy(gene)}
+            g_l = _get_gene_locations(new_r_model)
+            ref_seq2 = _slice_seq(d.references["reference"]["sequence"]["seq"], [g_l])
+            sliced_variants, unsliced_variants = _slice_from(
+                variants, [g_l], {"reference": ref_seq2}
+            )
+            if unsliced_variants:
+                errs = []
+                for v in unsliced_variants:
+                    errs.append(
+                        errors.location_slice(
+                            d.corrected_model["variants"][v]["location"]
+                        )
+                    )
+                return {"errors": errs}
+            obs_seq = mutate({"reference": ref_seq2}, sliced_variants)
     elif slice_to is not None:
         return {"errors": [errors.slice_option(slice_to)]}
 
@@ -266,9 +271,11 @@ def map_description(
     if len(obs_seq) > len_max:
         return {"errors": [errors.sequence_length(obs_seq, len_max)]}
 
-    if len(ref_seq1) < len(obs_seq) and abs(len(ref_seq1) - len(obs_seq)) > 1000:
+    if len(ref_seq1) < len(obs_seq) and abs(len(ref_seq1) - len(obs_seq)) > diff_max:
         return {
-            "errors": [errors.lengths_difference(abs(len(ref_seq1) - len(obs_seq)))]
+            "errors": [
+                errors.lengths_difference(abs(len(ref_seq1) - len(obs_seq)), diff_max)
+            ]
         }
     # Get the description extractor hgvs internal indexing variants
     variants = _extract_hgvs_internal_model(obs_seq, ref_seq1)

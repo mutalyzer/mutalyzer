@@ -65,7 +65,7 @@ def coordinate_system_mismatch(
 def offset(location, path):
     return {
         "code": "EOFFSET",
-        "details": "Offsets, as in `{}', are not allowed with the 'g' coordinate system.".format(
+        "details": "Offsets, as in {}, are not allowed with the g. coordinate system.".format(
             location_to_description(location)
         ),
         "paths": [path],
@@ -81,7 +81,7 @@ def outside_cds(location, path):
         d_in = ""
     return {
         "code": "EOUTSIDECDS",
-        "details": "Outside CDS specifics, as '{}' in '{}', are not allowed with the 'g' coordinate system.".format(
+        "details": "Outside CDS specifics, as {} in {}, are not allowed with the g. coordinate system.".format(
             d_in, location_to_description(location)
         ),
         "paths": [path],
@@ -91,7 +91,7 @@ def outside_cds(location, path):
 def intronic(location, path):
     return {
         "code": "EINTRONIC",
-        "details": 'Intronic position ("{}") given for a non-genomic '
+        "details": "Intronic position {} given for a non-genomic "
         "reference sequence. Tip: make use of a genomic reference "
         "sequence like NC_*(NM_*).".format(location_to_description(location)),
         "paths": [path],
@@ -202,7 +202,7 @@ def amino_acid_mismatch(description_aa, reference_aa, path):
 def no_dna(sequence, path):
     return {
         "code": "ENODNA",
-        "details": "Sequence '{}' is not a DNA sequence.".format(sequence),
+        "details": "Sequence {} is not a DNA sequence.".format(sequence),
         "paths": [path],
     }
 
@@ -210,7 +210,7 @@ def no_dna(sequence, path):
 def no_rna(sequence, path):
     return {
         "code": "ENORNA",
-        "details": "Sequence '{}' is not an RNA sequence.".format(sequence),
+        "details": "Sequence {} is not an RNA sequence.".format(sequence),
         "paths": [path],
     }
 
@@ -228,7 +228,7 @@ def repeat_not_supported(variant, path):
 def variant_not_supported(variant, variant_type, path):
     return {
         "code": "EVARIANTNOTSUPPORTED",
-        "details": "Variant '{}' type '{}' not supported.".format(
+        "details": "Variant {} type {} not supported.".format(
             variant_to_description(variant), variant_type
         ),
         "paths": [path],
@@ -296,7 +296,7 @@ def splice_site(path):
 
 
 def invalid_input(value, valid_options=None):
-    output = {"code": "EINVALIDINPUT", "details": f"'{value}' not valid."}
+    output = {"code": "EINVALIDINPUT", "details": f"{value} not valid."}
     if valid_options:
         output["options"] = valid_options
     return output
@@ -305,7 +305,7 @@ def invalid_input(value, valid_options=None):
 def missing_parameter(value):
     return {
         "code": "EMISSINGPARAMETER",
-        "details": f"Missing required '{value}' parameter.",
+        "details": f"Missing required {value} parameter.",
     }
 
 
@@ -319,7 +319,7 @@ def sequence_length(seq, len_max):
 def slice_option(slice_to):
     return {
         "code": "ESLICEOPTION",
-        "details": f'Slice "{slice_to}" not supported.',
+        "details": f"Slice {slice_to} not supported.",
     }
 
 
@@ -330,10 +330,10 @@ def location_slice(location):
     }
 
 
-def lengths_difference(length):
+def lengths_difference(length, accepted_difference):
     return {
         "code": "ELENGTHSDIFFERENCE",
-        "details": f'The difference of sequences length of "{length}" bases is too large.',
+        "details": f"Sequence length difference of {length} bases is too large (maximum supported is {accepted_difference}).",
     }
 
 
