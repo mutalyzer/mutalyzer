@@ -2870,6 +2870,33 @@ TESTS = [
         "genomic": "NG_012337.1:g.7125del",
         "to_test": True,
     },
+    {
+        "keywords": ["repeat", "dbsnp"],
+        "input": "NG_012337.1:g.4917GC[5]",
+        "genomic": "NG_012337.1:g.4917_4920GC[5]",
+        "to_test": True,
+    },
+    {
+        "keywords": ["repeat", "dbsnp", "reverse"],
+        "input": "NG_012337.1(NM_012459.2):c.3GC[5]",
+        "normalized": "NG_012337.1(NM_012459.2):c.3_6GC[5]",
+        "genomic": "NG_012337.1:g.4917_4920GC[5]",
+        "to_test": True,
+    },
+    {
+        "keywords": ["repeat", "dbsnp"],
+        "input": "NG_012337.1:g.4911GT[5]",
+        "genomic": "NG_012337.1:g.4911_4914GT[5]",
+        "to_test": True,
+    },
+    {
+        "keywords": ["repeat", "dbsnp", "reverse"],
+        "input": "NG_012337.1(NM_012459.2):c.10CA[5]",
+        "normalized": "NG_012337.1(NM_012459.2):c.10_13CA[5]",
+        "genomic": "NG_012337.1:g.4911_4914GT[5]",
+        "to_test": True,
+    },
+
     # {
     #     "keywords": [
     #

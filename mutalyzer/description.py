@@ -870,6 +870,31 @@ class Description(object):
             if abs(get_start(v) - get_end(v)) != 1:
                 self._add_error(errors.insertion_range(v_r["location"], path))
 
+    def _check_repeat_dbsnp(self, path, v, v_i):
+        ref_seq = self.references["reference"]["sequence"]["seq"]
+        inserted = v_i["inserted"][0]
+        if self.is_inverted():
+            repeat_unit = reverse_complement(inserted["sequence"])
+            point = get_start(v_i)
+            while ref_seq[point - len(repeat_unit) + 1 : point + 1] == repeat_unit:
+                point -= len(repeat_unit)
+            if point + 1 < get_start(v_i):
+                v_i["location"]["start"]["position"] = point + 1
+            else:
+                self._add_error(
+                    errors.repeat_sequences_mismatch("", inserted["sequence"], path)
+                )
+        else:
+            inserted = v_i["inserted"][0]
+            repeat_unit = inserted["sequence"]
+            point = get_start(v_i)
+            while ref_seq[point : point + len(repeat_unit)] == repeat_unit:
+                point += len(repeat_unit)
+            if point > get_start(v_i):
+                v_i["location"]["end"]["position"] = point
+            else:
+                self._add_error(errors.repeat_sequences_mismatch("", repeat_unit, path))
+
     def _check_repeat(self, path):
         if self.is_inverted():
             path_i = reverse_path(self.internal_indexing_model, path)
@@ -879,13 +904,15 @@ class Description(object):
         v_i = self.internal_indexing_model["variants"][path[1]]
         if v_i.get("inserted") and len(v_i.get("inserted")) == 1:
             inserted = v_i["inserted"][0]
+            if v["location"]["type"] == "point" and len(inserted) > 1:
+                self._check_repeat_dbsnp(path, v, v_i)
+                return
             if inserted.get("sequence") and inserted.get("source") == "description":
                 repeat_seq = inserted["sequence"]
             # TODO: get the sequence from a reference slice
             else:
                 self._add_error(errors.repeat_not_supported(v, path))
                 return
-
             ref_seq = self.references["reference"]["sequence"]["seq"][
                 get_start(v_i) : get_end(v_i)
             ]
