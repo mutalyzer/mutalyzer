@@ -54,8 +54,6 @@ def _invert_view(v, inv_v):
         _invert_left_right(v, inv_v)
     elif inv_v.get("sequence"):
         inv_v["sequence"] = reverse_complement(v["sequence"])
-    else:
-        raise Exception("Inversion not possible")
 
 
 def _invert_views(views, ref_length):
@@ -69,7 +67,7 @@ def _invert_views(views, ref_length):
         if inv_v.get("type") == "variant":
             if inv_v.get("deleted"):
                 _invert_view(v["deleted"], inv_v["deleted"])
-            elif inv_v.get("inserted"):
+            if inv_v.get("inserted"):
                 _invert_view(v["inserted"], inv_v["inserted"])
         inv_vs.append(inv_v)
     return inv_vs
