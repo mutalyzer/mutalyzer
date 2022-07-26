@@ -1,5 +1,7 @@
-from algebra import compare as compare_core
-from algebra.lcs import edit, lcs_graph, maximal_variant
+from algebra import Variant
+from algebra.lcs import edit, lcs_graph
+from algebra.relations.sequence_based import compare as compare_core
+from algebra.relations.supremal_based import spanning_variant
 
 import mutalyzer.errors as errors
 from mutalyzer.description import Description
@@ -139,15 +141,13 @@ def _input_types_check(reference_type, lhs_type, rhs_type):
 
 
 def _influence_interval(output, ref_seq, obs_seq, hs):
-    try:
-        _, lcs_nodes = edit(ref_seq, obs_seq)
-        _, edges = lcs_graph(ref_seq, obs_seq, lcs_nodes)
-        var = maximal_variant(ref_seq, obs_seq, edges)
-        min_pos = var.start
-        max_pos = var.end
-    except ValueError as e:
-        if "No variants" in str(e):
-            output[f"influence_{hs}"] = {"equal": True}
+    _, lcs_nodes = edit(ref_seq, obs_seq)
+    _, edges = lcs_graph(ref_seq, obs_seq, lcs_nodes)
+    var = spanning_variant(ref_seq, obs_seq, edges)
+    min_pos = var.start
+    max_pos = var.end
+    if var == Variant(0, 0, ""):
+        output[f"influence_{hs}"] = {"equal": True}
     else:
         output[f"influence_{hs}"] = {"min_pos": min_pos, "max_pos": max_pos}
 
