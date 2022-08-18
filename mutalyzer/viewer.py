@@ -73,16 +73,7 @@ def _invert_views(views, ref_length):
     return inv_vs
 
 
-def view_variants(
-    description, only_variants=False, sequence=None, left=10, right=10, invert=True
-):
-    d = Description(
-        description=description, only_variants=only_variants, sequence=sequence
-    )
-    d.normalize()
-    if d.errors:
-        return d.output()
-
+def view_variants_normalized(d, invert=True):
     ref_seq = d.get_sequences()["reference"]
 
     segments = _get_segments(d.delins_model["variants"], ref_seq)
@@ -107,3 +98,17 @@ def view_variants(
             "inverted": True,
         }
     return {"views": views, "seq_length": len(ref_seq)}
+
+
+def view_variants(
+    description, only_variants=False, sequence=None, left=10, right=10, invert=True
+):
+    d = Description(
+        description=description, only_variants=only_variants, sequence=sequence
+    )
+    d.normalize()
+
+    if d.errors:
+        return d.output()
+    else:
+        return view_variants_normalized(d, invert)

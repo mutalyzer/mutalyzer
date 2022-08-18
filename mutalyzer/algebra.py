@@ -1,10 +1,15 @@
-from algebra import compare as compare_core
-from algebra.lcs import edit, lcs_graph, maximal_variant
+from algebra import Variant
+from algebra.lcs import edit, lcs_graph
+from algebra.relations.sequence_based import compare as compare_core
+from algebra.relations.supremal_based import compare as compare_supremal
+from algebra.relations.supremal_based import find_supremal, spanning_variant
+from algebra.variants import Variant
 
 import mutalyzer.errors as errors
 from mutalyzer.description import Description
 from mutalyzer.reference import retrieve_reference
-from mutalyzer.viewer import view_variants
+from mutalyzer.util import get_end, get_inserted_sequence, get_start
+from mutalyzer.viewer import view_variants, view_variants_normalized
 
 
 def _get_hgvs_and_variant(variant, only_variants=False, ref_seq=None):
@@ -138,18 +143,21 @@ def _input_types_check(reference_type, lhs_type, rhs_type):
     return output
 
 
-def _influence_interval(output, ref_seq, obs_seq, hs):
-    try:
-        _, lcs_nodes = edit(ref_seq, obs_seq)
-        _, edges = lcs_graph(ref_seq, obs_seq, lcs_nodes)
-        var = maximal_variant(ref_seq, obs_seq, edges)
-        min_pos = var.start
-        max_pos = var.end
-    except ValueError as e:
-        if "No variants" in str(e):
-            output[f"influence_{hs}"] = {"equal": True}
+def _influence_interval_supremal(supremal):
+    min_pos = supremal.start
+    max_pos = supremal.end
+    if supremal == Variant(0, 0, ""):
+        return {"equal": True}
     else:
-        output[f"influence_{hs}"] = {"min_pos": min_pos, "max_pos": max_pos}
+        return {"min_pos": min_pos, "max_pos": max_pos}
+
+
+def _influence_interval(output, ref_seq, obs_seq, hs):
+    _, lcs_nodes = edit(ref_seq, obs_seq)
+    _, edges = lcs_graph(ref_seq, obs_seq, lcs_nodes)
+    output[f"influence_{hs}"] = _influence_interval_supremal(
+        spanning_variant(ref_seq, obs_seq, edges)
+    )
 
 
 def _check_sequences_equality(output, lhs, rhs):
@@ -165,6 +173,7 @@ def _check_sequences_equality(output, lhs, rhs):
 
 
 def _check_sequence_length(output, ref_seq, len_max):
+    print(len(ref_seq))
     if len(ref_seq) > len_max:
         _append_error(
             output,
@@ -176,33 +185,88 @@ def _check_sequence_length(output, ref_seq, len_max):
         )
 
 
-def compare(reference, reference_type, lhs, lhs_type, rhs, rhs_type):
-    output = _input_types_check(reference_type, lhs_type, rhs_type)
+def _get_algebra_variants(description):
+    """
+    Convert the delins variants to algebra variant edges.
+
+    :param description: Normalizer description object.
+    :return: Algebra variant edges.
+    """
+    edges = []
+    for variant in description.delins_model["variants"]:
+        edges.append(
+            Variant(
+                get_start(variant),
+                get_end(variant),
+                get_inserted_sequence(variant, description.get_sequences()),
+            )
+        )
+    return edges
+
+
+def compare_hgvs(lhs_d, rhs_d):
+    output = {}
+
+    if lhs_d.errors:
+        _extend_errors(output, "lhs", lhs_d.errors)
+
+    if rhs_d.errors:
+        _extend_errors(output, "rhs", rhs_d.errors)
+
     if output:
         return output
 
-    c_reference = _get_reference(reference, reference_type)
+    lhs_reference = lhs_d.get_sequences()["reference"]
+    rhs_reference = rhs_d.get_sequences()["reference"]
 
-    if reference_type and reference is None:
-        _append_error(output, "reference", errors.missing_parameter("reference"))
+    if lhs_reference != rhs_reference:
+        _append_error(
+            output,
+            "reference",
+            {
+                "code": "ESEQUENCEMISMATCH",
+                "details": "Different reference sequences for LHS and RHS.",
+            },
+        )
+
+    if output:
         return output
 
-    if reference_type in ["sequence", "id"]:
-        c_reference = _get_reference(reference, reference_type)
-        if c_reference.get("errors"):
-            _extend_errors(output, "reference", c_reference["errors"])
-            return output
-        ref_seq = c_reference["sequence"]
-        c_lhs = _get_operator(lhs, lhs_type, ref_seq)
-        c_rhs = _get_operator(rhs, rhs_type, ref_seq)
-        c_lhs["reference_sequence"] = ref_seq
-        c_rhs["reference_sequence"] = ref_seq
-    elif lhs_type == "hgvs":
-        c_lhs = _get_hgvs_and_variant(lhs)
-        if c_lhs.get("errors"):
-            _extend_errors(output, "lhs", c_lhs["errors"])
-            return output
-        c_rhs = _get_operator(rhs, rhs_type, c_lhs["reference_sequence"])
+    lhs_observed = lhs_d.get_sequences()["observed"]
+    lhs_algebra_variants = _get_algebra_variants(lhs_d)
+    lhs_spanning = spanning_variant(lhs_reference, lhs_observed, lhs_algebra_variants)
+    lhs_supremal = find_supremal(lhs_reference, lhs_spanning)
+
+    rhs_observed = rhs_d.get_sequences()["observed"]
+    rhs_algebra_variants = _get_algebra_variants(rhs_d)
+    rhs_spanning = spanning_variant(rhs_reference, rhs_observed, rhs_algebra_variants)
+    rhs_supremal = find_supremal(rhs_reference, rhs_spanning)
+
+    output["relation"] = compare_supremal(
+        lhs_reference, lhs_supremal, rhs_supremal
+    ).value
+
+    output["influence_lhs"] = _influence_interval_supremal(lhs_supremal)
+    output["influence_rhs"] = _influence_interval_supremal(rhs_supremal)
+
+    output["view_lhs"] = view_variants_normalized(lhs_d)
+    output["view_rhs"] = view_variants_normalized(rhs_d)
+
+    return output
+
+
+def compare_sequences_based(reference, reference_type, lhs, lhs_type, rhs, rhs_type):
+    output = {}
+
+    c_reference = _get_reference(reference, reference_type)
+    if c_reference.get("errors"):
+        _extend_errors(output, "reference", c_reference["errors"])
+        return output
+    ref_seq = c_reference["sequence"]
+    c_lhs = _get_operator(lhs, lhs_type, ref_seq)
+    c_rhs = _get_operator(rhs, rhs_type, ref_seq)
+    c_lhs["reference_sequence"] = ref_seq
+    c_rhs["reference_sequence"] = ref_seq
 
     _add_standard_messages(output, c_reference, c_lhs, c_rhs)
 
@@ -232,3 +296,59 @@ def compare(reference, reference_type, lhs, lhs_type, rhs, rhs_type):
         output["view_rhs"] = c_rhs["view"]
 
     return output
+
+
+def compare_hgvs_based(reference, reference_type, lhs, lhs_type, rhs, rhs_type):
+    if lhs_type == "hgvs" and rhs_type == "hgvs":
+        lhs_d = Description(lhs)
+        lhs_d.normalize()
+        rhs_d = Description(rhs)
+        rhs_d.normalize()
+    elif lhs_type == "hgvs" and rhs_type == "variant":
+        lhs_d = Description(lhs)
+        lhs_d.normalize()
+        if lhs_d.get_sequences() and lhs_d.get_sequences().get("reference"):
+            rhs_d = Description(
+                description=rhs,
+                only_variants=True,
+                sequence=lhs_d.get_sequences()["reference"],
+            )
+            rhs_d.normalize()
+        else:
+            return
+    elif lhs_type == "variant" and rhs_type == "variant":
+        if reference_type == "sequence":
+            reference_sequence = "reference"
+        elif reference_type == "id":
+            check = _get_id(reference)
+            if check.get("errors"):
+                return check
+            else:
+                reference_sequence = check["sequence"]
+        lhs_d = Description(
+            description=lhs, only_variants=True, sequence=reference_sequence
+        )
+        lhs_d.normalize()
+        rhs_d = Description(
+            description=rhs, only_variants=True, sequence=reference_sequence
+        )
+        rhs_d.normalize()
+    return compare_hgvs(lhs_d, rhs_d)
+
+
+def compare(reference, reference_type, lhs, lhs_type, rhs, rhs_type):
+    checks = _input_types_check(reference_type, lhs_type, rhs_type)
+
+    if checks:
+        return checks
+
+    if reference_type in ["sequence", "id"] and (
+        lhs_type == "sequence" or rhs_type == "sequence"
+    ):
+        return compare_sequences_based(
+            reference, reference_type, lhs, lhs_type, rhs, rhs_type
+        )
+    else:
+        return compare_hgvs_based(
+            reference, reference_type, lhs, lhs_type, rhs, rhs_type
+        )
