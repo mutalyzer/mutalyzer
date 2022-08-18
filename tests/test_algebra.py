@@ -612,6 +612,74 @@ def test_get_hgvs(description, expected):
                 },
             },
         ),
+        (  # 9
+            (
+                "NG_012337.3",
+                "id",
+                "274>A",
+                "variant",
+                "274del",
+                "variant",
+            ),
+            {
+                "relation": "contains",
+                "influence_lhs": {"min_pos": 272, "max_pos": 275},
+                "influence_rhs": {"min_pos": 273, "max_pos": 274},
+                "view_lhs": {
+                    "views": [
+                        {
+                            "start": 0,
+                            "end": 273,
+                            "type": "outside",
+                            "left": "GGGCTTGGTTCTACC",
+                            "right": "CTTTTACGAAGAATA",
+                        },
+                        {
+                            "description": "274>A",
+                            "start": 273,
+                            "end": 274,
+                            "type": "variant",
+                            "deleted": {"sequence": "T"},
+                            "inserted": {"sequence": "A", "length": 1},
+                        },
+                        {
+                            "start": 274,
+                            "end": 39784,
+                            "type": "outside",
+                            "left": "ACTTGCCATCAAAAA",
+                            "right": "AAATTACTCAAGGAA",
+                        },
+                    ],
+                    "seq_length": 39784,
+                },
+                "view_rhs": {
+                    "views": [
+                        {
+                            "start": 0,
+                            "end": 273,
+                            "type": "outside",
+                            "left": "GGGCTTGGTTCTACC",
+                            "right": "CTTTTACGAAGAATA",
+                        },
+                        {
+                            "description": "274del",
+                            "start": 273,
+                            "end": 274,
+                            "type": "variant",
+                            "deleted": {"sequence": "T"},
+                        },
+                        {
+                            "start": 274,
+                            "end": 39784,
+                            "type": "outside",
+                            "left": "ACTTGCCATCAAAAA",
+                            "right": "AAATTACTCAAGGAA",
+                        },
+                    ],
+                    "seq_length": 39784,
+                },
+            },
+        ),
     ],
 )
 def test_compare(params, expected):

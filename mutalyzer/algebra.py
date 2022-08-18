@@ -298,6 +298,44 @@ def compare_sequences_based(reference, reference_type, lhs, lhs_type, rhs, rhs_t
     return output
 
 
+def compare_hgvs_based(reference, reference_type, lhs, lhs_type, rhs, rhs_type):
+    if lhs_type == "hgvs" and rhs_type == "hgvs":
+        lhs_d = Description(lhs)
+        lhs_d.normalize()
+        rhs_d = Description(rhs)
+        rhs_d.normalize()
+    elif lhs_type == "hgvs" and rhs_type == "variant":
+        lhs_d = Description(lhs)
+        lhs_d.normalize()
+        if lhs_d.get_sequences() and lhs_d.get_sequences().get("reference"):
+            rhs_d = Description(
+                description=rhs,
+                only_variants=True,
+                sequence=lhs_d.get_sequences()["reference"],
+            )
+            rhs_d.normalize()
+        else:
+            return
+    elif lhs_type == "variant" and rhs_type == "variant":
+        if reference_type == "sequence":
+            reference_sequence = "reference"
+        elif reference_type == "id":
+            check = _get_id(reference)
+            if check.get("errors"):
+                return check
+            else:
+                reference_sequence = check["sequence"]
+        lhs_d = Description(
+            description=lhs, only_variants=True, sequence=reference_sequence
+        )
+        lhs_d.normalize()
+        rhs_d = Description(
+            description=rhs, only_variants=True, sequence=reference_sequence
+        )
+        rhs_d.normalize()
+    return compare_hgvs(lhs_d, rhs_d)
+
+
 def compare(reference, reference_type, lhs, lhs_type, rhs, rhs_type):
     checks = _input_types_check(reference_type, lhs_type, rhs_type)
 
@@ -311,26 +349,6 @@ def compare(reference, reference_type, lhs, lhs_type, rhs, rhs_type):
             reference, reference_type, lhs, lhs_type, rhs, rhs_type
         )
     else:
-        if lhs_type == "hgvs" and rhs_type == "hgvs":
-            lhs_d = Description(lhs)
-            lhs_d.normalize()
-            rhs_d = Description(rhs)
-            rhs_d.normalize()
-        elif lhs_type == "hgvs" and rhs_type == "variant":
-            lhs_d = Description(lhs)
-            lhs_d.normalize()
-            if lhs_d.get_sequences() and lhs_d.get_sequences().get("reference"):
-                rhs_d = Description(
-                    description=rhs,
-                    only_variants=True,
-                    sequence=lhs_d.get_sequences()["reference"],
-                )
-                rhs_d.normalize()
-            else:
-                return
-        elif lhs_type == "variant" and rhs_type == "variant":
-            lhs_d = Description(description=lhs, only_variants=True, sequence=reference)
-            lhs_d.normalize()
-            rhs_d = Description(description=rhs, only_variants=True, sequence=reference)
-            rhs_d.normalize()
-        return compare_hgvs(lhs_d, rhs_d)
+        return compare_hgvs_based(
+            reference, reference_type, lhs, lhs_type, rhs, rhs_type
+        )
