@@ -26,12 +26,12 @@ def name_check_alt(description, only_variants=False, sequence=None):
     if d.errors:
         return d.output()
 
-    if d.corrected_model["type"] == "description_protein":
+    if not only_variants and d.corrected_model["type"] == "description_protein":
         return {
             "errors": [
                 {
                     "code": "ENOPROTEINSUPPORT",
-                    "details": f"Protein descriptions not supported in this experintal service.",
+                    "details": f"Protein descriptions not supported in this experimental service.",
                 }
             ]
         }
@@ -53,23 +53,29 @@ def name_check_alt(description, only_variants=False, sequence=None):
     )
     canonical = list(extract_supremal(reference, supremal))
     algebra_hgvs = to_hgvs(canonical, reference)
-    algebra_model = {
-        "type": d.corrected_model["type"],
-        "reference": {"id": d.corrected_model["reference"]["id"]},
-        "coordinate_system": "g",
-        "variants": to_model(algebra_hgvs, "variants"),
-    }
 
-    d.de_hgvs_internal_indexing_model = to_internal_indexing(
-        to_internal_coordinates(algebra_model, d.get_sequences())
-    )
-    d.construct_de_hgvs_internal_indexing_model()
-    d.construct_de_hgvs_coordinates_model()
-    d.construct_normalized_description()
-    d.construct_equivalent()
+    if only_variants:
+        d.normalized_description = algebra_hgvs
+        d.de_hgvs_model = {"variants": to_model(algebra_hgvs, "variants")}
+        output = d.output()
+    else:
+        algebra_model = {
+            "type": d.corrected_model["type"],
+            "reference": {"id": d.corrected_model["reference"]["id"]},
+            "coordinate_system": "g",
+            "variants": to_model(algebra_hgvs, "variants"),
+        }
 
-    output = d.output()
-    output["algebra"] = algebra_hgvs
+        d.de_hgvs_internal_indexing_model = to_internal_indexing(
+            to_internal_coordinates(algebra_model, d.get_sequences())
+        )
+        d.construct_de_hgvs_internal_indexing_model()
+        d.construct_de_hgvs_coordinates_model()
+        d.construct_normalized_description()
+        d.construct_equivalent()
+
+        output = d.output()
+        output["algebra"] = algebra_hgvs
 
     return output
 
