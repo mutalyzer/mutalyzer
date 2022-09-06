@@ -106,7 +106,7 @@ def view_variants(
     d = Description(
         description=description, only_variants=only_variants, sequence=sequence
     )
-    d.normalize()
+    d.to_delins()
 
     if d.errors:
         return d.output()

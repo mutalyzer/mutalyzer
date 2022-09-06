@@ -538,7 +538,7 @@ class Description(object):
             )
 
     @check_errors
-    def _construct_de_hgvs_internal_indexing_model(self):
+    def construct_de_hgvs_internal_indexing_model(self):
         if self.de_model:
             self.de_hgvs_internal_indexing_model = {
                 "variants": de_to_hgvs(
@@ -559,7 +559,7 @@ class Description(object):
                 self.de_hgvs_internal_indexing_model["predicted"] = True
 
     @check_errors
-    def _construct_de_hgvs_coordinates_model(self):
+    def construct_de_hgvs_coordinates_model(self):
         if self.de_hgvs_internal_indexing_model:
             self.de_hgvs_model = to_hgvs_locations(
                 self.de_hgvs_internal_indexing_model,
@@ -569,13 +569,13 @@ class Description(object):
                 True,
             )
 
-    def _construct_normalized_description(self):
+    def construct_normalized_description(self):
         if self.de_hgvs_model:
             if self.de_hgvs_model.get("coordinate_system") == "r":
                 to_rna_sequences(self.de_hgvs_model)
             self.normalized_description = model_to_string(self.de_hgvs_model)
 
-    def _construct_equivalent(self, other=None, as_description=True):
+    def construct_equivalent(self, other=None, as_description=True):
         if self.only_variants:
             return
         if other is not None:
@@ -1252,6 +1252,20 @@ class Description(object):
         self.equivalent = {"p": [model_to_string(equivalent_1a_model)]}
         self._back_translate()
 
+    def to_delins(self):
+        self.retrieve_references()
+        self.pre_conversion_checks()
+
+        self._correct_chromosome_points()
+        self.to_internal_indexing_model()
+        self._correct_variants_type()
+        self._correct_points()
+        self._check_and_correct_sequences()
+
+        self.check()
+        self._rna()
+        self._construct_delins_model()
+
     def normalize(self):
         self.retrieve_references()
         self.pre_conversion_checks()
@@ -1273,18 +1287,18 @@ class Description(object):
                 self.references["observed"] = {
                     "sequence": {"seq": self.references["reference"]["sequence"]["seq"]}
                 }
-                self._construct_de_hgvs_coordinates_model()
-                self._construct_normalized_description()
-                self._construct_equivalent()
+                self.construct_de_hgvs_coordinates_model()
+                self.construct_normalized_description()
+                self.construct_equivalent()
             else:
                 self._mutate()
                 self._extract()
-                self._construct_de_hgvs_internal_indexing_model()
-                self._construct_de_hgvs_coordinates_model()
-                self._construct_normalized_description()
+                self.construct_de_hgvs_internal_indexing_model()
+                self.construct_de_hgvs_coordinates_model()
+                self.construct_normalized_description()
                 self._construct_rna_description()
                 self._construct_protein_description()
-                self._construct_equivalent()
+                self.construct_equivalent()
             self._remove_superfluous_selector()
 
         # self.print_models_summary()

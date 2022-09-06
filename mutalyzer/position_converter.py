@@ -162,7 +162,7 @@ class PositionConvert(object):
     @check_errors
     def _add_overlapping(self):
         if self.include_overlapping:
-            self.description._construct_equivalent(
+            self.description.construct_equivalent(
                 self.description.internal_indexing_model, False
             )
             overlap = {}
