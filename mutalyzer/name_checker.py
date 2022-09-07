@@ -77,6 +77,10 @@ def name_check_alt(description, only_variants=False, sequence=None):
         output = d.output()
         output["algebra"] = algebra_hgvs
 
+    output["supremal"] = {
+        "hgvs": f"{d.corrected_model['reference']['id']}:g.{supremal.to_hgvs()}",
+        "spdi": supremal.to_spdi(d.corrected_model["reference"]["id"])}
+
     return output
 
 
