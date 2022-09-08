@@ -73,24 +73,28 @@ def _invert_views(views, ref_length):
     return inv_vs
 
 
-def view_variants_normalized(d, invert=True):
-    ref_seq = d.get_sequences()["reference"]
+def view_delins(delins_variants, name_variants, ref_seq):
+    segments = _get_segments(delins_variants, ref_seq)
 
-    segments = _get_segments(d.delins_model["variants"], ref_seq)
     views = []
     for i, segment in enumerate(segments):
         if i % 2 == 0:
             view = _get_view_outside(*segment, ref_seq)
         else:
-            view = {
-                "description": variant_to_description(
-                    d.corrected_model["variants"][i // 2]
-                )
-            }
-            view.update(
-                _get_view_inside(*segment, ref_seq, d.delins_model["variants"][i // 2])
-            )
+            view = {"description": variant_to_description(name_variants[i // 2])}
+            view.update(_get_view_inside(*segment, ref_seq, delins_variants[i // 2]))
         views.append(view)
+
+    return views
+
+
+def view_variants_normalized(d, invert=True):
+    ref_seq = d.get_sequences()["reference"]
+
+    views = view_delins(
+        d.delins_model["variants"], d.corrected_model["variants"], ref_seq
+    )
+
     if invert and d.is_inverted():
         return {
             "views": _invert_views(views, len(ref_seq)),

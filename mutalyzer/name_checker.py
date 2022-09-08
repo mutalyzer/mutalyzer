@@ -9,6 +9,7 @@ from mutalyzer.util import get_end, get_inserted_sequence, get_start
 from .converter.to_internal_coordinates import to_internal_coordinates
 from .converter.to_internal_indexing import to_internal_indexing
 from .description import Description
+from .viewer import view_delins
 
 
 def name_check_alt(description, only_variants=False, sequence=None):
@@ -58,6 +59,30 @@ def name_check_alt(description, only_variants=False, sequence=None):
         d.normalized_description = algebra_hgvs
         d.de_hgvs_model = {"variants": to_model(algebra_hgvs, "variants")}
         output = d.output()
+        output["supremal"] = {
+            "hgvs": f"{reference}:g.{supremal.to_hgvs()}",
+            "spdi": supremal.to_spdi(reference),
+        }
+        output["view_corrected"] = {
+            "views": view_delins(
+                d.delins_model["variants"], d.corrected_model["variants"], reference
+            ),
+            "seq_length": len(reference),
+        }
+        d_n = Description(
+            description=d.normalized_description,
+            only_variants=only_variants,
+            sequence=sequence,
+        )
+        d_n.to_delins()
+        output["view_normalized"] = {
+            "views": view_delins(
+                d_n.delins_model["variants"], d.de_hgvs_model["variants"], reference
+            ),
+            "seq_length": len(reference),
+        }
+        output["influence"] = {"min_pos": supremal.start, "max_pos": supremal.end}
+
     else:
         algebra_model = {
             "type": d.corrected_model["type"],
@@ -72,14 +97,30 @@ def name_check_alt(description, only_variants=False, sequence=None):
         d.construct_de_hgvs_internal_indexing_model()
         d.construct_de_hgvs_coordinates_model()
         d.construct_normalized_description()
-        d.construct_equivalent()
+        # d.construct_equivalent()
 
         output = d.output()
         output["algebra"] = algebra_hgvs
+        output["supremal"] = {
+            "hgvs": f"{d.corrected_model['reference']['id']}:g.{supremal.to_hgvs()}",
+            "spdi": supremal.to_spdi(d.corrected_model["reference"]["id"]),
+        }
 
-    output["supremal"] = {
-        "hgvs": f"{d.corrected_model['reference']['id']}:g.{supremal.to_hgvs()}",
-        "spdi": supremal.to_spdi(d.corrected_model["reference"]["id"])}
+        output["view_corrected"] = {
+            "views": view_delins(
+                d.delins_model["variants"], d.corrected_model["variants"], reference
+            ),
+            "seq_length": len(reference),
+        }
+        d_n = Description(d.normalized_description)
+        d_n.to_delins()
+        output["view_normalized"] = {
+            "views": view_delins(
+                d_n.delins_model["variants"], d.de_hgvs_model["variants"], reference
+            ),
+            "seq_length": len(reference),
+        }
+        output["influence"] = {"min_pos": supremal.start, "max_pos": supremal.end}
 
     return output
 
