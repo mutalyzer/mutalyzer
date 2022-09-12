@@ -1,6 +1,8 @@
 from algebra import Variant
 from algebra.extractor import extract_supremal, to_hgvs
+from algebra.lcs.all_lcs import edit, lcs_graph
 from algebra.relations.supremal_based import find_supremal, spanning_variant
+from algebra.utils import to_dot
 from algebra.variants import patch
 from mutalyzer_hgvs_parser import to_model
 
@@ -10,6 +12,15 @@ from .converter.to_internal_coordinates import to_internal_coordinates
 from .converter.to_internal_indexing import to_internal_indexing
 from .description import Description
 from .viewer import view_delins
+
+
+def _add_dot(supremal, reference, output):
+    ref_seq = reference[supremal.start : supremal.end]
+    obs_seq = supremal.sequence
+    _, lcs_nodes = edit(ref_seq, obs_seq)
+    if len(lcs_nodes) < 50:
+        root, _ = lcs_graph(ref_seq, obs_seq, lcs_nodes)
+        output["dot"] = to_dot(ref_seq, root)
 
 
 def name_check_alt(description, only_variants=False, sequence=None):
@@ -53,6 +64,7 @@ def name_check_alt(description, only_variants=False, sequence=None):
         reference, spanning_variant(reference, observed, variants_algebra)
     )
     canonical = list(extract_supremal(reference, supremal))
+
     algebra_hgvs = to_hgvs(canonical, reference)
 
     if only_variants:
@@ -121,6 +133,8 @@ def name_check_alt(description, only_variants=False, sequence=None):
             "seq_length": len(reference),
         }
         output["influence"] = {"min_pos": supremal.start, "max_pos": supremal.end}
+
+    _add_dot(supremal, reference, output)
 
     return output
 
