@@ -14,7 +14,7 @@ from .description import Description
 from .viewer import view_delins
 
 
-def _add_dot(supremal, reference, output):
+def _add_dot(supremal, reference, output, prefix=""):
     ref_seq = reference[supremal.start : supremal.end]
     obs_seq = supremal.sequence
     _, lcs_nodes = edit(ref_seq, obs_seq)
@@ -32,7 +32,9 @@ def _add_dot(supremal, reference, output):
                         variant.sequence,
                     )
                 )
-            minimal_descriptions.append(to_hgvs(reference_variants, reference))
+            minimal_descriptions.append(
+                f"{prefix}{to_hgvs(reference_variants, reference)}"
+            )
         if minimal_descriptions and len(minimal_descriptions) <= 100:
             output["minimal_descriptions"] = minimal_descriptions
 
@@ -61,37 +63,38 @@ def _algebra_variants(variants_delins, sequences):
     return variants_algebra
 
 
-def _only_variants(d, algebra_hgvs, supremal, reference):
+def _only_variants(d, algebra_hgvs, supremal, ref_seq):
     d.normalized_description = algebra_hgvs
     d.de_hgvs_model = {"variants": to_model(algebra_hgvs, "variants")}
     output = d.output()
     output["supremal"] = {
-        "hgvs": f"{reference}:g.{supremal.to_hgvs()}",
-        "spdi": supremal.to_spdi(reference),
+        "hgvs": supremal.to_hgvs(),
+        "spdi": supremal.to_spdi(ref_seq),
     }
     output["view_corrected"] = {
         "views": view_delins(
-            d.delins_model["variants"], d.corrected_model["variants"], reference
+            d.delins_model["variants"], d.corrected_model["variants"], ref_seq
         ),
-        "seq_length": len(reference),
+        "seq_length": len(ref_seq),
     }
     d_n = Description(
         description=d.normalized_description,
         only_variants=True,
-        sequence=reference,
+        sequence=ref_seq,
     )
     d_n.to_delins()
     output["view_normalized"] = {
         "views": view_delins(
-            d_n.delins_model["variants"], d.de_hgvs_model["variants"], reference
+            d_n.delins_model["variants"], d.de_hgvs_model["variants"], ref_seq
         ),
-        "seq_length": len(reference),
+        "seq_length": len(ref_seq),
     }
     output["influence"] = {"min_pos": supremal.start, "max_pos": supremal.end}
+    _add_dot(supremal, ref_seq, output)
     return output
 
 
-def _descriptions(d, algebra_hgvs, supremal, reference):
+def _descriptions(d, algebra_hgvs, supremal, ref_seq):
     algebra_model = {
         "type": d.corrected_model["type"],
         "reference": {"id": d.corrected_model["reference"]["id"]},
@@ -115,18 +118,19 @@ def _descriptions(d, algebra_hgvs, supremal, reference):
 
     output["view_corrected"] = {
         "views": view_delins(
-            d.delins_model["variants"], d.corrected_model["variants"], reference
+            d.delins_model["variants"], d.corrected_model["variants"], ref_seq
         ),
-        "seq_length": len(reference),
+        "seq_length": len(ref_seq),
     }
     d_n = Description(d.normalized_description)
     d_n.to_delins()
     output["view_normalized"] = {
         "views": view_delins(
-            d_n.delins_model["variants"], d.de_hgvs_model["variants"], reference
+            d_n.delins_model["variants"], d.de_hgvs_model["variants"], ref_seq
         ),
-        "seq_length": len(reference),
+        "seq_length": len(ref_seq),
     }
+    _add_dot(supremal, ref_seq, output, f"{d.corrected_model['reference']['id']}:g.")
     return output
 
 
@@ -159,12 +163,11 @@ def name_check_alt(description, only_variants=False, sequence=None):
 
     if only_variants:
         output = _only_variants(d, algebra_hgvs, supremal, ref_seq)
+
     else:
         output = _descriptions(d, algebra_hgvs, supremal, ref_seq)
 
     output["influence"] = {"min_pos": supremal.start, "max_pos": supremal.end}
-
-    _add_dot(supremal, ref_seq, output)
 
     return output
 
