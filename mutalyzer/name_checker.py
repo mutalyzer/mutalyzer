@@ -1,8 +1,9 @@
+from collections import deque
+
 from algebra import Variant
 from algebra.extractor import extract_supremal, to_hgvs
 from algebra.lcs.all_lcs import edit, lcs_graph, traversal
 from algebra.relations.supremal_based import find_supremal, spanning_variant
-from algebra.utils import to_dot
 from algebra.variants import patch
 from mutalyzer_hgvs_parser import to_model
 
@@ -14,13 +15,52 @@ from .description import Description
 from .viewer import view_delins
 
 
+def _to_dot(reference, root, offset):
+    def traverse():
+        visited = {root}
+        queue = deque([root])
+        while queue:
+            node = queue.popleft()
+            for succ, variant in node.edges:
+                if variant:
+                    hgvs_variant = [
+                        Variant(
+                            variant[0].start + offset,
+                            variant[0].end + offset,
+                            variant[0].sequence,
+                        )
+                    ]
+                    style = ""
+                else:
+                    hgvs_variant = []
+                    style = 'style = "dashed"'
+                yield (
+                    f'"{node.row}_{node.col}" [label=""];',
+                    f'"{succ.row}_{succ.col}" [label=""];',
+                    f' "{node.row}_{node.col}" -> "{succ.row}_{succ.col}"'
+                    f' [label="{to_hgvs(hgvs_variant, reference)}" {style}];',
+                )
+                if succ not in visited:
+                    visited.add(succ)
+                    queue.append(succ)
+
+    nodes = set()
+    edges = []
+    for node_start, node_end, edge in traverse():
+        nodes.add(node_start)
+        nodes.add(node_end)
+        edges.append(edge)
+    elements = list(nodes) + edges
+    return "digraph {\n    " + "\n    ".join(elements) + "\n}"
+
+
 def _add_dot(supremal, reference, output, prefix=""):
     ref_seq = reference[supremal.start : supremal.end]
     obs_seq = supremal.sequence
     _, lcs_nodes = edit(ref_seq, obs_seq)
     if len(lcs_nodes) < 50:
         root, _ = lcs_graph(ref_seq, obs_seq, lcs_nodes)
-        output["dot"] = to_dot(reference, root)
+        output["dot"] = _to_dot(reference, root, supremal.start)
         minimal_descriptions = []
         for variants in traversal(root):
             reference_variants = []
