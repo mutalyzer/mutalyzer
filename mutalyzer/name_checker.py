@@ -35,8 +35,8 @@ def _to_dot(reference, root, offset):
                     hgvs_variant = []
                     style = 'style = "dashed"'
                 yield (
-                    f'"{node.row}_{node.col}" [label=""];',
-                    f'"{succ.row}_{succ.col}" [label=""];',
+                    f'"{node.row}_{node.col}" [shape=circle, label=""];',
+                    f'"{succ.row}_{succ.col}" [shape=circle, label=""];',
                     f' "{node.row}_{node.col}" -> "{succ.row}_{succ.col}"'
                     f' [label="{to_hgvs(hgvs_variant, reference)}" {style}];',
                 )
