@@ -586,6 +586,10 @@ class Description(object):
             return
         equivalent = {}
 
+        import json
+        print("--=-")
+        print(json.dumps(from_model, indent=2))
+
         if (
             get_coordinate_system_from_reference(self.references["reference"])
             == "g"
@@ -1073,7 +1077,7 @@ class Description(object):
         self._construct_internal_coordinate_model()
         self._construct_internal_indexing_model()
 
-    def _remove_superfluous_selector(self):
+    def remove_superfluous_selector(self):
         if (
             not self.only_variants
             and self.de_hgvs_model
@@ -1084,14 +1088,14 @@ class Description(object):
             self.de_hgvs_model["reference"].pop("selector")
 
     @check_errors
-    def _only_equals(self):
+    def only_equals(self):
         for variant in self.internal_coordinates_model["variants"]:
             if variant.get("type") != "equal":
                 return False
         return True
 
     @check_errors
-    def _no_operation(self):
+    def no_operation(self):
         if self.internal_coordinates_model.get("variants") is None:
             return True
         for variant in self.internal_coordinates_model["variants"]:
@@ -1222,7 +1226,7 @@ class Description(object):
         if self.errors:
             return
 
-        if self._only_equals() or self._no_operation():
+        if self.only_equals() or self.no_operation():
             self.de_hgvs_model = copy.deepcopy(self.corrected_model)
             convert_amino_acids(self.de_hgvs_model, "1a")
             convert_amino_acids(self.de_hgvs_model, "3a")
@@ -1266,6 +1270,15 @@ class Description(object):
         self._rna()
         self._construct_delins_model()
 
+    def normalize_only_equals_or_no_operation(self):
+        self.de_hgvs_internal_indexing_model = self.internal_indexing_model
+        self.references["observed"] = {
+            "sequence": {"seq": self.references["reference"]["sequence"]["seq"]}
+        }
+        self.construct_de_hgvs_coordinates_model()
+        self.construct_normalized_description()
+        self.construct_equivalent()
+
     def normalize(self):
         self.retrieve_references()
         self.pre_conversion_checks()
@@ -1282,14 +1295,8 @@ class Description(object):
             self.check()
             self._rna()
             self._construct_delins_model()
-            if self._only_equals() or self._no_operation():
-                self.de_hgvs_internal_indexing_model = self.internal_indexing_model
-                self.references["observed"] = {
-                    "sequence": {"seq": self.references["reference"]["sequence"]["seq"]}
-                }
-                self.construct_de_hgvs_coordinates_model()
-                self.construct_normalized_description()
-                self.construct_equivalent()
+            if self.only_equals() or self.no_operation():
+                self.normalize_only_equals_or_no_operation()
             else:
                 self._mutate()
                 self._extract()
@@ -1299,7 +1306,7 @@ class Description(object):
                 self._construct_rna_description()
                 self._construct_protein_description()
                 self.construct_equivalent()
-            self._remove_superfluous_selector()
+            self.remove_superfluous_selector()
 
         # self.print_models_summary()
 

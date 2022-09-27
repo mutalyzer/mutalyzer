@@ -22,31 +22,6 @@ def test_normalize(input_description, normalized):
     assert d["normalized_description"] == normalized
 
 
-# @pytest.mark.parametrize(
-#     "input_description, normalized", get_tests(TESTS_ALL, "normalized")
-# )
-# def test_normalize_alt(input_description, normalized):
-#     skip = [
-#         "NG_012772.1(BRCA2_v001):c.632-5_793+7del",
-#         "NG_012772.1(BRCA2_v001):c.622_674del",
-#         "NG_012772.1(BRCA2_v001):c.681+1_682-1del",
-#         "NG_012772.1(BRCA2_v001):c.622_672del",
-#         "NG_008939.1(PCCB_v001):c.156_157ins180_188",
-#         "NG_008939.1(PCCB_v001):c.156_157ins180_188inv",
-#         "NG_008939.1(PCCB_v001):c.156_157ins[180_188]",
-#         "NG_008939.1(PCCB_v001):c.156_157ins[180_188inv]",
-#         "NG_008939.1(PCCB_v001):c.156_161delins180_188",
-#         "NG_008939.1(PCCB_v001):c.156_161delins180_188inv",
-#         "NG_008939.1(PCCB_v001):c.156_161delins[180_188]",
-#         "NG_008939.1(PCCB_v001):c.156_161delins[180_188inv]",
-#         "NG_012337.1(NM_012459.2):c.-35_*1del",
-#         "NG_012337.1(NM_012459.2):c.-1_*1del",
-#     ]
-#     if input_description not in skip:
-#         d = name_check_alt(input_description)
-#         assert d["normalized_description"] == normalized
-
-
 @pytest.mark.parametrize("input_description, genomic", get_tests(TESTS_ALL, "genomic"))
 def test_genomic(input_description, genomic):
     d = name_check(input_description)

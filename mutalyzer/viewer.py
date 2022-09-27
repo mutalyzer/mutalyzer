@@ -16,12 +16,13 @@ def _get_sequence_view(seq, l_l=15, l_r=15):
         return {"sequence": seq[s:e]}
 
 
-def _get_view_inside(s, e, ref_seq, variant):
+def _get_view_inside(s, e, sequences, variant):
+    ref_seq = sequences["reference"]
     view = {"start": s, "end": e, "type": "variant"}
     del_seq = ref_seq[s:e]
     if del_seq:
         view["deleted"] = _get_sequence_view(del_seq)
-    ins_seq = get_inserted_sequence(variant, {"reference": ref_seq})
+    ins_seq = get_inserted_sequence(variant, sequences)
     if ins_seq:
         view["inserted"] = _get_sequence_view(ins_seq)
         view["inserted"]["length"] = len(ins_seq)
@@ -73,7 +74,8 @@ def _invert_views(views, ref_length):
     return inv_vs
 
 
-def view_delins(delins_variants, name_variants, ref_seq):
+def view_delins(delins_variants, name_variants, sequences):
+    ref_seq = sequences["reference"]
     segments = _get_segments(delins_variants, ref_seq)
 
     views = []
@@ -82,7 +84,7 @@ def view_delins(delins_variants, name_variants, ref_seq):
             view = _get_view_outside(*segment, ref_seq)
         else:
             view = {"description": variant_to_description(name_variants[i // 2])}
-            view.update(_get_view_inside(*segment, ref_seq, delins_variants[i // 2]))
+            view.update(_get_view_inside(*segment, sequences, delins_variants[i // 2]))
         views.append(view)
 
     return views
@@ -92,7 +94,7 @@ def view_variants_normalized(d, invert=True):
     ref_seq = d.get_sequences()["reference"]
 
     views = view_delins(
-        d.delins_model["variants"], d.corrected_model["variants"], ref_seq
+        d.delins_model["variants"], d.corrected_model["variants"], d.get_sequences()
     )
 
     if invert and d.is_inverted():

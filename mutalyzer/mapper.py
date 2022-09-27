@@ -199,7 +199,7 @@ def map_description(
 
     ref_seq2 = d.references["reference"]["sequence"]["seq"]
 
-    if d._only_equals() or d._no_operation():
+    if d.only_equals() or d.no_operation():
         variants = []
     else:
         variants = d.delins_model["variants"]
