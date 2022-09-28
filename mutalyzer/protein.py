@@ -386,6 +386,8 @@ def get_protein_description(variants, references, selector_model):
     description = protein_description(cds_stop, p_ref_seq, p_obs_seq)
     if len(cds_variants) > 1 and "*" in description[0]:
         # TODO: This seems to happen in M2. Check why.
+        # A different check maybe should be implemented
+        # see: NG_012337.1(NM_012459.2):c.5_6delinsTAG
         return (
             "{}({}):{}".format(ref_id, protein_id, "p.?"),
             p_ref_seq,

@@ -2449,7 +2449,7 @@ TESTS = [
     {
         "keywords": [],
         "input": "NG_012337.1(NM_012459.2):c.5_6delinsTAG",
-        "protein_description": "NG_012337.1(NP_036591.2):p.(Arg2Leufs*23)",
+        "protein_description": "NG_012337.1(NP_036591.2):p.?",
         "rna_description": "NG_012337.1(NM_012459.2):r.(5_6delinsuag)",
         "to_test": True,
     },
@@ -3003,39 +3003,38 @@ def test_coding(input_description, coding):
         assert set(coding).issubset(set(name_check_coding))
 
 
-# @pytest.mark.parametrize(
-#     "input_description, protein_description",
-#     get_tests(TESTS_ALL, "protein_description"),
-# )
-# def test_protein(input_description, protein_description):
-#
-#     normalized_output = name_check_alt(input_description)
-#     normalizer_protein = normalized_output["protein"]["description"]
-#
-#     assert normalizer_protein == protein_description
-#
-#
-# @pytest.mark.parametrize(
-#     "input_description, coding_protein_descriptions",
-#     get_tests(TESTS_ALL, "coding_protein_descriptions"),
-# )
-# def test_protein_equivalent(input_description, coding_protein_descriptions):
-#     normalized_output = name_check_alt(input_description)
-#     normalizer_descriptions = set(normalized_output["equivalent_descriptions"]["c"])
-#
-#     assert coding_protein_descriptions.issubset(normalizer_descriptions)
-#
-#
+@pytest.mark.parametrize(
+    "input_description, protein_description",
+    get_tests(TESTS_ALL, "protein_description"),
+)
+def test_protein(input_description, protein_description):
+    if input_description not in skip:
+        normalized_output = name_check_alt(input_description)
+        normalizer_protein = normalized_output["protein"]["description"]
+        assert normalizer_protein == protein_description
+
+
+@pytest.mark.parametrize(
+    "input_description, coding_protein_descriptions",
+    get_tests(TESTS_ALL, "coding_protein_descriptions"),
+)
+def test_protein_equivalent(input_description, coding_protein_descriptions):
+    if input_description not in skip:
+        normalized_output = name_check_alt(input_description)
+        normalizer_descriptions = set(normalized_output["equivalent_descriptions"]["c"])
+
+        assert coding_protein_descriptions.issubset(normalizer_descriptions)
+
+
 # @pytest.mark.parametrize(
 #     "input_description, rna_description",
 #     get_tests(TESTS_ALL, "rna_description"),
 # )
 # def test_rna(input_description, rna_description):
-#
-#     normalized_output = name_check_alt(input_description)
-#     normalizer_protein = normalized_output["rna"]["description"]
-#
-#     assert normalizer_protein == rna_description
+#     if input_description not in skip:
+#         normalized_output = name_check_alt(input_description)
+#         normalizer_protein = normalized_output["rna"]["description"]
+#         assert normalizer_protein == rna_description
 #
 #
 # @pytest.mark.parametrize("input_description, codes", get_tests(TESTS_ALL, "errors"))

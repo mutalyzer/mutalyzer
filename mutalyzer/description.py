@@ -654,7 +654,7 @@ class Description(object):
             self.equivalent = equivalent
 
     @check_errors
-    def _construct_protein_description(self):
+    def construct_protein_description(self):
         if self.de_hgvs_model.get("coordinate_system") == "c" or (
             self.de_hgvs_model.get("coordinate_system") == "r"
             and get_coordinate_system_from_selector_id(
@@ -1300,7 +1300,7 @@ class Description(object):
                 self.construct_de_hgvs_coordinates_model()
                 self.construct_normalized_description()
                 self._construct_rna_description()
-                self._construct_protein_description()
+                self.construct_protein_description()
                 self.construct_equivalent()
             self.remove_superfluous_selector()
 
