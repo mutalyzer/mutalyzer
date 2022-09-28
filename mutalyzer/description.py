@@ -586,10 +586,6 @@ class Description(object):
             return
         equivalent = {}
 
-        import json
-        print("--=-")
-        print(json.dumps(from_model, indent=2))
-
         if (
             get_coordinate_system_from_reference(self.references["reference"])
             == "g"

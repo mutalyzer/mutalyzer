@@ -107,13 +107,10 @@ def _algebra_variants(variants_delins, sequences):
 
 
 def _add_shift(internal, delins, reference):
-    print("\n\n----")
     for i, v in enumerate(delins["variants"]):
         inserted_sequence = get_inserted_sequence(v, {"reference": reference})
-
         shift3 = 0
         shift5 = 0
-
         if get_location_length(v) and not inserted_sequence:
             shift5, shift3 = roll(
                 reference,
@@ -127,7 +124,6 @@ def _add_shift(internal, delins, reference):
                 get_start(v) + 1,
                 get_end(v) + len(inserted_sequence),
             )
-        print(shift5, shift3)
         internal["variants"][i]["location"]["start"]["shift"] = shift5
         internal["variants"][i]["location"]["end"]["shift"] = shift5
 
@@ -170,15 +166,11 @@ def _descriptions(d, algebra_hgvs, supremal, ref_seq, root):
         "coordinate_system": "g",
         "variants": to_model(algebra_hgvs, "variants"),
     }
-    print("\n--- descriptions")
     internal = to_internal_indexing(
         to_internal_coordinates(algebra_model, d.get_sequences())
     )
     delins = to_delins(internal)
-    import json
-    print(json.dumps(delins, indent=2))
     _add_shift(internal, delins, ref_seq)
-    print(json.dumps(internal, indent=2))
 
     d.de_hgvs_internal_indexing_model = internal
     d.construct_de_hgvs_internal_indexing_model()
@@ -199,11 +191,9 @@ def _descriptions(d, algebra_hgvs, supremal, ref_seq, root):
         ),
         "seq_length": len(ref_seq),
     }
-    d_n = Description(d.normalized_description)
-    d_n.to_delins()
     output["view_normalized"] = {
         "views": view_delins(
-            d_n.delins_model["variants"], d.de_hgvs_model["variants"], d.get_sequences()
+            delins["variants"], d.de_hgvs_model["variants"], d.get_sequences()
         ),
         "seq_length": len(ref_seq),
     }

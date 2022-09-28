@@ -83,14 +83,14 @@ M2_TESTS = [
         ],
         # "input": "AL449423.14(CDKN2A_v001):c.161_162delinsATCCC",
         "input": "NG_007485.1(NM_000077.4):c.161_162delinsATCCC",
-        "genomic": "NG_007485.1:g.28294_28295delinsATCCC",
+        "genomic": "NG_007485.1:g.[28293dup;28295delinsC[3]]",
         "coding_protein_descriptions": {
             (
-                "NG_007485.1(NM_058195.3):c.204_205delinsATCCC",
+                "NG_007485.1(NM_058195.3):c.[203dup;205delinsC[3]]",
                 "NG_007485.1(NP_478102.2):p.(Asp68_Gly69delinsGluSerArg)",
             ),
         },
-        "noncoding": ["NG_007485.1(NR_024274.1):n.616+3443_616+3444delinsGGGAT"],
+        "noncoding": ["NG_007485.1(NR_024274.1):n.[616+3443delinsG[3];616+3446dup]"],
         "protein_description": "NG_007485.1(NP_000068.1):p.(Met54delinsAsnPro)",
         # "AL449423.14(CDKN2A_i001):p.(Met54delinsAsnPro)"
         "to_test": True,
@@ -106,11 +106,11 @@ M2_TESTS = [
         "input": "NG_007485.1(NM_000077.4):c.161_162delins[ATCCC]",
         "coding_protein_descriptions": {
             (
-                "NG_007485.1(NM_058195.3):c.204_205delinsATCCC",
+                "NG_007485.1(NM_058195.3):c.[203dup;205delinsC[3]]",
                 "NG_007485.1(NP_478102.2):p.(Asp68_Gly69delinsGluSerArg)",
             ),
         },
-        "noncoding": ["NG_007485.1(NR_024274.1):n.616+3443_616+3444delinsGGGAT"],
+        "noncoding": ["NG_007485.1(NR_024274.1):n.[616+3443delinsG[3];616+3446dup]"],
         "protein_description": "NG_007485.1(NP_000068.1):p.(Met54delinsAsnPro)",
         # "AL449423.14(CDKN2A_i001):p.(Met54delinsAsnPro)"
         "to_test": True,
@@ -2090,7 +2090,7 @@ TESTS = [
         "keywords": [],
         "input": "NG_012337.1(NM_003002.2):c.52+1del",
         "normalized": "NG_012337.1(NM_003002.2):c.52_52+1G[1]",
-        "genomic": "NG_012337.1:g.5114del",
+        "genomic": "NG_012337.1:g.5113_5114G[1]",
         "to_test": True,
     },
     {
@@ -2169,7 +2169,7 @@ TESTS = [
         "keywords": [],
         "input": "NG_008835.1(NM_001168390.2):c.*3188del",
         "normalized": "NG_008835.1(NM_001168390.2):c.*3186_*3188A[2]",
-        "genomic": "NG_008835.1:g.320804del",
+        "genomic": "NG_008835.1:g.320802_320804T[2]",
         "to_test": True,
     },
     {
@@ -2267,7 +2267,7 @@ TESTS = [
         "keywords": [],
         "input": "NG_009497.1(USH2A_v001):c.8682-19dup",
         "normalized": "NG_009497.1(NM_206933.2):c.8682-25_8682-19T[8]",
-        "genomic": "NG_009497.1:g.561208dup",
+        "genomic": "NG_009497.1:g.561202_561208T[8]",
         "to_test": True,
     },
     {
@@ -2366,7 +2366,7 @@ TESTS = [
         "keywords": ["repeat", "reverse_strand"],
         "input": "NG_009299.1(NM_017668.3):c.33_35CAA[5]",
         "normalized": "NG_009299.1(NM_017668.3):c.34_39AAC[6]",
-        "genomic": "NG_009299.1:g.137803_137808TTG[6]",
+        "genomic": "NG_009299.1:g.137802_137807GTT[6]",
         "to_test": True,
     },
     {
@@ -2802,7 +2802,7 @@ TESTS = [
         "keywords": [],
         "input": "NG_012337.1(NM_003002.2):c.pterdel",
         "normalized": "NG_012337.1(NM_003002.2):c.-5061_-5059G[2]",
-        "genomic": "NG_012337.1:g.3del",
+        "genomic": "NG_012337.1:g.1_3G[2]",
         "to_test": True,
     },
     {
@@ -2900,7 +2900,7 @@ TESTS = [
         "keywords": ["repeat", "dbsnp", "reverse"],
         "input": "NG_012337.1(NM_012459.2):c.10CA[5]",
         "normalized": "NG_012337.1(NM_012459.2):c.10_13CA[5]",
-        "genomic": "NG_012337.1:g.4911_4914GT[5]",
+        "genomic": "NG_012337.1:g.4910_4913TG[5]",
         "to_test": True,
     },
 
@@ -2959,27 +2959,27 @@ OTHER = [
     #  ''),
 ]
 
+skip = [
+    "NG_012772.1(BRCA2_v001):c.632-5_793+7del",
+    "NG_012772.1(BRCA2_v001):c.622_674del",
+    "NG_012772.1(BRCA2_v001):c.681+1_682-1del",
+    "NG_012772.1(BRCA2_v001):c.622_672del",
+    "NG_008939.1(PCCB_v001):c.156_157ins180_188",
+    "NG_008939.1(PCCB_v001):c.156_157ins180_188inv",
+    "NG_008939.1(PCCB_v001):c.156_157ins[180_188]",
+    "NG_008939.1(PCCB_v001):c.156_157ins[180_188inv]",
+    "NG_008939.1(PCCB_v001):c.156_161delins180_188",
+    "NG_008939.1(PCCB_v001):c.156_161delins180_188inv",
+    "NG_008939.1(PCCB_v001):c.156_161delins[180_188]",
+    "NG_008939.1(PCCB_v001):c.156_161delins[180_188inv]",
+    "NG_012337.1(NM_012459.2):c.-35_*1del",
+    "NG_012337.1(NM_012459.2):c.-1_*1del",
+]
 
 @pytest.mark.parametrize(
     "input_description, normalized", get_tests(TESTS_ALL, "normalized")
 )
 def test_normalize(input_description, normalized):
-    skip = [
-        "NG_012772.1(BRCA2_v001):c.632-5_793+7del",
-        "NG_012772.1(BRCA2_v001):c.622_674del",
-        "NG_012772.1(BRCA2_v001):c.681+1_682-1del",
-        "NG_012772.1(BRCA2_v001):c.622_672del",
-        "NG_008939.1(PCCB_v001):c.156_157ins180_188",
-        "NG_008939.1(PCCB_v001):c.156_157ins180_188inv",
-        "NG_008939.1(PCCB_v001):c.156_157ins[180_188]",
-        "NG_008939.1(PCCB_v001):c.156_157ins[180_188inv]",
-        "NG_008939.1(PCCB_v001):c.156_161delins180_188",
-        "NG_008939.1(PCCB_v001):c.156_161delins180_188inv",
-        "NG_008939.1(PCCB_v001):c.156_161delins[180_188]",
-        "NG_008939.1(PCCB_v001):c.156_161delins[180_188inv]",
-        "NG_012337.1(NM_012459.2):c.-35_*1del",
-        "NG_012337.1(NM_012459.2):c.-1_*1del",
-    ]
     if input_description not in skip:
         d = name_check_alt(input_description)
         assert d["normalized_description"] == normalized
@@ -2987,29 +2987,22 @@ def test_normalize(input_description, normalized):
 
 @pytest.mark.parametrize("input_description, genomic", get_tests(TESTS_ALL, "genomic"))
 def test_genomic(input_description, genomic):
-    d = name_check_alt(input_description)
-    if d["equivalent_descriptions"].get("g"):
-        assert d["equivalent_descriptions"]["g"][0] == genomic
+    if input_description not in skip:
+        d = name_check_alt(input_description)
+        if d["equivalent_descriptions"].get("g"):
+            assert d["equivalent_descriptions"]["g"][0] == genomic
 
 
-# @pytest.mark.parametrize("input_description, genomic", get_tests(TESTS_ALL, "genomic"))
-# def test_genomic(input_description, genomic):
-#     d = name_check_alt(input_description)
-#     if d["equivalent_descriptions"].get("g"):
-#         assert d["equivalent_descriptions"]["g"][0] == genomic
-#
-#
-# @pytest.mark.parametrize(
-#     "input_description, coding", get_tests(TESTS_ALL, "coding_protein_descriptions")
-# )
-# def test_coding(input_description, coding):
-#     d = name_check_alt(input_description)
-#     coding = [c[0] for c in coding]
-#     if d["equivalent_descriptions"].get("c"):
-#         name_check_coding = [c[0] for c in d["equivalent_descriptions"]["c"]]
-#     assert set(coding).issubset(set(name_check_coding))
-#
-#
+@pytest.mark.parametrize("input_description, coding", get_tests(TESTS_ALL, "coding_protein_descriptions"))
+def test_coding(input_description, coding):
+    if input_description not in skip:
+        d = name_check_alt(input_description)
+        coding = [c[0] for c in coding]
+        if d["equivalent_descriptions"].get("c"):
+            name_check_coding = [c[0] for c in d["equivalent_descriptions"]["c"]]
+        assert set(coding).issubset(set(name_check_coding))
+
+
 # @pytest.mark.parametrize(
 #     "input_description, protein_description",
 #     get_tests(TESTS_ALL, "protein_description"),
