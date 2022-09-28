@@ -2450,14 +2450,14 @@ TESTS = [
         "keywords": [],
         "input": "NG_012337.1(NM_012459.2):c.5_6delinsTAG",
         "protein_description": "NG_012337.1(NP_036591.2):p.?",
-        "rna_description": "NG_012337.1(NM_012459.2):r.(5_6delinsuag)",
+        "rna_description": "NG_012337.1(NM_012459.2):r.([4_5insua;6del])",
         "to_test": True,
     },
     {
         "keywords": [],
         "input": "NG_012337.1(NM_012459.2):c.4_6delinsGTA",
         "protein_description": "NG_012337.1(NP_036591.2):p.(Arg2Val)",
-        "rna_description": "NG_012337.1(NM_012459.2):r.(4_6delinsgua)",
+        "rna_description": "NG_012337.1(NM_012459.2):r.([4del;6delinsua])",
         "to_test": True,
     },
     {
@@ -3026,38 +3026,38 @@ def test_protein_equivalent(input_description, coding_protein_descriptions):
         assert coding_protein_descriptions.issubset(normalizer_descriptions)
 
 
-# @pytest.mark.parametrize(
-#     "input_description, rna_description",
-#     get_tests(TESTS_ALL, "rna_description"),
-# )
-# def test_rna(input_description, rna_description):
-#     if input_description not in skip:
-#         normalized_output = name_check_alt(input_description)
-#         normalizer_protein = normalized_output["rna"]["description"]
-#         assert normalizer_protein == rna_description
-#
-#
-# @pytest.mark.parametrize("input_description, codes", get_tests(TESTS_ALL, "errors"))
-# def test_errors(input_description, codes):
-#     assert codes == [error["code"] for error in name_check_alt(input_description)["errors"]]
-#
-#
-# @pytest.mark.parametrize("input_description, codes", get_tests(TESTS_ALL, "infos"))
-# def test_infos(input_description, codes):
-#     assert codes == [info["code"] for info in name_check_alt(input_description)["infos"]]
-#
-#
-# @pytest.mark.parametrize(
-#     "description, sequence, normalized",
-#     [
-#         ("2del", "AAAT", "3del"),
-#         ("[2del]", "AAAT", "3del"),
-#         ("[1del;2del]", "AAAT", "2_3del"),
-#         ("1_2insNG_012337.1:g.100", "AAAT", "1_2insT"),
-#         ("[9dup;14_15insCCTCT]", "CTCTCTCTCTCTCTTG", "10delinsCTCTCTC"),
-#     ],
-# )
-# def test_only_variants(description, sequence, normalized):
-#     assert (
-#         name_check_alt(description, True, sequence)["normalized_description"] == normalized
-#     )
+@pytest.mark.parametrize(
+    "input_description, rna_description",
+    get_tests(TESTS_ALL, "rna_description"),
+)
+def test_rna(input_description, rna_description):
+    if input_description not in skip:
+        normalized_output = name_check_alt(input_description)
+        normalizer_protein = normalized_output["rna"]["description"]
+        assert normalizer_protein == rna_description
+
+
+@pytest.mark.parametrize("input_description, codes", get_tests(TESTS_ALL, "errors"))
+def test_errors(input_description, codes):
+    assert codes == [error["code"] for error in name_check_alt(input_description)["errors"]]
+
+
+@pytest.mark.parametrize("input_description, codes", get_tests(TESTS_ALL, "infos"))
+def test_infos(input_description, codes):
+    assert codes == [info["code"] for info in name_check_alt(input_description)["infos"]]
+
+
+@pytest.mark.parametrize(
+    "description, sequence, normalized",
+    [
+        ("2del", "AAAT", "3del"),
+        ("[2del]", "AAAT", "3del"),
+        ("[1del;2del]", "AAAT", "2_3del"),
+        ("1_2insNG_012337.1:g.100", "AAAT", "1_2insT"),
+        ("[9dup;14_15insCCTCT]", "CTCTCTCTCTCTCTTG", "10delinsCTCTCTC"),
+    ],
+)
+def test_only_variants(description, sequence, normalized):
+    assert (
+        name_check_alt(description, True, sequence)["normalized_description"] == normalized
+    )

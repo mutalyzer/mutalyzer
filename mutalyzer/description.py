@@ -684,7 +684,7 @@ class Description(object):
                     )
 
     @check_errors
-    def _construct_rna_description(self):
+    def construct_rna_description(self):
         if self.de_hgvs_model.get("coordinate_system") in ["c", "n"]:
             self.rna = {}
             errors_splice, infos_splice = splice_sites(
@@ -1299,7 +1299,7 @@ class Description(object):
                 self.construct_de_hgvs_internal_indexing_model()
                 self.construct_de_hgvs_coordinates_model()
                 self.construct_normalized_description()
-                self._construct_rna_description()
+                self.construct_rna_description()
                 self.construct_protein_description()
                 self.construct_equivalent()
             self.remove_superfluous_selector()

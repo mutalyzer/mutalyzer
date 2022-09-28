@@ -177,6 +177,7 @@ def _descriptions(d, algebra_hgvs, supremal, ref_seq, root):
     d.construct_de_hgvs_coordinates_model()
     d.construct_normalized_description()
     d.construct_equivalent()
+    d.construct_rna_description()
     d.construct_protein_description()
 
     output = d.output()
