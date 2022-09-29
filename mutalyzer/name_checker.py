@@ -9,14 +9,14 @@ from algebra.relations.supremal_based import find_supremal, spanning_variant
 from algebra.variants import patch
 from mutalyzer_hgvs_parser import to_model
 
-from mutalyzer.util import get_end, get_inserted_sequence, get_start, get_location_length
+from mutalyzer.util import get_inserted_sequence, get_location_length
 
+from .converter.to_delins import to_delins
 from .converter.to_internal_coordinates import to_internal_coordinates
 from .converter.to_internal_indexing import to_internal_indexing
-from .converter.to_delins import to_delins
 from .description import Description
+from .util import get_end, get_start, roll
 from .viewer import view_delins
-from .util import roll, get_start, get_end
 
 
 def _to_dot(reference, root, offset):
@@ -109,17 +109,18 @@ def _algebra_variants(variants_delins, sequences):
 def _add_shift(internal, delins, reference):
     for i, v in enumerate(delins["variants"]):
         inserted_sequence = get_inserted_sequence(v, {"reference": reference})
-        shift3 = 0
         shift5 = 0
         if get_location_length(v) and not inserted_sequence:
-            shift5, shift3 = roll(
+            shift5, _ = roll(
                 reference,
                 get_start(v) + 1,
                 get_end(v),
             )
         elif not get_location_length(v) and inserted_sequence:
-            rolled_sequence = (reference[: get_start(v)] + inserted_sequence + reference[get_end(v):])
-            shift5, shift3 = roll(
+            rolled_sequence = (
+                reference[: get_start(v)] + inserted_sequence + reference[get_end(v) :]
+            )
+            shift5, _ = roll(
                 rolled_sequence,
                 get_start(v) + 1,
                 get_end(v) + len(inserted_sequence),
@@ -136,24 +137,18 @@ def _only_variants(d, algebra_hgvs, supremal, ref_seq, root):
         "hgvs": supremal.to_hgvs(),
         "spdi": supremal.to_spdi(ref_seq),
     }
-    output["view_corrected"] = {
-        "views": view_delins(
-            d.delins_model["variants"], d.corrected_model["variants"],  d.get_sequences()
-        ),
-        "seq_length": len(ref_seq),
-    }
+    output["view_corrected"] = view_delins(
+        d.delins_model["variants"], d.corrected_model["variants"], d.get_sequences()
+    )
     d_n = Description(
         description=d.normalized_description,
         only_variants=True,
         sequence=ref_seq,
     )
     d_n.to_delins()
-    output["view_normalized"] = {
-        "views": view_delins(
-            d_n.delins_model["variants"], d.de_hgvs_model["variants"], d.get_sequences()
-        ),
-        "seq_length": len(ref_seq),
-    }
+    output["view_normalized"] = view_delins(
+        d_n.delins_model["variants"], d.de_hgvs_model["variants"], d.get_sequences()
+    )
     output["influence"] = {"min_pos": supremal.start, "max_pos": supremal.end}
     _add_dot(supremal, root, ref_seq, output)
     return output
@@ -187,39 +182,27 @@ def _descriptions(d, algebra_hgvs, supremal, ref_seq, root):
         "spdi": supremal.to_spdi(d.corrected_model["reference"]["id"]),
     }
 
-    output["view_corrected"] = {
-        "views": view_delins(
-            d.delins_model["variants"], d.corrected_model["variants"],  d.get_sequences()
-        ),
-        "seq_length": len(ref_seq),
-    }
-    output["view_normalized"] = {
-        "views": view_delins(
-            delins["variants"], d.de_hgvs_model["variants"], d.get_sequences()
-        ),
-        "seq_length": len(ref_seq),
-    }
-    _add_dot(
-        supremal, root, ref_seq, output, f"{d.corrected_model['reference']['id']}:g."
+    output["view_corrected"] = view_delins(
+        d.delins_model["variants"],
+        d.corrected_model["variants"],
+        d.get_sequences(),
+        invert=d.is_inverted(),
     )
+    output["view_normalized"] = view_delins(
+        delins["variants"],
+        d.de_hgvs_model["variants"],
+        d.get_sequences(),
+        invert=d.is_inverted(),
+    )
+    _add_dot(supremal, root, ref_seq, output, f"{d.corrected_model['reference']['id']}:g.")
     return output
 
 
 def name_check_alt(description, only_variants=False, sequence=None):
-
-    # TODO: reverse strand shift?
-
-    d = Description(
-        description=description, only_variants=only_variants, sequence=sequence
-    )
-
+    d = Description(description=description, only_variants=only_variants, sequence=sequence)
     d.to_delins()
-
     if d.corrected_model.get("type") == "description_protein":
-        p_d = Description(
-            description=description, only_variants=only_variants,
-            sequence=sequence
-        )
+        p_d = Description(description=description, only_variants=only_variants, sequence=sequence)
         p_d.normalize()
         return p_d.output()
 
@@ -232,7 +215,6 @@ def name_check_alt(description, only_variants=False, sequence=None):
 
     if not only_variants and d.corrected_model["type"] == "description_protein":
         _no_protein_support()
-
     algebra_variants = _algebra_variants(d.delins_model["variants"], d.get_sequences())
 
     ref_seq = d.references["reference"]["sequence"]["seq"]
