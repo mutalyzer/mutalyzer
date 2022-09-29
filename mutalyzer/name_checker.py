@@ -215,6 +215,14 @@ def name_check_alt(description, only_variants=False, sequence=None):
 
     d.to_delins()
 
+    if d.corrected_model.get("type") == "description_protein":
+        p_d = Description(
+            description=description, only_variants=only_variants,
+            sequence=sequence
+        )
+        p_d.normalize()
+        return p_d.output()
+
     if d.errors:
         return d.output()
     if d.only_equals() or d.no_operation():

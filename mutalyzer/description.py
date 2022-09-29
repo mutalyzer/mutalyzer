@@ -1198,7 +1198,7 @@ class Description(object):
                 bt_descriptions.append("{}:c.({})".format(reference, t[0]))
         self.back_translated_descriptions = bt_descriptions
 
-    def _normalize_protein(self):
+    def normalize_protein(self):
         reference_id = self.corrected_model["reference"]["id"]
         self._check_amino_acids()
         if self.errors:
@@ -1280,7 +1280,7 @@ class Description(object):
         self.pre_conversion_checks()
 
         if self.corrected_model.get("type") == "description_protein":
-            self._normalize_protein()
+            self.normalize_protein()
         else:
             self._correct_chromosome_points()
             self.to_internal_indexing_model()
