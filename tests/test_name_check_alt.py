@@ -3050,11 +3050,11 @@ def test_infos(input_description, codes):
 @pytest.mark.parametrize(
     "description, sequence, normalized",
     [
-        ("2del", "AAAT", "3del"),
-        ("[2del]", "AAAT", "3del"),
-        ("[1del;2del]", "AAAT", "2_3del"),
+        ("2del", "AAAT", "1_3A[2]"),
+        ("[2del]", "AAAT", "1_3A[2]"),
+        ("[1del;2del]", "AAAT", "1_3A[1]"),
         ("1_2insNG_012337.1:g.100", "AAAT", "1_2insT"),
-        ("[9dup;14_15insCCTCT]", "CTCTCTCTCTCTCTTG", "10delinsCTCTCTC"),
+        ("[9dup;14_15insCCTCT]", "CTCTCTCTCTCTCTTG", "10delins[CT[3];C]"),
     ],
 )
 def test_only_variants(description, sequence, normalized):
