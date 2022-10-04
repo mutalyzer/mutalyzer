@@ -9,7 +9,7 @@ from mutalyzer.converter.to_rna import (
     to_rna_reference_model,
     to_rna_variants,
 )
-from mutalyzer.name_checker import name_check
+from mutalyzer.normalizer import normalize
 from mutalyzer.reference import get_internal_selector_model, retrieve_reference
 
 from .commons import code_in, patch_retriever
@@ -894,7 +894,7 @@ def get_tests(tests, t_type):
     get_tests(TESTS, "normalized"),
 )
 def test_rna(input_description, normalized):
-    d = name_check(input_description)
+    d = normalize(input_description)
     assert d.get("normalized_description") == normalized
 
 
@@ -903,7 +903,7 @@ def test_rna(input_description, normalized):
     get_tests(TESTS, "errors"),
 )
 def test_rna_errors(input_description, errors):
-    d = name_check(input_description)
+    d = normalize(input_description)
     assert d.get("errors") == errors
 
 
@@ -912,7 +912,7 @@ def test_rna_errors(input_description, errors):
     get_tests(TESTS, "infos"),
 )
 def test_rna_infos(input_description, infos):
-    d = name_check(input_description)
+    d = normalize(input_description)
     assert d.get("infos") == infos
 
 
@@ -922,7 +922,7 @@ def test_rna_infos(input_description, infos):
 )
 def test_rna_protein(input_description, protein_description):
 
-    normalized_output = name_check(input_description)
+    normalized_output = normalize(input_description)
     if protein_description is not None:
         normalizer_protein = normalized_output["protein"]["description"]
         assert normalizer_protein == protein_description

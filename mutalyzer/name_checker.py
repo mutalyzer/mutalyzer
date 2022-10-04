@@ -1,7 +1,7 @@
 from .description import Description
 
 
-def name_check(description, only_variants=False, sequence=None):
+def normalizer_(description, only_variants=False, sequence=None):
     d = Description(
         description=description,
         only_variants=only_variants,

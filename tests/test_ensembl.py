@@ -1,6 +1,6 @@
 import pytest
 
-from mutalyzer.name_checker import name_check
+from mutalyzer.normalizer import normalize
 from mutalyzer.reference import retrieve_reference, slice_to_selector
 
 from .commons import code_in, patch_retriever
@@ -20,7 +20,7 @@ def get_tests(tests, t_type):
     get_tests([t for t in TESTS_ALL if "ensembl" in t["keywords"]], "normalized"),
 )
 def test_ensembl(input_description, normalized):
-    d = name_check(input_description)
+    d = normalize(input_description)
     assert d["normalized_description"] == normalized
 
 

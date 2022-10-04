@@ -254,10 +254,13 @@ def normalize_alt(description, only_variants=False, sequence=None):
     return output
 
 
-def normalize(description_to_normalize):
-    description = Description(description=description_to_normalize,
-                              stop_on_error=True)
+def normalize(description, only_variants=False, sequence=None):
+    d = Description(
+        description=description,
+        only_variants=only_variants,
+        sequence=sequence,
+    )
 
-    description.normalize()
+    d.normalize()
 
-    return description.normalized_description
+    return d.output()

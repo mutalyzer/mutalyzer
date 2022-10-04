@@ -1,6 +1,6 @@
 import pytest
 
-from mutalyzer.name_checker import name_check
+from mutalyzer.normalizer import normalize
 
 from .commons import code_in, patch_retriever
 from .variants_set import TESTS_ALL
@@ -97,12 +97,12 @@ TESTS_NO_ERROR = [
 
 @pytest.mark.parametrize("input_description, code", TESTS_ERROR)
 def test_error(input_description, code):
-    assert code_in(code, name_check(input_description)["errors"])
+    assert code_in(code, normalize(input_description)["errors"])
 
 
 @pytest.mark.parametrize("input_description", TESTS_NO_ERROR)
 def test_no_errors(input_description):
-    assert name_check(input_description).get("errors") is None
+    assert normalize(input_description).get("errors") is None
 
 
 def get_tests(tests, code_type):

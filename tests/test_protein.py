@@ -1,7 +1,6 @@
 import pytest
 
-from mutalyzer.name_checker import name_check
-from mutalyzer.normalizer import normalize_alt
+from mutalyzer.normalizer import normalize, normalize_alt
 
 from .commons import code_in, patch_retriever
 
@@ -127,7 +126,7 @@ def get_tests(tests, t_type):
     get_tests(TESTS, "normalized"),
 )
 def test_protein(input_description, normalized):
-    d = name_check(input_description)
+    d = normalize(input_description)
     assert d.get("normalized_description") == normalized
 
 
@@ -145,7 +144,7 @@ def test_protein_alt(input_description, normalized):
     get_tests(TESTS, "errors"),
 )
 def test_protein_errors(input_description, errors):
-    d = name_check(input_description)
+    d = normalize(input_description)
     assert d.get("errors") == errors
 
 
