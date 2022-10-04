@@ -198,7 +198,7 @@ def _descriptions(d, algebra_hgvs, supremal, ref_seq, root):
     return output
 
 
-def normalizer_alt(description, only_variants=False, sequence=None):
+def normalize_alt(description, only_variants=False, sequence=None):
     d = Description(description=description, only_variants=only_variants, sequence=sequence)
     d.to_delins()
     if d.corrected_model.get("type") == "description_protein":
