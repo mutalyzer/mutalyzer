@@ -1,6 +1,6 @@
 import pytest
 
-from mutalyzer.name_checker import name_check, name_check_alt
+from mutalyzer.name_checker import name_check
 
 from .commons import code_in, patch_retriever
 from .variants_set import TESTS_ALL

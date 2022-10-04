@@ -1,6 +1,6 @@
 import pytest
 
-from mutalyzer.name_checker import name_check_alt
+from mutalyzer.normalizer import normalizer_alt
 
 from .commons import code_in, patch_retriever
 
@@ -2981,14 +2981,14 @@ skip = [
 )
 def test_normalize(input_description, normalized):
     if input_description not in skip:
-        d = name_check_alt(input_description)
+        d = normalizer_alt(input_description)
         assert d["normalized_description"] == normalized
 
 
 @pytest.mark.parametrize("input_description, genomic", get_tests(TESTS_ALL, "genomic"))
 def test_genomic(input_description, genomic):
     if input_description not in skip:
-        d = name_check_alt(input_description)
+        d = normalizer_alt(input_description)
         if d["equivalent_descriptions"].get("g"):
             assert d["equivalent_descriptions"]["g"][0] == genomic
 
@@ -2996,7 +2996,7 @@ def test_genomic(input_description, genomic):
 @pytest.mark.parametrize("input_description, coding", get_tests(TESTS_ALL, "coding_protein_descriptions"))
 def test_coding(input_description, coding):
     if input_description not in skip:
-        d = name_check_alt(input_description)
+        d = normalizer_alt(input_description)
         coding = [c[0] for c in coding]
         if d["equivalent_descriptions"].get("c"):
             name_check_coding = [c[0] for c in d["equivalent_descriptions"]["c"]]
@@ -3009,7 +3009,7 @@ def test_coding(input_description, coding):
 )
 def test_protein(input_description, protein_description):
     if input_description not in skip:
-        normalized_output = name_check_alt(input_description)
+        normalized_output = normalizer_alt(input_description)
         normalizer_protein = normalized_output["protein"]["description"]
         assert normalizer_protein == protein_description
 
@@ -3020,7 +3020,7 @@ def test_protein(input_description, protein_description):
 )
 def test_protein_equivalent(input_description, coding_protein_descriptions):
     if input_description not in skip:
-        normalized_output = name_check_alt(input_description)
+        normalized_output = normalizer_alt(input_description)
         normalizer_descriptions = set(normalized_output["equivalent_descriptions"]["c"])
 
         assert coding_protein_descriptions.issubset(normalizer_descriptions)
@@ -3032,19 +3032,19 @@ def test_protein_equivalent(input_description, coding_protein_descriptions):
 )
 def test_rna(input_description, rna_description):
     if input_description not in skip:
-        normalized_output = name_check_alt(input_description)
+        normalized_output = normalizer_alt(input_description)
         normalizer_protein = normalized_output["rna"]["description"]
         assert normalizer_protein == rna_description
 
 
 @pytest.mark.parametrize("input_description, codes", get_tests(TESTS_ALL, "errors"))
 def test_errors(input_description, codes):
-    assert codes == [error["code"] for error in name_check_alt(input_description)["errors"]]
+    assert codes == [error["code"] for error in normalizer_alt(input_description)["errors"]]
 
 
 @pytest.mark.parametrize("input_description, codes", get_tests(TESTS_ALL, "infos"))
 def test_infos(input_description, codes):
-    assert codes == [info["code"] for info in name_check_alt(input_description)["infos"]]
+    assert codes == [info["code"] for info in normalizer_alt(input_description)["infos"]]
 
 
 @pytest.mark.parametrize(
@@ -3059,5 +3059,5 @@ def test_infos(input_description, codes):
 )
 def test_only_variants(description, sequence, normalized):
     assert (
-        name_check_alt(description, True, sequence)["normalized_description"] == normalized
+        normalizer_alt(description, True, sequence)["normalized_description"] == normalized
     )
