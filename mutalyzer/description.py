@@ -654,7 +654,7 @@ class Description(object):
             self.equivalent = equivalent
 
     @check_errors
-    def _construct_protein_description(self):
+    def construct_protein_description(self):
         if self.de_hgvs_model.get("coordinate_system") == "c" or (
             self.de_hgvs_model.get("coordinate_system") == "r"
             and get_coordinate_system_from_selector_id(
@@ -684,7 +684,7 @@ class Description(object):
                     )
 
     @check_errors
-    def _construct_rna_description(self):
+    def construct_rna_description(self):
         if self.de_hgvs_model.get("coordinate_system") in ["c", "n"]:
             self.rna = {}
             errors_splice, infos_splice = splice_sites(
@@ -1073,7 +1073,7 @@ class Description(object):
         self._construct_internal_coordinate_model()
         self._construct_internal_indexing_model()
 
-    def _remove_superfluous_selector(self):
+    def remove_superfluous_selector(self):
         if (
             not self.only_variants
             and self.de_hgvs_model
@@ -1084,14 +1084,14 @@ class Description(object):
             self.de_hgvs_model["reference"].pop("selector")
 
     @check_errors
-    def _only_equals(self):
+    def only_equals(self):
         for variant in self.internal_coordinates_model["variants"]:
             if variant.get("type") != "equal":
                 return False
         return True
 
     @check_errors
-    def _no_operation(self):
+    def no_operation(self):
         if self.internal_coordinates_model.get("variants") is None:
             return True
         for variant in self.internal_coordinates_model["variants"]:
@@ -1198,7 +1198,7 @@ class Description(object):
                 bt_descriptions.append("{}:c.({})".format(reference, t[0]))
         self.back_translated_descriptions = bt_descriptions
 
-    def _normalize_protein(self):
+    def normalize_protein(self):
         reference_id = self.corrected_model["reference"]["id"]
         self._check_amino_acids()
         if self.errors:
@@ -1222,7 +1222,7 @@ class Description(object):
         if self.errors:
             return
 
-        if self._only_equals() or self._no_operation():
+        if self.only_equals() or self.no_operation():
             self.de_hgvs_model = copy.deepcopy(self.corrected_model)
             convert_amino_acids(self.de_hgvs_model, "1a")
             convert_amino_acids(self.de_hgvs_model, "3a")
@@ -1266,12 +1266,21 @@ class Description(object):
         self._rna()
         self._construct_delins_model()
 
+    def normalize_only_equals_or_no_operation(self):
+        self.de_hgvs_internal_indexing_model = self.internal_indexing_model
+        self.references["observed"] = {
+            "sequence": {"seq": self.references["reference"]["sequence"]["seq"]}
+        }
+        self.construct_de_hgvs_coordinates_model()
+        self.construct_normalized_description()
+        self.construct_equivalent()
+
     def normalize(self):
         self.retrieve_references()
         self.pre_conversion_checks()
 
         if self.corrected_model.get("type") == "description_protein":
-            self._normalize_protein()
+            self.normalize_protein()
         else:
             self._correct_chromosome_points()
             self.to_internal_indexing_model()
@@ -1282,24 +1291,18 @@ class Description(object):
             self.check()
             self._rna()
             self._construct_delins_model()
-            if self._only_equals() or self._no_operation():
-                self.de_hgvs_internal_indexing_model = self.internal_indexing_model
-                self.references["observed"] = {
-                    "sequence": {"seq": self.references["reference"]["sequence"]["seq"]}
-                }
-                self.construct_de_hgvs_coordinates_model()
-                self.construct_normalized_description()
-                self.construct_equivalent()
+            if self.only_equals() or self.no_operation():
+                self.normalize_only_equals_or_no_operation()
             else:
                 self._mutate()
                 self._extract()
                 self.construct_de_hgvs_internal_indexing_model()
                 self.construct_de_hgvs_coordinates_model()
                 self.construct_normalized_description()
-                self._construct_rna_description()
-                self._construct_protein_description()
+                self.construct_rna_description()
+                self.construct_protein_description()
                 self.construct_equivalent()
-            self._remove_superfluous_selector()
+            self.remove_superfluous_selector()
 
         # self.print_models_summary()
 

@@ -320,7 +320,10 @@ def variant_to_cds_coordinate(variant, sequences, selector_model, crossmap):
         location = _point_to_cds_coordinate(location, selector_model, crossmap)
     if new_variant.get("inserted"):
         new_variant["inserted"] = [
-            merge_inserted_to_string(new_variant["inserted"], sequences)
+            {
+                "source": "description",
+                "sequence": get_inserted_sequence(variant, sequences),
+            }
         ]
     new_variant["location"] = location
     return new_variant
