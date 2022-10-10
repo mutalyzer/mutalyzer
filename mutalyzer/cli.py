@@ -1,7 +1,7 @@
 import argparse
 import json
 
-from mutalyzer.name_checker import normalizer
+from mutalyzer.normalizer import normalize
 
 from . import usage, version
 
@@ -31,7 +31,7 @@ def main():
     except IOError as error:
         parser.error(error)
 
-    print(json.dumps(normalizer(args.description), indent=2))
+    print(json.dumps(normalize(args.description), indent=2))
 
 
 if __name__ == "__main__":

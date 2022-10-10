@@ -3,11 +3,11 @@ Usage
 
 This package provides a :doc:`command line interface <cli>`.
 
-To run the Name Checker on a description variant:
+To run the Normalizer on a description variant:
 
 .. code-block:: console
 
-    $ mutalyzer_name_checker "NG_012337.1(NM_003002.2):c.274G>T"
+    $ mutalyzer_normalizer "NG_012337.1(NM_003002.2):c.274G>T"
 
 Enable the file based cache
 ---------------------------
@@ -30,4 +30,4 @@ Now the tool can be run with the cache:
 
 .. code-block:: console
 
-    $ MUTALYZER_SETTINGS="$(pwd)/config.txt" mutalyzer_name_checker "NC_000022.11(NM_182984.5):c.95del"
+    $ MUTALYZER_SETTINGS="$(pwd)/config.txt" mutalyzer_normalizer "NC_000022.11(NM_182984.5):c.95del"
