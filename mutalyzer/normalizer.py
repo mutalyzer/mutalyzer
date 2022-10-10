@@ -2,7 +2,8 @@ import itertools
 from collections import deque
 
 from algebra import Variant
-from algebra.extractor import to_hgvs
+from algebra.extractor import to_hgvs as to_hgvs_experimental
+from algebra.variants.variant import to_hgvs
 from algebra.extractor.extractor import canonical
 from algebra.lcs.all_lcs import edit, lcs_graph, traversal
 from algebra.relations.supremal_based import find_supremal, spanning_variant
@@ -76,7 +77,7 @@ def _add_dot(supremal, root, reference, output, prefix=""):
                     variant.sequence,
                 )
             )
-        minimal_descriptions.append(f"{prefix}{to_hgvs(reference_variants, reference)}")
+        minimal_descriptions.append(f"{prefix}{to_hgvs_experimental(reference_variants, reference)}")
     output["minimal_descriptions"] = minimal_descriptions
     if len(minimal_descriptions) == minimal_length:
         output["first_minimal"] = minimal_length
@@ -229,7 +230,7 @@ def normalize_alt(description, only_variants=False, sequence=None):
     _, lcs_nodes = edit(supremal_ref_seq, supremal_obs_seq)
     root, _ = lcs_graph(supremal_ref_seq, supremal_obs_seq, lcs_nodes)
 
-    algebra_hgvs = to_hgvs(
+    algebra_hgvs = to_hgvs_experimental(
         list(
             [
                 Variant(
