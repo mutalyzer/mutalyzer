@@ -302,3 +302,11 @@ def point_in_insertion(model, path):
     ):
         return True
     return False
+
+
+def slice_seq(seq, slices):
+    output = ""
+    for s in slices:
+        output += seq[s[0] : s[1]]
+    return output
+

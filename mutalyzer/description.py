@@ -55,6 +55,7 @@ from .protein import (
     protein_description,
 )
 from .reference import (
+    get_chromosome_accession,
     get_coordinate_system_from_reference,
     get_coordinate_system_from_selector_id,
     get_gene_selectors,
@@ -88,6 +89,7 @@ from .util import (
     slice_sequence,
     sort_variants,
 )
+from .converter.extras import convert_reference_model
 
 
 class Description(object):
@@ -1225,6 +1227,7 @@ class Description(object):
         if self.only_equals() or self.no_operation():
             self.de_hgvs_model = copy.deepcopy(self.corrected_model)
             convert_amino_acids(self.de_hgvs_model, "1a")
+
             convert_amino_acids(self.de_hgvs_model, "3a")
             self.references["observed"] = {
                 "sequence": {"seq": self.references["reference"]["sequence"]["seq"]}
@@ -1266,6 +1269,113 @@ class Description(object):
         self._rna()
         self._construct_delins_model()
 
+    @check_errors
+    def chromosomal_description(self):
+        if not self.references:
+            return
+        ref_id = get_reference_id(self.corrected_model)
+        chromosome_accession = get_chromosome_accession(
+            ref_id, self.references["reference"]
+        )
+        if chromosome_accession:
+            chromosome_model = retrieve_reference(chromosome_accession)[0]
+            if chromosome_model:
+                selector_ids = get_selectors_ids(chromosome_model["annotations"], "c")
+                ref_id_accession = ref_id.split(".")[0]
+                matched_selector_ids = [
+                    i for i in selector_ids if i.startswith(ref_id_accession)
+                ]
+                if not matched_selector_ids:
+                    return
+                selector_id = sorted(matched_selector_ids)[-1]
+
+                to_reference_model = convert_reference_model(
+                    chromosome_model, selector_id, "transcript"
+                )
+
+                ref_seq_from = self.get_sequences()["reference"]
+                obs_seq = self.get_sequences()["observed"]
+                ref_seq_to = to_reference_model["sequence"]["seq"]
+
+                variants = de_to_hgvs(
+                    describe_dna(ref_seq_to, obs_seq),
+                    {"reference": ref_seq_to, "observed": obs_seq},
+                )
+
+                raw_de_variants = describe_dna(ref_seq_to, ref_seq_from)
+                seq_variants = de_to_hgvs(
+                    raw_de_variants,
+                    {"reference": ref_seq_to, "observed": ref_seq_from},
+                )
+                if not (len(seq_variants) == 1 and seq_variants[0][
+                    "type"] == "equal") and [
+                    v for v in seq_variants if v not in variants
+                ]:
+                    print("Unsuccessful filtering.")
+
+                filtered_variants = [v for v in variants if v not in seq_variants]
+
+                variants_model = to_hgvs_locations(
+                    {
+                        "reference": {
+                            "id": chromosome_accession,
+                            "selector": {"id": selector_id},
+                        },
+                        "coordinate_system": "i",
+                        "variants": variants,
+                    },
+                    {
+                        "reference": to_reference_model,
+                        chromosome_model["annotations"]["id"]: to_reference_model,
+                    },
+                    get_coordinate_system_from_selector_id(
+                        chromosome_model, selector_id
+                    ),
+                    selector_id,
+                    True,
+                )
+                filtered_variants_model = to_hgvs_locations(
+                    {
+                        "reference": {
+                            "id": chromosome_accession,
+                            "selector": {"id": selector_id},
+                        },
+                        "coordinate_system": "i",
+                        "variants": filtered_variants,
+                    },
+                    {
+                        "reference": to_reference_model,
+                        chromosome_model["annotations"]["id"]: to_reference_model,
+                    },
+                    get_coordinate_system_from_selector_id(
+                        chromosome_model, selector_id
+                    ),
+                    selector_id,
+                    True,
+                )
+                references_diff_model = to_hgvs_locations(
+                    {
+                        "reference": {
+                            "id": chromosome_accession,
+                            "selector": {"id": selector_id},
+                        },
+                        "coordinate_system": "i",
+                        "variants": seq_variants,
+                    },
+                    {
+                        "reference": to_reference_model,
+                        chromosome_model["annotations"]["id"]: to_reference_model,
+                    },
+                    get_coordinate_system_from_selector_id(
+                        chromosome_model, selector_id
+                    ),
+                    selector_id,
+                    True,
+                )
+                print(model_to_string(variants_model))
+                print(model_to_string(filtered_variants_model))
+                print(model_to_string(references_diff_model))
+
     def normalize_only_equals_or_no_operation(self):
         self.de_hgvs_internal_indexing_model = self.internal_indexing_model
         self.references["observed"] = {
@@ -1302,6 +1412,7 @@ class Description(object):
                 self.construct_rna_description()
                 self.construct_protein_description()
                 self.construct_equivalent()
+                self.chromosomal_description()
             self.remove_superfluous_selector()
 
         # self.print_models_summary()

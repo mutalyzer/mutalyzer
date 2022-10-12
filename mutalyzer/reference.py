@@ -247,7 +247,6 @@ def get_internal_selector_model(reference_annotations, selector_id, fix_exon=Fal
     :return: Dictionary.
     """
     feature_model = get_selector_feature(reference_annotations, selector_id)
-    import json
 
     if feature_model:
         output = {
@@ -492,9 +491,7 @@ def get_coordinate_system_from_selector_id(model, selector_id):
 
 
 def get_reference_mol_type(model):
-    if model["annotations"].get("qualifiers"):
-        if model["annotations"]["qualifiers"].get("mol_type"):
-            return model["annotations"]["qualifiers"]["mol_type"]
+    return get_model_qualifier(model, "mol_type")
 
 
 def get_coordinate_system_from_reference(reference):
@@ -558,3 +555,60 @@ def yield_locations(annotations):
     if annotations.get("features"):
         for feature in annotations["features"]:
             yield from yield_locations(feature)
+
+
+def yield_locations_selector_id(r_model, selector_id):
+    for feature in get_selector_feature(r_model["annotations"], selector_id)[
+        "features"
+    ]:
+        if feature.get("location"):
+            yield feature["location"], feature["type"]
+
+
+CHR_TO_ACC = {
+    "1": "NC_000001.11",
+    "2": "NC_000002.12",
+    "3": "NC_000003.12",
+    "4": "NC_000004.12",
+    "5": "NC_000005.10",
+    "6": "NC_000006.12",
+    "7": "NC_000007.14",
+    "8": "NC_000008.11",
+    "9": "NC_000009.12",
+    "10": "NC_000010.11",
+    "11": "NC_000011.10",
+    "12": "NC_000012.12",
+    "13": "NC_000013.11",
+    "14": "NC_000014.9",
+    "15": "NC_000015.10",
+    "16": "NC_000016.10",
+    "17": "NC_000017.11",
+    "18": "NC_000018.10",
+    "19": "NC_000019.10",
+    "20": "NC_000020.11",
+    "21": "NC_000021.9",
+    "22": "NC_000022.11",
+    "23": "NC_000023.11",
+    "x": "NC_000023.11",
+    "X": "NC_000023.11",
+    "24": "NC_000024.10",
+    "y": "NC_000024.10",
+    "Y": "NC_000024.10",
+}
+
+
+def get_model_qualifier(model, qualifier):
+    if (
+        model.get("annotations")
+        and model["annotations"].get("qualifiers")
+        and model["annotations"]["qualifiers"]
+    ):
+        return model["annotations"]["qualifiers"].get(qualifier)
+
+
+def get_chromosome_accession(ref_id, model):
+    if get_reference_mol_type(model) == "mRNA" and ref_id.startswith("NM"):
+        chromosome_number = get_model_qualifier(model, "chromosome")
+        if chromosome_number:
+            chromosome_accession = CHR_TO_ACC.get(chromosome_number)
+            return chromosome_accession
