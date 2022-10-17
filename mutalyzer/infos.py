@@ -123,3 +123,20 @@ def insertions_same_location(variants, paths):
         "details": f"The following insertion{plural} {variants} are at the same location.",
         "paths": paths,
     }
+
+
+def mrna_genomic_tip():
+    return {
+        "code": "IMRNAGENOMICTIP",
+        "details": "An 'mRNA' sequence was used with the 'c.' coordinate system."
+                   " Make use of a genomic reference sequence if the experiment "
+                   "performed involved measured DNA.",
+    }
+
+
+def mrna_genomic_difference(mrna_id, genomic_id):
+    return {
+        "code": "IMRNAGENOMICDIFFERENCE",
+        "details": f"There are differences between the mRNA sequence of {mrna_id} and the genomic sequence of {genomic_id}.",
+    }
+

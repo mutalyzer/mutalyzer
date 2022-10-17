@@ -121,6 +121,7 @@ class Description(object):
         self.de_hgvs_coordinate_model = {}
         self.de_hgvs_model = {}
         self.normalized_description = None
+        self.genomic_description = None
         self.protein = None
         self.rna = None
 
@@ -1274,6 +1275,13 @@ class Description(object):
         if not self.references:
             return
         ref_id = get_reference_id(self.corrected_model)
+        if (
+                get_reference_mol_type(self.references[ref_id]) == "mRNA"
+                and self.corrected_model["coordinate_system"] == "c"
+                and (ref_id.startswith("NM_") or ref_id.startswith("XM_"))
+        ):
+            self._add_info(infos.mrna_genomic_tip())
+
         chromosome_accession = get_chromosome_accession(
             ref_id, self.references["reference"]
         )
@@ -1302,79 +1310,29 @@ class Description(object):
                     {"reference": ref_seq_to, "observed": obs_seq},
                 )
 
-                raw_de_variants = describe_dna(ref_seq_to, ref_seq_from)
-                seq_variants = de_to_hgvs(
-                    raw_de_variants,
-                    {"reference": ref_seq_to, "observed": ref_seq_from},
-                )
-                if not (len(seq_variants) == 1 and seq_variants[0][
-                    "type"] == "equal") and [
-                    v for v in seq_variants if v not in variants
-                ]:
-                    print("Unsuccessful filtering.")
-
-                filtered_variants = [v for v in variants if v not in seq_variants]
-
-                variants_model = to_hgvs_locations(
-                    {
-                        "reference": {
-                            "id": chromosome_accession,
-                            "selector": {"id": selector_id},
+                if ref_seq_to != ref_seq_from:
+                    self._add_info(infos.mrna_genomic_difference(ref_id, chromosome_accession))
+                else:
+                    variants_model = to_hgvs_locations(
+                        {
+                            "reference": {
+                                "id": chromosome_accession,
+                                "selector": {"id": selector_id},
+                            },
+                            "coordinate_system": "i",
+                            "variants": variants,
                         },
-                        "coordinate_system": "i",
-                        "variants": variants,
-                    },
-                    {
-                        "reference": to_reference_model,
-                        chromosome_model["annotations"]["id"]: to_reference_model,
-                    },
-                    get_coordinate_system_from_selector_id(
-                        chromosome_model, selector_id
-                    ),
-                    selector_id,
-                    True,
-                )
-                filtered_variants_model = to_hgvs_locations(
-                    {
-                        "reference": {
-                            "id": chromosome_accession,
-                            "selector": {"id": selector_id},
+                        {
+                            "reference": to_reference_model,
+                            chromosome_model["annotations"]["id"]: to_reference_model,
                         },
-                        "coordinate_system": "i",
-                        "variants": filtered_variants,
-                    },
-                    {
-                        "reference": to_reference_model,
-                        chromosome_model["annotations"]["id"]: to_reference_model,
-                    },
-                    get_coordinate_system_from_selector_id(
-                        chromosome_model, selector_id
-                    ),
-                    selector_id,
-                    True,
-                )
-                references_diff_model = to_hgvs_locations(
-                    {
-                        "reference": {
-                            "id": chromosome_accession,
-                            "selector": {"id": selector_id},
-                        },
-                        "coordinate_system": "i",
-                        "variants": seq_variants,
-                    },
-                    {
-                        "reference": to_reference_model,
-                        chromosome_model["annotations"]["id"]: to_reference_model,
-                    },
-                    get_coordinate_system_from_selector_id(
-                        chromosome_model, selector_id
-                    ),
-                    selector_id,
-                    True,
-                )
-                print(model_to_string(variants_model))
-                print(model_to_string(filtered_variants_model))
-                print(model_to_string(references_diff_model))
+                        get_coordinate_system_from_selector_id(
+                            chromosome_model, selector_id
+                        ),
+                        selector_id,
+                        True,
+                    )
+                    self.genomic_description = model_to_string(variants_model)
 
     def normalize_only_equals_or_no_operation(self):
         self.de_hgvs_internal_indexing_model = self.internal_indexing_model
@@ -1434,6 +1392,8 @@ class Description(object):
             output["normalized_description"] = self.normalized_description
         if self.de_hgvs_model:
             output["normalized_model"] = self.de_hgvs_model
+        if self.genomic_description:
+            output["genomic_description"] = self.genomic_description
         if self.protein:
             output["protein"] = self.protein
         if self.rna:
