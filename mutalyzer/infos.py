@@ -129,8 +129,8 @@ def mrna_genomic_tip():
     return {
         "code": "IMRNAGENOMICTIP",
         "details": "An 'mRNA' sequence was used with the 'c.' coordinate system."
-                   " Make use of a genomic reference sequence if the experiment "
-                   "performed involved measured DNA.",
+        " Make use of a genomic reference sequence if the experiment "
+        "performed involved measured DNA.",
     }
 
 
@@ -140,3 +140,17 @@ def mrna_genomic_difference(mrna_id, genomic_id):
         "details": f"There are differences between the mRNA sequence of {mrna_id} and the genomic sequence of {genomic_id}.",
     }
 
+
+def no_selector(reference_id, selector_id):
+    return {
+        "code": "INOSELECTOR",
+        "details": "No {} selector found in {}.".format(selector_id, reference_id),
+    }
+
+
+def other_versions(reference_id, selector_id, other_versions):
+    multiple = "s" if len(other_versions) > 1 else ""
+    return {
+        "code": "IOTHERVERSIONS",
+        "details": f"Selector id{multiple} {', '.join(other_versions)} found in {reference_id} instead of {selector_id}.",
+    }

@@ -20,7 +20,11 @@ from .checker import (
     is_overlap,
     splice_sites,
 )
-from .converter.extras import convert_amino_acids, convert_selector_model
+from .converter.extras import (
+    convert_amino_acids,
+    convert_reference_model,
+    convert_selector_model,
+)
 from .converter.to_delins import to_delins, variants_to_delins
 from .converter.to_hgvs_coordinates import (
     crossmap_to_hgvs_setup,
@@ -41,7 +45,6 @@ from .description_model import (
     get_reference_id,
     get_selector_id,
     model_to_string,
-    variants_to_description,
     yield_reference_ids,
     yield_reference_selector_ids,
     yield_reference_selector_ids_coordinate_system,
@@ -89,7 +92,6 @@ from .util import (
     slice_sequence,
     sort_variants,
 )
-from .converter.extras import convert_reference_model
 
 
 class Description(object):
@@ -1271,14 +1273,14 @@ class Description(object):
         self._construct_delins_model()
 
     @check_errors
-    def chromosomal_description(self):
+    def get_genomic_description(self):
         if not self.references:
             return
         ref_id = get_reference_id(self.corrected_model)
         if (
-                get_reference_mol_type(self.references[ref_id]) == "mRNA"
-                and self.corrected_model["coordinate_system"] == "c"
-                and (ref_id.startswith("NM_") or ref_id.startswith("XM_"))
+            get_reference_mol_type(self.references[ref_id]) == "mRNA"
+            and self.corrected_model["coordinate_system"] == "c"
+            and (ref_id.startswith("NM_") or ref_id.startswith("XM_"))
         ):
             self._add_info(infos.mrna_genomic_tip())
 
@@ -1294,7 +1296,16 @@ class Description(object):
                     i for i in selector_ids if i.startswith(ref_id_accession)
                 ]
                 if not matched_selector_ids:
+                    self._add_info(infos.no_selector(chromosome_accession, ref_id))
                     return
+                if ref_id not in matched_selector_ids:
+                    self._add_info(
+                        infos.other_versions(
+                            chromosome_accession, ref_id, matched_selector_ids
+                        )
+                    )
+                    return
+
                 selector_id = sorted(matched_selector_ids)[-1]
 
                 to_reference_model = convert_reference_model(
@@ -1311,7 +1322,9 @@ class Description(object):
                 )
 
                 if ref_seq_to != ref_seq_from:
-                    self._add_info(infos.mrna_genomic_difference(ref_id, chromosome_accession))
+                    self._add_info(
+                        infos.mrna_genomic_difference(ref_id, chromosome_accession)
+                    )
                 else:
                     variants_model = to_hgvs_locations(
                         {
@@ -1370,7 +1383,7 @@ class Description(object):
                 self.construct_rna_description()
                 self.construct_protein_description()
                 self.construct_equivalent()
-                self.chromosomal_description()
+                self.get_genomic_description()
             self.remove_superfluous_selector()
 
         # self.print_models_summary()
