@@ -1274,11 +1274,12 @@ class Description(object):
 
     @check_errors
     def get_genomic_description(self):
-        if not self.references:
+        if not self.references or self.only_variants:
             return
         ref_id = get_reference_id(self.corrected_model)
         if (
-            get_reference_mol_type(self.references[ref_id]) == "mRNA"
+            ref_id
+            and get_reference_mol_type(self.references[ref_id]) == "mRNA"
             and self.corrected_model["coordinate_system"] == "c"
             and (ref_id.startswith("NM_") or ref_id.startswith("XM_"))
         ):
