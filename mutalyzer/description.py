@@ -123,7 +123,7 @@ class Description(object):
         self.de_hgvs_coordinate_model = {}
         self.de_hgvs_model = {}
         self.normalized_description = None
-        self.genomic_description = None
+        self.genomic_descriptions = None
         self.protein = None
         self.rna = None
 
@@ -1285,68 +1285,78 @@ class Description(object):
         ):
             self._add_info(infos.mrna_genomic_tip())
 
-        chromosome_accession = get_chromosome_accession(
+        chromosome_accessions = get_chromosome_accession(
             ref_id, self.references["reference"]
         )
-        if chromosome_accession:
-            chromosome_model = retrieve_reference(chromosome_accession)[0]
-            if chromosome_model:
-                selector_ids = get_selectors_ids(chromosome_model["annotations"], "c")
-                ref_id_accession = ref_id.split(".")[0]
-                matched_selector_ids = [
-                    i for i in selector_ids if i.startswith(ref_id_accession)
-                ]
-                if not matched_selector_ids:
-                    self._add_info(infos.no_selector(chromosome_accession, ref_id))
-                    return
-                if ref_id not in matched_selector_ids:
-                    self._add_info(
-                        infos.other_versions(
-                            chromosome_accession, ref_id, matched_selector_ids
+        if chromosome_accessions:
+            genomic_descriptions = []
+            for assembly, chromosome_accession in chromosome_accessions:
+                chromosome_model = retrieve_reference(chromosome_accession)[0]
+                if chromosome_model:
+                    selector_ids = get_selectors_ids(
+                        chromosome_model["annotations"], "c"
+                    )
+                    ref_id_accession = ref_id.split(".")[0]
+                    matched_selector_ids = [
+                        i for i in selector_ids if i.startswith(ref_id_accession)
+                    ]
+                    if not matched_selector_ids:
+                        self._add_info(infos.no_selector(chromosome_accession, ref_id))
+                        continue
+                    if ref_id not in matched_selector_ids:
+                        self._add_info(
+                            infos.other_versions(
+                                chromosome_accession, ref_id, matched_selector_ids
+                            )
                         )
+                        continue
+
+                    selector_id = sorted(matched_selector_ids)[-1]
+
+                    to_reference_model = convert_reference_model(
+                        chromosome_model, selector_id, "transcript"
                     )
-                    return
 
-                selector_id = sorted(matched_selector_ids)[-1]
+                    ref_seq_from = self.get_sequences()["reference"]
+                    obs_seq = self.get_sequences()["observed"]
+                    ref_seq_to = to_reference_model["sequence"]["seq"]
 
-                to_reference_model = convert_reference_model(
-                    chromosome_model, selector_id, "transcript"
-                )
-
-                ref_seq_from = self.get_sequences()["reference"]
-                obs_seq = self.get_sequences()["observed"]
-                ref_seq_to = to_reference_model["sequence"]["seq"]
-
-                variants = de_to_hgvs(
-                    describe_dna(ref_seq_to, obs_seq),
-                    {"reference": ref_seq_to, "observed": obs_seq},
-                )
-
-                if ref_seq_to != ref_seq_from:
-                    self._add_info(
-                        infos.mrna_genomic_difference(ref_id, chromosome_accession)
+                    variants = de_to_hgvs(
+                        describe_dna(ref_seq_to, obs_seq),
+                        {"reference": ref_seq_to, "observed": obs_seq},
                     )
-                else:
-                    variants_model = to_hgvs_locations(
-                        {
-                            "reference": {
-                                "id": chromosome_accession,
-                                "selector": {"id": selector_id},
+
+                    if ref_seq_to != ref_seq_from:
+                        self._add_info(
+                            infos.mrna_genomic_difference(ref_id, chromosome_accession)
+                        )
+                    else:
+                        variants_model = to_hgvs_locations(
+                            {
+                                "reference": {
+                                    "id": chromosome_accession,
+                                    "selector": {"id": selector_id},
+                                },
+                                "coordinate_system": "i",
+                                "variants": variants,
                             },
-                            "coordinate_system": "i",
-                            "variants": variants,
-                        },
-                        {
-                            "reference": to_reference_model,
-                            chromosome_model["annotations"]["id"]: to_reference_model,
-                        },
-                        get_coordinate_system_from_selector_id(
-                            chromosome_model, selector_id
-                        ),
-                        selector_id,
-                        True,
-                    )
-                    self.genomic_description = model_to_string(variants_model)
+                            {
+                                "reference": to_reference_model,
+                                chromosome_model["annotations"][
+                                    "id"
+                                ]: to_reference_model,
+                            },
+                            get_coordinate_system_from_selector_id(
+                                chromosome_model, selector_id
+                            ),
+                            selector_id,
+                            True,
+                        )
+                        genomic_descriptions.append(
+                            (assembly, model_to_string(variants_model))
+                        )
+            if genomic_descriptions:
+                self.genomic_descriptions = genomic_descriptions
 
     def normalize_only_equals_or_no_operation(self):
         self.de_hgvs_internal_indexing_model = self.internal_indexing_model
@@ -1406,8 +1416,8 @@ class Description(object):
             output["normalized_description"] = self.normalized_description
         if self.de_hgvs_model:
             output["normalized_model"] = self.de_hgvs_model
-        if self.genomic_description:
-            output["genomic_description"] = self.genomic_description
+        if self.genomic_descriptions:
+            output["genomic_descriptions"] = self.genomic_descriptions
         if self.protein:
             output["protein"] = self.protein
         if self.rna:
