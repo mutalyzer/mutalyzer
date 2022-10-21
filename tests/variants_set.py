@@ -151,7 +151,11 @@ M2_TESTS = [
         ],
         "input": "NM_003002.2:274del",
         "normalized": "NM_003002.2:c.274del",
-        "infos": ["ICORRECTEDCOORDINATESYSTEM", "IWHOLETRANSCRIPTEXON"],
+        "infos": [
+            "ICORRECTEDCOORDINATESYSTEM",
+            "IWHOLETRANSCRIPTEXON",
+            "IMRNAGENOMICTIP",
+        ],
         "to_test": True,
     },
     # test_no_est_warning_nm_c: no longer relevant ?
@@ -177,6 +181,7 @@ M2_TESTS = [
         "input": "NM_003002.2:c.273del",
         "normalized": "NM_003002.2:c.274del",
         "protein_description": "NM_003002.2(NP_002993.1):p.(Asp92Thrfs*43)",
+        "infos": ["IWHOLETRANSCRIPTEXON", "IMRNAGENOMICTIP"],
         "to_test": True,
     },
     {
@@ -2896,7 +2901,6 @@ TESTS = [
         "genomic": "NG_012337.1:g.4911_4914GT[5]",
         "to_test": True,
     },
-
     # {
     #     "keywords": [
     #

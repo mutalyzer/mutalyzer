@@ -20,7 +20,11 @@ from .checker import (
     is_overlap,
     splice_sites,
 )
-from .converter.extras import convert_amino_acids, convert_selector_model
+from .converter.extras import (
+    convert_amino_acids,
+    convert_reference_model,
+    convert_selector_model,
+)
 from .converter.to_delins import to_delins, variants_to_delins
 from .converter.to_hgvs_coordinates import (
     crossmap_to_hgvs_setup,
@@ -41,7 +45,6 @@ from .description_model import (
     get_reference_id,
     get_selector_id,
     model_to_string,
-    variants_to_description,
     yield_reference_ids,
     yield_reference_selector_ids,
     yield_reference_selector_ids_coordinate_system,
@@ -55,6 +58,7 @@ from .protein import (
     protein_description,
 )
 from .reference import (
+    get_chromosome_accession,
     get_coordinate_system_from_reference,
     get_coordinate_system_from_selector_id,
     get_gene_selectors,
@@ -119,6 +123,7 @@ class Description(object):
         self.de_hgvs_coordinate_model = {}
         self.de_hgvs_model = {}
         self.normalized_description = None
+        self.chromosomal_descriptions = None
         self.protein = None
         self.rna = None
 
@@ -841,6 +846,7 @@ class Description(object):
                 "transcribed RNA",
             ]:
                 if point.get("offset"):
+                    # TODO: find the actual NM(NC) description
                     self._add_error(errors.intronic(point, path))
 
     def _check_location_extras(self):
@@ -1225,6 +1231,7 @@ class Description(object):
         if self.only_equals() or self.no_operation():
             self.de_hgvs_model = copy.deepcopy(self.corrected_model)
             convert_amino_acids(self.de_hgvs_model, "1a")
+
             convert_amino_acids(self.de_hgvs_model, "3a")
             self.references["observed"] = {
                 "sequence": {"seq": self.references["reference"]["sequence"]["seq"]}
@@ -1266,6 +1273,96 @@ class Description(object):
         self._rna()
         self._construct_delins_model()
 
+    @check_errors
+    def get_chromosomal_description(self):
+        if not self.references or self.only_variants:
+            return
+        ref_id = get_reference_id(self.corrected_model)
+        if (
+            ref_id
+            and get_reference_mol_type(self.references[ref_id]) == "mRNA"
+            and self.corrected_model["coordinate_system"] == "c"
+            and (ref_id.startswith("NM_") or ref_id.startswith("XM_"))
+        ):
+            self._add_info(infos.mrna_genomic_tip())
+
+        chromosome_accessions = get_chromosome_accession(
+            ref_id, self.references["reference"]
+        )
+        if chromosome_accessions:
+            chromosomal_descriptions = []
+            for assembly, chromosome_accession in chromosome_accessions:
+                chromosome_model = retrieve_reference(chromosome_accession)[0]
+                if chromosome_model:
+                    selector_ids = get_selectors_ids(
+                        chromosome_model["annotations"], "c"
+                    )
+                    ref_id_accession = ref_id.split(".")[0]
+                    matched_selector_ids = [
+                        i for i in selector_ids if i.startswith(ref_id_accession)
+                    ]
+                    if not matched_selector_ids:
+                        self._add_info(infos.no_selector(chromosome_accession, ref_id))
+                        continue
+                    if ref_id not in matched_selector_ids:
+                        self._add_info(
+                            infos.other_versions(
+                                chromosome_accession, ref_id, matched_selector_ids
+                            )
+                        )
+                        continue
+
+                    selector_id = sorted(matched_selector_ids)[-1]
+
+                    to_reference_model = convert_reference_model(
+                        chromosome_model, selector_id, "transcript"
+                    )
+
+                    ref_seq_from = self.get_sequences()["reference"]
+                    obs_seq = self.get_sequences()["observed"]
+                    ref_seq_to = to_reference_model["sequence"]["seq"]
+
+                    variants = de_to_hgvs(
+                        describe_dna(ref_seq_to, obs_seq),
+                        {"reference": ref_seq_to, "observed": obs_seq},
+                    )
+
+                    if ref_seq_to != ref_seq_from:
+                        self._add_info(
+                            infos.mrna_genomic_difference(ref_id, chromosome_accession)
+                        )
+                    else:
+                        variants_model = to_hgvs_locations(
+                            {
+                                "reference": {
+                                    "id": chromosome_accession,
+                                    "selector": {"id": selector_id},
+                                },
+                                "coordinate_system": "i",
+                                "variants": variants,
+                            },
+                            {
+                                "reference": to_reference_model,
+                                chromosome_model["annotations"][
+                                    "id"
+                                ]: to_reference_model,
+                            },
+                            get_coordinate_system_from_selector_id(
+                                chromosome_model, selector_id
+                            ),
+                            selector_id,
+                            True,
+                        )
+                        chromosomal_descriptions.append(
+                            {
+                                "assembly": assembly,
+                                "description": model_to_string(variants_model),
+                            }
+                        )
+
+            if chromosomal_descriptions:
+                self.chromosomal_descriptions = chromosomal_descriptions
+
     def normalize_only_equals_or_no_operation(self):
         self.de_hgvs_internal_indexing_model = self.internal_indexing_model
         self.references["observed"] = {
@@ -1302,6 +1399,7 @@ class Description(object):
                 self.construct_rna_description()
                 self.construct_protein_description()
                 self.construct_equivalent()
+                self.get_chromosomal_description()
             self.remove_superfluous_selector()
 
         # self.print_models_summary()
@@ -1323,6 +1421,8 @@ class Description(object):
             output["normalized_description"] = self.normalized_description
         if self.de_hgvs_model:
             output["normalized_model"] = self.de_hgvs_model
+        if self.chromosomal_descriptions:
+            output["chromosomal_descriptions"] = self.chromosomal_descriptions
         if self.protein:
             output["protein"] = self.protein
         if self.rna:
