@@ -123,7 +123,7 @@ class Description(object):
         self.de_hgvs_coordinate_model = {}
         self.de_hgvs_model = {}
         self.normalized_description = None
-        self.genomic_descriptions = None
+        self.chromosomal_descriptions = None
         self.protein = None
         self.rna = None
 
@@ -846,6 +846,7 @@ class Description(object):
                 "transcribed RNA",
             ]:
                 if point.get("offset"):
+                    # TODO: find the actual NM(NC) description
                     self._add_error(errors.intronic(point, path))
 
     def _check_location_extras(self):
@@ -1273,7 +1274,7 @@ class Description(object):
         self._construct_delins_model()
 
     @check_errors
-    def get_genomic_description(self):
+    def get_chromosomal_description(self):
         if not self.references or self.only_variants:
             return
         ref_id = get_reference_id(self.corrected_model)
@@ -1289,7 +1290,7 @@ class Description(object):
             ref_id, self.references["reference"]
         )
         if chromosome_accessions:
-            genomic_descriptions = []
+            chromosomal_descriptions = []
             for assembly, chromosome_accession in chromosome_accessions:
                 chromosome_model = retrieve_reference(chromosome_accession)[0]
                 if chromosome_model:
@@ -1352,11 +1353,15 @@ class Description(object):
                             selector_id,
                             True,
                         )
-                        genomic_descriptions.append(
-                            (assembly, model_to_string(variants_model))
+                        chromosomal_descriptions.append(
+                            {
+                                "assembly": assembly,
+                                "description": model_to_string(variants_model),
+                            }
                         )
-            if genomic_descriptions:
-                self.genomic_descriptions = genomic_descriptions
+
+            if chromosomal_descriptions:
+                self.chromosomal_descriptions = chromosomal_descriptions
 
     def normalize_only_equals_or_no_operation(self):
         self.de_hgvs_internal_indexing_model = self.internal_indexing_model
@@ -1394,7 +1399,7 @@ class Description(object):
                 self.construct_rna_description()
                 self.construct_protein_description()
                 self.construct_equivalent()
-                self.get_genomic_description()
+                self.get_chromosomal_description()
             self.remove_superfluous_selector()
 
         # self.print_models_summary()
@@ -1416,8 +1421,8 @@ class Description(object):
             output["normalized_description"] = self.normalized_description
         if self.de_hgvs_model:
             output["normalized_model"] = self.de_hgvs_model
-        if self.genomic_descriptions:
-            output["genomic_descriptions"] = self.genomic_descriptions
+        if self.chromosomal_descriptions:
+            output["chromosomal_descriptions"] = self.chromosomal_descriptions
         if self.protein:
             output["protein"] = self.protein
         if self.rna:

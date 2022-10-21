@@ -565,8 +565,8 @@ def yield_locations_selector_id(r_model, selector_id):
             yield feature["location"], feature["type"]
 
 
-CHR_TO_ACC = {
-    "GRCg38": {
+CHR_TO_ACCESSION = {
+    "GRCh38": {
         "1": "NC_000001.11",
         "2": "NC_000002.12",
         "3": "NC_000003.12",
@@ -596,7 +596,7 @@ CHR_TO_ACC = {
         "y": "NC_000024.10",
         "Y": "NC_000024.10",
     },
-    "GRCg37": {
+    "GRCh37": {
         "1": "NC_000001.10",
         "2": "NC_000002.11",
         "3": "NC_000003.11",
@@ -643,8 +643,8 @@ def get_chromosome_accession(ref_id, model):
         chromosome_number = get_model_qualifier(model, "chromosome")
         if chromosome_number is not None:
             chromosome_accessions = []
-            for assembly in CHR_TO_ACC:
-                chromosome_accession = CHR_TO_ACC[assembly].get(chromosome_number)
+            for assembly in CHR_TO_ACCESSION:
+                chromosome_accession = CHR_TO_ACCESSION[assembly].get(chromosome_number)
                 if chromosome_accession is not None:
                     chromosome_accessions.append((assembly, chromosome_accession))
             if chromosome_accessions:
