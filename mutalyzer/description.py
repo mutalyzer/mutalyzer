@@ -1286,6 +1286,13 @@ class Description(object):
             and (ref_id.startswith("NM_") or ref_id.startswith("XM_"))
         ):
             self._add_info(infos.mrna_genomic_tip())
+        elif (
+            ref_id
+            and get_reference_mol_type(self.references[ref_id]) == "mRNA"
+            and self.corrected_model["coordinate_system"] == "r"
+            and (ref_id.startswith("NM_") or ref_id.startswith("XM_"))
+        ):
+            return
 
         chromosome_accessions = get_chromosome_accession(
             ref_id, self.references["reference"]
