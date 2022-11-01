@@ -2901,6 +2901,20 @@ TESTS = [
         "genomic": "NG_012337.1:g.4911_4914GT[5]",
         "to_test": True,
     },
+    {
+        "keywords": ["duplication", "reverse"],
+        "input": "NG_012337.1(NM_012459.2):c.5_6dup",
+        "normalized": "NG_012337.1(NM_012459.2):c.5_6dup",
+        "genomic": "NG_012337.1:g.4919_4920dup",
+        "to_test": True,
+    },
+    {
+        "keywords": ["duplication", "reverse"],
+        "input": "NG_012337.1(NM_012459.2):c.5dup",
+        "normalized": "NG_012337.1(NM_012459.2):c.5dup",
+        "genomic": "NG_012337.1:g.4918dup",
+        "to_test": True,
+    },
     # {
     #     "keywords": [
     #
