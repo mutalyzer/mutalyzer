@@ -1275,6 +1275,7 @@ class Description(object):
 
     @check_errors
     def get_chromosomal_description(self):
+        # TODO: Add tests.
         if not self.references or self.only_variants:
             return
         ref_id = get_reference_id(self.corrected_model)
@@ -1322,12 +1323,19 @@ class Description(object):
                     obs_seq = self.get_sequences()["observed"]
                     ref_seq_to = to_reference_model["sequence"]["seq"]
 
+                    to_inverted = get_internal_selector_model(
+                        chromosome_model["annotations"], selector_id, True
+                    ).get("inverted")
+                    if to_inverted:
+                        obs_seq = reverse_complement(obs_seq)
                     variants = de_to_hgvs(
                         describe_dna(ref_seq_to, obs_seq),
                         {"reference": ref_seq_to, "observed": obs_seq},
                     )
 
-                    if ref_seq_to != ref_seq_from:
+                    if (not to_inverted and ref_seq_to != ref_seq_from) or (
+                        to_inverted and reverse_complement(ref_seq_to) != ref_seq_from
+                    ):
                         self._add_info(
                             infos.mrna_genomic_difference(ref_id, chromosome_accession)
                         )
