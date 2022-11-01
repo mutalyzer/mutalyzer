@@ -3,6 +3,7 @@ import copy
 import json
 from functools import lru_cache
 from pathlib import Path
+import re
 
 from mutalyzer_mutator.util import reverse_complement
 from mutalyzer_retriever import retrieve_model
@@ -84,7 +85,7 @@ def _fix_ensembl(r_m, r_id):
 
 def retrieve_reference(reference_id):
     try:
-        r_m = get_reference_model(reference_id)
+        r_m = get_reference_model(re.sub("\s+", "", reference_id))
     except NoReferenceRetrieved:
         return None, None
     except NoReferenceError as e:
