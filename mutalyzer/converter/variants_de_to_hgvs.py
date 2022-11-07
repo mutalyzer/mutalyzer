@@ -212,7 +212,7 @@ def delins_to_repeat(variant, sequences):
         {
             "sequence": repeat_seq,
             "source": "description",
-            "repeat_number": {"value": repeat_number},
+            "repeat_number": {"value": repeat_number, "type": "point"},
         }
     ]
     if new_variant["location"]["start"].get("shift"):

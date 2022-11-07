@@ -2922,6 +2922,7 @@ TESTS = [
         "keywords": ["repeat", "dbsnp", "reverse"],
         "input": "NG_012337.1(NM_012459.2):c.3GC[5]",
         "normalized": "NG_012337.1(NM_012459.2):c.3_6GC[5]",
+        "protein_description": "NG_012337.1(NP_036591.2):p.(Arg2_Lys3insAlaArg)",
         "genomic": "NG_012337.1:g.4917_4920GC[5]",
         "to_test": True,
     },
