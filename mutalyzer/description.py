@@ -957,7 +957,7 @@ class Description(object):
             len_loc = get_location_length(v_i["location"])
             if len_loc != len_del:
                 self._add_error(errors.length_mismatch(len_loc, len_del, path))
-        else:
+        elif get_start(v_i["location"]) >= 0 and get_end(v_i["location"]) < len(sequences["reference"]):
             seq_ref = slice_sequence(v_i["location"], sequences["reference"])
             seq_del = construct_sequence(v_i[ins_or_del], sequences)
             if self.corrected_model.get("coordinate_system") == "r":

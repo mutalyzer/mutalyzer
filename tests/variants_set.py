@@ -2915,6 +2915,15 @@ TESTS = [
         "genomic": "NG_012337.1:g.4918dup",
         "to_test": True,
     },
+    {
+        "keywords": ["superfluous location should be within sequence (#69)"],
+        "input": "NM_003002.4:c.[-100A>C;20000A>C]",
+        "errors": [
+            "EOUTOFBOUNDARY",
+            "EOUTOFBOUNDARY",
+        ],
+        "to_test": True,
+    },
     # {
     #     "keywords": [
     #
