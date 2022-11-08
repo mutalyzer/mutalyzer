@@ -154,3 +154,10 @@ def other_versions(reference_id, selector_id, other_versions):
         "code": "IOTHERVERSIONS",
         "details": f"Selector id{multiple} {', '.join(other_versions)} found in {reference_id} instead of {selector_id}.",
     }
+
+
+def assembly_chromosome_to_id(assembly_id, chromosome_number, chromosome_id):
+    return {
+        "code": "ASSEMBLY_CHROMOSOME_TO_ID",
+        "details": f"Assembly {assembly_id} and {chromosome_number} corrected to {chromosome_id}.",
+    }

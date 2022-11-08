@@ -55,9 +55,10 @@ from .protein import (
     get_protein_description,
     get_protein_sequence,
     in_frame_description,
-    protein_description,
 )
 from .reference import (
+    ASSEMBLIES,
+    ASSEMBLY_ALIASES,
     get_chromosome_accession,
     get_coordinate_system_from_reference,
     get_coordinate_system_from_selector_id,
@@ -218,7 +219,7 @@ class Description(object):
             return
         if self.only_variants and self.sequence:
             self.references["reference"] = {"sequence": {"seq": self.sequence}}
-        for reference_id, path in yield_reference_ids(self.input_model):
+        for reference_id, path in yield_reference_ids(self.corrected_model):
             reference_model = retrieve_reference(reference_id)[0]
             if reference_model is None:
                 lrg = self._check_if_lrg_reference(reference_id)
@@ -957,7 +958,9 @@ class Description(object):
             len_loc = get_location_length(v_i["location"])
             if len_loc != len_del:
                 self._add_error(errors.length_mismatch(len_loc, len_del, path))
-        elif get_start(v_i["location"]) >= 0 and get_end(v_i["location"]) < len(sequences["reference"]):
+        elif get_start(v_i["location"]) >= 0 and get_end(v_i["location"]) < len(
+            sequences["reference"]
+        ):
             seq_ref = slice_sequence(v_i["location"], sequences["reference"])
             seq_del = construct_sequence(v_i[ins_or_del], sequences)
             if self.corrected_model.get("coordinate_system") == "r":
@@ -1074,6 +1077,34 @@ class Description(object):
             self._add_error(errors.uncertain())
         if contains_insert_length(self.corrected_model):
             self._add_error(errors.inserted_length())
+
+    def assembly_checks(self):
+        r_id = get_reference_id(self.input_model)
+        if r_id is not None:
+            assembly = r_id.upper()
+        else:
+            return
+        if assembly in ASSEMBLY_ALIASES:
+            assembly = ASSEMBLY_ALIASES[assembly]
+        elif assembly not in ASSEMBLIES:
+            return
+
+        s_id = get_selector_id(self.input_model)
+        if s_id is not None:
+            if s_id.upper().startswith("CHR"):
+                chr_number = s_id.upper().split("CHR")[1]
+            else:
+                chr_number = s_id.upper()
+        else:
+            return
+
+        if chr_number in ASSEMBLIES[assembly]:
+            chromosome_id = ASSEMBLIES[assembly][chr_number]
+            self.corrected_model["reference"] = self.corrected_model["reference"][
+                "selector"
+            ]
+            self.corrected_model["reference"]["id"] = chromosome_id
+            self._add_info(infos.assembly_chromosome_to_id(r_id, s_id, chromosome_id))
 
     def to_internal_indexing_model(self):
         self._construct_internal_coordinate_model()
@@ -1388,6 +1419,7 @@ class Description(object):
         self.construct_equivalent()
 
     def normalize(self):
+        self.assembly_checks()
         self.retrieve_references()
         self.pre_conversion_checks()
 
