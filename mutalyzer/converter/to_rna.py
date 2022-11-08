@@ -278,7 +278,7 @@ def _point_to_cds_coordinate(point, selector_model, crossmap):
     if coding[2] == -1:
         return genomic_to_point(0)
     else:
-        return genomic_to_point(genomic_to_coordinate(coding[0]))
+        return genomic_to_point(genomic_to_coordinate(coding[0] + coding[1]))
 
 
 def _get_inserted_sequence(insertion, sequences):

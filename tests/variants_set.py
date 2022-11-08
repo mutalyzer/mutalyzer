@@ -2962,6 +2962,34 @@ TESTS = [
         ],
         "to_test": True,
     },
+    {
+        "keywords": ["protein reverse strand exon end"],
+        "input": "NG_008835.1(NM_022153.2):c.568del",
+        "normalized": "NG_008835.1(NM_022153.2):c.568del",
+        "genomic": "NG_008835.1:g.368924del",
+        "coding_protein_descriptions": {
+            (
+                "NG_008835.1(NM_022124.6):c.4846-16810del",
+                "NG_008835.1(NP_071407.4):p.(=)",
+            ),
+        },
+        "protein_description": "NG_008835.1(NP_071436.1):p.(Asn190Thrfs*14)",
+        "rna_description": "NG_008835.1(NM_022153.2):r.(569del)",
+        "to_test": True,
+    },
+    {
+        "keywords": ["protein reverse strand exon end splice site error"],
+        "input": "NG_008835.1(NM_022153.2):c.82del",
+        "normalized": "NG_008835.1(NM_022153.2):c.82+1del",
+        "genomic": "NG_008835.1:g.381412del",
+        "coding_protein_descriptions": {
+            (
+                "NG_008835.1(NM_022124.6):c.4846-4322del",
+                "NG_008835.1(NP_071407.4):p.(=)",
+            ),
+        },
+        "to_test": True,
+    },
     # {
     #     "keywords": [
     #
