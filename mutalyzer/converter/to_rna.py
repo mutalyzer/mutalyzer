@@ -233,7 +233,7 @@ def to_rna_variants(variants, sequences, selector_model):
     Convert coordinate delins variants to RNA.
 
     :arg list variants: Variants with coordinate locations.
-    :arg list sequences: List with sequences dictionary.
+    :arg dict sequences: Sequences dictionary.
     :arg dict selector_model: Selector model.
     :returns: Converted RNA variants.
     :rtype: dict

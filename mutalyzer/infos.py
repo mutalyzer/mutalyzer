@@ -134,10 +134,12 @@ def mrna_genomic_tip():
     }
 
 
-def mrna_genomic_difference(mrna_id, genomic_id):
+def mrna_genomic_difference(selector_id, referece_id):
     return {
         "code": "IMRNAGENOMICDIFFERENCE",
-        "details": f"There are differences between the mRNA sequence of {mrna_id} and the genomic sequence of {genomic_id}.",
+        "details": f"There are differences between the sequences of {selector_id} and {referece_id}.",
+        "selector_id": selector_id,
+        "reference_id": referece_id,
     }
 
 
