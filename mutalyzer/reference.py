@@ -1,15 +1,11 @@
 import bisect
 import copy
-import json
 import re
-from functools import lru_cache
-from pathlib import Path
 
 from mutalyzer_mutator.util import reverse_complement
-from mutalyzer_retriever import retrieve_model
-from mutalyzer_retriever.retriever import NoReferenceError, NoReferenceRetrieved
+from mutalyzer_retriever.retriever import NoReferenceError, NoReferenceRetrieved, get_reference_model
 
-from .util import cache_dir, get_end, get_start, get_submodel_by_path
+from .util import get_end, get_start, get_submodel_by_path
 
 SELECTOR_MOL_TYPES_TYPES = ["mRNA", "ncRNA", "CDS"]
 SELECTOR_FEATURE_TYPES = ["mRNA", "ncRNA", "CDS"]
@@ -17,17 +13,6 @@ COORDINATE_C_MOL_TYPES_TYPES = ["mRNA"]
 COORDINATE_N_MOL_TYPES_TYPES = ["ncRNA", "transcribed RNA"]
 COORDINATE_G_MOL_TYPES_TYPES = ["dna", "genomic DNA", "DNA"]
 COORDINATE_P_MOL_TYPES_TYPES = ["CDS", "unassigned"]
-
-
-@lru_cache(maxsize=32)
-def get_reference_model(r_id):
-    cache = cache_dir()
-    if cache and (Path(cache) / r_id).is_file():
-        # print(f" - from cache {r_id}")
-        with open(Path(cache) / r_id) as json_file:
-            return json.load(json_file)
-    # print(f" - not from cache {r_id}")
-    return retrieve_model(r_id, timeout=10)
 
 
 def _update_ensembl_ids(r_m):

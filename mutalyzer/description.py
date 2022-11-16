@@ -1,3 +1,4 @@
+import time
 import copy
 import itertools
 
@@ -216,6 +217,8 @@ class Description(object):
         if self.only_variants and self.sequence:
             self.references["reference"] = {"sequence": {"seq": self.sequence}}
         for reference_id, path in yield_reference_ids(self.corrected_model):
+            print(path)
+            print(get_submodel_by_path(self.corrected_model, path[:-1]))
             reference_model = retrieve_reference(reference_id)[0]
             if reference_model is None:
                 lrg = self._check_if_lrg_reference(reference_id)
@@ -613,6 +616,7 @@ class Description(object):
             return
 
         l_min, l_max = overlap_min_max(self.references["reference"], l_min, l_max)
+        print(l_min, l_max)
         for selector in yield_overlap_ids(self.references["reference"], l_min, l_max):
             if selector["id"] != self.get_selector_id():
                 converted_model = to_hgvs_locations(
@@ -1431,9 +1435,13 @@ class Description(object):
         self.construct_equivalent()
 
     def normalize(self):
+        t_0 = time.time()
         self.assembly_checks()
+        times = [("assembly_checks", time.time() - t_0, time.time())]
         self.retrieve_references()
+        times.append(("retrieve_references", time.time()-times[-1][2], time.time()))
         self.pre_conversion_checks()
+        times.append(("pre_conversion_checks", time.time()-times[-1][2], time.time()))
 
         if self.corrected_model.get("type") == "description_protein":
             self.normalize_protein()
@@ -1447,19 +1455,32 @@ class Description(object):
             self.check()
             self._rna()
             self._construct_delins_model()
+            times.append(("before mutate", time.time() - times[-1][2], time.time()))
             if self.only_equals() or self.no_operation():
                 self.normalize_only_equals_or_no_operation()
             else:
                 self.mutate()
+                times.append(("mutate", time.time() - times[-1][2], time.time()))
                 self.extract()
+                times.append(("extract", time.time() - times[-1][2], time.time()))
                 self.construct_de_hgvs_internal_indexing_model()
                 self.construct_de_hgvs_coordinates_model()
                 self.construct_normalized_description()
+                times.append(("normalized", time.time() - times[-1][2], time.time()))
                 self.construct_rna_description()
+                times.append(("construct_rna_description", time.time() - times[-1][2], time.time()))
                 self.construct_protein_description()
+                times.append(("construct_protein_description", time.time() - times[-1][2], time.time()))
                 self.construct_equivalent()
+                times.append(("construct_equivalent", time.time() - times[-1][2], time.time()))
                 self.get_chromosomal_description()
+                times.append(("get_chromosomal_description", time.time() - times[-1][2], time.time()))
             self.remove_superfluous_selector()
+
+
+        for t in times:
+            print(t[0], t[1])
+        print("total:", time.time() - t_0)
 
         # self.print_models_summary()
 

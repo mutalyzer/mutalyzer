@@ -194,12 +194,6 @@ def log_dir():
         return "/tmp/mutalyzer.log"
 
 
-def cache_dir():
-    settings = configuration()
-    if settings and settings.get("MUTALYZER_CACHE_DIR"):
-        return eval(settings["MUTALYZER_CACHE_DIR"])
-
-
 def set_by_path(dictionary, path, value):
     nested_dictionary = dictionary
     for k in path[:-1]:
