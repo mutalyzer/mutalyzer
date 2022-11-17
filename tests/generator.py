@@ -1,5 +1,3 @@
-import json
-
 from mutalyzer.util import add_to_dict, create_exact_range_model
 
 

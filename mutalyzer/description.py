@@ -620,7 +620,6 @@ class Description(object):
             self.references["reference"]["annotations"].update(overlapping_models)
 
         l_min, l_max = overlap_min_max(self.references["reference"], l_min, l_max)
-        # print(l_min, l_max)
         for selector in yield_overlap_ids(self.references["reference"], l_min, l_max):
             if selector["id"] != self.get_selector_id():
                 converted_model = to_hgvs_locations(
@@ -1323,11 +1322,8 @@ class Description(object):
             return
 
         chromosomal_descriptions = []
-        print(chromosome_accessions)
         for assembly, chromosome_accession in chromosome_accessions:
-            print("\n-", assembly, chromosome_accession)
             chromosome_model = retrieve_reference(chromosome_accession, ref_id)[0]
-            print("once done")
             if chromosome_model:
                 selector_ids = get_selectors_ids(chromosome_model["annotations"], "c")
                 ref_id_accession = ref_id.split(".")[0]

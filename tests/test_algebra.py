@@ -47,15 +47,6 @@ def test_get_id_no_ref(reference_id):
                 "input": "NM_012459.2:c.1del",
                 "type": "hgvs",
                 "reference": {"id": "NM_012459.2"},
-                "infos": [
-                    {
-                        "code": "IMRNAGENOMICTIP",
-                        "details": "An 'mRNA' sequence was used with the 'c.' "
-                        "coordinate system. Make use of a genomic reference "
-                        "sequence if the experiment performed involved measured "
-                        "DNA.",
-                    }
-                ],
                 "sequence": "AAGTCGAGAGGCGGTGCACACCCGTCGCGCTGCGCAAACACAGCTGTCGG"
                 "AAGGTGGCGAGCCTGAGGCGAACAATGGCGGAGCTGGGCGAAGCCGATGAAGCGGAGTTGCA"
                 "GCGCCTGGTGGCCGCCGAGCAGCAGAAGGCGCAGTTTACTGCACAGGTGCATCACTTCATGG"
@@ -114,9 +105,6 @@ def test_get_id_no_ref(reference_id):
     ],
 )
 def test_get_hgvs(description, expected):
-    import json
-
-    print(json.dumps(_get_hgvs_and_variant(description), indent=2))
     assert _get_hgvs_and_variant(description) == expected
 
 

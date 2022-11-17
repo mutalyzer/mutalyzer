@@ -2638,7 +2638,7 @@ TESTS = [
         "keywords": ["no operation (equal)"],
         "input": "NM_002001.2:c.=",
         "normalized": "NM_002001.2:c.=",
-        "infos": ["IWHOLETRANSCRIPTEXON"],
+        "infos": ["IWHOLETRANSCRIPTEXON", "IMRNAGENOMICTIP"],
         "to_test": True,
     },
     {

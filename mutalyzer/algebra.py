@@ -173,7 +173,6 @@ def _check_sequences_equality(output, lhs, rhs):
 
 
 def _check_sequence_length(output, ref_seq, len_max):
-    print(len(ref_seq))
     if len(ref_seq) > len_max:
         _append_error(
             output,
