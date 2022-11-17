@@ -10,6 +10,7 @@ from mutalyzer_hgvs_parser import to_model
 from mutalyzer_hgvs_parser.exceptions import UnexpectedCharacter, UnexpectedEnd
 from mutalyzer_mutator import mutate
 from mutalyzer_mutator.util import reverse_complement
+from mutalyzer_retriever.retriever import get_overlap_models
 
 import mutalyzer.errors as errors
 import mutalyzer.infos as infos
@@ -217,9 +218,8 @@ class Description(object):
         if self.only_variants and self.sequence:
             self.references["reference"] = {"sequence": {"seq": self.sequence}}
         for reference_id, path in yield_reference_ids(self.corrected_model):
-            print(path)
-            print(get_submodel_by_path(self.corrected_model, path[:-1]))
-            reference_model = retrieve_reference(reference_id)[0]
+            selector_id = get_selector_id(get_submodel_by_path(self.corrected_model, path[:-2]))
+            reference_model = retrieve_reference(reference_id, selector_id)[0]
             if reference_model is None:
                 lrg = self._check_if_lrg_reference(reference_id)
                 if lrg:
@@ -615,8 +615,12 @@ class Description(object):
         if not (l_min and l_max):
             return
 
+        if not self.references["reference"]["annotations"].get("features"):
+            overlapping_models = get_overlap_models(get_reference_id(self.corrected_model), l_min, l_max)
+            self.references["reference"]["annotations"].update(overlapping_models)
+
         l_min, l_max = overlap_min_max(self.references["reference"], l_min, l_max)
-        print(l_min, l_max)
+        # print(l_min, l_max)
         for selector in yield_overlap_ids(self.references["reference"], l_min, l_max):
             if selector["id"] != self.get_selector_id():
                 converted_model = to_hgvs_locations(
@@ -1291,7 +1295,7 @@ class Description(object):
         self._back_translate()
 
     @check_errors
-    def get_chromosomal_description(self):
+    def get_chromosomal_descriptions(self):
         # TODO: Add tests.
 
         if not self.references or self.only_variants:
@@ -1319,8 +1323,11 @@ class Description(object):
             return
 
         chromosomal_descriptions = []
+        print(chromosome_accessions)
         for assembly, chromosome_accession in chromosome_accessions:
-            chromosome_model = retrieve_reference(chromosome_accession)[0]
+            print("\n-", assembly, chromosome_accession)
+            chromosome_model = retrieve_reference(chromosome_accession, ref_id)[0]
+            print("once done")
             if chromosome_model:
                 selector_ids = get_selectors_ids(chromosome_model["annotations"], "c")
                 ref_id_accession = ref_id.split(".")[0]
@@ -1473,10 +1480,7 @@ class Description(object):
                 times.append(("construct_protein_description", time.time() - times[-1][2], time.time()))
                 self.construct_equivalent()
                 times.append(("construct_equivalent", time.time() - times[-1][2], time.time()))
-                self.get_chromosomal_description()
-                times.append(("get_chromosomal_description", time.time() - times[-1][2], time.time()))
             self.remove_superfluous_selector()
-
 
         for t in times:
             print(t[0], t[1])

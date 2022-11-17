@@ -81,7 +81,7 @@ def map_description(
         return {"errors": [{"details": "No observed sequence or other error occured."}]}
     obs_seq = d.references["observed"]["sequence"]["seq"]
 
-    to_r_model = retrieve_reference(reference_id)[0]
+    to_r_model = retrieve_reference(reference_id, selector_id)[0]
     if to_r_model is None:
         return {"errors": [errors.reference_not_retrieved(reference_id, [])]}
 

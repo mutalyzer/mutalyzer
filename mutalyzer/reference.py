@@ -68,9 +68,9 @@ def _fix_ensembl(r_m, r_id):
     return r_m
 
 
-def retrieve_reference(reference_id):
+def retrieve_reference(reference_id, selector_id=None):
     try:
-        r_m = get_reference_model(re.sub("\s+", "", reference_id))
+        r_m = get_reference_model(re.sub("\s+", "", reference_id), selector_id)
     except NoReferenceRetrieved:
         return None, None
     except NoReferenceError as e:
