@@ -1,6 +1,6 @@
-import time
 import copy
 import itertools
+import time
 
 from Bio.Seq import Seq
 from Bio.SeqUtils import seq1, seq3
@@ -10,6 +10,11 @@ from mutalyzer_hgvs_parser import to_model
 from mutalyzer_hgvs_parser.exceptions import UnexpectedCharacter, UnexpectedEnd
 from mutalyzer_mutator import mutate
 from mutalyzer_mutator.util import reverse_complement
+from mutalyzer_retriever.reference import (
+    get_assembly_chromosome_accession,
+    get_chromosome_accession_from_mrna_model,
+    get_reference_mol_type,
+)
 from mutalyzer_retriever.retriever import get_overlap_models
 
 import mutalyzer.errors as errors
@@ -55,9 +60,6 @@ from .description_model import (
 )
 from .protein import get_protein_description, get_protein_sequence, in_frame_description
 from .reference import (
-    ASSEMBLIES,
-    ASSEMBLY_ALIASES,
-    get_chromosome_accession,
     get_coordinate_system_from_reference,
     get_coordinate_system_from_selector_id,
     get_gene_selectors,
@@ -66,7 +68,6 @@ from .reference import (
     get_only_selector_id,
     get_protein_selector_model,
     get_reference_id_from_model,
-    get_reference_mol_type,
     get_selectors_ids,
     get_sequence_length,
     is_only_one_selector,
@@ -218,7 +219,9 @@ class Description(object):
         if self.only_variants and self.sequence:
             self.references["reference"] = {"sequence": {"seq": self.sequence}}
         for reference_id, path in yield_reference_ids(self.corrected_model):
-            selector_id = get_selector_id(get_submodel_by_path(self.corrected_model, path[:-2]))
+            selector_id = get_selector_id(
+                get_submodel_by_path(self.corrected_model, path[:-2])
+            )
             reference_model = retrieve_reference(reference_id, selector_id)[0]
             if reference_model is None:
                 lrg = self._check_if_lrg_reference(reference_id)
@@ -615,8 +618,10 @@ class Description(object):
         if not (l_min and l_max):
             return
 
-        if not self.references["reference"]["annotations"].get("features"):
-            overlapping_models = get_overlap_models(get_reference_id(self.corrected_model), l_min, l_max)
+        if self.references["reference"]["annotations"].get("source") == "api_cache":
+            overlapping_models = get_overlap_models(
+                get_reference_id(self.corrected_model), l_min, l_max
+            )
             self.references["reference"]["annotations"].update(overlapping_models)
 
         l_min, l_max = overlap_min_max(self.references["reference"], l_min, l_max)
@@ -1082,32 +1087,19 @@ class Description(object):
             self._add_error(errors.inserted_length())
 
     def assembly_checks(self):
-        r_id = get_reference_id(self.input_model)
-        if r_id is not None:
-            assembly = r_id.upper()
-        else:
-            return
-        if assembly in ASSEMBLY_ALIASES:
-            assembly = ASSEMBLY_ALIASES[assembly]
-        elif assembly not in ASSEMBLIES:
-            return
-
-        s_id = get_selector_id(self.input_model)
-        if s_id is not None:
-            if s_id.upper().startswith("CHR"):
-                chr_number = s_id.upper().split("CHR")[1]
-            else:
-                chr_number = s_id.upper()
-        else:
-            return
-
-        if chr_number in ASSEMBLIES[assembly]:
-            chromosome_id = ASSEMBLIES[assembly][chr_number]
-            self.corrected_model["reference"] = self.corrected_model["reference"][
-                "selector"
-            ]
-            self.corrected_model["reference"]["id"] = chromosome_id
-            self.add_info(infos.assembly_chromosome_to_id(r_id, s_id, chromosome_id))
+        for r_id, path in yield_reference_ids(self.corrected_model):
+            s_id = get_selector_id(
+                get_submodel_by_path(self.corrected_model, path[:-2])
+            )
+            chromosome_id = get_assembly_chromosome_accession(r_id, s_id)
+            if chromosome_id:
+                self.corrected_model["reference"] = self.corrected_model["reference"][
+                    "selector"
+                ]
+                self.corrected_model["reference"]["id"] = chromosome_id
+                self.add_info(
+                    infos.assembly_chromosome_to_id(r_id, s_id, chromosome_id)
+                )
 
     def to_internal_indexing_model(self):
         self._construct_internal_coordinate_model()
@@ -1314,8 +1306,7 @@ class Description(object):
             and (ref_id.startswith("NM_") or ref_id.startswith("XM_"))
         ):
             return
-
-        chromosome_accessions = get_chromosome_accession(
+        chromosome_accessions = get_chromosome_accession_from_mrna_model(
             ref_id, self.references["reference"]
         )
         if not chromosome_accessions:
@@ -1442,9 +1433,9 @@ class Description(object):
         self.assembly_checks()
         times = [("assembly_checks", time.time() - t_0, time.time())]
         self.retrieve_references()
-        times.append(("retrieve_references", time.time()-times[-1][2], time.time()))
+        times.append(("retrieve_references", time.time() - times[-1][2], time.time()))
         self.pre_conversion_checks()
-        times.append(("pre_conversion_checks", time.time()-times[-1][2], time.time()))
+        times.append(("pre_conversion_checks", time.time() - times[-1][2], time.time()))
 
         if self.corrected_model.get("type") == "description_protein":
             self.normalize_protein()
@@ -1471,16 +1462,30 @@ class Description(object):
                 self.construct_normalized_description()
                 times.append(("normalized", time.time() - times[-1][2], time.time()))
                 self.construct_rna_description()
-                times.append(("construct_rna_description", time.time() - times[-1][2], time.time()))
+                times.append(
+                    (
+                        "construct_rna_description",
+                        time.time() - times[-1][2],
+                        time.time(),
+                    )
+                )
                 self.construct_protein_description()
-                times.append(("construct_protein_description", time.time() - times[-1][2], time.time()))
+                times.append(
+                    (
+                        "construct_protein_description",
+                        time.time() - times[-1][2],
+                        time.time(),
+                    )
+                )
                 self.construct_equivalent()
-                times.append(("construct_equivalent", time.time() - times[-1][2], time.time()))
+                times.append(
+                    ("construct_equivalent", time.time() - times[-1][2], time.time())
+                )
             self.remove_superfluous_selector()
 
-        for t in times:
-            print(t[0], t[1])
-        print("total:", time.time() - t_0)
+        # for t in times:
+        #     print(t[0], t[1])
+        # print("total:", time.time() - t_0)
 
         # self.print_models_summary()
 

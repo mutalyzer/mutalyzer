@@ -4,18 +4,14 @@ from copy import deepcopy
 from Bio.Seq import Seq
 from mutalyzer_crossmapper import Coding, Genomic, NonCoding
 from mutalyzer_mutator.util import reverse_complement
+from mutalyzer_retriever.retriever import extract_feature_model
 
 from ..description_model import (
     variant_to_description,
     variants_to_description,
     yield_sub_model,
 )
-from ..reference import (
-    extract_feature_model,
-    get_internal_selector_model,
-    slice_to_selector,
-    yield_locations,
-)
+from ..reference import get_internal_selector_model, slice_to_selector, yield_locations
 from ..util import (
     construct_sequence,
     get_end,

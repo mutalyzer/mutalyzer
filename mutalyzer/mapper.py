@@ -3,21 +3,25 @@ from copy import deepcopy
 import extractor
 from mutalyzer_mutator import mutate
 from mutalyzer_mutator.util import reverse_complement
+from mutalyzer_retriever.retriever import extract_feature_model
 
 import mutalyzer.errors as errors
 
 from .converter import de_to_hgvs
+from .converter.extras import (
+    convert_reference_model,
+    convert_to_exons,
+    get_gene_locations,
+)
 from .converter.to_hgvs_coordinates import to_hgvs_locations
 from .description import Description
 from .description_model import model_to_string
 from .reference import (
-    extract_feature_model,
     get_coordinate_system_from_reference,
     get_coordinate_system_from_selector_id,
     get_internal_selector_model,
     retrieve_reference,
 )
-from .converter.extras import convert_to_exons, get_gene_locations, convert_reference_model
 from .util import slice_seq
 
 
@@ -121,7 +125,9 @@ def map_description(
         if gene:
             new_r_model = {"annotations": deepcopy(gene)}
             g_l = get_gene_locations(new_r_model)
-            ref_seq_from = slice_seq(d.references["reference"]["sequence"]["seq"], [g_l])
+            ref_seq_from = slice_seq(
+                d.references["reference"]["sequence"]["seq"], [g_l]
+            )
             converted_variants, skipped_variants = convert_to_exons(
                 variants, [g_l], {"reference": ref_seq_from}
             )
@@ -159,7 +165,10 @@ def map_description(
     if len(obs_seq) > len_max:
         return {"errors": [errors.sequence_length(obs_seq, len_max)]}
 
-    if len(ref_seq_to) < len(obs_seq) and abs(len(ref_seq_to) - len(obs_seq)) > diff_max:
+    if (
+        len(ref_seq_to) < len(obs_seq)
+        and abs(len(ref_seq_to) - len(obs_seq)) > diff_max
+    ):
         return {
             "errors": [
                 errors.lengths_difference(abs(len(ref_seq_to) - len(obs_seq)), diff_max)
