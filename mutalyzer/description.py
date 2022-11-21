@@ -888,7 +888,7 @@ class Description(object):
             point = get_start(v_i)
             while ref_seq[point - len(repeat_unit) + 1 : point + 1] == repeat_unit:
                 point -= len(repeat_unit)
-            if point + 1 < get_start(v_i):
+            if point <= get_start(v_i):
                 v_i["location"]["start"]["position"] = point + 1
             else:
                 self._add_error(

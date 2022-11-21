@@ -2940,6 +2940,21 @@ TESTS = [
         "to_test": True,
     },
     {
+        "keywords": ["repeat", "reverse"],
+        "input": "NG_012337.1(NM_012459.2):c.6delinsCCCC",
+        "normalized": "NG_012337.1(NM_012459.2):c.6C[4]",
+        "genomic": "NG_012337.1:g.4917G[4]",
+        "to_test": True,
+    },
+    {
+        "keywords": ["repeat", "reverse"],
+        "input": "NG_012337.1(NM_012459.2):c.6C[4]",
+        "normalized": "NG_012337.1(NM_012459.2):c.6C[4]",
+        "genomic": "NG_012337.1:g.4917G[4]",
+        "protein_description": "NG_012337.1(NP_036591.2):p.(Arg2_Lys3insPro)",
+        "to_test": True,
+    },
+    {
         "keywords": ["duplication", "reverse"],
         "input": "NG_012337.1(NM_012459.2):c.5_6dup",
         "normalized": "NG_012337.1(NM_012459.2):c.5_6dup",
