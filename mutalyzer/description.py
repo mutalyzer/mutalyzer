@@ -14,8 +14,9 @@ from mutalyzer_retriever.reference import (
     get_assembly_chromosome_accession,
     get_chromosome_accession_from_mrna_model,
     get_reference_mol_type,
+    get_assembly_id
 )
-from mutalyzer_retriever.retriever import get_overlap_models
+from mutalyzer_retriever.retriever import get_overlap_models, get_chromosome_from_selector
 
 import mutalyzer.errors as errors
 import mutalyzer.infos as infos
@@ -214,6 +215,21 @@ class Description(object):
         """
         Populate the references
         """
+        def _update_references(r_id, r_model):
+            if self.references.get(r_id) is not None:
+                a_m = self.references[r_id]["annotations"]
+                r_m = r_model["annotations"]
+                if a_m != r_m:
+                    if a_m.get("features") and r_m.get("features"):
+                        for feature in r_m.get("features"):
+                            if feature not in a_m["features"]:
+                                a_m["features"].append(feature)
+                        a_m["features"].extend(r_m["features"])
+                    if not a_m.get("features") and r_m.get("features"):
+                        a_m["features"] = r_m["features"]
+            else:
+                self.references[r_id] = r_model
+
         if not self.corrected_model:
             return
         if self.only_variants and self.sequence:
@@ -238,9 +254,9 @@ class Description(object):
                     self._correct_reference_id(
                         path, reference_id, reference_id_in_model
                     )
-                    self.references[reference_id_in_model] = reference_model
+                    _update_references(reference_id_in_model, reference_model)
                 else:
-                    self.references[reference_id] = reference_model
+                    _update_references(reference_id, reference_model)
                 self._set_main_reference()
 
     @check_errors
@@ -1087,19 +1103,32 @@ class Description(object):
             self._add_error(errors.inserted_length())
 
     def assembly_checks(self):
+        def _set_new_ids(path, chromosome_id):
+            reference_part = get_submodel_by_path(self.corrected_model, path[:-1])
+            new_reference_part = {"id": chromosome_id}
+            if reference_part.get("selector") and reference_part["selector"].get("selector"):
+                new_reference_part["selector"] = reference_part["selector"]["selector"]
+            set_by_path(self.corrected_model, path[:-1], new_reference_part)
+
         for r_id, path in yield_reference_ids(self.corrected_model):
+            a_id = get_assembly_id(r_id)
+            if a_id is None:
+                continue
             s_id = get_selector_id(
                 get_submodel_by_path(self.corrected_model, path[:-2])
             )
             chromosome_id = get_assembly_chromosome_accession(r_id, s_id)
             if chromosome_id:
-                self.corrected_model["reference"] = self.corrected_model["reference"][
-                    "selector"
-                ]
-                self.corrected_model["reference"]["id"] = chromosome_id
+                _set_new_ids(path, chromosome_id)
                 self.add_info(
                     infos.assembly_chromosome_to_id(r_id, s_id, chromosome_id)
                 )
+            else:
+                chromosome_id = get_chromosome_from_selector(a_id, s_id)
+                if chromosome_id:
+                    set_by_path(self.corrected_model, path, chromosome_id)
+                    self.add_info(
+                        infos.assembly_chromosome_to_id(r_id, s_id, chromosome_id))
 
     def to_internal_indexing_model(self):
         self._construct_internal_coordinate_model()
@@ -1190,7 +1219,7 @@ class Description(object):
         if not self.get_selector_id():
             return
         cds_seq = slice_to_selector(
-            retrieve_reference(get_reference_id(self.corrected_model))[0],
+            retrieve_reference(get_reference_id(self.corrected_model), self.get_selector_id())[0],
             self.get_selector_id(),
             True,
             True,
