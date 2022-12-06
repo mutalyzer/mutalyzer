@@ -1,9 +1,10 @@
-from .description import Description
 import time
+
+from .description import Description
 
 
 def normalize(description, only_variants=False, sequence=None):
-    t0 = time.time()
+    # t0 = time.time()
     d = Description(
         description=description,
         only_variants=only_variants,
@@ -15,5 +16,4 @@ def normalize(description, only_variants=False, sequence=None):
     # print("get_chromosomal_description:", time.time() - t)
     # print("- TOTAL time:", time.time() - t0, "\n\n")
     output = d.output()
-
     return output

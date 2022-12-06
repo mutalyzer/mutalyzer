@@ -1,6 +1,5 @@
 import copy
 import itertools
-import time
 
 from Bio.Seq import Seq
 from Bio.SeqUtils import seq1, seq3
@@ -12,11 +11,14 @@ from mutalyzer_mutator import mutate
 from mutalyzer_mutator.util import reverse_complement
 from mutalyzer_retriever.reference import (
     get_assembly_chromosome_accession,
+    get_assembly_id,
     get_chromosome_accession_from_mrna_model,
     get_reference_mol_type,
-    get_assembly_id
 )
-from mutalyzer_retriever.retriever import get_overlap_models, get_chromosome_from_selector
+from mutalyzer_retriever.retriever import (
+    get_chromosome_from_selector,
+    get_overlap_models,
+)
 
 import mutalyzer.errors as errors
 import mutalyzer.infos as infos
@@ -130,7 +132,7 @@ class Description(object):
 
         self.references = {}
 
-        self.equivalent = []
+        self.equivalent = {}
         self.back_translated_descriptions = []
 
     def _check_input(self):
@@ -215,6 +217,7 @@ class Description(object):
         """
         Populate the references
         """
+
         def _update_references(r_id, r_model):
             if self.references.get(r_id) is not None:
                 a_m = self.references[r_id]["annotations"]
@@ -598,6 +601,23 @@ class Description(object):
             if self.de_hgvs_model.get("coordinate_system") == "r":
                 to_rna_sequences(self.de_hgvs_model)
             self.normalized_description = model_to_string(self.de_hgvs_model)
+
+    def construct_genomic_equivalent(self):
+        from_model = self.de_hgvs_internal_indexing_model
+        if (
+            get_coordinate_system_from_reference(self.references["reference"])
+            == "g"
+            != self.corrected_model["coordinate_system"]
+            and self.corrected_model["coordinate_system"] != "r"
+        ):
+            converted_model = to_hgvs_locations(
+                model=from_model,
+                references=self.references,
+                to_coordinate_system="g",
+                to_selector_id=None,
+                degenerate=True,
+            )
+            self.equivalent["g"] = [model_to_string(converted_model)]
 
     def construct_equivalent(self, other=None, as_description=True):
         if self.only_variants:
@@ -1106,7 +1126,9 @@ class Description(object):
         def _set_new_ids(path, chromosome_id):
             reference_part = get_submodel_by_path(self.corrected_model, path[:-1])
             new_reference_part = {"id": chromosome_id}
-            if reference_part.get("selector") and reference_part["selector"].get("selector"):
+            if reference_part.get("selector") and reference_part["selector"].get(
+                "selector"
+            ):
                 new_reference_part["selector"] = reference_part["selector"]["selector"]
             set_by_path(self.corrected_model, path[:-1], new_reference_part)
 
@@ -1128,7 +1150,8 @@ class Description(object):
                 if chromosome_id:
                     set_by_path(self.corrected_model, path, chromosome_id)
                     self.add_info(
-                        infos.assembly_chromosome_to_id(r_id, s_id, chromosome_id))
+                        infos.assembly_chromosome_to_id(r_id, s_id, chromosome_id)
+                    )
 
     def to_internal_indexing_model(self):
         self._construct_internal_coordinate_model()
@@ -1219,7 +1242,9 @@ class Description(object):
         if not self.get_selector_id():
             return
         cds_seq = slice_to_selector(
-            retrieve_reference(get_reference_id(self.corrected_model), self.get_selector_id())[0],
+            retrieve_reference(
+                get_reference_id(self.corrected_model), self.get_selector_id()
+            )[0],
             self.get_selector_id(),
             True,
             True,
@@ -1247,6 +1272,7 @@ class Description(object):
         if self.get_selector_id() == get_reference_id(self.corrected_model):
             reference = "{}".format(get_reference_id(self.corrected_model))
         else:
+            print(self.get_selector_model())
             reference = "{}({})".format(
                 get_reference_id(self.corrected_model),
                 self.get_selector_model()["mrna_id"],
@@ -1317,8 +1343,11 @@ class Description(object):
     @check_errors
     def get_chromosomal_descriptions(self):
         # TODO: Add tests.
-
-        if not self.references or self.only_variants:
+        if (
+            not self.references
+            or self.only_variants
+            or self.corrected_model.get("type") == "description_protein"
+        ):
             return
         ref_id = get_reference_id(self.corrected_model)
         if (
@@ -1399,6 +1428,7 @@ class Description(object):
                 else:
                     variants_model = to_hgvs_locations(
                         {
+                            "type": "description_dna",
                             "reference": {
                                 "id": chromosome_accession,
                                 "selector": {"id": selector_id},
@@ -1416,18 +1446,28 @@ class Description(object):
                         selector_id,
                         True,
                     )
-                    chr_d = Description(description_model=variants_model)
+                    chr_d = Description(model_to_string(variants_model))
                     chr_d.to_delins()
                     chr_d.mutate()
                     chr_d.extract()
                     chr_d.construct_de_hgvs_internal_indexing_model()
                     chr_d.construct_de_hgvs_coordinates_model()
                     chr_d.construct_normalized_description()
+                    genomic = model_to_string(
+                        to_hgvs_locations(
+                            model=chr_d.de_hgvs_internal_indexing_model,
+                            references=chr_d.references,
+                            to_coordinate_system="g",
+                            to_selector_id=None,
+                            degenerate=True,
+                        )
+                    )
 
                     chromosomal_descriptions.append(
                         {
                             "assembly": assembly,
-                            "description": chr_d.normalized_description,
+                            "c": chr_d.normalized_description,
+                            "g": genomic,
                         }
                     )
 
@@ -1458,13 +1498,9 @@ class Description(object):
         self.construct_equivalent()
 
     def normalize(self):
-        t_0 = time.time()
         self.assembly_checks()
-        times = [("assembly_checks", time.time() - t_0, time.time())]
         self.retrieve_references()
-        times.append(("retrieve_references", time.time() - times[-1][2], time.time()))
         self.pre_conversion_checks()
-        times.append(("pre_conversion_checks", time.time() - times[-1][2], time.time()))
 
         if self.corrected_model.get("type") == "description_protein":
             self.normalize_protein()
@@ -1478,43 +1514,18 @@ class Description(object):
             self.check()
             self._rna()
             self._construct_delins_model()
-            times.append(("before mutate", time.time() - times[-1][2], time.time()))
             if self.only_equals() or self.no_operation():
                 self.normalize_only_equals_or_no_operation()
             else:
                 self.mutate()
-                times.append(("mutate", time.time() - times[-1][2], time.time()))
                 self.extract()
-                times.append(("extract", time.time() - times[-1][2], time.time()))
                 self.construct_de_hgvs_internal_indexing_model()
                 self.construct_de_hgvs_coordinates_model()
                 self.construct_normalized_description()
-                times.append(("normalized", time.time() - times[-1][2], time.time()))
                 self.construct_rna_description()
-                times.append(
-                    (
-                        "construct_rna_description",
-                        time.time() - times[-1][2],
-                        time.time(),
-                    )
-                )
                 self.construct_protein_description()
-                times.append(
-                    (
-                        "construct_protein_description",
-                        time.time() - times[-1][2],
-                        time.time(),
-                    )
-                )
                 self.construct_equivalent()
-                times.append(
-                    ("construct_equivalent", time.time() - times[-1][2], time.time())
-                )
             self.remove_superfluous_selector()
-
-        # for t in times:
-        #     print(t[0], t[1])
-        # print("total:", time.time() - t_0)
 
         # self.print_models_summary()
 
