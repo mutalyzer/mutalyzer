@@ -63,9 +63,11 @@ def back_translate(description):
         if selector_model.get("id") == get_reference_id(d.corrected_model):
             reference = "{}".format(get_reference_id(d.corrected_model))
         else:
-            reference = "{}({})".format(
-                get_reference_id(d.corrected_model), selector_model["mrna_id"]
-            )
+            mrna_id = selector_model.get("mrna_id")
+            if mrna_id is None and selector_model.get("type") == "mRNA":
+                mrna_id = selector_model["id"]
+
+            reference = "{}({})".format(get_reference_id(d.corrected_model), mrna_id)
     else:
         # TODO: Should be reached for "NP_" references: get the "NM_".
         return []

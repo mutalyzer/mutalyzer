@@ -1272,10 +1272,13 @@ class Description(object):
         if self.get_selector_id() == get_reference_id(self.corrected_model):
             reference = "{}".format(get_reference_id(self.corrected_model))
         else:
-            print(self.get_selector_model())
+            s_m = self.get_selector_model()
+            mrna_id = s_m.get("mrna_id")
+            if mrna_id is None and s_m.get("type") == "mRNA":
+                mrna_id = s_m["id"]
             reference = "{}({})".format(
                 get_reference_id(self.corrected_model),
-                self.get_selector_model()["mrna_id"],
+                mrna_id,
             )
         bt_descriptions = []
         for t in itertools.product(*translated_vars):
