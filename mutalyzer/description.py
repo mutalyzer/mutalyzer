@@ -19,6 +19,8 @@ from mutalyzer_retriever.retriever import (
     get_chromosome_from_selector,
     get_overlap_models,
 )
+from mutalyzer_retriever.related import get_cds_to_mrna
+
 
 import mutalyzer.errors as errors
 import mutalyzer.infos as infos
@@ -1239,13 +1241,20 @@ class Description(object):
         convert_amino_acids(self.internal_coordinates_model, "1a")
 
     def _back_translate(self):
-        if not self.get_selector_id():
-            return
+        reference_id = get_reference_id(self.corrected_model)
+        selector_id = self.get_selector_id()
+        if not selector_id:
+            cds_id = reference_id
+            mrna_id = get_cds_to_mrna(cds_id)
+            if len(mrna_id) >= 1:
+                mrna_id = mrna_id[-1]
+        else:
+            mrna_id = get_reference_id(self.corrected_model)
+            cds_id = self.get_selector_id()
+
         cds_seq = slice_to_selector(
-            retrieve_reference(
-                get_reference_id(self.corrected_model), self.get_selector_id()
-            )[0],
-            self.get_selector_id(),
+            retrieve_reference(mrna_id, cds_id)[0],
+            cds_id,
             True,
             True,
         )
@@ -1269,17 +1278,18 @@ class Description(object):
             else:
                 # TODO: Add error message.
                 return []
-        if self.get_selector_id() == get_reference_id(self.corrected_model):
-            reference = "{}".format(get_reference_id(self.corrected_model))
-        else:
+        if cds_id == mrna_id or not selector_id:
+            reference = "{}".format(mrna_id)
+        elif selector_id:
             s_m = self.get_selector_model()
-            mrna_id = s_m.get("mrna_id")
+            if s_m:
+                mrna_id = s_m.get("mrna_id")
             if mrna_id is None and s_m.get("type") == "mRNA":
                 mrna_id = s_m["id"]
-            reference = "{}({})".format(
-                get_reference_id(self.corrected_model),
-                mrna_id,
-            )
+            if reference_id == mrna_id:
+                reference = "{}".format(mrna_id)
+            else:
+                reference = "{}({})".format(reference_id, mrna_id)
         bt_descriptions = []
         for t in itertools.product(*translated_vars):
             if len(t) > 1:
