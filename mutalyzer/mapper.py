@@ -3,6 +3,7 @@ from copy import deepcopy
 import extractor
 from mutalyzer_mutator import mutate
 from mutalyzer_mutator.util import reverse_complement
+from mutalyzer_retriever.reference import get_reference_mol_type
 from mutalyzer_retriever.retriever import extract_feature_model
 
 import mutalyzer.errors as errors
@@ -20,6 +21,7 @@ from .reference import (
     get_coordinate_system_from_reference,
     get_coordinate_system_from_selector_id,
     get_internal_selector_model,
+    get_only_selector_id,
     retrieve_reference,
 )
 from .util import slice_seq
@@ -118,6 +120,12 @@ def map_description(
             )
             ref_seq_from = from_r_model["sequence"]["seq"]
             obs_seq = mutate({"reference": ref_seq_from}, converted_variants)
+        if (
+            selector_id is None
+            and get_coordinate_system_from_reference(to_r_model) == "c"
+            and get_only_selector_id(to_r_model) == reference_id
+        ):
+            selector_id = reference_id
     elif slice_to == "gene":
         gene = extract_feature_model(
             d.references["reference"]["annotations"], d.get_selector_id()
