@@ -315,12 +315,16 @@ def variant_to_cds_coordinate(variant, sequences, selector_model, crossmap):
     else:
         location = _point_to_cds_coordinate(location, selector_model, crossmap)
     if new_variant.get("inserted"):
-        new_variant["inserted"] = [
-            {
-                "source": "description",
-                "sequence": get_inserted_sequence(variant, sequences),
-            }
-        ]
+        insertions = []
+        for inserted in new_variant.get("inserted"):
+            if inserted.get("location"):
+                ins_seq = construct_sequence([inserted], sequences)
+                if selector_model.get("inverted"):
+                    ins_seq = reverse_complement(ins_seq)
+                insertions.append({"source": "description","sequence": ins_seq})
+            else:
+                insertions.append(inserted)
+        new_variant["inserted"] = insertions
     new_variant["location"] = location
     return new_variant
 

@@ -12,7 +12,7 @@ from ..reference import (
     get_coordinate_system_from_selector_id,
     get_internal_selector_model,
 )
-from ..util import get_start, set_by_path
+from ..util import get_start, get_end, set_by_path
 from .to_hgvs_indexing import to_hgvs_indexing
 from .to_internal_coordinates import get_coordinate_system
 
@@ -123,23 +123,15 @@ def reverse_strand_shift(variants, seq):
     for variant in variants:
         if variant.get("inserted"):
             variant["inserted"].reverse()
-            if (
-                len(variant["inserted"]) == 1
-                and variant["inserted"][0].get("sequence")
-                and variant["location"]["start"].get("shift")
-            ):
-                # TODO: Check what to do when there is a compound insertion with locations included.
-                start = get_start(variant)
-                shift = variant["location"]["start"]["shift"]
-                ins_seq = variant["inserted"][0]["sequence"]
-                new_ins_seq = reverse_complement(
-                    (seq[start - shift : start] + ins_seq)[: len(ins_seq)]
-                )
-                variant["inserted"][0]["sequence"] = new_ins_seq
-            else:
-                for inserted in variant["inserted"]:
-                    if inserted.get("sequence"):
-                        inserted["sequence"] = reverse_complement(inserted["sequence"])
+            for inserted in variant["inserted"]:
+                shift = variant["location"]["start"].get("shift", 0)
+                if inserted.get("sequence"):
+                    start = get_start(variant)
+                    ins_seq = inserted["sequence"]
+                    inserted["sequence"] = reverse_complement((seq[start - shift: start] + ins_seq)[: len(ins_seq)])
+                else:
+                    inserted["location"]["start"]["position"] -= shift
+                    inserted["location"]["end"]["position"] -= shift
         if variant.get("deleted"):
             variant["deleted"].reverse()
             for deleted in variant["deleted"]:

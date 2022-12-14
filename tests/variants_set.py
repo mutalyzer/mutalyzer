@@ -1812,7 +1812,7 @@ M2_TESTS = [
                 "NG_012337.1(NP_001076439.1):p.(=)",
             ),
         },
-        "protein_description": "NG_012337.1(NP_036591.2):p.(His4Glnfs*21)",
+        "protein_description": "NG_012337.1(NP_036591.2):p.(Ser5Glnfs*20)",
         "to_test": True,
     },
     {
@@ -1837,7 +1837,7 @@ M2_TESTS = [
                 "NG_012337.1(NP_001076439.1):p.(=)",
             ),
         },
-        "protein_description": "NG_012337.1(NP_036591.2):p.(His4Glnfs*22)",
+        "protein_description": "NG_012337.1(NP_036591.2):p.(Cys6Glnfs*20)",
         "to_test": True,
     },
     {
@@ -3004,6 +3004,52 @@ TESTS = [
             ),
         },
         "to_test": True,
+    },
+    {
+        "keywords": ["protein revere strand",
+        ],
+        "input": "NG_012337.1(NM_012459.2):c.15_17dup",
+        "normalized": "NG_012337.1(NM_012459.2):c.15_17dup",
+        "genomic": "NG_012337.1:g.4907_4909dup",
+        "coding_protein_descriptions": {
+            (
+                "NG_012337.1(NM_018195.3):c.*3781_*3783dup",
+                "NG_012337.1(NP_060665.3):p.(=)",
+            ),
+            (
+                "NG_012337.1(NM_001082969.1):c.*3781_*3783dup",
+                "NG_012337.1(NP_001076438.1):p.(=)",
+            ),
+            (
+                "NG_012337.1(NM_001082970.1):c.*3781_*3783dup",
+                "NG_012337.1(NP_001076439.1):p.(=)",
+            ),
+        },
+        "protein_description": "NG_012337.1(NP_036591.2):p.(Cys6dup)",
+        "to_test": True,
+    },
+    {
+        "keywords": ["protein revere strand",
+        ],
+        "input": "NG_012337.1(NM_012459.2):c.15_16insTGGAAGGTGGCGAGCCT",
+        "normalized": "",
+        "genomic": "",
+        "coding_protein_descriptions": {
+            (
+                "",
+                "NG_012337.1(NP_060665.3):p.(=)",
+            ),
+            (
+                "",
+                "NG_012337.1(NP_001076438.1):p.(=)",
+            ),
+            (
+                "",
+                "NG_012337.1(NP_001076439.1):p.(=)",
+            ),
+        },
+        "protein_description": "NG_012337.1(NP_036591.2):p.(Cys6Trpfs*13)",
+        "to_test": False,
     },
     # {
     #     "keywords": [
