@@ -435,14 +435,17 @@ def to_rna_protein_coordinates(variants, sequences, selector_model):
 
     if selector_model.get("inverted"):
         variants = reverse_variants(variants, sequences)
-
-    splice_site_hits = _get_splice_site_hits(variants, exons, cds)
-
-    coordinate_variants = to_exon_positions(variants, exons, cds)
+        coordinate_variants = to_exon_positions(
+            variants, [p-1 for p in exons], [p-1 for p in cds])
+    else:
+        coordinate_variants = to_exon_positions(variants, exons, cds)
 
     cds_variants = []
     for variant in coordinate_variants:
         cds_variants.append(
             variant_to_cds_coordinate(variant, sequences, selector_model, crossmap)
         )
+
+    splice_site_hits = _get_splice_site_hits(variants, exons, cds)
+
     return cds_variants, splice_site_hits

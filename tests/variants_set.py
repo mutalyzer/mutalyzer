@@ -3007,7 +3007,7 @@ TESTS = [
     },
     {
         "keywords": [
-            "protein revere strand",
+            "protein reverse strand",
         ],
         "input": "NG_012337.1(NM_012459.2):c.15_17dup",
         "normalized": "NG_012337.1(NM_012459.2):c.15_17dup",
@@ -3031,7 +3031,7 @@ TESTS = [
     },
     {
         "keywords": [
-            "protein revere strand",
+            "protein reverse strand",
         ],
         "input": "NG_012337.1(NM_012459.2):c.15_16insTGGAAGGTGGCGAGCCT",
         "normalized": "NG_012337.1(NM_012459.2):c.17_18insGAAGGTGGCGAGCCTTG",
@@ -3051,6 +3051,54 @@ TESTS = [
             ),
         },
         "protein_description": "NG_012337.1(NP_036591.2):p.(Cys6Trpfs*13)",
+        "to_test": True,
+    },
+    {
+        "keywords": [
+            "protein reverse strand exon end",
+        ],
+        "input": "NG_012337.1(NM_012459.2):c.129G>T",
+        "normalized": "NG_012337.1(NM_012459.2):c.129G>T",
+        "genomic": "NG_012337.1:g.4794C>A",
+        "coding_protein_descriptions": {
+            (
+                "NG_012337.1(NM_018195.3):c.*3668C>A",
+                "NG_012337.1(NP_060665.3):p.(=)",
+            ),
+            (
+                "NG_012337.1(NM_001082969.1):c.*3668C>A",
+                "NG_012337.1(NP_001076438.1):p.(=)",
+            ),
+            (
+                "NG_012337.1(NM_001082970.1):c.*3668C>A",
+                "NG_012337.1(NP_001076439.1):p.(=)",
+            ),
+        },
+        "protein_description": "NG_012337.1(NP_036591.2):p.(Gln43His)",
+        "to_test": True,
+    },
+    {
+        "keywords": [
+            "protein reverse strand exon end",
+        ],
+        "input": "NG_012337.1(NM_012459.2):c.130G>A",
+        "normalized": "NG_012337.1(NM_012459.2):c.130G>A",
+        "genomic": "NG_012337.1:g.3616C>T",
+        "coding_protein_descriptions": {
+            (
+                "NG_012337.1(NM_018195.3):c.*2490C>T",
+                "NG_012337.1(NP_060665.3):p.(=)",
+            ),
+            (
+                "NG_012337.1(NM_001082969.1):c.*2490C>T",
+                "NG_012337.1(NP_001076438.1):p.(=)",
+            ),
+            (
+                "NG_012337.1(NM_001082970.1):c.*2490C>T",
+                "NG_012337.1(NP_001076439.1):p.(=)",
+            ),
+        },
+        "protein_description": "NG_012337.1(NP_036591.2):p.(Val44Met)",
         "to_test": True,
     },
     # {
