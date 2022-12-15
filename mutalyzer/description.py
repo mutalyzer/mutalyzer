@@ -15,12 +15,11 @@ from mutalyzer_retriever.reference import (
     get_chromosome_accession_from_mrna_model,
     get_reference_mol_type,
 )
+from mutalyzer_retriever.related import get_cds_to_mrna
 from mutalyzer_retriever.retriever import (
     get_chromosome_from_selector,
     get_overlap_models,
 )
-from mutalyzer_retriever.related import get_cds_to_mrna
-
 
 import mutalyzer.errors as errors
 import mutalyzer.infos as infos
@@ -165,6 +164,16 @@ class Description(object):
             return get_internal_selector_model(
                 self.references["reference"]["annotations"], selector_id, True
             )
+
+    def is_selector_model_valid(self):
+        selector_model = self.get_selector_model()
+        if (
+            selector_model
+            and selector_model["type"] == "mRNA"
+            and selector_model.get("cds")
+        ):
+            return True
+        return False
 
     def is_inverted(self):
         selector_model = self.get_selector_model()
@@ -1075,6 +1084,22 @@ class Description(object):
                     )
                 )
 
+    def _check_cds(self):
+        for (
+            c_s,
+            _,
+            r_id,
+            _,
+            s_id,
+            s_p,
+        ) in yield_reference_selector_ids_coordinate_system(self.corrected_model):
+            if c_s == "c" and r_id in self.references:
+                s_m = get_internal_selector_model(
+                    self.references[r_id]["annotations"], s_id
+                )
+                if s_m and s_m.get("cds") is None:
+                    self._add_error(errors.no_cds(r_id, s_id, s_p))
+
     def _insertions_same_location(self):
         insertions = {}
         variants = self.internal_coordinates_model["variants"]
@@ -1123,6 +1148,7 @@ class Description(object):
             self._add_error(errors.uncertain())
         if contains_insert_length(self.corrected_model):
             self._add_error(errors.inserted_length())
+        self._check_cds()
 
     def assembly_checks(self):
         def _set_new_ids(path, chromosome_id):
@@ -1571,7 +1597,7 @@ class Description(object):
             output["errors"] = self.errors
         if self.infos:
             output["infos"] = self.infos
-        if self.get_selector_model():
+        if self.get_selector_model() and self.is_selector_model_valid():
             output["selector_short"] = convert_selector_model(self.get_selector_model())
         if self.back_translated_descriptions:
             output["back_translated_descriptions"] = self.back_translated_descriptions

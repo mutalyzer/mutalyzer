@@ -3101,6 +3101,22 @@ TESTS = [
         "protein_description": "NG_012337.1(NP_036591.2):p.(Val44Met)",
         "to_test": True,
     },
+    {
+        "keywords": ["no cds for coding transcripts #73"],
+        "input": "NG_009930.1(NM_001099625.2):c.1010",
+        "errors": [
+            "ENOCDS",
+        ],
+        "to_test": True,
+    },
+    {
+        "keywords": ["no cds for coding transcripts #73"],
+        "input": "NG_012337.3(NM_003002.4):c.274delinsNG_009930.1(NM_001099625.2):c.1010",
+        "errors": [
+            "ENOCDS",
+        ],
+        "to_test": True,
+    },
     # {
     #     "keywords": [
     #
