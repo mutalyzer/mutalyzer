@@ -3006,7 +3006,8 @@ TESTS = [
         "to_test": True,
     },
     {
-        "keywords": ["protein revere strand",
+        "keywords": [
+            "protein revere strand",
         ],
         "input": "NG_012337.1(NM_012459.2):c.15_17dup",
         "normalized": "NG_012337.1(NM_012459.2):c.15_17dup",
@@ -3029,27 +3030,28 @@ TESTS = [
         "to_test": True,
     },
     {
-        "keywords": ["protein revere strand",
+        "keywords": [
+            "protein revere strand",
         ],
         "input": "NG_012337.1(NM_012459.2):c.15_16insTGGAAGGTGGCGAGCCT",
-        "normalized": "",
-        "genomic": "",
+        "normalized": "NG_012337.1(NM_012459.2):c.17_18insGAAGGTGGCGAGCCTTG",
+        "genomic": "NG_012337.1:g.4907_4908ins[4888_4903;A]",
         "coding_protein_descriptions": {
             (
-                "",
+                "NG_012337.1(NM_018195.3):c.*3781_*3782ins[*3762_*3777;A]",
                 "NG_012337.1(NP_060665.3):p.(=)",
             ),
             (
-                "",
+                "NG_012337.1(NM_001082969.1):c.*3781_*3782ins[*3762_*3777;A]",
                 "NG_012337.1(NP_001076438.1):p.(=)",
             ),
             (
-                "",
+                "NG_012337.1(NM_001082970.1):c.*3781_*3782ins[*3762_*3777;A]",
                 "NG_012337.1(NP_001076439.1):p.(=)",
             ),
         },
         "protein_description": "NG_012337.1(NP_036591.2):p.(Cys6Trpfs*13)",
-        "to_test": False,
+        "to_test": True,
     },
     # {
     #     "keywords": [

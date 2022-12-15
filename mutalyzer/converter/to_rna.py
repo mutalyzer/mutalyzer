@@ -321,7 +321,7 @@ def variant_to_cds_coordinate(variant, sequences, selector_model, crossmap):
                 ins_seq = construct_sequence([inserted], sequences)
                 if selector_model.get("inverted"):
                     ins_seq = reverse_complement(ins_seq)
-                insertions.append({"source": "description","sequence": ins_seq})
+                insertions.append({"source": "description", "sequence": ins_seq})
             else:
                 insertions.append(inserted)
         new_variant["inserted"] = insertions
@@ -416,7 +416,7 @@ def _get_splice_site_hits(variants, exons, cds):
 
 def reverse_variants(variants, sequences):
     reversed_variants = deepcopy(variants)
-    reverse_strand_shift(reversed_variants, sequences["reference"])
+    reverse_strand_shift(reversed_variants, sequences)
     reverse_start_end(reversed_variants)
     return reversed_variants
 
