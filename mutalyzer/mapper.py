@@ -158,8 +158,8 @@ def map_description(
         )
         if s_model is None:
             return {"errors": [errors.no_selector_found(reference_id, selector_id, [])]}
-        if s_model["inverted"] and not (
-            d.get_selector_model() and d.get_selector_model()["inverted"]
+        if d.get_selector_model() and (
+            s_model["inverted"] ^ d.get_selector_model()["inverted"]
         ):
             obs_seq = reverse_complement(obs_seq)
             ref_seq_from = reverse_complement(ref_seq_from)

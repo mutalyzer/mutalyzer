@@ -137,6 +137,18 @@ TEST_SET = [
         ("NM_012459.2:c.=", "NM_012459.4", "NM_012459.4", "transcript", False),
         "NM_012459.4:c.-33_-32insAGTCGAGAGGCGGTGCACACCCGTCGCGCATGCGCAAACACA",
     ),
+    (
+        ("NG_012337.1(NM_012459.2):c.130G>A", "NM_012459.2", None, "transcript", False),
+        "NM_012459.2:c.130G>A",
+    ),
+    (
+        ("NG_012337.1(NM_012459.2):c.130G>A", "NM_012459.2", "NM_012459.2", "transcript", False),
+        "NM_012459.2:c.130G>A",
+    ),
+    (
+        ("NM_012459.2:c.130G>A", "NG_012337.1", "NM_012459.2", "transcript", False),
+        "NG_012337.1(NM_012459.2):c.130G>A",
+    ),
 ]
 
 
