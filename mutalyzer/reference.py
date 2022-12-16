@@ -190,6 +190,9 @@ def get_internal_selector_model(reference_annotations, selector_id, fix_exon=Fal
             "location": feature_model["location"],
         }
         cds_sub_feature_model = _get_cds_id(feature_model)
+        if feature_model.get("qualifiers") and feature_model["qualifiers"].get("tag") and "MANE" in feature_model["qualifiers"]["tag"]:
+            output["tag"] = feature_model["qualifiers"]["tag"]
+            print(selector_id, output)
         if cds_sub_feature_model:
             output["cds_id"] = cds_sub_feature_model["id"]
             if cds_sub_feature_model.get("qualifiers"):
