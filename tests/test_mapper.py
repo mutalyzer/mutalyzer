@@ -142,7 +142,13 @@ TEST_SET = [
         "NM_012459.2:c.130G>A",
     ),
     (
-        ("NG_012337.1(NM_012459.2):c.130G>A", "NM_012459.2", "NM_012459.2", "transcript", False),
+        (
+            "NG_012337.1(NM_012459.2):c.130G>A",
+            "NM_012459.2",
+            "NM_012459.2",
+            "transcript",
+            False,
+        ),
         "NM_012459.2:c.130G>A",
     ),
     (
@@ -161,10 +167,12 @@ TEST_ERROR = [
     (
         ("NM_003002.2:c.-31del", "NG_012337.3", "NM_003002.4", "transcript", True),
         "EMAPFILTER",
+        "input",
     ),
     (
         ("NM_003002.2:c.-31del", "NG_012337.3", "NM_003002.2", "transcript", True),
         "ENOSELECTORFOUND",
+        "input",
     ),
     (
         (
@@ -176,10 +184,12 @@ TEST_ERROR = [
             1000,
         ),
         "ESEQUENCELENGTH",
+        "input",
     ),
     (
         ("NG_012337.3(NM_003002.4):c.274G>T", "NM_003002.4", None, None, False, 10000),
         "ESEQUENCELENGTH",
+        "input",
     ),
     (
         (
@@ -191,6 +201,7 @@ TEST_ERROR = [
             10000,
         ),
         "ELOCATIONSLICE",
+        "input",
     ),
     (
         (
@@ -202,6 +213,7 @@ TEST_ERROR = [
             10000,
         ),
         "ELOCATIONSLICE",
+        "input",
     ),
     (
         (
@@ -213,6 +225,7 @@ TEST_ERROR = [
             10000,
         ),
         "ESLICEOPTION",
+        "input",
     ),
     (
         (
@@ -224,6 +237,7 @@ TEST_ERROR = [
             100000,
         ),
         "ELENGTHSDIFFERENCE",
+        "input",
     ),
     (
         (
@@ -235,6 +249,7 @@ TEST_ERROR = [
             100000,
         ),
         "ELENGTHSDIFFERENCE",
+        "input",
     ),
     (
         (
@@ -246,10 +261,24 @@ TEST_ERROR = [
             100000,
         ),
         "ELENGTHSDIFFERENCE",
+        "input",
+    ),
+    (
+        (
+            "NM_003002.4:c.169_170insA",
+            "NG_012337.3",
+            "NM_003002.4",
+            "transcript",
+            False,
+            100000,
+        ),
+        "EINSERTIONRANGE",
+        "output",
     ),
 ]
 
 
-@pytest.mark.parametrize("input_params, error_code", TEST_ERROR)
-def test_mapper_error(input_params, error_code):
+@pytest.mark.parametrize("input_params, error_code, source", TEST_ERROR)
+def test_mapper_error(input_params, error_code, source):
     assert code_in(error_code, map_description(*input_params)["errors"])
+    assert map_description(*input_params)["source"] == source

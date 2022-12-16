@@ -82,14 +82,20 @@ def map_description(
     d = Description(description)
     d.normalize()
     if d.errors:
-        return {"errors": d.errors}
+        return {"errors": d.errors, "source": "input"}
     if not d.references and not d.references.get("observed"):
-        return {"errors": [{"details": "No observed sequence or other error occured."}]}
+        return {
+            "errors": [{"details": "No observed sequence or other error occured."}],
+            "source": "input",
+        }
     obs_seq = d.references["observed"]["sequence"]["seq"]
 
     to_r_model = retrieve_reference(reference_id, selector_id)[0]
     if to_r_model is None:
-        return {"errors": [errors.reference_not_retrieved(reference_id, [])]}
+        return {
+            "errors": [errors.reference_not_retrieved(reference_id, [])],
+            "source": "input",
+        }
 
     ref_seq_from = d.references["reference"]["sequence"]["seq"]
 
@@ -114,7 +120,7 @@ def map_description(
                             d.corrected_model["variants"][v]["location"]
                         )
                     )
-                return {"errors": errs}
+                return {"errors": errs, "source": "input"}
             from_r_model = convert_reference_model(
                 d.references["reference"], d.get_selector_id(), slice_to
             )
@@ -147,17 +153,20 @@ def map_description(
                             d.corrected_model["variants"][v]["location"]
                         )
                     )
-                return {"errors": errs}
+                return {"errors": errs, "source": "input"}
             obs_seq = mutate({"reference": ref_seq_from}, converted_variants)
     elif slice_to is not None:
-        return {"errors": [errors.slice_option(slice_to)]}
+        return {"errors": [errors.slice_option(slice_to)], "source": "input"}
 
     if selector_id:
         s_model = get_internal_selector_model(
             to_r_model["annotations"], selector_id, True
         )
         if s_model is None:
-            return {"errors": [errors.no_selector_found(reference_id, selector_id, [])]}
+            return {
+                "errors": [errors.no_selector_found(reference_id, selector_id, [])],
+                "source": "input",
+            }
         if d.get_selector_model() and (
             s_model["inverted"] ^ d.get_selector_model()["inverted"]
         ):
@@ -169,9 +178,12 @@ def map_description(
     ref_seq_to = to_r_model["sequence"]["seq"]
 
     if len(ref_seq_to) > len_max:
-        return {"errors": [errors.sequence_length(ref_seq_to, len_max)]}
+        return {
+            "errors": [errors.sequence_length(ref_seq_to, len_max)],
+            "source": "input",
+        }
     if len(obs_seq) > len_max:
-        return {"errors": [errors.sequence_length(obs_seq, len_max)]}
+        return {"errors": [errors.sequence_length(obs_seq, len_max)], "source": "input"}
 
     if (
         len(ref_seq_to) < len(obs_seq)
@@ -180,7 +192,8 @@ def map_description(
         return {
             "errors": [
                 errors.lengths_difference(abs(len(ref_seq_to) - len(obs_seq)), diff_max)
-            ]
+            ],
+            "source": "input",
         }
 
     # Get the description extractor hgvs internal indexing variants
@@ -196,8 +209,17 @@ def map_description(
             v for v in seq_variants if v not in variants
         ]:
             return {
-                "errors": [{"code": "EMAPFILTER", "details": "Unsuccessful filtering."}]
+                "errors": [
+                    {"code": "EMAPFILTER", "details": "Unsuccessful filtering."}
+                ],
+                "source": "input",
             }
         variants = [v for v in variants if v not in seq_variants]
 
-    return {"mapped_description": _get_description(variants, to_r_model, selector_id)}
+    mapped_description = _get_description(variants, to_r_model, selector_id)
+    m_d = Description(mapped_description)
+    m_d.to_delins()
+    if m_d.errors:
+        return {"errors": m_d.errors, "source": "output"}
+    else:
+        return {"mapped_description": mapped_description}

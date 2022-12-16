@@ -1501,14 +1501,21 @@ class Description(object):
                             degenerate=True,
                         )
                     )
-
-                    chromosomal_descriptions.append(
-                        {
-                            "assembly": assembly,
-                            "c": chr_d.normalized_description,
-                            "g": genomic,
-                        }
-                    )
+                    if chr_d.errors:
+                        chromosomal_descriptions.append(
+                            {
+                                "assembly": assembly,
+                                "errors": chr_d.errors,
+                            }
+                        )
+                    else:
+                        chromosomal_descriptions.append(
+                            {
+                                "assembly": assembly,
+                                "c": chr_d.normalized_description,
+                                "g": genomic,
+                            }
+                        )
 
         if chromosomal_descriptions:
             self.chromosomal_descriptions = chromosomal_descriptions
