@@ -95,6 +95,8 @@ def test_infos(input_description, codes):
 @pytest.mark.parametrize(
     "description, sequence, normalized",
     [
+        ("1A>T", "A", "1A>T"),
+        ("1A>T", "AA", "1A>T"),
         ("2del", "AAAT", "3del"),
         ("[2del]", "AAAT", "3del"),
         ("[1del;2del]", "AAAT", "2_3del"),
@@ -105,4 +107,21 @@ def test_infos(input_description, codes):
 def test_only_variants(description, sequence, normalized):
     assert (
             normalize(description, True, sequence)["normalized_description"] == normalized
+    )
+
+
+@pytest.mark.parametrize(
+    "description, sequence, codes",
+    [
+        ("1C>T", "A", ["ESEQUENCEMISMATCH"]),
+        ("1C>T", "AA", ["ESEQUENCEMISMATCH"]),
+        ("2C>T", "AA", ["ESEQUENCEMISMATCH"]),
+        ("1delC", "A", ["ESEQUENCEMISMATCH"]),
+        ("1delC", "AA", ["ESEQUENCEMISMATCH"]),
+        ("2delC", "AA", ["ESEQUENCEMISMATCH"]),
+    ],
+)
+def test_only_variants_errors(description, sequence, codes):
+    assert (
+            codes == [error["code"] for error in normalize(description, True, sequence)["errors"]]
     )
