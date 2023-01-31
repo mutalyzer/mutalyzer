@@ -342,3 +342,13 @@ def cds_slices(exception_message):
         "code": "ECDSSLICES",
         "details": f"CDS slices not consecutive. {exception_message}",
     }
+
+
+def no_cds(reference_id, selector_id, path):
+    return {
+        "code": "ENOCDS",
+        "details": "No CDS annotation found for selector {} in reference {}.".format(
+            selector_id, reference_id
+        ),
+        "paths": [path],
+    }

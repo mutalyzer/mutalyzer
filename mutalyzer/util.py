@@ -182,6 +182,11 @@ def configuration():
             sect: dict(loaded_settings.items(sect))
             for sect in loaded_settings.sections()
         }["config"]
+        for k in loaded_settings:
+            if loaded_settings[k] in {"yes", "true", "1"}:
+                loaded_settings[k] = True
+            elif loaded_settings[k] in {"no", "false", "0"}:
+                loaded_settings[k] = False
 
         return loaded_settings
 
@@ -189,15 +194,9 @@ def configuration():
 def log_dir():
     settings = configuration()
     if settings and settings.get("MUTALYZER_LOG_DIR"):
-        return eval(settings["MUTALYZER_LOG_DIR"])
+        return settings["MUTALYZER_LOG_DIR"]
     else:
         return "/tmp/mutalyzer.log"
-
-
-def cache_dir():
-    settings = configuration()
-    if settings and settings.get("MUTALYZER_CACHE_DIR"):
-        return eval(settings["MUTALYZER_CACHE_DIR"])
 
 
 def set_by_path(dictionary, path, value):
@@ -309,4 +308,3 @@ def slice_seq(seq, slices):
     for s in slices:
         output += seq[s[0] : s[1]]
     return output
-

@@ -2,8 +2,10 @@ from copy import deepcopy
 
 from Bio.SeqUtils import seq1, seq3
 from mutalyzer_crossmapper import NonCoding
+from mutalyzer_retriever.retriever import extract_feature_model
 
 from ..description_model import location_to_description, yield_values
+from ..reference import get_internal_selector_model, yield_locations_selector_id
 from ..util import (
     create_exact_point_model,
     get_end,
@@ -12,11 +14,11 @@ from ..util import (
     set_by_path,
     set_end,
     set_start,
-    slice_seq
+    slice_seq,
 )
 from .to_hgvs_coordinates import crossmap_to_hgvs_setup, point_to_hgvs
 from .to_rna import get_location_type
-from ..reference import extract_feature_model, get_internal_selector_model, yield_locations_selector_id
+
 
 def convert_tuples(t, x, inverted=False):
     t_c = [
@@ -51,6 +53,12 @@ def convert_selector_model(s_m):
     exon_n = convert_tuples(s_m["exon"], x, s_m["inverted"])
 
     return {"exon": {"g": exon_g, "n": exon_n}}
+
+
+def get_mane_tag(s_m):
+    tag = s_m.get("tag")
+    if tag and "MANE" in tag:
+        return {"id": s_m["id"], "details": tag}
 
 
 def convert_amino_acids(model, to):

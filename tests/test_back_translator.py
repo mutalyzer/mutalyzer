@@ -34,6 +34,13 @@ from .commons import code_in, patch_retriever
                 "NG_012337.1(NM_003002.2):c.([276C>A;289G>A])",
             ],
         ),
+        (
+            "NG_012337.1(NM_003002.2):p.[Asp92Glu;97Thr]",
+            [
+                "NG_012337.1(NM_003002.2):c.([276C>G;289G>A])",
+                "NG_012337.1(NM_003002.2):c.([276C>A;289G>A])",
+            ],
+        ),
     ],
 )
 def test_protein(protein_description, back_translated_descriptions):

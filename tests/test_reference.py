@@ -1,10 +1,7 @@
 import pytest
+from mutalyzer_retriever.retriever import get_reference_model_segmented
 
-from mutalyzer.reference import (
-    get_internal_selector_model,
-    get_reference_model_segmented,
-    get_selector_feature,
-)
+from mutalyzer.reference import get_internal_selector_model, get_selector_feature
 
 from .commons import patch_retriever
 

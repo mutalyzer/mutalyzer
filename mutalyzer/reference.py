@@ -1,15 +1,17 @@
 import bisect
 import copy
-import json
 import re
-from functools import lru_cache
-from pathlib import Path
 
 from mutalyzer_mutator.util import reverse_complement
-from mutalyzer_retriever import retrieve_model
-from mutalyzer_retriever.retriever import NoReferenceError, NoReferenceRetrieved
+from mutalyzer_retriever.reference import get_reference_mol_type
+from mutalyzer_retriever.retriever import (
+    NoReferenceError,
+    NoReferenceRetrieved,
+    extract_feature_model,
+    get_reference_model,
+)
 
-from .util import cache_dir, get_end, get_start, get_submodel_by_path
+from .util import get_end, get_start, get_submodel_by_path
 
 SELECTOR_MOL_TYPES_TYPES = ["mRNA", "ncRNA", "CDS"]
 SELECTOR_FEATURE_TYPES = ["mRNA", "ncRNA", "CDS"]
@@ -17,17 +19,6 @@ COORDINATE_C_MOL_TYPES_TYPES = ["mRNA"]
 COORDINATE_N_MOL_TYPES_TYPES = ["ncRNA", "transcribed RNA"]
 COORDINATE_G_MOL_TYPES_TYPES = ["dna", "genomic DNA", "DNA"]
 COORDINATE_P_MOL_TYPES_TYPES = ["CDS", "unassigned"]
-
-
-@lru_cache(maxsize=32)
-def get_reference_model(r_id):
-    cache = cache_dir()
-    if cache and (Path(cache) / r_id).is_file():
-        # print(f" - from cache {r_id}")
-        with open(Path(cache) / r_id) as json_file:
-            return json.load(json_file)
-    # print(f" - not from cache {r_id}")
-    return retrieve_model(r_id, timeout=10)
 
 
 def _update_ensembl_ids(r_m):
@@ -83,9 +74,9 @@ def _fix_ensembl(r_m, r_id):
     return r_m
 
 
-def retrieve_reference(reference_id):
+def retrieve_reference(reference_id, selector_id=None):
     try:
-        r_m = get_reference_model(re.sub("\s+", "", reference_id))
+        r_m = get_reference_model(re.sub("\s+", "", reference_id), selector_id)
     except NoReferenceRetrieved:
         return None, None
     except NoReferenceError as e:
@@ -93,64 +84,6 @@ def retrieve_reference(reference_id):
     if reference_id.startswith("ENS"):
         r_m = _fix_ensembl(copy.deepcopy(r_m), reference_id)
     return r_m, None
-
-
-def get_reference_model_segmented(
-    reference_id, feature_id=None, siblings=False, ancestors=True, descendants=True
-):
-    reference_model = retrieve_reference(reference_id)[0]
-    if feature_id is not None:
-        return extract_feature_model(
-            reference_model["annotations"],
-            feature_id,
-            siblings,
-            ancestors,
-            descendants,
-        )[0]
-    return reference_model
-
-
-def extract_feature_model(
-    feature, feature_id, siblings=False, ancestors=True, descendants=True
-):
-    output_model = None
-    just_found = False
-    if feature.get("id") is not None and feature_id == feature["id"]:
-        output_model = copy.deepcopy(feature)
-        if not descendants:
-            if output_model.get("features"):
-                output_model.pop("features")
-            return output_model, True, True
-        return output_model, True, False
-    elif feature.get("features"):
-        for f in feature["features"]:
-            output_model, just_found, propagate = extract_feature_model(
-                f, feature_id, siblings, ancestors, descendants
-            )
-            if output_model:
-                break
-        if output_model and just_found:
-            if siblings:
-                output_model = copy.deepcopy(feature["features"])
-            if not ancestors:
-                return output_model, False, True
-        elif propagate:
-            return output_model, False, True
-    if output_model is not None:
-        if isinstance(output_model, dict):
-            output_model = [output_model]
-        return (
-            {
-                **{
-                    k: copy.deepcopy(feature[k])
-                    for k in list(set(feature.keys()) - {"features"})
-                },
-                **{"features": output_model},
-            },
-            False,
-            False,
-        )
-    return None, False, False
 
 
 def get_feature_path(r_m, f_id, path=[]):
@@ -257,6 +190,12 @@ def get_internal_selector_model(reference_annotations, selector_id, fix_exon=Fal
             "location": feature_model["location"],
         }
         cds_sub_feature_model = _get_cds_id(feature_model)
+        if (
+            feature_model.get("qualifiers")
+            and feature_model["qualifiers"].get("tag")
+            and "MANE" in feature_model["qualifiers"]["tag"]
+        ):
+            output["tag"] = feature_model["qualifiers"]["tag"]
         if cds_sub_feature_model:
             output["cds_id"] = cds_sub_feature_model["id"]
             if cds_sub_feature_model.get("qualifiers"):
@@ -431,6 +370,10 @@ def yield_overlap_ids(model, start, end):
                         yield selector
 
 
+def get_overlap_ids(r_id, start, end):
+    pass
+
+
 def get_only_selector_id(model):
     for selector_id in yield_selector_ids(model):
         return selector_id
@@ -489,10 +432,6 @@ def coordinate_system_from_mol_type(mol_type):
 def get_coordinate_system_from_selector_id(model, selector_id):
     selector = get_selector_feature(model["annotations"], selector_id)
     return coordinate_system_from_mol_type(selector.get("type"))
-
-
-def get_reference_mol_type(model):
-    return get_model_qualifier(model, "mol_type")
 
 
 def get_coordinate_system_from_reference(reference):
@@ -564,94 +503,3 @@ def yield_locations_selector_id(r_model, selector_id):
     ]:
         if feature.get("location"):
             yield feature["location"], feature["type"]
-
-
-GRCH38 = {
-    "1": "NC_000001.11",
-    "2": "NC_000002.12",
-    "3": "NC_000003.12",
-    "4": "NC_000004.12",
-    "5": "NC_000005.10",
-    "6": "NC_000006.12",
-    "7": "NC_000007.14",
-    "8": "NC_000008.11",
-    "9": "NC_000009.12",
-    "10": "NC_000010.11",
-    "11": "NC_000011.10",
-    "12": "NC_000012.12",
-    "13": "NC_000013.11",
-    "14": "NC_000014.9",
-    "15": "NC_000015.10",
-    "16": "NC_000016.10",
-    "17": "NC_000017.11",
-    "18": "NC_000018.10",
-    "19": "NC_000019.10",
-    "20": "NC_000020.11",
-    "21": "NC_000021.9",
-    "22": "NC_000022.11",
-    "23": "NC_000023.11",
-    "X": "NC_000023.11",
-    "24": "NC_000024.10",
-    "Y": "NC_000024.10",
-}
-
-GRCH37 = {
-    "1": "NC_000001.10",
-    "2": "NC_000002.11",
-    "3": "NC_000003.11",
-    "4": "NC_000004.11",
-    "5": "NC_000005.9",
-    "6": "NC_000006.11",
-    "7": "NC_000007.13",
-    "8": "NC_000008.10",
-    "9": "NC_000009.11",
-    "10": "NC_000010.10",
-    "11": "NC_000011.9",
-    "12": "NC_000012.11",
-    "13": "NC_000013.10",
-    "14": "NC_000014.8",
-    "15": "NC_000015.9",
-    "16": "NC_000016.9",
-    "17": "NC_000017.10",
-    "18": "NC_000018.9",
-    "19": "NC_000019.9",
-    "20": "NC_000020.10",
-    "21": "NC_000021.8",
-    "22": "NC_000022.10",
-    "23": "NC_000023.10",
-    "X": "NC_000023.10",
-    "24": "NC_000024.9",
-    "Y": "NC_000024.9",
-}
-
-ASSEMBLY_ALIASES = {
-    "HG38": "GRCH38",
-    "HG19": "GRCH37",
-}
-
-ASSEMBLIES = {
-    "GRCH38": GRCH38,
-    "GRCH37": GRCH37,
-}
-
-
-def get_model_qualifier(model, qualifier):
-    if (
-        model.get("annotations")
-        and model["annotations"].get("qualifiers")
-        and model["annotations"]["qualifiers"]
-    ):
-        return model["annotations"]["qualifiers"].get(qualifier)
-
-
-def get_chromosome_accession(ref_id, model):
-    if get_reference_mol_type(model) == "mRNA" and ref_id.startswith("NM"):
-        chromosome_number = get_model_qualifier(model, "chromosome")
-        if chromosome_number is not None:
-            chromosome_accessions = []
-            for assembly in ASSEMBLIES:
-                chromosome_accession = ASSEMBLIES[assembly].get(chromosome_number)
-                if chromosome_accession is not None:
-                    chromosome_accessions.append((assembly, chromosome_accession))
-            if chromosome_accessions:
-                return chromosome_accessions
