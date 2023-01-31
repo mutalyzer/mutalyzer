@@ -82,42 +82,64 @@ def _in_adjacent_exons(start_i, end_i, exons):
 
 
 def splice_sites(variants, sequences, selector_model):
+    def _starts_ends(v):
+        start = v["location"]["start"]
+        end = v["location"]["end"]
+        if (
+            start.get("shift")
+            and start["shift"] > 0
+            and end.get("shift")
+            and start["shift"] == end["shift"]
+        ):
+            shift = start["shift"]
+        else:
+            shift = 0
+        for idx in range(shift + 1):
+            _start = start["position"] - idx
+            if start["position"] == end["position"]:
+                _end = _start
+            else:
+                _end = end["position"] - 1 - idx
+            yield get_position_type(_start, selector_model["exon"]), get_position_type(
+                _end, selector_model["exon"]
+            )
+
     errors_splice = []
     infos_splice = []
     for i, v in enumerate(variants):
         if v.get("location"):
-            start_i = get_position_type(get_start(v), selector_model["exon"])
-            if get_start(v) == get_end(v):
-                end_i = get_position_type(get_end(v), selector_model["exon"])
-            else:
-                end_i = get_position_type(get_end(v) - 1, selector_model["exon"])
             path = ["variants", i]
-            if start_i[0] % 2 == 1 and end_i[0] % 2 == 1:
-                # both start and end are in exons
-                if end_i[0] != start_i[0] and not _in_adjacent_exons(
-                    start_i, end_i, selector_model["exon"]
-                ):
-                    if v.get("inserted") and construct_sequence(
-                        v["inserted"], sequences
+            for start_i, end_i in _starts_ends(v):
+                if start_i[0] % 2 == 1 and end_i[0] % 2 == 1:
+                    # both start and end are in exons
+                    if end_i[0] != start_i[0] and not _in_adjacent_exons(
+                        start_i, end_i, selector_model["exon"]
                     ):
-                        # insertion - error
-                        errors_splice.append(errors.splice_site(["variants", i]))
+                        if v.get("inserted") and construct_sequence(
+                            v["inserted"], sequences
+                        ):
+                            # insertion - error
+                            errors_splice.append(errors.splice_site(["variants", i]))
+                            break
+                        else:
+                            infos_splice.append(infos.splice_site_removed(path))
+                elif start_i[0] % 2 == 0 and end_i[0] % 2 == 0:
+                    # both start and end are in introns
+                    if start_i[0] == end_i[0] and start_i[1] == end_i[1] == 0:
+                        # same intron discarded - warning
+                        infos_splice.append(infos.variant_discarded(path))
+                    elif start_i[0] != end_i[0] and start_i[1] == 0 and end_i[1] == 0:
+                        if v.get("inserted") and construct_sequence(
+                            v["inserted"], sequences
+                        ):
+                            errors_splice.append(errors.splice_site(path))
+                            break
+                        else:
+                            infos_splice.append(infos.splice_site_removed(path))
                     else:
-                        infos_splice.append(infos.splice_site_removed(path))
-            elif start_i[0] % 2 == 0 and end_i[0] % 2 == 0:
-                # both start and end are in introns
-                if start_i[0] == end_i[0] and start_i[1] == end_i[1] == 0:
-                    # same intron discarded - warning
-                    infos_splice.append(infos.variant_discarded(path))
-                elif start_i[0] != end_i[0] and start_i[1] == 0 and end_i[1] == 0:
-                    if v.get("inserted") and construct_sequence(
-                        v["inserted"], sequences
-                    ):
                         errors_splice.append(errors.splice_site(path))
-                    else:
-                        infos_splice.append(infos.splice_site_removed(path))
+                        break
                 else:
                     errors_splice.append(errors.splice_site(path))
-            else:
-                errors_splice.append(errors.splice_site(path))
+                    break
     return errors_splice, infos_splice

@@ -1,12 +1,23 @@
+from copy import deepcopy
+
 from Bio.SeqUtils import seq1, seq3
+from mutalyzer_crossmapper import NonCoding
+from mutalyzer_retriever.retriever import extract_feature_model
 
 from ..description_model import location_to_description, yield_values
-from ..util import create_exact_point_model, set_by_path
-from .to_hgvs_coordinates import (
-    crossmap_to_hgvs_setup,
-    locations_to_hgvs_locations,
-    point_to_hgvs,
+from ..reference import get_internal_selector_model, yield_locations_selector_id
+from ..util import (
+    create_exact_point_model,
+    get_end,
+    get_inserted_sequence,
+    get_start,
+    set_by_path,
+    set_end,
+    set_start,
+    slice_seq,
 )
+from .to_hgvs_coordinates import crossmap_to_hgvs_setup, point_to_hgvs
+from .to_rna import get_location_type
 
 
 def convert_tuples(t, x, inverted=False):
@@ -44,6 +55,12 @@ def convert_selector_model(s_m):
     return {"exon": {"g": exon_g, "n": exon_n}}
 
 
+def get_mane_tag(s_m):
+    tag = s_m.get("tag")
+    if tag and "MANE" in tag:
+        return {"id": s_m["id"], "details": tag}
+
+
 def convert_amino_acids(model, to):
     for sequence, path in yield_values(model, ["sequence", "amino_acid"]):
         if to == "1a":
@@ -58,3 +75,87 @@ def convert_amino_acids(model, to):
                 set_by_path(model, path, seq_3a)
             else:
                 pass
+
+
+def convert_to_exons(variants, exons, sequences):
+    """
+    Get variants with locations converted according to the exon locations.
+
+    :param variants: Variant models to be converted.
+    :param exons: Exons locations as list of tuples.
+    :param sequences: Dictionary with sequences.
+    :return: The converted and unconverted variants.
+    """
+    converted = []
+    skipped = []
+    x = NonCoding(exons).coordinate_to_noncoding
+    for i, v in enumerate(variants):
+        slice_v = deepcopy(v)
+        if v.get("location"):
+            if get_location_type(v["location"], exons, 0, 0) in [
+                "same exon",
+                "exon exon",
+            ]:
+                set_start(slice_v["location"], x(get_start(slice_v))[0] - 1)
+                set_end(
+                    slice_v["location"],
+                    x(get_end(slice_v))[0] + x(get_end(slice_v))[1] - 1,
+                )
+                if slice_v.get("inserted"):
+                    slice_v["inserted"] = [
+                        {
+                            "source": "description",
+                            "sequence": get_inserted_sequence(slice_v, sequences),
+                        }
+                    ]
+                converted.append(slice_v)
+            else:
+                skipped.append(i)
+    return converted, skipped
+
+
+def get_gene_locations(r_model):
+    g_l = r_model["annotations"]["features"][0]["location"]
+    return g_l["start"]["position"], g_l["end"]["position"]
+
+
+def convert_reference_model(reference_model, selector_id=None, slice_to=None):
+    """
+    Modify the reference model based on the `selector_id`
+    and the `slice_to` parameters.
+
+    :param reference_model:
+    :param selector_id:
+    :param slice_to:
+    :return:
+    """
+    if selector_id is None:
+        return reference_model
+
+    new_r_model = {
+        "annotations": deepcopy(
+            extract_feature_model(reference_model["annotations"], selector_id)[0]
+        )
+    }
+    ref_seq = reference_model["sequence"]["seq"]
+    s_model = get_internal_selector_model(new_r_model["annotations"], selector_id, True)
+
+    if slice_to == "transcript":
+        ref_seq = slice_seq(ref_seq, s_model["exon"])
+        new_r_model["sequence"] = {"seq": ref_seq}
+        x = NonCoding(s_model["exon"]).coordinate_to_noncoding
+        exon_end = [exon[1] for exon in s_model["exon"]]
+    if slice_to == "gene":
+        g_l = get_gene_locations(new_r_model)
+        ref_seq = slice_seq(ref_seq, [g_l])
+        new_r_model["sequence"] = {"seq": ref_seq}
+        x = NonCoding([g_l]).coordinate_to_noncoding
+        exon_end = [g_l[1]]
+
+    for loc, feature_type in yield_locations_selector_id(new_r_model, selector_id):
+        loc["start"]["position"] = x(loc["start"]["position"])[0] - 1
+        if feature_type == "exon" and loc["end"]["position"] in exon_end:
+            loc["end"]["position"] = x(loc["end"]["position"])[0]
+        else:
+            loc["end"]["position"] = x(loc["end"]["position"])[0] - 1
+    return new_r_model

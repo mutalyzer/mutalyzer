@@ -1,14 +1,17 @@
 import bisect
 import copy
-import json
-from functools import lru_cache
-from pathlib import Path
+import re
 
 from mutalyzer_mutator.util import reverse_complement
-from mutalyzer_retriever import retrieve_model
-from mutalyzer_retriever.retriever import NoReferenceError, NoReferenceRetrieved
+from mutalyzer_retriever.reference import get_reference_mol_type
+from mutalyzer_retriever.retriever import (
+    NoReferenceError,
+    NoReferenceRetrieved,
+    extract_feature_model,
+    get_reference_model,
+)
 
-from .util import cache_dir, get_end, get_start, get_submodel_by_path
+from .util import get_end, get_start, get_submodel_by_path
 
 SELECTOR_MOL_TYPES_TYPES = ["mRNA", "ncRNA", "CDS"]
 SELECTOR_FEATURE_TYPES = ["mRNA", "ncRNA", "CDS"]
@@ -16,17 +19,6 @@ COORDINATE_C_MOL_TYPES_TYPES = ["mRNA"]
 COORDINATE_N_MOL_TYPES_TYPES = ["ncRNA", "transcribed RNA"]
 COORDINATE_G_MOL_TYPES_TYPES = ["dna", "genomic DNA", "DNA"]
 COORDINATE_P_MOL_TYPES_TYPES = ["CDS", "unassigned"]
-
-
-@lru_cache(maxsize=32)
-def get_reference_model(r_id):
-    cache = cache_dir()
-    if cache and (Path(cache) / r_id).is_file():
-        # print(f" - from cache {r_id}")
-        with open(Path(cache) / r_id) as json_file:
-            return json.load(json_file)
-    # print(f" - not from cache {r_id}")
-    return retrieve_model(r_id, timeout=10)
 
 
 def _update_ensembl_ids(r_m):
@@ -82,9 +74,9 @@ def _fix_ensembl(r_m, r_id):
     return r_m
 
 
-def retrieve_reference(reference_id):
+def retrieve_reference(reference_id, selector_id=None):
     try:
-        r_m = get_reference_model(reference_id)
+        r_m = get_reference_model(re.sub("\s+", "", reference_id), selector_id)
     except NoReferenceRetrieved:
         return None, None
     except NoReferenceError as e:
@@ -92,64 +84,6 @@ def retrieve_reference(reference_id):
     if reference_id.startswith("ENS"):
         r_m = _fix_ensembl(copy.deepcopy(r_m), reference_id)
     return r_m, None
-
-
-def get_reference_model_segmented(
-    reference_id, feature_id=None, siblings=False, ancestors=True, descendants=True
-):
-    reference_model = retrieve_reference(reference_id)[0]
-    if feature_id is not None:
-        return extract_feature_model(
-            reference_model["annotations"],
-            feature_id,
-            siblings,
-            ancestors,
-            descendants,
-        )[0]
-    return reference_model
-
-
-def extract_feature_model(
-    feature, feature_id, siblings=False, ancestors=True, descendants=True
-):
-    output_model = None
-    just_found = False
-    if feature.get("id") is not None and feature_id == feature["id"]:
-        output_model = copy.deepcopy(feature)
-        if not descendants:
-            if output_model.get("features"):
-                output_model.pop("features")
-            return output_model, True, True
-        return output_model, True, False
-    elif feature.get("features"):
-        for f in feature["features"]:
-            output_model, just_found, propagate = extract_feature_model(
-                f, feature_id, siblings, ancestors, descendants
-            )
-            if output_model:
-                break
-        if output_model and just_found:
-            if siblings:
-                output_model = copy.deepcopy(feature["features"])
-            if not ancestors:
-                return output_model, False, True
-        elif propagate:
-            return output_model, False, True
-    if output_model is not None:
-        if isinstance(output_model, dict):
-            output_model = [output_model]
-        return (
-            {
-                **{
-                    k: copy.deepcopy(feature[k])
-                    for k in list(set(feature.keys()) - {"features"})
-                },
-                **{"features": output_model},
-            },
-            False,
-            False,
-        )
-    return None, False, False
 
 
 def get_feature_path(r_m, f_id, path=[]):
@@ -247,7 +181,6 @@ def get_internal_selector_model(reference_annotations, selector_id, fix_exon=Fal
     :return: Dictionary.
     """
     feature_model = get_selector_feature(reference_annotations, selector_id)
-    import json
 
     if feature_model:
         output = {
@@ -257,6 +190,12 @@ def get_internal_selector_model(reference_annotations, selector_id, fix_exon=Fal
             "location": feature_model["location"],
         }
         cds_sub_feature_model = _get_cds_id(feature_model)
+        if (
+            feature_model.get("qualifiers")
+            and feature_model["qualifiers"].get("tag")
+            and "MANE" in feature_model["qualifiers"]["tag"]
+        ):
+            output["tag"] = feature_model["qualifiers"]["tag"]
         if cds_sub_feature_model:
             output["cds_id"] = cds_sub_feature_model["id"]
             if cds_sub_feature_model.get("qualifiers"):
@@ -431,6 +370,10 @@ def yield_overlap_ids(model, start, end):
                         yield selector
 
 
+def get_overlap_ids(r_id, start, end):
+    pass
+
+
 def get_only_selector_id(model):
     for selector_id in yield_selector_ids(model):
         return selector_id
@@ -489,12 +432,6 @@ def coordinate_system_from_mol_type(mol_type):
 def get_coordinate_system_from_selector_id(model, selector_id):
     selector = get_selector_feature(model["annotations"], selector_id)
     return coordinate_system_from_mol_type(selector.get("type"))
-
-
-def get_reference_mol_type(model):
-    if model["annotations"].get("qualifiers"):
-        if model["annotations"]["qualifiers"].get("mol_type"):
-            return model["annotations"]["qualifiers"]["mol_type"]
 
 
 def get_coordinate_system_from_reference(reference):
@@ -558,3 +495,11 @@ def yield_locations(annotations):
     if annotations.get("features"):
         for feature in annotations["features"]:
             yield from yield_locations(feature)
+
+
+def yield_locations_selector_id(r_model, selector_id):
+    for feature in get_selector_feature(r_model["annotations"], selector_id)[
+        "features"
+    ]:
+        if feature.get("location"):
+            yield feature["location"], feature["type"]

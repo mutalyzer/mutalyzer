@@ -163,6 +163,13 @@ def delins_to_del(variant):
 
 
 def delins_to_duplication(variant, sequences):
+    def _update_shift():
+        location = new_variant["location"]
+        if location["start"].get("shift"):
+            location["start"]["shift"] -= get_location_length(location)
+        if location["end"].get("shift"):
+            location["end"]["shift"] -= get_location_length(location)
+
     new_variant = copy.deepcopy(variant)
     inserted_sequence = get_inserted_sequence(variant, sequences)
     new_variant["location"]["start"]["position"] = get_start(
@@ -170,6 +177,7 @@ def delins_to_duplication(variant, sequences):
     ) - len(inserted_sequence)
     new_variant.pop("inserted")
     new_variant["type"] = "duplication"
+    _update_shift()
     return new_variant
 
 
@@ -204,7 +212,7 @@ def delins_to_repeat(variant, sequences):
         {
             "sequence": repeat_seq,
             "source": "description",
-            "repeat_number": {"value": repeat_number},
+            "repeat_number": {"value": repeat_number, "type": "point"},
         }
     ]
     if new_variant["location"]["start"].get("shift"):

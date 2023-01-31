@@ -4,18 +4,14 @@ from copy import deepcopy
 from Bio.Seq import Seq
 from mutalyzer_crossmapper import Coding, Genomic, NonCoding
 from mutalyzer_mutator.util import reverse_complement
+from mutalyzer_retriever.retriever import extract_feature_model
 
 from ..description_model import (
     variant_to_description,
     variants_to_description,
     yield_sub_model,
 )
-from ..reference import (
-    extract_feature_model,
-    get_internal_selector_model,
-    slice_to_selector,
-    yield_locations,
-)
+from ..reference import get_internal_selector_model, slice_to_selector, yield_locations
 from ..util import (
     construct_sequence,
     get_end,
@@ -233,7 +229,7 @@ def to_rna_variants(variants, sequences, selector_model):
     Convert coordinate delins variants to RNA.
 
     :arg list variants: Variants with coordinate locations.
-    :arg list sequences: List with sequences dictionary.
+    :arg dict sequences: Sequences dictionary.
     :arg dict selector_model: Selector model.
     :returns: Converted RNA variants.
     :rtype: dict
@@ -278,7 +274,7 @@ def _point_to_cds_coordinate(point, selector_model, crossmap):
     if coding[2] == -1:
         return genomic_to_point(0)
     else:
-        return genomic_to_point(genomic_to_coordinate(coding[0]))
+        return genomic_to_point(genomic_to_coordinate(coding[0] + coding[1]))
 
 
 def _get_inserted_sequence(insertion, sequences):
@@ -319,12 +315,16 @@ def variant_to_cds_coordinate(variant, sequences, selector_model, crossmap):
     else:
         location = _point_to_cds_coordinate(location, selector_model, crossmap)
     if new_variant.get("inserted"):
-        new_variant["inserted"] = [
-            {
-                "source": "description",
-                "sequence": get_inserted_sequence(variant, sequences),
-            }
-        ]
+        insertions = []
+        for inserted in new_variant.get("inserted"):
+            if inserted.get("location"):
+                ins_seq = construct_sequence([inserted], sequences)
+                if selector_model.get("inverted"):
+                    ins_seq = reverse_complement(ins_seq)
+                insertions.append({"source": "description", "sequence": ins_seq})
+            else:
+                insertions.append(inserted)
+        new_variant["inserted"] = insertions
     new_variant["location"] = location
     return new_variant
 
@@ -416,7 +416,7 @@ def _get_splice_site_hits(variants, exons, cds):
 
 def reverse_variants(variants, sequences):
     reversed_variants = deepcopy(variants)
-    reverse_strand_shift(reversed_variants, sequences["reference"])
+    reverse_strand_shift(reversed_variants, sequences)
     reverse_start_end(reversed_variants)
     return reversed_variants
 
@@ -435,14 +435,17 @@ def to_rna_protein_coordinates(variants, sequences, selector_model):
 
     if selector_model.get("inverted"):
         variants = reverse_variants(variants, sequences)
-
-    splice_site_hits = _get_splice_site_hits(variants, exons, cds)
-
-    coordinate_variants = to_exon_positions(variants, exons, cds)
+        coordinate_variants = to_exon_positions(
+            variants, [p-1 for p in exons], [p-1 for p in cds])
+    else:
+        coordinate_variants = to_exon_positions(variants, exons, cds)
 
     cds_variants = []
     for variant in coordinate_variants:
         cds_variants.append(
             variant_to_cds_coordinate(variant, sequences, selector_model, crossmap)
         )
+
+    splice_site_hits = _get_splice_site_hits(variants, exons, cds)
+
     return cds_variants, splice_site_hits

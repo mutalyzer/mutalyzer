@@ -12,7 +12,7 @@ from ..reference import (
     get_coordinate_system_from_selector_id,
     get_internal_selector_model,
 )
-from ..util import get_start, set_by_path
+from ..util import construct_sequence, get_start, set_by_path
 from .to_hgvs_indexing import to_hgvs_indexing
 from .to_internal_coordinates import get_coordinate_system
 
@@ -119,27 +119,38 @@ def locations_to_hgvs_locations(internal_model, crossmap):
     return hgvs_model
 
 
-def reverse_strand_shift(variants, seq):
+def reverse_strand_shift(variants, sequences):
     for variant in variants:
         if variant.get("inserted"):
             variant["inserted"].reverse()
-            if (
-                len(variant["inserted"]) == 1
-                and variant["inserted"][0].get("sequence")
-                and variant["location"]["start"].get("shift")
-            ):
-                # TODO: Check what to do when there is a compound insertion with locations included.
+            shift = variant["location"]["start"].get("shift", 0)
+            if shift and len(variant["inserted"]) > 1:
+                variant["inserted"].reverse()
+                ins_seq = construct_sequence(variant["inserted"], sequences)
+                seq = sequences["reference"]
                 start = get_start(variant)
-                shift = variant["location"]["start"]["shift"]
-                ins_seq = variant["inserted"][0]["sequence"]
                 new_ins_seq = reverse_complement(
                     (seq[start - shift : start] + ins_seq)[: len(ins_seq)]
                 )
-                variant["inserted"][0]["sequence"] = new_ins_seq
+                variant["inserted"] = [
+                    {"sequence": new_ins_seq, "source": "description"}
+                ]
             else:
+                seq = sequences["reference"]
                 for inserted in variant["inserted"]:
                     if inserted.get("sequence"):
-                        inserted["sequence"] = reverse_complement(inserted["sequence"])
+                        start = get_start(variant)
+                        ins_seq = inserted["sequence"]
+                        inserted["sequence"] = reverse_complement(
+                            (seq[start - shift : start] + ins_seq)[: len(ins_seq)]
+                        )
+                    else:
+                        inserted["location"]["start"]["position"] -= inserted[
+                            "location"
+                        ]["start"].get("shift", 0)
+                        inserted["location"]["end"]["position"] -= inserted["location"][
+                            "start"
+                        ].get("shift", 0)
         if variant.get("deleted"):
             variant["deleted"].reverse()
             for deleted in variant["deleted"]:
@@ -176,7 +187,8 @@ def to_hgvs_locations(
 
     if selector_model and selector_model.get("inverted"):
         reverse_strand_shift(
-            hgvs_model["variants"], references["reference"]["sequence"]["seq"]
+            hgvs_model["variants"],
+            {k: references[k]["sequence"]["seq"] for k in references},
         )
 
     model_internal = to_hgvs_indexing(hgvs_model)

@@ -151,7 +151,11 @@ M2_TESTS = [
         ],
         "input": "NM_003002.2:274del",
         "normalized": "NM_003002.2:c.274del",
-        "infos": ["ICORRECTEDCOORDINATESYSTEM", "IWHOLETRANSCRIPTEXON"],
+        "infos": [
+            "ICORRECTEDCOORDINATESYSTEM",
+            "IWHOLETRANSCRIPTEXON",
+            "IMRNAGENOMICTIP",
+        ],
         "to_test": True,
     },
     # test_no_est_warning_nm_c: no longer relevant ?
@@ -177,6 +181,7 @@ M2_TESTS = [
         "input": "NM_003002.2:c.273del",
         "normalized": "NM_003002.2:c.274del",
         "protein_description": "NM_003002.2(NP_002993.1):p.(Asp92Thrfs*43)",
+        "infos": ["IWHOLETRANSCRIPTEXON", "IMRNAGENOMICTIP"],
         "to_test": True,
     },
     {
@@ -227,40 +232,47 @@ M2_TESTS = [
             Insertion that rolls should not use the same inserted sequence in
             descriptions on forward and reverse strands.
             Here we have the following situation on the forward strand:
-                                      65470 (genomic)
+                                      4812 (genomic)
                                         |
-                CGGTGCGTTGGGCAGCGCCCCCGCCTCCAGCAGCGCCCGCACCTCCTCTA
+                CCGCACCTGTGCAGTAAACTGCGCCTTCTGCTGCTCGGCGGCCACCAGGC
             Now, an insertion of TAC after 65470 should be rolled to an insertion
             of ACT after 65471:
 
-                CGGTGCGTTGGGCAGCGCCCCCGCC --- TCCAGCAGCGCCCGCACCTCCTCTA
-                CGGTGCGTTGGGCAGCGCCCCCGCC TAC TCCAGCAGCGCCCGCACCTCCTCTA  =>
+                CCGCACCTGTGCAGTAAACTGCGCC --- TTCTGCTGCTCGGCGGCCACCAGGC
+                CCGCACCTGTGCAGTAAACTGCGCC TAC TTCTGCTGCTCGGCGGCCACCAGGC  =>
 
-                CGGTGCGTTGGGCAGCGCCCCCGCCT --- CCAGCAGCGCCCGCACCTCCTCTA
-                CGGTGCGTTGGGCAGCGCCCCCGCCT ACT CCAGCAGCGCCCGCACCTCCTCTA
-            However, in CDKN2A_v001 (on the reverse strand), this insertion should
+                CCCGCACCTGTGCAGTAAACTGCGC --- CTTCTGCTGCTCGGCGGCCACCAGG
+                CCCGCACCTGTGCAGTAAACTGCGC CTA CTTCTGCTGCTCGGCGGCCACCAGG
+            However, in NM_012459.2 (on the reverse strand), this insertion should
             roll the other direction and the inserted sequence should be the reverse
             complement of CTA, which is TAG, and not that of ACT, which is AGT.
             The next test (test_roll_reverse_ins) tests the situation for an input
             of AL449423.14:g.65471_65472insACT, where only the reverse roll should
             be done.
             """,
-            "Switched from AL449423.14 to NG_007485.1 and updated locations.",
+            "Switched from AL449423.14 to NG_012337.1 and updated locations.",
         ],
         # "input": "AL449423.14:g.65470_65471insTAC",
-        "input": "NG_007485.1:g.5478_5479insTAC",
-        "normalized": "NG_007485.1:g.5479_5480insACT",
+        "input": "NG_012337.1:g.4812_4813insTAC",
+        "normalized": "NG_012337.1:g.4813_4814insACT",
         "coding_protein_descriptions": {
             (
-                "NG_007485.1(NM_058195.3):c.193+126_193+127insACT",
-                "NG_007485.1(NP_478102.2):p.(=)",
+                "NG_012337.1(NM_018195.3):c.*3687_*3688insACT",
+                "NG_012337.1(NP_060665.3):p.(=)",
             ),
             (
-                "NG_007485.1(NM_000077.4):c.-19186_-19185insACT",
-                "NG_007485.1(NP_000068.1):p.(=)",
+                "NG_012337.1(NM_001082969.1):c.*3687_*3688insACT",
+                "NG_012337.1(NP_001076438.1):p.(=)",
+            ),
+            (
+                "NG_012337.1(NM_001082970.1):c.*3687_*3688insACT",
+                "NG_012337.1(NP_001076439.1):p.(=)",
+            ),
+            (
+                "NG_012337.1(NM_001082970.1):c.*3687_*3688insACT",
+                "NG_012337.1(NP_001076439.1):p.(=)",
             ),
         },
-        "noncoding": ["NG_007485.1(NR_024274.1):n.616+26260_616+26261insTAG"],
         "to_test": True,
     },
     {
@@ -270,7 +282,8 @@ M2_TESTS = [
             Insertion that rolls on the reverse strand should not use the same
             inserted sequence in descriptions on forward and reverse strands.
             """,
-            "Switched from AL449423.14 to NG_007485.1 and updated locations.",
+            "Switched from AL449423.14 to NG_007485.1 and updated locations."
+            "Note that the noncoding description is on the reverse strand",
         ],
         # "input": "AL449423.14:g.65471_65472insACT",
         "input": "NG_007485.1:g.5479_5480insACT",
@@ -286,7 +299,6 @@ M2_TESTS = [
             ),
         },
         "noncoding": ["NG_007485.1(NR_024274.1):n.616+26260_616+26261insTAG"],
-        # "noncoding": ["NG_007485.1(NR_024274.1):n.*26260_*26261insTAG"], in M3
         "to_test": True,
     },
     # test_roll_message_forward: switch to check the shift amount?
@@ -1215,6 +1227,7 @@ M2_TESTS = [
         "keywords": [
             "M2: test_deletion_with_sequence_reverse_ng_coding",
             "M2: Specify the deleted sequence in a deletion on the reverse strand using a genomic reference.",
+            "Note: NM_000532.5 is not on the reverse strand.",
         ],
         "input": "NG_008939.1:c.155_157delAAC",
         "normalized": "NG_008939.1(NM_000532.5):c.155_157del",
@@ -1226,6 +1239,7 @@ M2_TESTS = [
         "keywords": [
             "M2: test_deletion_with_length_reverse_ng_coding",
             "M2: Specify the deleted sequence length in a deletion on the reverse strand using a genomic reference.",
+            "Note: NM_000532.5 is not on the reverse strand.",
         ],
         "input": "NG_008939.1:c.155_157del3",
         "normalized": "NG_008939.1(NM_000532.5):c.155_157del",
@@ -1746,10 +1760,10 @@ M2_TESTS = [
         "keywords": [
             "M2: test_del_arg_seq_reverse",
             "M2: Deletion with sequence argument (reverse strand).",
-            "Switched from AL449423.14 to NG_007485.1 and from CDKN2A_v001 to NM_000077.4",
+            "Switched from AL449423.14 to NG_012337.1",
         ],
-        "input": "NG_007485.1(NM_000077.4):c.45delG",
-        "normalized": "NG_007485.1(NM_000077.4):c.45del",
+        "input": "NG_012337.1(TIMM8B):c.12delC",
+        "normalized": "NG_012337.1(NM_012459.2):c.12del",
         "to_test": True,
     },
     {
@@ -1757,8 +1771,8 @@ M2_TESTS = [
             "M2: test_del_range_arg_seq_reverse(",
             "M2: Range deletion with sequence argument (reverse strand).",
         ],
-        "input": "NG_007485.1(NM_000077.4):c.41_44delACTG",
-        "normalized": "NG_007485.1(NM_000077.4):c.41_44del",
+        "input": "NG_012337.1(TIMM8B):c.12_15delCAGC",
+        "normalized": "NG_012337.1(NM_012459.2):c.12_15del",
         "to_test": True,
     },
     {
@@ -1766,8 +1780,8 @@ M2_TESTS = [
             "M2: test_delins_arg_seq_reverse",
             "M2: Delins with sequence argument (reverse strand).",
         ],
-        "input": "NG_007485.1(NM_000077.4):c.45delGinsAT",
-        "normalized": "NG_007485.1(NM_000077.4):c.45delinsAT",
+        "input": "NG_012337.1(TIMM8B):c.12delCinsAT",
+        "normalized": "NG_012337.1(NM_012459.2):c.12delinsAT",
         "to_test": True,
     },
     {
@@ -1775,27 +1789,55 @@ M2_TESTS = [
             "M2: test_delins_range_arg_seq_reverse",
             "M2: Range delins with sequence argument (reverse strand).",
         ],
-        "input": "NG_007485.1(NM_000077.4):c.41_44delACTGinsTTT",
-        "normalized": "NG_007485.1(NM_000077.4):c.41_44delinsTTT",
+        "input": "NG_012337.1(TIMM8B):c.12_15delCAGCinsTTT",
+        "normalized": "NG_012337.1(NM_012459.2):c.12_15delinsTTT",
         "to_test": True,
     },
     {
         "keywords": [
-            "M2: test_dup_range_arg_seq_reverse(",
-            "M2: Range duplication with sequence argument (reverse strand).",
+            "M2: test_dup_arg_seq_reverse",
+            "M2: Duplication with sequence argument (reverse strand).",
         ],
-        "input": "NG_007485.1(NM_000077.4):c.41_44dupACTG",
-        "normalized": "NG_007485.1(NM_000077.4):c.41_44dup",
-        "genomic": "NG_007485.1:g.24705_24708dup",
+        "input": "NG_012337.1(TIMM8B):c.12dupC",
+        "normalized": "NG_012337.1(NM_012459.2):c.12dup",
+        "genomic": "NG_012337.1:g.4911dup",
         "coding_protein_descriptions": {
+            ("NG_012337.1(NM_018195.3):c.*3785dup", "NG_012337.1(NP_060665.3):p.(=)"),
             (
-                "NG_007485.1(NM_058195.3):c.194-3579_194-3576dup",
-                "NG_007485.1(NP_478102.2):p.(=)",
+                "NG_012337.1(NM_001082969.1):c.*3785dup",
+                "NG_012337.1(NP_001076438.1):p.(=)",
+            ),
+            (
+                "NG_012337.1(NM_001082970.1):c.*3785dup",
+                "NG_012337.1(NP_001076439.1):p.(=)",
             ),
         },
-        "noncoding": "NG_007485.1(NR_024274.1):n.616+7037_616+7040dup",
-        # "noncoding": "NG_007485.1(NR_024274.1):n.*7033_*7036dup", # in M2
-        "protein_description": "NG_007485.1(NP_000068.1):p.(Trp15*)",
+        "protein_description": "NG_012337.1(NP_036591.2):p.(Ser5Glnfs*20)",
+        "to_test": True,
+    },
+    {
+        "keywords": [
+            "M2: test_dup_range_arg_seq_reverse",
+            "M2: Range duplication with sequence argument (reverse strand).",
+        ],
+        "input": "NG_012337.1(TIMM8B):c.12_15dupCAGC",
+        "normalized": "NG_012337.1(NM_012459.2):c.12_15dup",
+        "genomic": "NG_012337.1:g.4908_4911dup",
+        "coding_protein_descriptions": {
+            (
+                "NG_012337.1(NM_018195.3):c.*3782_*3785dup",
+                "NG_012337.1(NP_060665.3):p.(=)",
+            ),
+            (
+                "NG_012337.1(NM_001082969.1):c.*3782_*3785dup",
+                "NG_012337.1(NP_001076438.1):p.(=)",
+            ),
+            (
+                "NG_012337.1(NM_001082970.1):c.*3782_*3785dup",
+                "NG_012337.1(NP_001076439.1):p.(=)",
+            ),
+        },
+        "protein_description": "NG_012337.1(NP_036591.2):p.(Cys6Glnfs*20)",
         "to_test": True,
     },
     {
@@ -2596,7 +2638,7 @@ TESTS = [
         "keywords": ["no operation (equal)"],
         "input": "NM_002001.2:c.=",
         "normalized": "NM_002001.2:c.=",
-        "infos": ["IWHOLETRANSCRIPTEXON"],
+        "infos": ["IWHOLETRANSCRIPTEXON", "IMRNAGENOMICTIP"],
         "to_test": True,
     },
     {
@@ -2880,6 +2922,7 @@ TESTS = [
         "keywords": ["repeat", "dbsnp", "reverse"],
         "input": "NG_012337.1(NM_012459.2):c.3GC[5]",
         "normalized": "NG_012337.1(NM_012459.2):c.3_6GC[5]",
+        "protein_description": "NG_012337.1(NP_036591.2):p.(Arg2_Lys3insAlaArg)",
         "genomic": "NG_012337.1:g.4917_4920GC[5]",
         "to_test": True,
     },
@@ -2896,7 +2939,184 @@ TESTS = [
         "genomic": "NG_012337.1:g.4911_4914GT[5]",
         "to_test": True,
     },
-
+    {
+        "keywords": ["repeat", "reverse"],
+        "input": "NG_012337.1(NM_012459.2):c.6delinsCCCC",
+        "normalized": "NG_012337.1(NM_012459.2):c.6C[4]",
+        "genomic": "NG_012337.1:g.4917G[4]",
+        "to_test": True,
+    },
+    {
+        "keywords": ["repeat", "reverse"],
+        "input": "NG_012337.1(NM_012459.2):c.6C[4]",
+        "normalized": "NG_012337.1(NM_012459.2):c.6C[4]",
+        "genomic": "NG_012337.1:g.4917G[4]",
+        "protein_description": "NG_012337.1(NP_036591.2):p.(Arg2_Lys3insPro)",
+        "to_test": True,
+    },
+    {
+        "keywords": ["duplication", "reverse"],
+        "input": "NG_012337.1(NM_012459.2):c.5_6dup",
+        "normalized": "NG_012337.1(NM_012459.2):c.5_6dup",
+        "genomic": "NG_012337.1:g.4919_4920dup",
+        "to_test": True,
+    },
+    {
+        "keywords": ["duplication", "reverse"],
+        "input": "NG_012337.1(NM_012459.2):c.5dup",
+        "normalized": "NG_012337.1(NM_012459.2):c.5dup",
+        "genomic": "NG_012337.1:g.4918dup",
+        "to_test": True,
+    },
+    {
+        "keywords": ["superfluous location should be within sequence (#69)"],
+        "input": "NM_003002.4:c.[-100A>C;20000A>C]",
+        "errors": [
+            "EOUTOFBOUNDARY",
+            "EOUTOFBOUNDARY",
+        ],
+        "to_test": True,
+    },
+    {
+        "keywords": ["protein reverse strand exon end"],
+        "input": "NG_008835.1(NM_022153.2):c.568del",
+        "normalized": "NG_008835.1(NM_022153.2):c.568del",
+        "genomic": "NG_008835.1:g.368924del",
+        "coding_protein_descriptions": {
+            (
+                "NG_008835.1(NM_022124.6):c.4846-16810del",
+                "NG_008835.1(NP_071407.4):p.(=)",
+            ),
+        },
+        "protein_description": "NG_008835.1(NP_071436.1):p.(Asn190Thrfs*14)",
+        "rna_description": "NG_008835.1(NM_022153.2):r.(569del)",
+        "to_test": True,
+    },
+    {
+        "keywords": ["protein reverse strand exon end splice site error"],
+        "input": "NG_008835.1(NM_022153.2):c.82del",
+        "normalized": "NG_008835.1(NM_022153.2):c.82+1del",
+        "genomic": "NG_008835.1:g.381412del",
+        "coding_protein_descriptions": {
+            (
+                "NG_008835.1(NM_022124.6):c.4846-4322del",
+                "NG_008835.1(NP_071407.4):p.(=)",
+            ),
+        },
+        "to_test": True,
+    },
+    {
+        "keywords": [
+            "protein reverse strand",
+        ],
+        "input": "NG_012337.1(NM_012459.2):c.15_17dup",
+        "normalized": "NG_012337.1(NM_012459.2):c.15_17dup",
+        "genomic": "NG_012337.1:g.4907_4909dup",
+        "coding_protein_descriptions": {
+            (
+                "NG_012337.1(NM_018195.3):c.*3781_*3783dup",
+                "NG_012337.1(NP_060665.3):p.(=)",
+            ),
+            (
+                "NG_012337.1(NM_001082969.1):c.*3781_*3783dup",
+                "NG_012337.1(NP_001076438.1):p.(=)",
+            ),
+            (
+                "NG_012337.1(NM_001082970.1):c.*3781_*3783dup",
+                "NG_012337.1(NP_001076439.1):p.(=)",
+            ),
+        },
+        "protein_description": "NG_012337.1(NP_036591.2):p.(Cys6dup)",
+        "to_test": True,
+    },
+    {
+        "keywords": [
+            "protein reverse strand",
+        ],
+        "input": "NG_012337.1(NM_012459.2):c.15_16insTGGAAGGTGGCGAGCCT",
+        "normalized": "NG_012337.1(NM_012459.2):c.17_18insGAAGGTGGCGAGCCTTG",
+        "genomic": "NG_012337.1:g.4907_4908ins[4888_4903;A]",
+        "coding_protein_descriptions": {
+            (
+                "NG_012337.1(NM_018195.3):c.*3781_*3782ins[*3762_*3777;A]",
+                "NG_012337.1(NP_060665.3):p.(=)",
+            ),
+            (
+                "NG_012337.1(NM_001082969.1):c.*3781_*3782ins[*3762_*3777;A]",
+                "NG_012337.1(NP_001076438.1):p.(=)",
+            ),
+            (
+                "NG_012337.1(NM_001082970.1):c.*3781_*3782ins[*3762_*3777;A]",
+                "NG_012337.1(NP_001076439.1):p.(=)",
+            ),
+        },
+        "protein_description": "NG_012337.1(NP_036591.2):p.(Cys6Trpfs*13)",
+        "to_test": True,
+    },
+    {
+        "keywords": [
+            "protein reverse strand exon end",
+        ],
+        "input": "NG_012337.1(NM_012459.2):c.129G>T",
+        "normalized": "NG_012337.1(NM_012459.2):c.129G>T",
+        "genomic": "NG_012337.1:g.4794C>A",
+        "coding_protein_descriptions": {
+            (
+                "NG_012337.1(NM_018195.3):c.*3668C>A",
+                "NG_012337.1(NP_060665.3):p.(=)",
+            ),
+            (
+                "NG_012337.1(NM_001082969.1):c.*3668C>A",
+                "NG_012337.1(NP_001076438.1):p.(=)",
+            ),
+            (
+                "NG_012337.1(NM_001082970.1):c.*3668C>A",
+                "NG_012337.1(NP_001076439.1):p.(=)",
+            ),
+        },
+        "protein_description": "NG_012337.1(NP_036591.2):p.(Gln43His)",
+        "to_test": True,
+    },
+    {
+        "keywords": [
+            "protein reverse strand exon end",
+        ],
+        "input": "NG_012337.1(NM_012459.2):c.130G>A",
+        "normalized": "NG_012337.1(NM_012459.2):c.130G>A",
+        "genomic": "NG_012337.1:g.3616C>T",
+        "coding_protein_descriptions": {
+            (
+                "NG_012337.1(NM_018195.3):c.*2490C>T",
+                "NG_012337.1(NP_060665.3):p.(=)",
+            ),
+            (
+                "NG_012337.1(NM_001082969.1):c.*2490C>T",
+                "NG_012337.1(NP_001076438.1):p.(=)",
+            ),
+            (
+                "NG_012337.1(NM_001082970.1):c.*2490C>T",
+                "NG_012337.1(NP_001076439.1):p.(=)",
+            ),
+        },
+        "protein_description": "NG_012337.1(NP_036591.2):p.(Val44Met)",
+        "to_test": True,
+    },
+    {
+        "keywords": ["no cds for coding transcripts #73"],
+        "input": "NG_009930.1(NM_001099625.2):c.1010",
+        "errors": [
+            "ENOCDS",
+        ],
+        "to_test": True,
+    },
+    {
+        "keywords": ["no cds for coding transcripts #73"],
+        "input": "NG_012337.3(NM_003002.4):c.274delinsNG_009930.1(NM_001099625.2):c.1010",
+        "errors": [
+            "ENOCDS",
+        ],
+        "to_test": True,
+    },
     # {
     #     "keywords": [
     #

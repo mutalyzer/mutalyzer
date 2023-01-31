@@ -212,32 +212,6 @@ NG_008835.1	RefSeq	CDS	420534	420663	.	+	1	ID=cds-NP_071407.4;Parent=rna-NM_0221
 NG_008835.1	RefSeq	CDS	420822	420944	.	+	0	ID=cds-NP_071407.4;Parent=rna-NM_022124.6;Dbxref=CCDS:CCDS86100.1,GeneID:64072,Genbank:NP_071407.4,HGNC:HGNC:13733,MIM:605516;Name=NP_071407.4;Note=isoform 1 precursor is encoded by transcript variant 1;gbkey=CDS;gene=CDH23;product=cadherin-23 isoform 1 precursor;protein_id=NP_071407.4
 NG_008835.1	RefSeq	CDS	421298	421402	.	+	0	ID=cds-NP_071407.4;Parent=rna-NM_022124.6;Dbxref=CCDS:CCDS86100.1,GeneID:64072,Genbank:NP_071407.4,HGNC:HGNC:13733,MIM:605516;Name=NP_071407.4;Note=isoform 1 precursor is encoded by transcript variant 1;gbkey=CDS;gene=CDH23;product=cadherin-23 isoform 1 precursor;protein_id=NP_071407.4
 NG_008835.1	RefSeq	CDS	423006	423332	.	+	0	ID=cds-NP_071407.4;Parent=rna-NM_022124.6;Dbxref=CCDS:CCDS86100.1,GeneID:64072,Genbank:NP_071407.4,HGNC:HGNC:13733,MIM:605516;Name=NP_071407.4;Note=isoform 1 precursor is encoded by transcript variant 1;gbkey=CDS;gene=CDH23;product=cadherin-23 isoform 1 precursor;protein_id=NP_071407.4
-NG_008835.1	RefSeq	STS	10676	10843	.	+	.	ID=id-CDH23;Dbxref=UniSTS:147960,GeneID:64072,HGNC:HGNC:13733,MIM:605516;gbkey=STS;gene=CDH23;standard_name=D10S338
-NG_008835.1	RefSeq	STS	38306	38578	.	+	.	ID=id-CDH23-71;Dbxref=UniSTS:182266,GeneID:64072,HGNC:HGNC:13733,MIM:605516;gbkey=STS;gene=CDH23;standard_name=SHGC-154025
-NG_008835.1	RefSeq	STS	55978	56253	.	+	.	ID=id-CDH23-72;Dbxref=UniSTS:102206,GeneID:64072,HGNC:HGNC:13733,MIM:605516;gbkey=STS;gene=CDH23;standard_name=SHGC-80642
-NG_008835.1	RefSeq	STS	123312	123617	.	+	.	ID=id-CDH23-73;Dbxref=UniSTS:177560,GeneID:64072,HGNC:HGNC:13733,MIM:605516;gbkey=STS;gene=CDH23;standard_name=SHGC-152620
-NG_008835.1	RefSeq	STS	123384	123535	.	+	.	ID=id-CDH23-74;Dbxref=UniSTS:20714,GeneID:64072,HGNC:HGNC:13733,MIM:605516;gbkey=STS;gene=CDH23;standard_name=D10S584
-NG_008835.1	RefSeq	STS	123386	123577	.	+	.	ID=id-CDH23-75;Dbxref=UniSTS:64315,GeneID:64072,HGNC:HGNC:13733,MIM:605516;gbkey=STS;gene=CDH23;standard_name=D10S584
-NG_008835.1	RefSeq	STS	138046	138158	.	+	.	ID=id-CDH23-76;Dbxref=UniSTS:148258,GeneID:64072,HGNC:HGNC:13733,MIM:605516;gbkey=STS;gene=CDH23;standard_name=D10S412
-NG_008835.1	RefSeq	STS	141258	141549	.	+	.	ID=id-CDH23-77;Dbxref=UniSTS:173511,GeneID:64072,HGNC:HGNC:13733,MIM:605516;gbkey=STS;gene=CDH23;standard_name=SHGC-151195
-NG_008835.1	RefSeq	STS	141511	141648	.	+	.	ID=id-CDH23-78;Dbxref=UniSTS:42228,GeneID:64072,HGNC:HGNC:13733,MIM:605516;gbkey=STS;gene=CDH23;standard_name=D10S1650
-NG_008835.1	RefSeq	STS	141532	141660	.	+	.	ID=id-CDH23-79;Dbxref=UniSTS:148257,GeneID:64072,HGNC:HGNC:13733,MIM:605516;gbkey=STS;gene=CDH23;standard_name=D10S412
-NG_008835.1	RefSeq	STS	159203	159475	.	+	.	ID=id-CDH23-80;Dbxref=UniSTS:35130,GeneID:64072,HGNC:HGNC:13733,MIM:605516;gbkey=STS;gene=CDH23;standard_name=SGC38181
-NG_008835.1	RefSeq	STS	159203	159363	.	+	.	ID=id-CDH23-81;Dbxref=UniSTS:35131,GeneID:64072,HGNC:HGNC:13733,MIM:605516;gbkey=STS;gene=CDH23;standard_name=RH45898
-NG_008835.1	RefSeq	STS	192379	192592	.	+	.	ID=id-CDH23-82;Dbxref=UniSTS:56487,GeneID:64072,HGNC:HGNC:13733,MIM:605516;gbkey=STS;gene=CDH23;standard_name=D10S2338
-NG_008835.1	RefSeq	STS	217904	218003	.	+	.	ID=id-CDH23-83;Dbxref=UniSTS:173494,GeneID:64072,HGNC:HGNC:13733,MIM:605516;gbkey=STS;gene=CDH23;standard_name=SHGC-151188
-NG_008835.1	RefSeq	STS	217923	218029	.	+	.	ID=id-CDH23-84;Dbxref=UniSTS:177468,GeneID:64072,HGNC:HGNC:13733,MIM:605516;gbkey=STS;gene=CDH23;standard_name=SHGC-152305
-NG_008835.1	RefSeq	STS	217923	218027	.	+	.	ID=id-CDH23-85;Dbxref=UniSTS:177468,GeneID:64072,HGNC:HGNC:13733,MIM:605516;gbkey=STS;gene=CDH23;standard_name=SHGC-152305
-NG_008835.1	RefSeq	STS	226021	226483	.	+	.	ID=id-CDH23-86;Dbxref=UniSTS:54001,GeneID:64072,HGNC:HGNC:13733,MIM:605516;gbkey=STS;gene=CDH23;standard_name=GDB:313461
-NG_008835.1	RefSeq	STS	229450	229732	.	+	.	ID=id-CDH23-87;Dbxref=UniSTS:103902,GeneID:64072,HGNC:HGNC:13733,MIM:605516;gbkey=STS;gene=CDH23;standard_name=SHGC-81728
-NG_008835.1	RefSeq	STS	275376	275516	.	+	.	ID=id-CDH23-88;Dbxref=UniSTS:33695,GeneID:64072,HGNC:HGNC:13733,MIM:605516;gbkey=STS;gene=CDH23;standard_name=D10S1694
-NG_008835.1	RefSeq	STS	279862	280147	.	+	.	ID=id-CDH23-89;Dbxref=UniSTS:139717,GeneID:64072,HGNC:HGNC:13733,MIM:605516;gbkey=STS;gene=CDH23;standard_name=G62740
-NG_008835.1	RefSeq	STS	285537	285733	.	+	.	ID=id-CDH23-90;Dbxref=UniSTS:503013,GeneID:64072,HGNC:HGNC:13733,MIM:605516;gbkey=STS;gene=CDH23;standard_name=CDH23
-NG_008835.1	RefSeq	STS	315347	315507	.	+	.	ID=id-CDH23-91;Dbxref=UniSTS:73628,GeneID:64072,HGNC:HGNC:13733,MIM:605516;gbkey=STS;gene=CDH23;standard_name=RH48031
-NG_008835.1	RefSeq	STS	319859	319984	.	+	.	ID=id-CDH23-92;Dbxref=UniSTS:39406,GeneID:64072,HGNC:HGNC:13733,MIM:605516;gbkey=STS;gene=CDH23;standard_name=STS-N39237
-NG_008835.1	RefSeq	STS	358379	358624	.	+	.	ID=id-CDH23-93;Dbxref=UniSTS:31653,GeneID:64072,HGNC:HGNC:13733,MIM:605516;gbkey=STS;gene=CDH23;standard_name=STS-W72919
-NG_008835.1	RefSeq	STS	359057	359193	.	+	.	ID=id-CDH23-94;Dbxref=UniSTS:42822,GeneID:64072,HGNC:HGNC:13733,MIM:605516;gbkey=STS;gene=CDH23;standard_name=STS-R80211
-NG_008835.1	RefSeq	STS	423766	423907	.	+	.	ID=id-CDH23-95;Dbxref=UniSTS:42999,GeneID:64072,HGNC:HGNC:13733,MIM:605516;gbkey=STS;gene=CDH23;standard_name=RH44693
 NG_008835.1	RefSeq	gene	116207	119974	.	-	.	ID=gene-CDH23-AS1;Dbxref=GeneID:102723377,HGNC:HGNC:31433;Name=CDH23-AS1;description=CDH23 antisense RNA 1;gbkey=Gene;gene=CDH23-AS1;gene_biotype=lncRNA;gene_synonym=bA327E2.3,C10orf106,NCRNA00223
 NG_008835.1	RefSeq	lnc_RNA	116207	119974	.	-	.	ID=rna-NR_120672.1;Parent=gene-CDH23-AS1;Dbxref=GeneID:102723377,Genbank:NR_120672.1,HGNC:HGNC:31433;Name=NR_120672.1;gbkey=ncRNA;gene=CDH23-AS1;product=CDH23 antisense RNA 1;transcript_id=NR_120672.1
 NG_008835.1	RefSeq	exon	119832	119974	.	-	.	ID=exon-NR_120672.1-1;Parent=rna-NR_120672.1;Dbxref=GeneID:102723377,Genbank:NR_120672.1,HGNC:HGNC:31433;gbkey=ncRNA;gene=CDH23-AS1;product=CDH23 antisense RNA 1;transcript_id=NR_120672.1
@@ -275,7 +249,7 @@ NG_008835.1	RefSeq	miRNA	398801	398822	.	+	.	ID=rna-MIR7152;Parent=rna-NR_106974
 NG_008835.1	RefSeq	exon	398801	398822	.	+	.	ID=exon-MIR7152-1;Parent=rna-MIR7152;Dbxref=miRBase:MIMAT0028214,GeneID:102465689,HGNC:HGNC:50257,miRBase:MI0023612;gbkey=ncRNA;gene=MIR7152;product=hsa-miR-7152-5p
 NG_008835.1	RefSeq	miRNA	398835	398854	.	+	.	ID=rna-MIR7152-2;Parent=rna-NR_106974.1;Dbxref=miRBase:MIMAT0028215,GeneID:102465689,HGNC:HGNC:50257,miRBase:MI0023612;gbkey=ncRNA;gene=MIR7152;product=hsa-miR-7152-3p
 NG_008835.1	RefSeq	exon	398835	398854	.	+	.	ID=exon-MIR7152-2-1;Parent=rna-MIR7152-2;Dbxref=miRBase:MIMAT0028215,GeneID:102465689,HGNC:HGNC:50257,miRBase:MI0023612;gbkey=ncRNA;gene=MIR7152;product=hsa-miR-7152-3p
-NG_008835.1	RefSeq	gene	424352	426001	.	-	.	ID=gene-PSAP;Dbxref=GeneID:5660,HGNC:HGNC:9498,MIM:176801;Name=PSAP;description=prosaposin;end_range=426001,.;gbkey=Gene;gene=PSAP;gene_biotype=protein_coding;gene_synonym=GLBA,SAP1,SAP2;partial=true
+NG_008835.1	RefSeq	gene	424352	426001	.	-	.	ID=gene-PSAP;Dbxref=GeneID:5660,HGNC:HGNC:9498,MIM:176801;Name=PSAP;description=prosaposin;end_range=426001,.;gbkey=Gene;gene=PSAP;gene_biotype=protein_coding;gene_synonym=GLBA,PARK24,PSAPD,SAP1,SAP2;partial=true
 NG_008835.1	RefSeq	mRNA	424352	425530	.	-	.	ID=rna-NM_002778.4;Parent=gene-PSAP;Dbxref=GeneID:5660,Genbank:NM_002778.4,HGNC:HGNC:9498,MIM:176801;Name=NM_002778.4;end_range=425530,.;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=PSAP;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_002778.4;partial=true;product=prosaposin%2C transcript variant 1;transcript_id=NM_002778.4
 NG_008835.1	RefSeq	exon	424352	425530	.	-	.	ID=exon-NM_002778.4-1;Parent=rna-NM_002778.4;Dbxref=GeneID:5660,Genbank:NM_002778.4,HGNC:HGNC:9498,MIM:176801;end_range=425530,.;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=PSAP;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_002778.4;partial=true;product=prosaposin%2C transcript variant 1;transcript_id=NM_002778.4
 NG_008835.1	RefSeq	CDS	425495	425530	.	-	0	ID=cds-NP_002769.1;Parent=rna-NM_002778.4;Dbxref=CCDS:CCDS7311.1,GeneID:5660,Genbank:NP_002769.1,HGNC:HGNC:9498,MIM:176801;Name=NP_002769.1;Note=isoform a preproprotein is encoded by transcript variant 1;end_range=425530,.;exception=annotated by transcript or proteomic data;gbkey=CDS;gene=PSAP;inference=similar to AA sequence (same species):RefSeq:NP_002769.1;partial=true;product=prosaposin isoform a preproprotein;protein_id=NP_002769.1
@@ -285,13 +259,6 @@ NG_008835.1	RefSeq	CDS	425495	425530	.	-	0	ID=cds-NP_001035930.1;Parent=rna-NM_0
 NG_008835.1	RefSeq	mRNA	424352	425530	.	-	.	ID=rna-NM_001042466.3;Parent=gene-PSAP;Dbxref=GeneID:5660,Genbank:NM_001042466.3,HGNC:HGNC:9498,MIM:176801;Name=NM_001042466.3;end_range=425530,.;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=PSAP;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_001042466.3;partial=true;product=prosaposin%2C transcript variant 3;transcript_id=NM_001042466.3
 NG_008835.1	RefSeq	exon	424352	425530	.	-	.	ID=exon-NM_001042466.3-1;Parent=rna-NM_001042466.3;Dbxref=GeneID:5660,Genbank:NM_001042466.3,HGNC:HGNC:9498,MIM:176801;end_range=425530,.;exception=annotated by transcript or proteomic data;gbkey=mRNA;gene=PSAP;inference=similar to RNA sequence%2C mRNA (same species):RefSeq:NM_001042466.3;partial=true;product=prosaposin%2C transcript variant 3;transcript_id=NM_001042466.3
 NG_008835.1	RefSeq	CDS	425495	425530	.	-	0	ID=cds-NP_001035931.1;Parent=rna-NM_001042466.3;Dbxref=GeneID:5660,Genbank:NP_001035931.1,HGNC:HGNC:9498,MIM:176801;Name=NP_001035931.1;Note=isoform c preproprotein is encoded by transcript variant 3;end_range=425530,.;exception=annotated by transcript or proteomic data;gbkey=CDS;gene=PSAP;inference=similar to AA sequence (same species):RefSeq:NP_001035931.1;partial=true;product=prosaposin isoform c preproprotein;protein_id=NP_001035931.1
-NG_008835.1	RefSeq	STS	424400	424598	.	+	.	ID=id-NG_008835.1:424400..424598;Dbxref=UniSTS:35986;gbkey=STS;standard_name=RH41802
-NG_008835.1	RefSeq	STS	424460	424567	.	+	.	ID=id-NG_008835.1:424460..424567;Dbxref=UniSTS:67082;gbkey=STS;standard_name=RH68874
-NG_008835.1	RefSeq	STS	424480	424622	.	+	.	ID=id-NG_008835.1:424480..424622;Dbxref=UniSTS:22397;gbkey=STS;standard_name=STS-J03077
-NG_008835.1	RefSeq	STS	424616	424951	.	+	.	ID=id-NG_008835.1:424616..424951;Dbxref=UniSTS:47851;gbkey=STS;standard_name=D10S2162
-NG_008835.1	RefSeq	STS	424682	424892	.	+	.	ID=id-NG_008835.1:424682..424892;Dbxref=UniSTS:2675;gbkey=STS;standard_name=RH11184
-NG_008835.1	RefSeq	STS	424838	424951	.	+	.	ID=id-NG_008835.1:424838..424951;Dbxref=UniSTS:151336;gbkey=STS;standard_name=D10S1303E
-NG_008835.1	RefSeq	STS	425019	425255	.	+	.	ID=id-NG_008835.1:425019..425255;Dbxref=UniSTS:151332;gbkey=STS;standard_name=D10S1299E
 NG_008835.1	RefSeq	cDNA_match	4974	5372	.	+	.	ID=aln0;Target=NM_022124.6 1 399 +;idty=1;splign=399
 NG_008835.1	RefSeq	cDNA_match	47881	47952	.	+	.	ID=aln0;Target=NM_022124.6 400 471 +;idty=1;splign=72
 NG_008835.1	RefSeq	cDNA_match	54372	54449	.	+	.	ID=aln0;Target=NM_022124.6 472 549 +;idty=1;splign=78
@@ -434,17 +401,17 @@ NG_008835.1	RefSeq	cDNA_match	225259	225447	.	+	.	ID=aln3;Target=NM_052836.4 135
 NG_008835.1	RefSeq	cDNA_match	251915	251920	.	+	.	ID=aln3;Target=NM_052836.4 1539 1544 +;idty=1;splign=6
 NG_008835.1	RefSeq	cDNA_match	253885	254034	.	+	.	ID=aln3;Target=NM_052836.4 1545 1694 +;idty=1;splign=150
 NG_008835.1	RefSeq	cDNA_match	254513	255516	.	+	.	ID=aln3;Target=NM_052836.4 1695 2698 +;idty=1;splign=1004
-NG_008835.1	RefSeq	cDNA_match	4988	5372	.	+	.	ID=aln4;Target=NM_001171932.1 1 385 +;idty=1;splign=385
-NG_008835.1	RefSeq	cDNA_match	47881	47952	.	+	.	ID=aln4;Target=NM_001171932.1 386 457 +;idty=1;splign=72
-NG_008835.1	RefSeq	cDNA_match	54372	54449	.	+	.	ID=aln4;Target=NM_001171932.1 458 535 +;idty=1;splign=78
-NG_008835.1	RefSeq	cDNA_match	118136	118278	.	+	.	ID=aln4;Target=NM_001171932.1 536 678 +;idty=1;splign=143
-NG_008835.1	RefSeq	cDNA_match	119008	119055	.	+	.	ID=aln4;Target=NM_001171932.1 679 726 +;idty=1;splign=48
-NG_008835.1	RefSeq	cDNA_match	119174	119266	.	+	.	ID=aln4;Target=NM_001171932.1 727 819 +;idty=1;splign=93
-NG_008835.1	RefSeq	cDNA_match	174796	174990	.	+	.	ID=aln4;Target=NM_001171932.1 820 1014 +;idty=1;splign=195
-NG_008835.1	RefSeq	cDNA_match	178844	178972	.	+	.	ID=aln4;Target=NM_001171932.1 1015 1143 +;idty=1;splign=129
-NG_008835.1	RefSeq	cDNA_match	185968	186046	.	+	.	ID=aln4;Target=NM_001171932.1 1144 1222 +;idty=1;splign=79
-NG_008835.1	RefSeq	cDNA_match	223558	223670	.	+	.	ID=aln4;Target=NM_001171932.1 1223 1335 +;idty=1;splign=113
-NG_008835.1	RefSeq	cDNA_match	225259	225659	.	+	.	ID=aln4;Target=NM_001171932.1 1336 1736 +;idty=1;splign=401
+NG_008835.1	RefSeq	cDNA_match	4974	5372	.	+	.	ID=aln4;Target=NM_001171932.2 1 399 +;idty=1;splign=399
+NG_008835.1	RefSeq	cDNA_match	47881	47952	.	+	.	ID=aln4;Target=NM_001171932.2 400 471 +;idty=1;splign=72
+NG_008835.1	RefSeq	cDNA_match	54372	54449	.	+	.	ID=aln4;Target=NM_001171932.2 472 549 +;idty=1;splign=78
+NG_008835.1	RefSeq	cDNA_match	118136	118278	.	+	.	ID=aln4;Target=NM_001171932.2 550 692 +;idty=1;splign=143
+NG_008835.1	RefSeq	cDNA_match	119008	119055	.	+	.	ID=aln4;Target=NM_001171932.2 693 740 +;idty=1;splign=48
+NG_008835.1	RefSeq	cDNA_match	119174	119266	.	+	.	ID=aln4;Target=NM_001171932.2 741 833 +;idty=1;splign=93
+NG_008835.1	RefSeq	cDNA_match	174796	174990	.	+	.	ID=aln4;Target=NM_001171932.2 834 1028 +;idty=1;splign=195
+NG_008835.1	RefSeq	cDNA_match	178844	178972	.	+	.	ID=aln4;Target=NM_001171932.2 1029 1157 +;idty=1;splign=129
+NG_008835.1	RefSeq	cDNA_match	185968	186046	.	+	.	ID=aln4;Target=NM_001171932.2 1158 1236 +;idty=1;splign=79
+NG_008835.1	RefSeq	cDNA_match	223558	223670	.	+	.	ID=aln4;Target=NM_001171932.2 1237 1349 +;idty=1;splign=113
+NG_008835.1	RefSeq	cDNA_match	225259	225659	.	+	.	ID=aln4;Target=NM_001171932.2 1350 1750 +;idty=1;splign=401
 NG_008835.1	RefSeq	cDNA_match	403825	404133	.	+	.	ID=aln5;Target=NM_001171933.1 1 309 +;idty=1;splign=309
 NG_008835.1	RefSeq	cDNA_match	405158	405274	.	+	.	ID=aln5;Target=NM_001171933.1 310 426 +;idty=1;splign=117
 NG_008835.1	RefSeq	cDNA_match	406408	406632	.	+	.	ID=aln5;Target=NM_001171933.1 427 651 +;idty=1;splign=225
@@ -499,4 +466,5 @@ NG_008835.1	RefSeq	cDNA_match	419937	420416	.	+	.	ID=aln8;Target=NM_001171936.1 
 NG_008835.1	RefSeq	cDNA_match	420534	420663	.	+	.	ID=aln8;Target=NM_001171936.1 481 610 +;idty=1;splign=130
 NG_008835.1	RefSeq	cDNA_match	420822	420944	.	+	.	ID=aln8;Target=NM_001171936.1 611 733 +;idty=1;splign=123
 NG_008835.1	RefSeq	cDNA_match	423006	424001	.	+	.	ID=aln8;Target=NM_001171936.1 734 1729 +;idty=1;splign=996
+
 

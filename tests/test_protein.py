@@ -1,6 +1,6 @@
 import pytest
 
-from mutalyzer.normalizer import normalize, normalize_alt
+from mutalyzer.normalizer import normalize
 
 from .commons import code_in, patch_retriever
 
@@ -131,27 +131,9 @@ def test_protein(input_description, normalized):
 
 
 @pytest.mark.parametrize(
-    "input_description, normalized",
-    get_tests(TESTS, "normalized"),
-)
-def test_protein_alt(input_description, normalized):
-    d = normalize_alt(input_description)
-    assert d.get("normalized_description") == normalized
-
-
-@pytest.mark.parametrize(
     "input_description, errors",
     get_tests(TESTS, "errors"),
 )
 def test_protein_errors(input_description, errors):
     d = normalize(input_description)
-    assert d.get("errors") == errors
-
-
-@pytest.mark.parametrize(
-    "input_description, errors",
-    get_tests(TESTS, "errors"),
-)
-def test_protein_errors_alt(input_description, errors):
-    d = normalize_alt(input_description)
     assert d.get("errors") == errors
