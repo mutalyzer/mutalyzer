@@ -35,6 +35,7 @@ from .converter.extras import (
     convert_amino_acids,
     convert_reference_model,
     convert_selector_model,
+    get_mane_tag,
 )
 from .converter.to_delins import to_delins, variants_to_delins
 from .converter.to_hgvs_coordinates import (
@@ -655,9 +656,9 @@ class Description(object):
                 degenerate=True,
             )
             if as_description:
-                equivalent["g"] = [model_to_string(converted_model)]
+                equivalent["g"] = [{"description": model_to_string(converted_model)}]
             else:
-                equivalent["g"] = [converted_model]
+                equivalent["g"] = [{"description": converted_model}]
             if equivalent:
                 self.equivalent = equivalent
 
@@ -681,35 +682,49 @@ class Description(object):
                     to_selector_id=selector["id"],
                     degenerate=True,
                 )
+
                 c_s = converted_model["coordinate_system"]
                 if not equivalent.get(c_s):
                     equivalent[c_s] = []
 
                 if converted_model["coordinate_system"] == "c":
+
                     protein_selector_model = get_protein_selector_model(
                         self.references["reference"]["annotations"], selector["id"]
                     )
                     if protein_selector_model and as_description:
-                        equivalent[c_s].append(
-                            (
-                                model_to_string(converted_model),
-                                get_protein_description(
-                                    variants_to_delins(from_model["variants"]),
-                                    self.references,
-                                    protein_selector_model,
-                                )[0],
-                            )
-                        )
+                        e_d = {
+                            "description": model_to_string(converted_model),
+                            "protein_prediction": get_protein_description(
+                                variants_to_delins(from_model["variants"]),
+                                self.references,
+                                protein_selector_model,
+                            )[0],
+                        }
                     else:
                         if as_description:
-                            equivalent[c_s].append(model_to_string(converted_model))
+                            e_d = {"description": model_to_string(converted_model)}
                         else:
-                            equivalent[c_s].append(converted_model)
+                            e_d = {"description": converted_model}
+                    if (
+                        selector.get("qualifiers")
+                        and selector["qualifiers"].get("tag")
+                        and "MANE" in selector["qualifiers"]["tag"]
+                    ):
+                        e_d["tag"] = {
+                            "id": selector["id"],
+                            "details": selector["qualifiers"]["tag"],
+                        }
+
+                    equivalent[c_s].append(e_d)
+
                 else:
                     if as_description:
-                        equivalent[c_s].append(model_to_string(converted_model))
+                        equivalent[c_s].append(
+                            {"description": model_to_string(converted_model)}
+                        )
                     else:
-                        equivalent[c_s].append(converted_model)
+                        equivalent[c_s].append({"description": converted_model})
 
         if equivalent:
             self.equivalent = equivalent
@@ -1013,7 +1028,9 @@ class Description(object):
             len_loc = get_location_length(v_i["location"])
             if len_loc != len_del:
                 self._add_error(errors.length_mismatch(len_loc, len_del, path))
-        elif get_start(v_i["location"]) >= 0 and get_end(v_i["location"]) <= len(sequences["reference"]):
+        elif get_start(v_i["location"]) >= 0 and get_end(v_i["location"]) <= len(
+            sequences["reference"]
+        ):
             seq_ref = slice_sequence(v_i["location"], sequences["reference"])
             seq_del = construct_sequence(v_i[ins_or_del], sequences)
             if self.corrected_model.get("coordinate_system") == "r":
@@ -1490,6 +1507,7 @@ class Description(object):
                     chr_d.construct_de_hgvs_internal_indexing_model()
                     chr_d.construct_de_hgvs_coordinates_model()
                     chr_d.construct_normalized_description()
+                    tag = get_mane_tag(chr_d.get_selector_model())
                     genomic = model_to_string(
                         to_hgvs_locations(
                             model=chr_d.de_hgvs_internal_indexing_model,
@@ -1500,20 +1518,19 @@ class Description(object):
                         )
                     )
                     if chr_d.errors:
-                        chromosomal_descriptions.append(
-                            {
-                                "assembly": assembly,
-                                "errors": chr_d.errors,
-                            }
-                        )
+                        chromosomal_description = {
+                            "assembly": assembly,
+                            "errors": chr_d.errors,
+                        }
                     else:
-                        chromosomal_descriptions.append(
-                            {
-                                "assembly": assembly,
-                                "c": chr_d.normalized_description,
-                                "g": genomic,
-                            }
-                        )
+                        chromosomal_description = {
+                            "assembly": assembly,
+                            "c": chr_d.normalized_description,
+                            "g": genomic,
+                        }
+                    if tag:
+                        chromosomal_description["tag"] = tag
+                    chromosomal_descriptions.append(chromosomal_description)
 
         if chromosomal_descriptions:
             self.chromosomal_descriptions = chromosomal_descriptions
@@ -1602,8 +1619,13 @@ class Description(object):
             output["errors"] = self.errors
         if self.infos:
             output["infos"] = self.infos
+
         if self.get_selector_model() and self.is_selector_model_valid():
             output["selector_short"] = convert_selector_model(self.get_selector_model())
+            tag = get_mane_tag(self.get_selector_model())
+            if tag:
+                output["tag"] = tag
+
         if self.back_translated_descriptions:
             output["back_translated_descriptions"] = self.back_translated_descriptions
         return output

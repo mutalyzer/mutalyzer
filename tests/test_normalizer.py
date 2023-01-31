@@ -26,14 +26,7 @@ def test_normalize(input_description, normalized):
 def test_genomic(input_description, genomic):
     d = normalize(input_description)
     if d["equivalent_descriptions"].get("g"):
-        assert d["equivalent_descriptions"]["g"][0] == genomic
-
-
-@pytest.mark.parametrize("input_description, genomic", get_tests(TESTS_ALL, "genomic"))
-def test_genomic(input_description, genomic):
-    d = normalize(input_description)
-    if d["equivalent_descriptions"].get("g"):
-        assert d["equivalent_descriptions"]["g"][0] == genomic
+        assert d["equivalent_descriptions"]["g"][0]["description"] == genomic
 
 
 @pytest.mark.parametrize(
@@ -43,7 +36,9 @@ def test_coding(input_description, coding):
     d = normalize(input_description)
     coding = [c[0] for c in coding]
     if d["equivalent_descriptions"].get("c"):
-        name_check_coding = [c[0] for c in d["equivalent_descriptions"]["c"]]
+        name_check_coding = [
+            c["description"] for c in d["equivalent_descriptions"]["c"]
+        ]
     assert set(coding).issubset(set(name_check_coding))
 
 
@@ -65,7 +60,12 @@ def test_protein(input_description, protein_description):
 )
 def test_protein_equivalent(input_description, coding_protein_descriptions):
     normalized_output = normalize(input_description)
-    normalizer_descriptions = set(normalized_output["equivalent_descriptions"]["c"])
+    normalizer_descriptions = set(
+        [
+            (p_d["description"], p_d["protein_prediction"])
+            for p_d in normalized_output["equivalent_descriptions"]["c"]
+        ]
+    )
 
     assert coding_protein_descriptions.issubset(normalizer_descriptions)
 
@@ -106,7 +106,7 @@ def test_infos(input_description, codes):
 )
 def test_only_variants(description, sequence, normalized):
     assert (
-            normalize(description, True, sequence)["normalized_description"] == normalized
+        normalize(description, True, sequence)["normalized_description"] == normalized
     )
 
 
@@ -122,6 +122,6 @@ def test_only_variants(description, sequence, normalized):
     ],
 )
 def test_only_variants_errors(description, sequence, codes):
-    assert (
-            codes == [error["code"] for error in normalize(description, True, sequence)["errors"]]
-    )
+    assert codes == [
+        error["code"] for error in normalize(description, True, sequence)["errors"]
+    ]

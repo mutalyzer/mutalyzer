@@ -55,6 +55,12 @@ def convert_selector_model(s_m):
     return {"exon": {"g": exon_g, "n": exon_n}}
 
 
+def get_mane_tag(s_m):
+    tag = s_m.get("tag")
+    if tag and "MANE" in tag:
+        return {"id": s_m["id"], "details": tag}
+
+
 def convert_amino_acids(model, to):
     for sequence, path in yield_values(model, ["sequence", "amino_acid"]):
         if to == "1a":
