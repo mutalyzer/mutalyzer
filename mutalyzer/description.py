@@ -1536,6 +1536,7 @@ class Description(object):
             self.chromosomal_descriptions = chromosomal_descriptions
 
     def to_delins(self):
+        self.assembly_checks()
         self.retrieve_references()
         self.pre_conversion_checks()
 

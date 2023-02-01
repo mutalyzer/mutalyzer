@@ -18,6 +18,7 @@ from .converter.to_internal_indexing import to_internal_indexing
 from .description import Description
 from .util import get_end, get_start, roll
 from .viewer import view_delins
+from .util import construct_sequence
 
 
 def _to_dot(reference, root, offset):
@@ -77,7 +78,9 @@ def _add_dot(supremal, root, reference, output, prefix=""):
                     variant.sequence,
                 )
             )
-        minimal_descriptions.append(f"{prefix}{to_hgvs_experimental(reference_variants, reference)}")
+        minimal_descriptions.append(
+            f"{prefix}{to_hgvs_experimental(reference_variants, reference)}"
+        )
     output["minimal_descriptions"] = minimal_descriptions
     if len(minimal_descriptions) == minimal_length:
         output["first_minimal"] = minimal_length
@@ -195,15 +198,21 @@ def _descriptions(d, algebra_hgvs, supremal, ref_seq, root):
         d.get_sequences(),
         invert=d.is_inverted(),
     )
-    _add_dot(supremal, root, ref_seq, output, f"{d.corrected_model['reference']['id']}:g.")
+    _add_dot(
+        supremal, root, ref_seq, output, f"{d.corrected_model['reference']['id']}:g."
+    )
     return output
 
 
 def normalize_alt(description, only_variants=False, sequence=None):
-    d = Description(description=description, only_variants=only_variants, sequence=sequence)
+    d = Description(
+        description=description, only_variants=only_variants, sequence=sequence
+    )
     d.to_delins()
     if d.corrected_model.get("type") == "description_protein":
-        p_d = Description(description=description, only_variants=only_variants, sequence=sequence)
+        p_d = Description(
+            description=description, only_variants=only_variants, sequence=sequence
+        )
         p_d.normalize()
         return p_d.output()
 
@@ -254,6 +263,7 @@ def normalize_alt(description, only_variants=False, sequence=None):
 
     return output
 
+
 def normalize(description, only_variants=False, sequence=None):
     d = Description(
         description=description,
@@ -275,5 +285,12 @@ def delins_model(description, only_variants=False, sequence=None):
     d.to_delins()
     output = d.output()
     if d.delins_model:
+        for variant in d.delins_model["variants"]:
+            if variant.get("inserted"):
+                for inserted in variant.get("inserted"):
+                    if not inserted.get("sequence"):
+                        inserted["sequence"] = construct_sequence(
+                            [inserted], d.get_sequences()
+                        )
         output["delins_model"] = d.delins_model
     return output
