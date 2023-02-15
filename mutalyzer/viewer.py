@@ -105,7 +105,7 @@ def view_delins(
 def view_variants_normalized(d, left=15, right=15, invert=True):
     return view_delins(
         d.delins_model["variants"],
-        d.corrected_model["variants"],
+        d.corrected_model["variants"][::-1] if d.is_inverted() else d.corrected_model["variants"],
         d.get_sequences(),
         left,
         right,
