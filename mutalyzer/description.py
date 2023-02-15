@@ -700,10 +700,11 @@ class Description(object):
                                 self.references,
                                 protein_selector_model,
                             )[0],
-                        }
+                        "selector": {"id": selector["id"]}}
                     else:
                         if as_description:
-                            e_d = {"description": model_to_string(converted_model)}
+                            e_d = {"description": model_to_string(converted_model),
+                                   "reference": { "selector": {"id": selector["id"]}}}
                         else:
                             e_d = {"description": converted_model}
                     if (
