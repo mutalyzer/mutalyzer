@@ -2,12 +2,10 @@ import itertools
 from collections import deque
 
 from algebra import Variant
+from algebra.extractor import extract_variants
 from algebra.extractor import to_hgvs as to_hgvs_experimental
+from algebra.lcs.all_lcs import traversal
 from algebra.variants.variant import to_hgvs
-from algebra.extractor.extractor import canonical
-from algebra.lcs.all_lcs import edit, lcs_graph, traversal
-from algebra.relations.supremal_based import find_supremal, spanning_variant
-from algebra.variants import patch
 from mutalyzer_hgvs_parser import to_model
 
 from mutalyzer.util import get_inserted_sequence, get_location_length
@@ -16,9 +14,8 @@ from .converter.to_delins import to_delins
 from .converter.to_internal_coordinates import to_internal_coordinates
 from .converter.to_internal_indexing import to_internal_indexing
 from .description import Description
-from .util import get_end, get_start, roll
+from .util import construct_sequence, get_end, get_start, roll
 from .viewer import view_delins
-from .util import construct_sequence
 
 
 def _to_dot(reference, root, offset):
@@ -62,10 +59,10 @@ def _to_dot(reference, root, offset):
     return "digraph {\n    " + "\n    ".join(elements) + "\n}"
 
 
-def _add_dot(supremal, root, reference, output, prefix=""):
-    dot = _to_dot(reference, root, supremal.start)
+def _add_dot(root, reference, offset, output, prefix=""):
+    dot = _to_dot(reference, root, offset)
     if dot:
-        output["dot"] = _to_dot(reference, root, supremal.start)
+        output["dot"] = _to_dot(reference, root, offset)
     minimal_descriptions = []
     minimal_length = 100
     for variants in itertools.islice(traversal(root), minimal_length):
@@ -73,8 +70,8 @@ def _add_dot(supremal, root, reference, output, prefix=""):
         for variant in variants:
             reference_variants.append(
                 Variant(
-                    supremal.start + variant.start,
-                    supremal.start + variant.end,
+                    offset + variant.start,
+                    offset + variant.end,
                     variant.sequence,
                 )
             )
@@ -133,7 +130,7 @@ def _add_shift(internal, delins, reference):
         internal["variants"][i]["location"]["end"]["shift"] = shift5
 
 
-def _only_variants(d, algebra_hgvs, supremal, ref_seq, root):
+def _only_variants(d, algebra_hgvs, supremal, ref_seq, root, offset):
     d.normalized_description = algebra_hgvs
     d.de_hgvs_model = {"variants": to_model(algebra_hgvs, "variants")}
     output = d.output()
@@ -154,11 +151,11 @@ def _only_variants(d, algebra_hgvs, supremal, ref_seq, root):
         d_n.delins_model["variants"], d.de_hgvs_model["variants"], d.get_sequences()
     )
     output["influence"] = {"min_pos": supremal.start, "max_pos": supremal.end}
-    _add_dot(supremal, root, ref_seq, output)
+    _add_dot(root, ref_seq, offset, output)
     return output
 
 
-def _descriptions(d, algebra_hgvs, supremal, ref_seq, root):
+def _descriptions(d, algebra_hgvs, supremal, ref_seq, root, offset):
     algebra_model = {
         "type": d.corrected_model["type"],
         "reference": {"id": d.corrected_model["reference"]["id"]},
@@ -199,7 +196,7 @@ def _descriptions(d, algebra_hgvs, supremal, ref_seq, root):
         invert=d.is_inverted(),
     )
     _add_dot(
-        supremal, root, ref_seq, output, f"{d.corrected_model['reference']['id']}:g."
+        root, ref_seq, offset, output, f"{d.corrected_model['reference']['id']}:g."
     )
     return output
 
@@ -228,36 +225,20 @@ def normalize_alt(description, only_variants=False, sequence=None):
     algebra_variants = _algebra_variants(d.delins_model["variants"], d.get_sequences())
 
     ref_seq = d.references["reference"]["sequence"]["seq"]
-    obs_seq = patch(ref_seq, algebra_variants)
-    supremal = find_supremal(
-        ref_seq, spanning_variant(ref_seq, obs_seq, algebra_variants)
+
+    algebra_extracted_variants, supremal, root, offset = extract_variants(
+        ref_seq, algebra_variants
     )
 
-    supremal_ref_seq = ref_seq[supremal.start : supremal.end]
-    supremal_obs_seq = supremal.sequence
-
-    _, lcs_nodes = edit(supremal_ref_seq, supremal_obs_seq)
-    root, _ = lcs_graph(supremal_ref_seq, supremal_obs_seq, lcs_nodes)
-
     algebra_hgvs = to_hgvs_experimental(
-        list(
-            [
-                Variant(
-                    supremal.start + variant.start,
-                    supremal.start + variant.end,
-                    variant.sequence,
-                )
-                for variant in canonical(supremal_obs_seq, root)
-            ]
-        ),
+        algebra_extracted_variants,
         ref_seq,
     )
 
     if only_variants:
-        output = _only_variants(d, algebra_hgvs, supremal, ref_seq, root)
-
+        output = _only_variants(d, algebra_hgvs, supremal, ref_seq, root, offset)
     else:
-        output = _descriptions(d, algebra_hgvs, supremal, ref_seq, root)
+        output = _descriptions(d, algebra_hgvs, supremal, ref_seq, root, offset)
 
     output["influence"] = {"min_pos": supremal.start, "max_pos": supremal.end}
 

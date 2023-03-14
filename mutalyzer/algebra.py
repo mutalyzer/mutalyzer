@@ -1,8 +1,8 @@
-from algebra import Variant
 from algebra.lcs import edit, lcs_graph
 from algebra.relations.sequence_based import compare as compare_core
 from algebra.relations.supremal_based import compare as compare_supremal
 from algebra.relations.supremal_based import find_supremal, spanning_variant
+from algebra.relations.variant_based import compare as compare_variants
 from algebra.variants import Variant
 
 import mutalyzer.errors as errors
@@ -234,12 +234,23 @@ def compare_hgvs(lhs_d, rhs_d):
     lhs_observed = lhs_d.get_sequences()["observed"]
     lhs_algebra_variants = _get_algebra_variants(lhs_d)
     lhs_spanning = spanning_variant(lhs_reference, lhs_observed, lhs_algebra_variants)
-    lhs_supremal = find_supremal(lhs_reference, lhs_spanning)
+    lhs_supremal, *_ = find_supremal(lhs_reference, lhs_spanning)
 
     rhs_observed = rhs_d.get_sequences()["observed"]
     rhs_algebra_variants = _get_algebra_variants(rhs_d)
     rhs_spanning = spanning_variant(rhs_reference, rhs_observed, rhs_algebra_variants)
-    rhs_supremal = find_supremal(rhs_reference, rhs_spanning)
+    rhs_supremal, *_ = find_supremal(rhs_reference, rhs_spanning)
+
+    # output["supremal_lhs"] = {
+    #     "hgvs": f"{lhs_d.corrected_model['reference']['id']}:g.{lhs_supremal.to_hgvs()}",
+    #     "spdi": lhs_supremal.to_spdi(lhs_d.corrected_model["reference"]["id"]),
+    # }
+    #
+    # output["supremal_rhs"] = {
+    #     "hgvs": f"{rhs_d.corrected_model['reference']['id']}:g.{rhs_supremal.to_hgvs()}",
+    #     "spdi": rhs_supremal.to_spdi(rhs_d.corrected_model["reference"]["id"]),
+    # }
+    # print(rhs_d.de_hgvs_internal_indexing_model)
 
     output["relation"] = compare_supremal(
         lhs_reference, lhs_supremal, rhs_supremal
