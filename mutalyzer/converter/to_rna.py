@@ -334,8 +334,10 @@ def reverse_start_end(variants):
         if variant.get("location") and variant["location"]["type"] == "range":
             location = variant["location"]
             location["start"], location["end"] = location["end"], location["start"]
-            location["start"]["position"] -= 1
-            location["end"]["position"] -= 1
+            location["start"]["position"] -= 1 + location["start"].get("shift", 0)
+            location["end"]["position"] -= 1 + location["start"].get("shift", 0)
+            location["start"]["shift"] = 0
+            location["end"]["shift"] = 0
 
 
 def _get_cds_into_exons(exons, cds):

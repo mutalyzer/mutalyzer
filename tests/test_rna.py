@@ -875,6 +875,16 @@ TESTS = [
         ],
         "to_test": True,
     },
+    {
+        "keywords": [
+            "protein reverse shift whole exon"
+        ],
+        "input": "NG_008835.1(NM_022153.2):r.677_704del",
+        "normalized": "NG_008835.1(NM_022153.2):r.677_704del",
+        "protein_description": "NG_008835.1(NP_071436.1):p.(Arg226Profs*102)",
+        "to_test": True,
+    },
+
 ]
 
 

@@ -3117,6 +3117,26 @@ TESTS = [
         ],
         "to_test": True,
     },
+    {
+        "keywords": [
+            "protein reverse strand whole exon deletion with shift"
+        ],
+        "input": "NG_008835.1(NM_022153.2):c.677-21_704+62del",
+        "normalized": "NG_008835.1(NM_022153.2):c.677-18_704+65del",
+        "rna_description": "NG_008835.1(NM_022153.2):r.(677_704del)",
+        "protein_description": "NG_008835.1(NP_071436.1):p.(Arg226Profs*102)",
+        "to_test": True,
+    },
+    {
+        "keywords": [
+            "protein reverse whole exon deletion no shift"
+        ],
+        "input": "NG_008835.1(NM_022153.2):c.677-20_704+62del",
+        "normalized": "NG_008835.1(NM_022153.2):c.677-20_704+62del",
+        "rna_description": "NG_008835.1(NM_022153.2):r.(677_704del)",
+        "protein_description": "NG_008835.1(NP_071436.1):p.(Arg226Profs*102)",
+        "to_test": True,
+    },
     # {
     #     "keywords": [
     #
