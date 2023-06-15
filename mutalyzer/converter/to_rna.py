@@ -55,16 +55,21 @@ def to_rna_reference_model(reference_model, selector_id, transcribe=True):
     }
     s_m = get_internal_selector_model(rna_model["annotations"], selector_id, True)
     x = NonCoding(s_m["exon"]).coordinate_to_noncoding
+    g = Genomic().genomic_to_coordinate
 
     new_start = x(s_m["exon"][0][0])[0] - 1
     new_end = x(s_m["exon"][-1][-1])[0]
+
     for location, f_type in yield_locations(rna_model["annotations"]):
-        if f_type == "CDS":
-            set_start(location, x(get_start(location))[0] - 1)
-            set_end(location, x(get_end(location))[0] - 1)
-        elif f_type == "exon":
-            set_start(location, x(get_start(location))[0] - 1)
-            set_end(location, x(get_end(location))[0] + x(get_end(location))[1] - 1)
+        if f_type in ["CDS", "exon"]:
+            new_start_x = x(get_start(location))
+            new_start_g = g(new_start_x[0])
+
+            new_end_x = x(get_end(location))
+            new_end_g = g(new_end_x[0] + new_end_x[1])
+
+            set_start(location, new_start_g)
+            set_end(location, new_end_g)
         else:
             set_start(location, new_start)
             set_end(location, new_end)
@@ -237,13 +242,10 @@ def to_rna_variants(variants, sequences, selector_model):
     trimmed_variants = _trim_to_exons(variants, selector_model["exon"], sequences)
 
     x = NonCoding(selector_model["exon"]).coordinate_to_noncoding
-
     for variant in trimmed_variants:
         if variant.get("location"):
             set_start(variant["location"], x(get_start(variant))[0] - 1)
-            set_end(
-                variant["location"], x(get_end(variant))[0] + x(get_end(variant))[1] - 1
-            )
+            set_end(variant["location"], x(get_end(variant))[0] + x(get_end(variant))[1] - 1)
             if variant.get("inserted"):
                 variant["inserted"] = [
                     {

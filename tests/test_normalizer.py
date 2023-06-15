@@ -14,6 +14,14 @@ def get_tests(tests, t_type):
     return output
 
 
+def get_tests_rna_protein(tests):
+    output = []
+    for test in tests:
+        if test.get("rna_description") and test.get("protein_description"):
+            output.append((test["rna_description"], test["protein_description"]))
+    return output
+
+
 @pytest.mark.parametrize(
     "input_description, normalized", get_tests(TESTS_ALL, "normalized")
 )
@@ -68,6 +76,18 @@ def test_protein_equivalent(input_description, coding_protein_descriptions):
     )
 
     assert coding_protein_descriptions.issubset(normalizer_descriptions)
+
+
+@pytest.mark.parametrize(
+    "rna_description, protein_description",
+    get_tests_rna_protein(TESTS_ALL),
+)
+def test_rna_protein(rna_description, protein_description):
+
+    normalized_output = normalize(rna_description)
+    normalizer_protein = normalized_output["protein"]["description"]
+
+    assert normalizer_protein == protein_description
 
 
 @pytest.mark.parametrize(

@@ -2452,7 +2452,7 @@ TESTS = [
             ),
         },
         "protein_description": "NG_009299.1(NP_060138.1):p.(Gln14Profs*68)",
-        "rna_description": "NG_009299.1(NM_017668.3):r.(40a>c)",
+        "rna_description": "NG_009299.1(NM_017668.3):r.(41a>c)",
         "to_test": True,
     },
     {

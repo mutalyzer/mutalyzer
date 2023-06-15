@@ -1373,6 +1373,23 @@ def test_to_rna_reference_model(r_id, s_id, expected):
     assert rna_model == expected
 
 
+@pytest.mark.parametrize(
+    "r_id, s_id, exon, cds",
+    [
+        ("TEST_REF", "NM_PLUS", [(0, 54), (54, 636)], [(0, 562)]),
+        ("NG_012337.1", "NM_012459.2", [(0, 663), (663, 822)], [(495, 792)]),
+        ("NG_009299.1", "NM_017668.3", [(0, 2163)], [(2102, 2163)]),
+
+])
+def test_to_rna_reference_model_selector_model(r_id, s_id, exon, cds):
+    model = retrieve_reference(r_id)[0]
+    rna_model = to_rna_reference_model(model, s_id, transcribe=True)
+    selector_model = get_internal_selector_model(rna_model["annotations"], s_id, True)
+
+    assert selector_model["exon"] == exon
+    assert selector_model["cds"] == cds
+
+
 def _location(s, e, strand=None):
     location = {
         "type": "range",
