@@ -3137,6 +3137,16 @@ TESTS = [
         "protein_description": "NG_008835.1(NP_071436.1):p.(Arg226Profs*102)",
         "to_test": True,
     },
+    {
+        "keywords": [
+            "delins inversion"
+        ],
+        "input": "NM_003002.4:c.206_210delins190_220inv",
+        "normalized": "NM_003002.4:c.206_209delins191_220inv",
+        "rna_description": "NM_003002.4:r.(206_209delinscacugacaacccucucgcuaguccagugga)",
+        "protein_description": "NM_003002.4(NP_002993.1):p.(Glu69Alafs*26)",
+        "to_test": True,
+    },
     # {
     #     "keywords": [
     #
