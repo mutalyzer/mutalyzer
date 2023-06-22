@@ -1075,12 +1075,6 @@ class Description(object):
                         self.add_info(infos.corrected_sequence(seq, seq_lower))
                     if not is_rna(seq_lower):
                         self._add_error(errors.no_rna(seq_lower, path))
-                    seq_lower = str(Seq(seq).back_transcribe()).upper()
-                    # set_by_path(self.corrected_model, path, seq_lower)
-                    if self.is_inverted():
-                        path = reverse_path(self.corrected_model, path)
-                    set_by_path(self.internal_coordinates_model, path, seq_lower)
-                    set_by_path(self.internal_indexing_model, path, seq_lower)
 
     @check_errors
     def _check_location_amino_acids(self):
@@ -1159,6 +1153,7 @@ class Description(object):
         self._check_coordinate_systems()
         self._check_coordinate_system_consistency()
         self._check_selector_models()
+        self._rna()
         self._check_location_extras()
         if contains_uncertain_locations(self.corrected_model):
             self._add_error(errors.uncertain())
@@ -1230,25 +1225,9 @@ class Description(object):
     @check_errors
     def _rna(self):
         if self.corrected_model.get("coordinate_system") == "r":
-            errors_splice, infos_splice = splice_sites(
-                self.internal_indexing_model["variants"],
-                self.get_sequences(),
-                self.get_selector_model(),
-            )
-            self.infos += infos_splice
-            self.errors += errors_splice
-            if errors_splice:
-                return
-
-            self.internal_indexing_model["variants"] = to_rna_variants(
-                self.internal_indexing_model["variants"],
-                self.get_sequences(),
-                self.get_selector_model(),
-            )
             rna_reference_model = to_rna_reference_model(
                 self.references["reference"], self.get_selector_id()
             )
-            # self.delins_model["variants"] = variants
             self.references = {
                 get_reference_id(self.corrected_model): rna_reference_model,
                 "reference": rna_reference_model,
@@ -1548,7 +1527,6 @@ class Description(object):
         self._check_and_correct_sequences()
 
         self.check()
-        self._rna()
         self._construct_delins_model()
 
     def normalize_only_equals_or_no_operation(self):
@@ -1575,7 +1553,6 @@ class Description(object):
             self._check_and_correct_sequences()
 
             self.check()
-            self._rna()
             self._construct_delins_model()
             if self.only_equals() or self.no_operation():
                 self.normalize_only_equals_or_no_operation()
