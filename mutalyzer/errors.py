@@ -262,6 +262,10 @@ def syntax_ueof(e):
     )
 
 
+def syntax_nested(e):
+    return {"code": "ESYNTAXNESTED", "details": "Nested descriptions encountered."}
+
+
 def position_syntax(details, e):
     return dict({"code": "EPOSITIONSYNTAX", "details": details}, **e.serialize())
 

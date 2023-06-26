@@ -6,7 +6,7 @@ from Bio.SeqUtils import seq1, seq3
 from extractor import describe_dna
 from mutalyzer_backtranslate import BackTranslate
 from mutalyzer_hgvs_parser import to_model
-from mutalyzer_hgvs_parser.exceptions import UnexpectedCharacter, UnexpectedEnd
+from mutalyzer_hgvs_parser.exceptions import UnexpectedCharacter, UnexpectedEnd, NestedDescriptions
 from mutalyzer_mutator import mutate
 from mutalyzer_mutator.util import reverse_complement
 from mutalyzer_retriever.reference import (
@@ -195,6 +195,8 @@ class Description(object):
             self._add_error(errors.syntax_uc(e))
         except UnexpectedEnd as e:
             self._add_error(errors.syntax_ueof(e))
+        except NestedDescriptions as e:
+            self._add_error(errors.syntax_nested(e))
         else:
             if start_rule == "variants":
                 self.input_model = {"variants": model}
@@ -1228,10 +1230,8 @@ class Description(object):
             rna_reference_model = to_rna_reference_model(
                 self.references["reference"], self.get_selector_id()
             )
-            self.references = {
-                get_reference_id(self.corrected_model): rna_reference_model,
-                "reference": rna_reference_model,
-            }
+            self.references["reference"] = rna_reference_model
+            self.references[get_reference_id(self.corrected_model)] = rna_reference_model
 
     def _check_amino_acids(self):
         for sequence, path in yield_values(
