@@ -246,64 +246,6 @@ TESTS = [
         "infos": [CORRECTEDSEQUENCE],
         "to_test": True,
     },
-    # {
-    #     "keywords": [
-    #         "rna",
-    #         "deletion",
-    #         "genomic",
-    #         "mRNA",
-    #         "same intron",
-    #         "plus strand",
-    #     ],
-    #     "input": "NG_012337.3(NM_003002.4):r.52+8_53-8del",
-    #     "normalized": "NG_012337.3(NM_003002.4):r.=",
-    #     "infos": [IVARIANTDISCARDED],
-    #     "to_test": True,
-    # },
-    # {
-    #     "keywords": [
-    #         "rna",
-    #         "deletion",
-    #         "genomic",
-    #         "mRNA",
-    #         "intron - intron",
-    #         "same intron",
-    #         "minus strand",
-    #     ],
-    #     "input": "NG_012337.3(NM_012459.4):r.84+8_85-8del",
-    #     "normalized": "NG_012337.3(NM_012459.4):r.=",
-    #     "infos": [IVARIANTDISCARDED],
-    #     "to_test": True,
-    # },
-    # {
-    #     "keywords": [
-    #         "rna",
-    #         "deletion",
-    #         "genomic",
-    #         "mRNA",
-    #         "intron - intron",
-    #         "plus strand",
-    #     ],
-    #     "input": "NG_012337.3(NM_003002.4):r.52+8_169+8del",
-    #     "normalized": "NG_012337.3(NM_003002.4):r.55_171del",
-    #     "protein_description": "NG_012337.3(NP_002993.1):p.(Leu19_Ser57del)",
-    #     "infos": [ISPLICESITEREMOVED],
-    #     "to_test": True,
-    # },
-    # {
-    #     "keywords": [
-    #         "rna",
-    #         "deletion",
-    #         "genomic",
-    #         "mRNA",
-    #         "intron - intron",
-    #         "minus strand",
-    #     ],
-    #     "input": "NG_012337.3(NM_012459.4):r.84+8_*503del",
-    #     "normalized": "NG_012337.3(NM_012459.4):r.85_*495del",
-    #     "infos": [ISPLICESITEREMOVED],
-    #     "to_test": True,
-    # },
     # ---- other
     {
         "keywords": [
@@ -400,7 +342,7 @@ def test_rna(input_description, normalized):
     "input_description",
     [
         "NG_012337.3(NM_003002.4):c.-30_52+1del",
-        "NG_012337.3(NM_003002.4):c.-30_53-1dgit del",
+        "NG_012337.3(NM_003002.4):c.-30_53-1del",
         "NG_012337.3(NM_003002.4):c.-30_169+1del",
         "NG_012337.3(NM_012459.4):c.-30_84+1del",
         "NG_012337.3(NM_012459.4):c.-30_85-1del",

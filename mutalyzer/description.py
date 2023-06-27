@@ -904,6 +904,7 @@ class Description(object):
     def _check_intronic_point(self, point, path):
         if point.get("offset"):
             ref_id = self.corrected_model["reference"]["id"]
+            c_s = self.corrected_model["coordinate_system"]
             for ins_or_del in ["inserted", "deleted"]:
                 if ins_or_del in path:
                     ins_or_del_ref_id = get_reference_id(
@@ -914,14 +915,12 @@ class Description(object):
                     )
                     if ins_or_del_ref_id:
                         ref_id = ins_or_del_ref_id
-            if get_reference_mol_type(self.references[ref_id]) in [
-                "mRNA",
-                "ncRNA",
-                "transcribed RNA",
-            ]:
-                if point.get("offset"):
-                    # TODO: find the actual NM(NC) description
-                    self._add_error(errors.intronic(point, path))
+            ref_mol_type = get_reference_mol_type(self.references[ref_id])
+            if ref_mol_type in ["mRNA", "ncRNA", "transcribed RNA"]:
+                # TODO: find the actual NM(NC) description
+                self._add_error(errors.intronic(point, path))
+            elif ref_mol_type == "genomic DNA" and c_s == "r":
+                self._add_error(errors.intronic_rna(point, path))
 
     def _check_location_extras(self):
         for point, path in yield_sub_model(

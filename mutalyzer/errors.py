@@ -98,6 +98,14 @@ def intronic(location, path):
     }
 
 
+def intronic_rna(location, path):
+    return {
+        "code": "EINTRONICRNA",
+        "details": f"Intronic position {location_to_description(location)} given for an RNA description.",
+        "paths": [path],
+    }
+
+
 def out_of_boundary_lesser(position, shift, path):
     plural = "s" if shift > 1 else ""
     return {
