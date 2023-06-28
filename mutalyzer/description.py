@@ -907,14 +907,12 @@ class Description(object):
             c_s = self.corrected_model["coordinate_system"]
             for ins_or_del in ["inserted", "deleted"]:
                 if ins_or_del in path:
-                    ins_or_del_ref_id = get_reference_id(
-                        get_submodel_by_path(
-                            self.corrected_model,
-                            path[: path.index(ins_or_del) + 2],
-                        )
-                    )
+                    submodel = get_submodel_by_path(self.corrected_model, path[: path.index(ins_or_del) + 2])
+                    ins_or_del_ref_id = get_reference_id(submodel)
                     if ins_or_del_ref_id:
                         ref_id = ins_or_del_ref_id
+                    if submodel.get("coordinate_system"):
+                        c_s = submodel["coordinate_system"]
             ref_mol_type = get_reference_mol_type(self.references[ref_id])
             if ref_mol_type in ["mRNA", "ncRNA", "transcribed RNA"]:
                 # TODO: find the actual NM(NC) description
