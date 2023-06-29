@@ -3147,6 +3147,35 @@ TESTS = [
         "protein_description": "NM_003002.4(NP_002993.1):p.(Glu69Alafs*26)",
         "to_test": True,
     },
+    {
+        "keywords": [
+            "insertion with positions other reference reverse strand"
+        ],
+        "input": "NG_012337.3:g.136delinsNG_012337.1(NM_012459.2):c.200",
+        "normalized": "NG_012337.3:g.136A>C",
+        "to_test": True,
+    },
+    {
+        "keywords": [
+            "insertion with positions other reference reverse strand"
+        ],
+        "input": "NG_012337.3(NM_003002.4):c.274delinsNG_012337.1(NM_012459.2):c.200_203",
+        "normalized": "NG_012337.3(NM_003002.4):c.274delinsCTGA",
+        "rna_description": "NG_012337.3(NM_003002.4):r.(274delinscuga)",
+        "protein_description": "NG_012337.3(NP_002993.1):p.(Asp92delinsLeuAsn)",
+        "to_test": True,
+    },
+    {
+        "keywords": [
+            "insertion with positions other reference reverse strand"
+        ],
+        "input": "NG_012337.1(NM_012459.2):c.274delinsNG_012337.3(NM_003002.4):c.200_203",
+        "normalized": "NG_012337.1(NM_012459.2):c.274delinsCTAG",
+        "rna_description": "NG_012337.1(NM_012459.2):r.(274delinscuag)",
+        "protein_description": "NG_012337.1(NP_036591.2):p.(Ile92delinsLeuVal)",
+        "to_test": True,
+    },
+
     # {
     #     "keywords": [
     #         "rna",
