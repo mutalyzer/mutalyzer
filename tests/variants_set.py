@@ -3137,6 +3137,110 @@ TESTS = [
         "protein_description": "NG_008835.1(NP_071436.1):p.(Arg226Profs*102)",
         "to_test": True,
     },
+    {
+        "keywords": [
+            "delins inversion"
+        ],
+        "input": "NM_003002.4:c.206_210delins190_220inv",
+        "normalized": "NM_003002.4:c.206_209delins191_220inv",
+        "rna_description": "NM_003002.4:r.(206_209delinscacugacaacccucucgcuaguccagugga)",
+        "protein_description": "NM_003002.4(NP_002993.1):p.(Glu69Alafs*26)",
+        "to_test": True,
+    },
+    {
+        "keywords": [
+            "insertion with positions other reference reverse strand"
+        ],
+        "input": "NG_012337.3:g.136delinsNG_012337.1(NM_012459.2):c.200",
+        "normalized": "NG_012337.3:g.136A>C",
+        "to_test": True,
+    },
+    {
+        "keywords": [
+            "insertion with positions other reference reverse strand"
+        ],
+        "input": "NG_012337.3(NM_003002.4):c.274delinsNG_012337.1(NM_012459.2):c.200_203",
+        "normalized": "NG_012337.3(NM_003002.4):c.274delinsCTGA",
+        "rna_description": "NG_012337.3(NM_003002.4):r.(274delinscuga)",
+        "protein_description": "NG_012337.3(NP_002993.1):p.(Asp92delinsLeuAsn)",
+        "to_test": True,
+    },
+    {
+        "keywords": [
+            "insertion with positions other reference reverse strand"
+        ],
+        "input": "NG_012337.1(NM_012459.2):c.274delinsNG_012337.3(NM_003002.4):c.200_203",
+        "normalized": "NG_012337.1(NM_012459.2):c.274delinsCTAG",
+        "rna_description": "NG_012337.1(NM_012459.2):r.(274delinscuag)",
+        "protein_description": "NG_012337.1(NP_036591.2):p.(Ile92delinsLeuVal)",
+        "to_test": True,
+    },
+
+    # {
+    #     "keywords": [
+    #         "rna",
+    #         "deletion",
+    #         "genomic",
+    #         "mRNA",
+    #         "same intron",
+    #         "plus strand",
+    #     ],
+    #     "input": "NG_012337.3(NM_003002.4):c.52+8_53-8del",
+    #     "normalized": "NG_012337.3(NM_003002.4):c.52+8_53-8del",
+    #     "rna_description": "NG_012337.3(NM_003002.4):r.=",
+    #     "protein_description": "NG_012337.3(NP_002993.1):p.(=)",
+    #     "infos": ["IVARIANTDISCARDED"],
+    #     "to_test": True,
+    # },
+    # {
+    #     "keywords": [
+    #         "rna",
+    #         "deletion",
+    #         "genomic",
+    #         "mRNA",
+    #         "intron - intron",
+    #         "same intron",
+    #         "minus strand",
+    #     ],
+    #     "input": "NG_012337.3(NM_012459.4):c.84+8_85-8del",
+    #     "normalized": "NG_012337.3(NM_012459.4):c.84+8_85-8del",
+    #     "rna_description": "NG_012337.3(NM_012459.4):r.(=)",
+    #     "protein_description": "NG_012337.3(NP_036591.3):p.(=)",
+    #     "infos": ["IVARIANTDISCARDED"],
+    #     "to_test": True,
+    # },
+    # {
+    #     "keywords": [
+    #         "rna",
+    #         "deletion",
+    #         "genomic",
+    #         "mRNA",
+    #         "intron - intron",
+    #         "plus strand",
+    #     ],
+    #     "input": "NG_012337.3(NM_003002.4):c.52+8_169+8del",
+    #     "normalized": "NG_012337.3(NM_003002.4):c.52+8_169+8del",
+    #     "rna_description": "NG_012337.3(NM_003002.4):r.(55_171del)",
+    #     "protein_description": "NG_012337.3(NP_002993.1):p.(Leu19_Ser57del)",
+    #     "infos": ["ISPLICESITEREMOVED"],
+    #     "to_test": True,
+    # },
+    # {
+    #     "keywords": [
+    #         "rna",
+    #         "deletion",
+    #         "genomic",
+    #         "mRNA",
+    #         "intron - intron",
+    #         "minus strand",
+    #     ],
+    #     "input": "NG_012337.3(NM_012459.4):c.84+8_*503del",
+    #     "normalized": "NG_012337.3(NM_012459.4):c.84+9_*504del",
+    #     "rna_description": "NG_012337.3(NM_012459.4):r.85_*495del",
+    #     "protein_description": "NG_012337.3(NP_036591.3):p.(Met1_Gln28dup)",
+    #     "infos": ["ISPLICESITEREMOVED"],
+    #     "to_test": True,
+    # },
     # {
     #     "keywords": [
     #

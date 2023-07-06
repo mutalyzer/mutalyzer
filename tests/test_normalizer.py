@@ -97,9 +97,9 @@ def test_rna_protein(rna_description, protein_description):
 def test_rna(input_description, rna_description):
 
     normalized_output = normalize(input_description)
-    normalizer_protein = normalized_output["rna"]["description"]
+    normalized_rna = normalized_output["rna"]["description"]
 
-    assert normalizer_protein == rna_description
+    assert normalized_rna == rna_description
 
 
 @pytest.mark.parametrize("input_description, codes", get_tests(TESTS_ALL, "errors"))

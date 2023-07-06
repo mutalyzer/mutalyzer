@@ -160,6 +160,12 @@ def points_to_internal_coordinates(model, references):
     for point, path in yield_point_locations_for_main_reference(model):
         set_by_path(internal_model, path, point_to_internal(point, crossmap))
 
+    if selector_model and selector_model.get("inverted"):
+        if internal_model.get("location") and internal_model.get("location").get("type") == "range":
+            loc = internal_model["location"]
+            loc["start"], loc["end"] = loc["end"], loc["start"]
+        internal_model["inverted"] = True
+
     return internal_model
 
 

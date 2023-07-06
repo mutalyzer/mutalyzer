@@ -146,7 +146,10 @@ def inserted_to_hgvs(inserted):
     new_inserted = []
     for insert in inserted:
         if insert["source"] in ["reference"]:
-            new_inserted.append({"source": "reference", "location": insert["location"]})
+            if insert.get("inverted"):
+                new_inserted.append({"source": "reference", "location": insert["location"], "inverted": True})
+            else:
+                new_inserted.append({"source": "reference", "location": insert["location"]})
         else:
             new_inserted.append(
                 {"source": "description", "sequence": insert["sequence"]}
