@@ -45,6 +45,7 @@ def _get_id(reference_id):
         output["errors"] = [errors.reference_not_retrieved(reference_id, [])]
     else:
         output["sequence"] = reference_model["sequence"]["seq"]
+        output["annotations"] = {"id": reference_model["annotations"]["id"]}
     return output
 
 
@@ -234,12 +235,12 @@ def compare_hgvs(lhs_d, rhs_d):
     lhs_observed = lhs_d.get_sequences()["observed"]
     lhs_algebra_variants = _get_algebra_variants(lhs_d)
     lhs_spanning = spanning_variant(lhs_reference, lhs_observed, lhs_algebra_variants)
-    lhs_supremal = find_supremal(lhs_reference, lhs_spanning)
+    lhs_supremal, *_ = find_supremal(lhs_reference, lhs_spanning)
 
     rhs_observed = rhs_d.get_sequences()["observed"]
     rhs_algebra_variants = _get_algebra_variants(rhs_d)
     rhs_spanning = spanning_variant(rhs_reference, rhs_observed, rhs_algebra_variants)
-    rhs_supremal = find_supremal(rhs_reference, rhs_spanning)
+    rhs_supremal, *_ = find_supremal(rhs_reference, rhs_spanning)
 
     output["relation"] = compare_supremal(
         lhs_reference, lhs_supremal, rhs_supremal
@@ -247,6 +248,23 @@ def compare_hgvs(lhs_d, rhs_d):
 
     output["influence_lhs"] = _influence_interval_supremal(lhs_supremal)
     output["influence_rhs"] = _influence_interval_supremal(rhs_supremal)
+
+    if lhs_d.corrected_model.get("reference"):
+        ref_id = lhs_d.corrected_model['reference']['id']
+    elif lhs_d.references["reference"].get("annotations") and lhs_d.references["reference"]["annotations"].get("id"):
+        ref_id = lhs_d.references["reference"]["annotations"]["id"]
+    else:
+        ref_id = rhs_reference
+
+    output["supremal_lhs"] = {
+        "hgvs": f"{ref_id}:g.{lhs_supremal.to_hgvs()}",
+        "spdi": lhs_supremal.to_spdi(ref_id)
+    }
+
+    output["supremal_rhs"] = {
+        "hgvs": f"{ref_id}:g.{rhs_supremal.to_hgvs()}",
+        "spdi": rhs_supremal.to_spdi(ref_id)
+    }
 
     output["view_lhs"] = view_variants_normalized(lhs_d)
     output["view_rhs"] = view_variants_normalized(rhs_d)
@@ -317,21 +335,25 @@ def compare_hgvs_based(reference, reference_type, lhs, lhs_type, rhs, rhs_type):
             return
     elif lhs_type == "variant" and rhs_type == "variant":
         if reference_type == "sequence":
-            reference_sequence = "reference"
+            reference_sequence = reference
+            ref_id = reference
         elif reference_type == "id":
             check = _get_id(reference)
             if check.get("errors"):
                 return check
             else:
                 reference_sequence = check["sequence"]
+                ref_id = check["annotations"]["id"]
         lhs_d = Description(
             description=lhs, only_variants=True, sequence=reference_sequence
         )
         lhs_d.normalize()
+        lhs_d.references["reference"]["annotations"] = {"id": ref_id}
         rhs_d = Description(
             description=rhs, only_variants=True, sequence=reference_sequence
         )
         rhs_d.normalize()
+        rhs_d.references["reference"]["annotations"] = {"id": ref_id}
     return compare_hgvs(lhs_d, rhs_d)
 
 
