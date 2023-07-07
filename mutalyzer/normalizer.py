@@ -6,6 +6,7 @@ from algebra.extractor import extract_variants
 from algebra.extractor import to_hgvs as to_hgvs_experimental
 from algebra.lcs.all_lcs import traversal
 from algebra.variants.variant import to_hgvs
+from algebra.utils import to_dot
 from mutalyzer_hgvs_parser import to_model
 
 from mutalyzer.util import get_inserted_sequence, get_location_length
@@ -19,44 +20,39 @@ from .viewer import view_delins
 
 
 def _to_dot(reference, root, offset):
+    """The LCS graph in Graphviz DOT format."""
     def traverse():
-        visited = {root}
+        # breadth-first traversal
+        node_count = 0
+        visited = {root: node_count}
         queue = deque([root])
         while queue:
             node = queue.popleft()
+            if not node.edges:
+                yield f'"s{visited[node]}"' + "[shape=doublecircle]"
             for succ, variant in node.edges:
-                if variant:
-                    hgvs_variant = [
-                        Variant(
-                            variant[0].start + offset,
-                            variant[0].end + offset,
-                            variant[0].sequence,
-                        )
-                    ]
-                    style = ""
-                else:
-                    hgvs_variant = []
-                    style = 'style = "dashed"'
-                yield (
-                    f'"{node.row}_{node.col}" [shape=circle, label=""];',
-                    f'"{succ.row}_{succ.col}" [shape=circle, label=""];',
-                    f' "{node.row}_{node.col}" -> "{succ.row}_{succ.col}"'
-                    f' [label="{to_hgvs(hgvs_variant, reference)}" {style}];',
-                )
                 if succ not in visited:
-                    visited.add(succ)
+                    node_count += 1
+                    visited[succ] = node_count
                     queue.append(succ)
-
-    nodes = set()
-    edges = []
-    for node_start, node_end, edge in traverse():
-        nodes.add(node_start)
-        nodes.add(node_end)
-        edges.append(edge)
-        if len(nodes) > 100:
-            return None
-    elements = list(nodes) + edges
-    return "digraph {\n    " + "\n    ".join(elements) + "\n}"
+                hgvs_variant = Variant(
+                    variant.start + offset,
+                    variant.end + offset,
+                    variant.sequence,
+                ).to_hgvs(reference)
+                yield (
+                    f'"s{visited[node]}" -> "s{visited[succ]}"'
+                    f' [label="{hgvs_variant}"];'
+                )
+    return (
+        "digraph {\n"
+        "    rankdir=LR\n"
+        "    edge[fontname=monospace]\n"
+        "    node[shape=circle]\n"
+        "    si[shape=point]\n"
+        "    si->" + f'"s{0}"' + "\n"
+        "    " + "\n    ".join(traverse()) + "\n}"
+    )
 
 
 def _add_dot(root, reference, offset, output, prefix=""):
