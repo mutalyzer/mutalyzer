@@ -1368,7 +1368,7 @@ class Description(object):
         self.normalized_description = model_to_string(self.de_hgvs_model)
         equivalent_1a_model = copy.deepcopy(self.de_hgvs_model)
         convert_amino_acids(equivalent_1a_model, "1a")
-        self.equivalent = {"p": [model_to_string(equivalent_1a_model)]}
+        self.equivalent = {"p": [{"description": model_to_string(equivalent_1a_model)}]}
         self._back_translate()
 
     @check_errors
