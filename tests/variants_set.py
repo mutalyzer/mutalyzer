@@ -1141,7 +1141,7 @@ M2_TESTS = [
         "normalized": "LRG_1(t1):c.266G>T",  # TODO: check if OK.
         "genomic": "LRG_1:g.6855G>T",
         "protein_description": "LRG_1(p1):p.(Gly89Val)",
-        "infos": ["ICORRECTEDLRGREFERENCE"],
+        "infos": ["ICORRECTEDLRGREFERENCE", "ILRGWARNING"],
         "to_test": True,
     },
     # test_gi_reference_plain: gi numbers not supported in M3.
@@ -2499,7 +2499,7 @@ TESTS = [
         "keywords": ["reference", "LRG", "replace"],
         "input": "LRG_303(t1):c.10_11insLRG_1t1:c.100_101",
         "normalized": "LRG_303(t1):c.10_11insGA",
-        "infos": ["ICORRECTEDLRGREFERENCE"],
+        "infos": ["ILRGWARNING", "ICORRECTEDLRGREFERENCE", "ILRGWARNING"],
         "to_test": True,
     },
     {

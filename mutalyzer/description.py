@@ -272,8 +272,12 @@ class Description(object):
                         path, reference_id, reference_id_in_model
                     )
                     _update_references(reference_id_in_model, reference_model)
+                    ref_id = reference_id_in_model
                 else:
                     _update_references(reference_id, reference_model)
+                    ref_id = reference_id
+                if ref_id.startswith("LRG_"):
+                    self.add_info(infos.lrg_warning(ref_id, path))
                 self._set_main_reference()
 
     @check_errors

@@ -21,6 +21,16 @@ def corrected_lrg_reference(original_id, lrg_model, path):
     }
 
 
+def lrg_warning(ref_id, path):
+    return {
+        "code": "ILRGWARNING",
+        "details": "Reference {} was identified as LRG. Please note that LRGs are no longer updated.".format(
+            ref_id,
+        ),
+        "paths": [path],
+    }
+
+
 def corrected_selector_id(original_id, corrected_id, correction_source, path):
     return {
         "code": "ICORRECTEDSELECTORID",
