@@ -2,7 +2,7 @@ import pytest
 
 from mutalyzer.mapper import map_description
 
-from .commons import code_in, patch_retriever
+from .commons import code_in, monkey_patches
 
 TEST_SET = [
     (

@@ -1264,12 +1264,14 @@ class Description(object):
         if not selector_id:
             cds_id = reference_id
             mrna_id = get_cds_to_mrna(cds_id)
-            if len(mrna_id) >= 1:
+            if mrna_id and len(mrna_id) >= 1:
                 mrna_id = mrna_id[-1]
         else:
             mrna_id = get_reference_id(self.corrected_model)
             cds_id = self.get_selector_id()
 
+        if not mrna_id:
+            return []
         cds_seq = slice_to_selector(
             retrieve_reference(mrna_id, cds_id)[0],
             cds_id,

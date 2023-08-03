@@ -22,6 +22,7 @@ def retrieve_raw(
     configuration_path=None,
     timeout=1,
 ):
+    print("\nretrive raw\n")
     if reference_type == "fasta":
         return _get_content("data/" + reference_id + ".fasta"), "fasta", "ncbi"
     elif reference_id.startswith("LRG_"):
@@ -30,9 +31,14 @@ def retrieve_raw(
         return _get_content("data/" + reference_id + ".gff3"), "gff3", "ncbi"
 
 
+def get_cds_to_mrna(cds_id, timeout=10):
+    return None
+
+
 @pytest.fixture(autouse=True)
-def patch_retriever(monkeypatch):
+def monkey_patches(monkeypatch):
     monkeypatch.setattr("mutalyzer_retriever.retriever.retrieve_raw", retrieve_raw)
+    monkeypatch.setattr("mutalyzer.description.get_cds_to_mrna", get_cds_to_mrna)
     monkeypatch.setattr("mutalyzer.util.configuration", lambda: None)
 
 

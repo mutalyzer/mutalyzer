@@ -2,7 +2,7 @@ import pytest
 
 from mutalyzer.back_translator import back_translate
 
-from .commons import code_in, patch_retriever
+from .commons import code_in, monkey_patches
 
 
 @pytest.mark.parametrize(

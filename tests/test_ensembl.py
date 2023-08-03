@@ -3,7 +3,7 @@ import pytest
 from mutalyzer.normalizer import normalize
 from mutalyzer.reference import retrieve_reference, slice_to_selector
 
-from .commons import code_in, patch_retriever
+from .commons import code_in, monkey_patches
 from .variants_set import TESTS_ALL
 
 

@@ -2,7 +2,7 @@ import pytest
 
 from mutalyzer.normalizer import normalize
 
-from .commons import code_in, patch_retriever
+from .commons import code_in, monkey_patches
 
 TESTS = [
     {
@@ -105,6 +105,14 @@ TESTS = [
                 "paths": [["variants", 0, "inserted", 0, "location", "start"]],
             },
         ],
+        "to_test": True,
+    },
+    {
+        "keywords": [
+            "protein missing mrna for backtranslation",
+        ],
+        "input": "YP_009725300.1:p.(Leu360Ter)",
+        "normalized": "YP_009725300.1:p.(Leu360Ter)",
         "to_test": True,
     },
 ]

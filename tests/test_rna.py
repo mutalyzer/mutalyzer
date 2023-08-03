@@ -12,7 +12,7 @@ from mutalyzer.converter.to_rna import (
 from mutalyzer.normalizer import normalize
 from mutalyzer.reference import get_internal_selector_model, retrieve_reference
 
-from .commons import code_in, patch_retriever
+from .commons import code_in, monkey_patches
 
 ESPLICESITE = {
     "code": "ESPLICESITE",

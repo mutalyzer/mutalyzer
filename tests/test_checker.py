@@ -2,7 +2,7 @@ import pytest
 
 from mutalyzer.normalizer import normalize
 
-from .commons import code_in, patch_retriever
+from .commons import code_in, monkey_patches
 from .variants_set import TESTS_ALL
 
 TESTS_ERROR = [
