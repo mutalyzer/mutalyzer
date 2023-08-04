@@ -144,18 +144,13 @@ def convert_reference_model(reference_model, selector_id=None, slice_to=None):
         ref_seq = slice_seq(ref_seq, s_model["exon"])
         new_r_model["sequence"] = {"seq": ref_seq}
         x = NonCoding(s_model["exon"]).coordinate_to_noncoding
-        exon_end = [exon[1] for exon in s_model["exon"]]
     if slice_to == "gene":
         g_l = get_gene_locations(new_r_model)
         ref_seq = slice_seq(ref_seq, [g_l])
         new_r_model["sequence"] = {"seq": ref_seq}
         x = NonCoding([g_l]).coordinate_to_noncoding
-        exon_end = [g_l[1]]
 
     for loc, feature_type in yield_locations_selector_id(new_r_model, selector_id):
         loc["start"]["position"] = x(loc["start"]["position"])[0] - 1
-        if feature_type == "exon" and loc["end"]["position"] in exon_end:
-            loc["end"]["position"] = x(loc["end"]["position"])[0]
-        else:
-            loc["end"]["position"] = x(loc["end"]["position"])[0] - 1
+        loc["end"]["position"] = x(loc["end"]["position"] - 1)[0]
     return new_r_model

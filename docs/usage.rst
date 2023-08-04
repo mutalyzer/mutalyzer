@@ -17,13 +17,13 @@ Create a cache directory and a configuration file:
 .. code-block:: console
 
     $ mkdir cache
-    $ echo MUTALYZER_CACHE_DIR = \'$(pwd)/cache\' > config.txt
+    $ echo MUTALYZER_CACHE_DIR = $(pwd)/cache > config.txt
 
 Populate the cache:
 
 .. code-block:: console
 
-    $ mutalyzer_retriever --id NC_000022.11 --parse > cache/NC_000022.11
+    $ mutalyzer_retriever --id NC_000022.11 --parse --split --output cache
 
 
 Now the tool can be run with the cache:
@@ -31,3 +31,5 @@ Now the tool can be run with the cache:
 .. code-block:: console
 
     $ MUTALYZER_SETTINGS="$(pwd)/config.txt" mutalyzer_normalizer "NC_000022.11(NM_182984.5):c.95del"
+
+

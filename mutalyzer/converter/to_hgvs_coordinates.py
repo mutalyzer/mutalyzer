@@ -129,28 +129,18 @@ def reverse_strand_shift(variants, sequences):
                 ins_seq = construct_sequence(variant["inserted"], sequences)
                 seq = sequences["reference"]
                 start = get_start(variant)
-                new_ins_seq = reverse_complement(
-                    (seq[start - shift : start] + ins_seq)[: len(ins_seq)]
-                )
-                variant["inserted"] = [
-                    {"sequence": new_ins_seq, "source": "description"}
-                ]
+                new_ins_seq = reverse_complement((seq[start - shift : start] + ins_seq)[: len(ins_seq)])
+                variant["inserted"] = [{"sequence": new_ins_seq, "source": "description"}]
             else:
                 seq = sequences["reference"]
                 for inserted in variant["inserted"]:
                     if inserted.get("sequence"):
                         start = get_start(variant)
                         ins_seq = inserted["sequence"]
-                        inserted["sequence"] = reverse_complement(
-                            (seq[start - shift : start] + ins_seq)[: len(ins_seq)]
-                        )
+                        inserted["sequence"] = reverse_complement((seq[start - shift : start] + ins_seq)[: len(ins_seq)])
                     else:
-                        inserted["location"]["start"]["position"] -= inserted[
-                            "location"
-                        ]["start"].get("shift", 0)
-                        inserted["location"]["end"]["position"] -= inserted["location"][
-                            "start"
-                        ].get("shift", 0)
+                        inserted["location"]["start"]["position"] -= inserted["location"]["start"].get("shift", 0)
+                        inserted["location"]["end"]["position"] -= inserted["location"]["start"].get("shift", 0)
         if variant.get("deleted"):
             variant["deleted"].reverse()
             for deleted in variant["deleted"]:

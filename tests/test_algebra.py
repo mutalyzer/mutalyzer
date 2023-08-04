@@ -3,7 +3,7 @@ import pytest
 from mutalyzer.algebra import _get_hgvs_and_variant, _get_id, compare
 from mutalyzer.reference import retrieve_reference
 
-from .commons import code_in, patch_retriever
+from .commons import code_in, monkey_patches
 
 
 @pytest.mark.parametrize(
@@ -15,6 +15,7 @@ def test_get_id(reference_id):
         "input": reference_id,
         "type": "id",
         "reference": {"id": reference_id},
+        "annotations": {"id": reference_id},
         "sequence": retrieve_reference(reference_id)[0]["sequence"]["seq"],
     }
 
@@ -154,6 +155,14 @@ def test_get_hgvs(description, expected):
                 "relation": "is_contained",
                 "influence_lhs": {"min_pos": 5521, "max_pos": 5534},
                 "influence_rhs": {"min_pos": 5521, "max_pos": 5534},
+                "supremal_lhs": {
+                    "hgvs": "LRG_24:g.5522_5534delinsGCCCA",
+                    "spdi": "LRG_24:5521:13:GCCCA",
+                },
+                "supremal_rhs": {
+                    "hgvs": "LRG_24:g.5522_5534delinsGCCA",
+                    "spdi": "LRG_24:5521:13:GCCA",
+                },
                 "view_lhs": {
                     "views": [
                         {
@@ -221,6 +230,14 @@ def test_get_hgvs(description, expected):
                 "relation": "is_contained",
                 "influence_lhs": {"min_pos": 5521, "max_pos": 5534},
                 "influence_rhs": {"min_pos": 5521, "max_pos": 5534},
+                "supremal_lhs": {
+                    "hgvs": "LRG_24:g.5522_5534delinsGCCCA",
+                    "spdi": "LRG_24:5521:13:GCCCA",
+                },
+                "supremal_rhs": {
+                    "hgvs": "LRG_24:g.5522_5534delinsGCCA",
+                    "spdi": "LRG_24:5521:13:GCCA",
+                },
                 "view_lhs": {
                     "views": [
                         {
@@ -288,6 +305,14 @@ def test_get_hgvs(description, expected):
                 "relation": "is_contained",
                 "influence_lhs": {"min_pos": 5521, "max_pos": 5534},
                 "influence_rhs": {"min_pos": 5521, "max_pos": 5534},
+                "supremal_lhs": {
+                    "hgvs": "LRG_24:g.5522_5534delinsGCCCA",
+                    "spdi": "LRG_24:5521:13:GCCCA",
+                },
+                "supremal_rhs": {
+                    "hgvs": "LRG_24:g.5522_5534delinsGCCA",
+                    "spdi": "LRG_24:5521:13:GCCA",
+                },
                 "view_lhs": {
                     "views": [
                         {
@@ -355,6 +380,14 @@ def test_get_hgvs(description, expected):
                 "relation": "is_contained",
                 "influence_lhs": {"min_pos": 5521, "max_pos": 5534},
                 "influence_rhs": {"min_pos": 5521, "max_pos": 5534},
+                "supremal_lhs": {
+                    "hgvs": "LRG_24:g.5522_5534delinsGCCCA",
+                    "spdi": "LRG_24:5521:13:GCCCA",
+                },
+                "supremal_rhs": {
+                    "hgvs": "LRG_24:g.5522_5534delinsGCCA",
+                    "spdi": "LRG_24:5521:13:GCCA",
+                },
                 "view_lhs": {
                     "views": [
                         {
@@ -422,6 +455,14 @@ def test_get_hgvs(description, expected):
                 "relation": "equivalent",
                 "influence_lhs": {"min_pos": 5518, "max_pos": 5534},
                 "influence_rhs": {"min_pos": 5518, "max_pos": 5534},
+                "supremal_lhs": {
+                    "hgvs": "NG_008376.4:g.5519_5534delinsGAGTTATG",
+                    "spdi": "NG_008376.4:5518:16:GAGTTATG",
+                },
+                "supremal_rhs": {
+                    "hgvs": "NG_008376.4:g.5519_5534delinsGAGTTATG",
+                    "spdi": "NG_008376.4:5518:16:GAGTTATG",
+                },
                 "view_lhs": {
                     "views": [
                         {
@@ -489,6 +530,14 @@ def test_get_hgvs(description, expected):
                 "relation": "contains",
                 "influence_lhs": {"min_pos": 272, "max_pos": 275},
                 "influence_rhs": {"min_pos": 273, "max_pos": 274},
+                "supremal_lhs": {
+                    "hgvs": "NG_012337.3:g.273_275delinsAAA",
+                    "spdi": "NG_012337.3:272:3:AAA",
+                },
+                "supremal_rhs": {
+                    "hgvs": "NG_012337.3:g.274del",
+                    "spdi": "NG_012337.3:273:1:",
+                },
                 "view_lhs": {
                     "views": [
                         {
@@ -557,6 +606,14 @@ def test_get_hgvs(description, expected):
                 "relation": "contains",
                 "influence_lhs": {"min_pos": 272, "max_pos": 275},
                 "influence_rhs": {"min_pos": 273, "max_pos": 274},
+                "supremal_lhs": {
+                    "hgvs": "NG_012337.3:g.273_275delinsAAA",
+                    "spdi": "NG_012337.3:272:3:AAA",
+                },
+                "supremal_rhs": {
+                    "hgvs": "NG_012337.3:g.274del",
+                    "spdi": "NG_012337.3:273:1:",
+                },
                 "view_lhs": {
                     "views": [
                         {
@@ -625,6 +682,14 @@ def test_get_hgvs(description, expected):
                 "relation": "contains",
                 "influence_lhs": {"min_pos": 272, "max_pos": 275},
                 "influence_rhs": {"min_pos": 273, "max_pos": 274},
+                "supremal_lhs": {
+                    "hgvs": "NG_012337.3:g.273_275delinsAAA",
+                    "spdi": "NG_012337.3:272:3:AAA",
+                },
+                "supremal_rhs": {
+                    "hgvs": "NG_012337.3:g.274del",
+                    "spdi": "NG_012337.3:273:1:",
+                },
                 "view_lhs": {
                     "views": [
                         {

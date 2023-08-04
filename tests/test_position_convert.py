@@ -3,7 +3,7 @@ from mutalyzer_hgvs_parser import to_model
 from mutalyzer.description_model import model_to_string
 from mutalyzer.position_converter import position_convert
 
-from .commons import code_in, get_codes, patch_retriever
+from .commons import code_in, get_codes, monkey_patches
 
 
 def test_error_no_required_inputs_reference_id():

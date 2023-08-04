@@ -2,13 +2,18 @@ import pytest
 
 from mutalyzer.mapper import map_description
 
-from .commons import code_in, patch_retriever
+from .commons import code_in, monkey_patches
 
 TEST_SET = [
     (
         # Transcript to same transcript.
         ("NM_003002.2:c.274G>T", "NM_003002.2"),
         "NM_003002.2:c.274G>T",
+    ),
+    (
+        # Transcript to same transcript.
+        ("NM_003002.4:c.274G>T", "NM_003002.4"),
+        "NM_003002.4:c.274G>T",
     ),
     (
         # Transcript to NG with transcript slice.
@@ -154,6 +159,10 @@ TEST_SET = [
     (
         ("NM_012459.2:c.130G>A", "NG_012337.1", "NM_012459.2", "transcript", False),
         "NG_012337.1(NM_012459.2):c.130G>A",
+    ),
+    (
+        ("NG_012337.3(NM_003002.4):c.274G>T", "NM_003002.4", None, "transcript", False),
+        "NM_003002.4:c.274G>T",
     ),
 ]
 
