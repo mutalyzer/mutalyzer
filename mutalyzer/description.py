@@ -409,6 +409,7 @@ class Description(object):
                     self._add_error(
                         errors.coordinate_system_mismatch(c_s, s_id, c_s_s, c_s_path)
                     )
+
             else:
                 r_c_s = get_coordinate_system_from_reference(self.references[r_id])
                 if not ((r_c_s == c_s) and (c_s in ["g", "m", "p"])):
