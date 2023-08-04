@@ -3,7 +3,7 @@ from mutalyzer_retriever.retriever import get_reference_model_segmented
 
 from mutalyzer.reference import get_internal_selector_model, get_selector_feature
 
-from .commons import patch_retriever
+from .commons import monkey_patches
 
 
 def test_get_reference_model_segmented_record_no_siblings_ancestors_no_descendants():

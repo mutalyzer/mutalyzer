@@ -1,0 +1,15 @@
+##gff-version 3
+#!gff-spec-version 1.21
+#!processor NCBI annotwriter
+##sequence-region YP_009725300.1 1 500
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=2697049
+YP_009725300.1	RefSeq	region	1	500	.	+	.	ID=YP_009725300.1:1..500;Dbxref=taxon:2697049;collection-date=Dec-2019;country=China;gb-acronym=SARS-CoV-2;gbkey=Src;genome=genomic;isolate=Wuhan-Hu-1;mol_type=unassigned;nat-host=Homo sapiens;old-name=Wuhan seafood market pneumonia virus
+YP_009725300.1	RefSeq	polypeptide	1	500	.	+	.	ID=id-YP_009725300.1:1..500;Note=nsp4B_TM%3B contains transmembrane domain 2 (TM2)%3B produced by both pp1a and pp1ab;calculated_mol_wt=56184;gbkey=Prot;product=nsp4
+YP_009725300.1	RefSeq	biological_region	14	394	.	+	.	ID=id-YP_009725300.1:14..394;Dbxref=CDD:394836;Name=cv_Nsp4_TM;Note=coronavirus non-structural protein 4 (Nsp4) transmembrane domain;gbkey=Region
+YP_009725300.1	RefSeq	biological_region	14	36	.	+	.	ID=id-YP_009725300.1:14..36;Dbxref=CDD:394836;Name=putative TM helix 1;Note=putative TM helix 1 [structural motif];gbkey=Region
+YP_009725300.1	RefSeq	biological_region	280	301	.	+	.	ID=id-YP_009725300.1:280..301;Dbxref=CDD:394836;Name=putative TM helix 2;Note=putative TM helix 2 [structural motif];gbkey=Region
+YP_009725300.1	RefSeq	biological_region	316	337	.	+	.	ID=id-YP_009725300.1:316..337;Dbxref=CDD:394836;Name=putative TM helix 3;Note=putative TM helix 3 [structural motif];gbkey=Region
+YP_009725300.1	RefSeq	biological_region	364	386	.	+	.	ID=id-YP_009725300.1:364..386;Dbxref=CDD:394836;Name=putative TM helix 4;Note=putative TM helix 4 [structural motif];gbkey=Region
+YP_009725300.1	RefSeq	biological_region	406	498	.	+	.	ID=id-YP_009725300.1:406..498;Dbxref=CDD:406690;Name=Corona_NSP4_C;Note=Coronavirus nonstructural protein 4 C-terminus;gbkey=Region
+
+

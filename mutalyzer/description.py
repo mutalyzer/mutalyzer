@@ -272,8 +272,12 @@ class Description(object):
                         path, reference_id, reference_id_in_model
                     )
                     _update_references(reference_id_in_model, reference_model)
+                    ref_id = reference_id_in_model
                 else:
                     _update_references(reference_id, reference_model)
+                    ref_id = reference_id
+                if ref_id.startswith("LRG_"):
+                    self.add_info(infos.lrg_warning(ref_id, path))
                 self._set_main_reference()
 
     @check_errors
@@ -405,6 +409,7 @@ class Description(object):
                     self._add_error(
                         errors.coordinate_system_mismatch(c_s, s_id, c_s_s, c_s_path)
                     )
+
             else:
                 r_c_s = get_coordinate_system_from_reference(self.references[r_id])
                 if not ((r_c_s == c_s) and (c_s in ["g", "m", "p"])):
@@ -1264,12 +1269,14 @@ class Description(object):
         if not selector_id:
             cds_id = reference_id
             mrna_id = get_cds_to_mrna(cds_id)
-            if len(mrna_id) >= 1:
+            if mrna_id and len(mrna_id) >= 1:
                 mrna_id = mrna_id[-1]
         else:
             mrna_id = get_reference_id(self.corrected_model)
             cds_id = self.get_selector_id()
 
+        if not mrna_id:
+            return []
         cds_seq = slice_to_selector(
             retrieve_reference(mrna_id, cds_id)[0],
             cds_id,

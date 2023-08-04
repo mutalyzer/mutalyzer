@@ -2,7 +2,7 @@ import pytest
 
 from mutalyzer.viewer import view_variants
 
-from .commons import patch_retriever
+from .commons import monkey_patches
 
 
 @pytest.mark.parametrize(
