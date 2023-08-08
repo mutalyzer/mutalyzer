@@ -115,6 +115,22 @@ TESTS = [
         "normalized": "YP_009725300.1:p.(Leu360Ter)",
         "to_test": True,
     },
+    {
+        "keywords": [
+            "protein reverse strand",
+        ],
+        "input": "NG_008835.1(NP_071436.1):p.(Lys34Val)",
+        "normalized": "NG_008835.1(NP_071436.1):p.(Lys34Val)",
+        "to_test": True,
+    },
+    {
+        "keywords": [
+            "protein",
+        ],
+        "input": "NP_071436.1:p.(Lys34Val)",
+        "normalized": "NP_071436.1:p.(Lys34Val)",
+        "to_test": True,
+    },
 ]
 
 

@@ -1,0 +1,35 @@
+##gff-version 3
+#!gff-spec-version 1.21
+#!processor NCBI annotwriter
+##sequence-region NP_071436.1 1 311
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=9606
+NP_071436.1	RefSeq	region	1	311	.	+	.	ID=NP_071436.1:1..311;Dbxref=taxon:9606;Name=10;chromosome=10;gbkey=Src;genome=genomic;map=10q22.1;mol_type=unassigned
+NP_071436.1	RefSeq	polypeptide	1	311	.	+	.	ID=id-NP_071436.1:1..311;calculated_mol_wt=33909;gbkey=Prot;product=V-type immunoglobulin domain-containing suppressor of T-cell activation precursor
+NP_071436.1	RefSeq	signal_peptide	1	32	.	+	.	ID=id-NP_071436.1:1..32;calculated_mol_wt=3261;gbkey=Prot;inference=COORDINATES: ab initio prediction:SignalP:4.0
+NP_071436.1	RefSeq	biological_region	34	181	.	+	.	ID=id-NP_071436.1:34..181;Dbxref=CDD:409572;Name=IgV_VISTA;Note=Immunoglobulin variable (IgV) domain of V-domain immunoglobulin suppressor of T cell activation (VISTA);gbkey=Region
+NP_071436.1	RefSeq	biological_region	34	56	.	+	.	ID=id-NP_071436.1:34..56;Dbxref=CDD:409572;Name=FR1;Note=FR1 [structural motif];gbkey=Region
+NP_071436.1	RefSeq	biological_region	34	37	.	+	.	ID=id-NP_071436.1:34..37;Dbxref=CDD:409572;Name=Ig strand A;Note=Ig strand A [structural motif];gbkey=Region
+NP_071436.1	RefSeq	biological_region	40	45	.	+	.	ID=id-NP_071436.1:40..45;Dbxref=CDD:409572;Name=Ig strand A';Note=Ig strand A' [structural motif];gbkey=Region
+NP_071436.1	RefSeq	biological_region	48	57	.	+	.	ID=id-NP_071436.1:48..57;Dbxref=CDD:409572;Name=Ig strand B;Note=Ig strand B [structural motif];gbkey=Region
+NP_071436.1	RefSeq	region	49	49	.	+	.	ID=id-NP_071436.1:49..49;Note=N-linked (GlcNAc...) asparagine. /evidence%3DECO:0000255%3B propagated from UniProtKB/Swiss-Prot (Q9H7M9.3);gbkey=Site
+NP_071436.1	RefSeq	biological_region	57	67	.	+	.	ID=id-NP_071436.1:57..67;Dbxref=CDD:409572;Name=CDR1;Note=CDR1 [structural motif];gbkey=Region
+NP_071436.1	RefSeq	biological_region	67	73	.	+	.	ID=id-NP_071436.1:67..73;Dbxref=CDD:409572;Name=Ig strand C;Note=Ig strand C [structural motif];gbkey=Region
+NP_071436.1	RefSeq	biological_region	68	74	.	+	.	ID=id-NP_071436.1:68..74;Dbxref=CDD:409572;Name=FR2;Note=FR2 [structural motif];gbkey=Region
+NP_071436.1	RefSeq	biological_region	75	102	.	+	.	ID=id-NP_071436.1:75..102;Dbxref=CDD:409572;Name=CDR2;Note=CDR2 [structural motif];gbkey=Region
+NP_071436.1	RefSeq	region	91	91	.	+	.	ID=id-NP_071436.1:91..91;Note=N-linked (GlcNAc...) asparagine. /evidence%3DECO:0000255%3B propagated from UniProtKB/Swiss-Prot (Q9H7M9.3);gbkey=Site
+NP_071436.1	RefSeq	biological_region	99	102	.	+	.	ID=id-NP_071436.1:99..102;Dbxref=CDD:409572;Name=Ig strand C';Note=Ig strand C' [structural motif];gbkey=Region
+NP_071436.1	RefSeq	biological_region	105	151	.	+	.	ID=id-NP_071436.1:105..151;Dbxref=CDD:409572;Name=FR3;Note=FR3 [structural motif];gbkey=Region
+NP_071436.1	RefSeq	biological_region	119	123	.	+	.	ID=id-NP_071436.1:119..123;Dbxref=CDD:409572;Name=Ig strand D;Note=Ig strand D [structural motif];gbkey=Region
+NP_071436.1	RefSeq	biological_region	128	134	.	+	.	ID=id-NP_071436.1:128..134;Dbxref=CDD:409572;Name=Ig strand E;Note=Ig strand E [structural motif];gbkey=Region
+NP_071436.1	RefSeq	region	128	128	.	+	.	ID=id-NP_071436.1:128..128;Note=N-linked (GlcNAc...) asparagine. /evidence%3DECO:0000255%3B propagated from UniProtKB/Swiss-Prot (Q9H7M9.3);gbkey=Site
+NP_071436.1	RefSeq	biological_region	142	152	.	+	.	ID=id-NP_071436.1:142..152;Dbxref=CDD:409572;Name=Ig strand F;Note=Ig strand F [structural motif];gbkey=Region
+NP_071436.1	RefSeq	biological_region	152	155	.	+	.	ID=id-NP_071436.1:152..155;Dbxref=CDD:409572;Name=CDR3;Note=CDR3 [structural motif];gbkey=Region
+NP_071436.1	RefSeq	biological_region	155	169	.	+	.	ID=id-NP_071436.1:155..169;Dbxref=CDD:409572;Name=Ig strand G;Note=Ig strand G [structural motif];gbkey=Region
+NP_071436.1	RefSeq	biological_region	156	181	.	+	.	ID=id-NP_071436.1:156..181;Dbxref=CDD:409572;Name=FR4;Note=FR4 [structural motif];gbkey=Region
+NP_071436.1	RefSeq	biological_region	178	181	.	+	.	ID=id-NP_071436.1:178..181;Dbxref=CDD:409572;Name=Ig strand H;Note=Ig strand H [structural motif];gbkey=Region
+NP_071436.1	RefSeq	region	195	215	.	+	.	ID=id-NP_071436.1:195..215;Note=propagated from UniProtKB/Swiss-Prot (Q9H7M9.3);gbkey=Site
+NP_071436.1	RefSeq	region	235	235	.	+	.	ID=id-NP_071436.1:235..235;Note=Phosphoserine. /evidence%3DECO:0007744|PubMed:19690332%2C ECO:0007744|PubMed:23186163%2C ECO:0007744|PubMed:24275569%3B propagated from UniProtKB/Swiss-Prot (Q9H7M9.3);gbkey=Site
+NP_071436.1	RefSeq	region	248	248	.	+	.	ID=id-NP_071436.1:248..248;Note=Phosphoserine. /evidence%3DECO:0007744|PubMed:18669648%2C ECO:0007744|PubMed:19690332%2C ECO:0007744|PubMed:23186163%3B propagated from UniProtKB/Swiss-Prot (Q9H7M9.3);gbkey=Site
+NP_071436.1	RefSeq	biological_region	267	311	.	+	.	ID=id-NP_071436.1:267..311;Name=Disordered. /evidence%3DECO:0000256|SAM:MobiDB-lite;Note=propagated from UniProtKB/Swiss-Prot (Q9H7M9.3);gbkey=Region
+
+
