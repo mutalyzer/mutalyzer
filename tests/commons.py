@@ -22,7 +22,6 @@ def retrieve_raw(
     configuration_path=None,
     timeout=1,
 ):
-    print("\nretrive raw\n")
     if reference_type == "fasta":
         return _get_content("data/" + reference_id + ".fasta"), "fasta", "ncbi"
     elif reference_id.startswith("LRG_"):

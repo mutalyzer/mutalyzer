@@ -169,7 +169,7 @@ class PositionConvert(object):
             for k in self.description.equivalent:
                 if k != "g":
                     for equivalent in self.description.equivalent[k]:
-                        if equivalent["reference"]["selector"]["id"] not in [
+                        if equivalent["description"]["reference"]["selector"]["id"] not in [
                             self.to_selector_id,
                             self.from_selector_id,
                         ]:
