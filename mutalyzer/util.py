@@ -235,9 +235,9 @@ def reverse_path(model, path):
 
 
 def check_errors(fn):
-    def wrapper(self):
+    def wrapper(self, *args, **kwards):
         if not self.errors:
-            return fn(self)
+            return fn(self, *args, **kwards)
         if self.errors and self.stop_on_errors:
             raise Exception(str(self.errors))
 

@@ -768,11 +768,28 @@ class Description(object):
                     )
 
     @check_errors
-    def construct_rna_description(self):
+    def construct_rna_description(self, supremal=None):
+        if supremal:
+            delins_variants = [
+                {
+                    "location":
+                     {
+                         "type": "range",
+                         "start": {"type": "point", "position":supremal.start},
+                         "end": {"type": "point", "position": supremal.end}
+                      },
+                    'type': 'deletion_insertion',
+                    'source': 'reference',
+                    'inserted': [{'sequence': supremal.sequence, 'source': 'description'}]
+                 }
+            ]
+        else:
+            delins_variants = variants_to_delins(self.de_hgvs_internal_indexing_model["variants"])
+
         if self.de_hgvs_model.get("coordinate_system") in ["c", "n"]:
             self.rna = {}
             errors_splice, infos_splice = splice_sites(
-                variants_to_delins(self.de_hgvs_internal_indexing_model["variants"]),
+                delins_variants,
                 self.get_sequences(),
                 self.get_selector_model(),
             )
@@ -783,7 +800,7 @@ class Description(object):
                 return
 
             rna_variants_coordinate = to_rna_variants(
-                variants_to_delins(self.de_hgvs_internal_indexing_model["variants"]),
+                delins_variants,
                 self.get_sequences(),
                 self.get_selector_model(),
             )
