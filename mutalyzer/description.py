@@ -1099,19 +1099,12 @@ class Description(object):
                 )
 
     def _check_cds(self):
-        for (
-            c_s,
-            _,
-            r_id,
-            _,
-            s_id,
-            s_p,
-        ) in yield_reference_selector_ids_coordinate_system(self.corrected_model):
-            if c_s == "c" and r_id in self.references:
+        for (c_s, _, r_id, _, s_id, s_p, ) in yield_reference_selector_ids_coordinate_system(self.corrected_model):
+            if c_s in ["c", "r"] and r_id in self.references:
                 s_m = get_internal_selector_model(
                     self.references[r_id]["annotations"], s_id
                 )
-                if s_m and s_m.get("cds") is None:
+                if s_m and s_m.get("type") == "mRNA" and s_m.get("cds") is None:
                     self._add_error(errors.no_cds(r_id, s_id, s_p))
 
     def _insertions_same_location(self):

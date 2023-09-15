@@ -193,7 +193,7 @@ def to_internal_coordinates(model, references):
             else None
         )
 
-        if selector_model and selector_model.get("inverted"):
+        if selector_model and internal_model.get("type") != "description_protein" and selector_model.get("inverted"):
             reverse_strand(internal_model)
 
     return internal_model

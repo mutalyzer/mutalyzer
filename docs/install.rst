@@ -17,9 +17,9 @@ the following commands.
 .. code-block:: console
 
     git clone https://github.com/mutalyzer/mutalyzer.git
-    cd retriever
+    cd mutalyzer
     pip install .
 
 
-.. _PyPI: https://pypi.org/project/mutalyzer-mutalyzer/
+.. _PyPI: https://pypi.org/project/mutalyzer/
 .. _GitHub: https://github.com/mutalyzer/mutalyzer.git

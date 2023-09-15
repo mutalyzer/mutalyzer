@@ -187,3 +187,34 @@ def test_range_shift_from_positive_strand_to_negative_strand():
         model_to_string(p_c["converted_model"])
         == "NG_012337.1(NM_012459.2):c.*2447_*2448"
     )
+
+
+def test_overlapping_1():
+    model = to_model("NG_012337.3(NM_018195.4):c.441")
+    p_c = position_convert(
+        description_model=model, to_coordinate_system="g", include_overlapping=True
+    )
+    assert p_c.get("overlap")
+    assert model_to_string(p_c["converted_model"]) == "NG_012337.3:g.1005"
+    assert set([model_to_string(d["description"]) for d in p_c["overlap"]["c"]]) == {
+        "NG_012337.3(NM_001301019.2):c.441",
+        "NG_012337.3(NM_001082969.2):c.441",
+        "NG_012337.3(NM_001082970.2):c.438",
+        "NG_012337.3(NM_001301017.2):c.438",
+        "NG_012337.3(NM_001301021.2):c.438",
+        "NG_012337.3(NM_012459.4):c.*2444",
+    }
+
+
+def test_overlapping_2():
+    model = to_model("NG_012337.1:441")
+    p_c = position_convert(
+        description_model=model, to_selector_id="NM_012459.2", include_overlapping=True
+    )
+    assert p_c.get("overlap")
+    assert model_to_string(p_c["converted_model"]) == "NG_012337.1(NM_012459.2):c.*3008"
+    assert set([model_to_string(d["description"]) for d in p_c["overlap"]["c"]]) == {
+        "NG_012337.1(NM_001082969.1):c.55-178",
+        "NG_012337.1(NM_001082970.1):c.55-181",
+        "NG_012337.1(NM_018195.3):c.55-178",
+    }
