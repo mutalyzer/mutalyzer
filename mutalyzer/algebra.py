@@ -1,11 +1,10 @@
-from algebra.lcs import edit, lcs_graph
+from algebra import Variant
+from algebra.lcs.all_lcs import edit, build_graph
 from algebra.relations.sequence_based import compare as compare_core
 from algebra.relations.supremal_based import compare as compare_supremal
 from algebra.relations.supremal_based import find_supremal, spanning_variant
-from algebra.relations.variant_based import compare as compare_variants
-from algebra.variants import Variant
 
-import mutalyzer.errors as errors
+from mutalyzer import errors
 from mutalyzer.description import Description
 from mutalyzer.reference import retrieve_reference
 from mutalyzer.util import get_end, get_inserted_sequence, get_start
@@ -63,16 +62,16 @@ def _get_reference(reference, reference_type):
         return None
     if reference_type == "sequence":
         return _get_sequence(reference)
-    elif reference_type == "id":
+    if reference_type == "id":
         return _get_id(reference)
 
 
 def _get_operator(m_input, m_type, reference):
     if m_type == "sequence":
         return _get_sequence(m_input)
-    elif m_type == "hgvs":
+    if m_type == "hgvs":
         return _get_hgvs_and_variant(m_input)
-    elif m_type == "variant":
+    if m_type == "variant":
         return _get_hgvs_and_variant(m_input, True, reference)
 
 
@@ -149,13 +148,12 @@ def _influence_interval_supremal(supremal):
     max_pos = supremal.end
     if supremal == Variant(0, 0, ""):
         return {"equal": True}
-    else:
-        return {"min_pos": min_pos, "max_pos": max_pos}
+    return {"min_pos": min_pos, "max_pos": max_pos}
 
 
 def _influence_interval(output, ref_seq, obs_seq, hs):
     _, lcs_nodes = edit(ref_seq, obs_seq)
-    _, edges = lcs_graph(ref_seq, obs_seq, lcs_nodes)
+    _, edges = build_graph(ref_seq, obs_seq, lcs_nodes)
     output[f"influence_{hs}"] = _influence_interval_supremal(
         spanning_variant(ref_seq, obs_seq, edges)
     )
@@ -341,9 +339,8 @@ def compare_hgvs_based(reference, reference_type, lhs, lhs_type, rhs, rhs_type):
             check = _get_id(reference)
             if check.get("errors"):
                 return check
-            else:
-                reference_sequence = check["sequence"]
-                ref_id = check["annotations"]["id"]
+            reference_sequence = check["sequence"]
+            ref_id = check["annotations"]["id"]
         lhs_d = Description(
             description=lhs, only_variants=True, sequence=reference_sequence
         )
@@ -369,7 +366,6 @@ def compare(reference, reference_type, lhs, lhs_type, rhs, rhs_type):
         return compare_sequences_based(
             reference, reference_type, lhs, lhs_type, rhs, rhs_type
         )
-    else:
-        return compare_hgvs_based(
-            reference, reference_type, lhs, lhs_type, rhs, rhs_type
-        )
+    return compare_hgvs_based(
+        reference, reference_type, lhs, lhs_type, rhs, rhs_type
+    )

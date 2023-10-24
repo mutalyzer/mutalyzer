@@ -1,11 +1,9 @@
 import itertools
-from collections import deque
 
 from algebra import Variant
-from algebra.extractor import extract_variants
+from algebra.extractor import extract as extract_variants
 from algebra.extractor import to_hgvs as to_hgvs_experimental
-from algebra.lcs.all_lcs import traversal
-from algebra.variants.variant import to_hgvs
+from algebra.lcs.all_lcs import dfs_traversal
 from algebra.utils import to_dot
 from mutalyzer_hgvs_parser import to_model
 
@@ -19,58 +17,13 @@ from .util import construct_sequence, get_end, get_start, roll
 from .viewer import view_delins
 
 
-def _to_dot(reference, root, offset):
-    """The LCS graph in Graphviz DOT format."""
-    def traverse():
-        # breadth-first traversal
-        node_count = 0
-        visited = {root: node_count}
-        queue = deque([root])
-        while queue:
-            node = queue.popleft()
-            if not node.edges:
-                yield f'"s{visited[node]}"' + "[shape=doublecircle]"
-            for succ, variant in node.edges:
-                if succ not in visited:
-                    node_count += 1
-                    visited[succ] = node_count
-                    queue.append(succ)
-                hgvs_variant = Variant(
-                    variant.start + offset,
-                    variant.end + offset,
-                    variant.sequence,
-                ).to_hgvs(reference)
-                yield (
-                    f'"s{visited[node]}" -> "s{visited[succ]}"'
-                    f' [label="{hgvs_variant}"];'
-                )
-    return (
-        "digraph {\n"
-        "    rankdir=LR\n"
-        "    edge[fontname=monospace]\n"
-        "    node[shape=circle]\n"
-        "    si[shape=point]\n"
-        "    si->" + f'"s{0}"' + "\n"
-        "    " + "\n    ".join(traverse()) + "\n}"
-    )
-
-
-def _add_dot(root, reference, offset, output, prefix=""):
-    dot = _to_dot(reference, root, offset)
-    if dot:
-        output["dot"] = _to_dot(reference, root, offset)
+def _add_minimal(root, reference, output, prefix=""):
     minimal_descriptions = []
     minimal_length = 100
-    for variants in itertools.islice(traversal(root), minimal_length):
+    for variants in itertools.islice(dfs_traversal(root), minimal_length):
         reference_variants = []
         for variant in variants:
-            reference_variants.append(
-                Variant(
-                    offset + variant.start,
-                    offset + variant.end,
-                    variant.sequence,
-                )
-            )
+            reference_variants.append(Variant(variant.start, variant.end, variant.sequence))
         minimal_descriptions.append(
             f"{prefix}{to_hgvs_experimental(reference_variants, reference)}"
         )
@@ -84,7 +37,7 @@ def _no_protein_support():
         "errors": [
             {
                 "code": "ENOPROTEINSUPPORT",
-                "details": f"Protein descriptions not supported in this experimental service.",
+                "details": "Protein descriptions not supported in this experimental service.",
             }
         ]
     }
@@ -126,7 +79,7 @@ def _add_shift(internal, delins, reference):
         internal["variants"][i]["location"]["end"]["shift"] = shift5
 
 
-def _only_variants(d, algebra_hgvs, supremal, ref_seq, root, offset):
+def _only_variants(d, algebra_hgvs, supremal, ref_seq, root):
     d.normalized_description = algebra_hgvs
     d.de_hgvs_model = {"variants": to_model(algebra_hgvs, "variants")}
     output = d.output()
@@ -147,11 +100,12 @@ def _only_variants(d, algebra_hgvs, supremal, ref_seq, root, offset):
         d_n.delins_model["variants"], d.de_hgvs_model["variants"], d.get_sequences()
     )
     output["influence"] = {"min_pos": supremal.start, "max_pos": supremal.end}
-    _add_dot(root, ref_seq, offset, output)
+    output["dot"] = "\n".join(to_dot(ref_seq, root))
+    _add_minimal(root, ref_seq, output)
     return output
 
 
-def _descriptions(d, algebra_hgvs, supremal, ref_seq, root, offset):
+def _descriptions(d, algebra_hgvs, supremal, ref_seq, root):
     algebra_model = {
         "type": d.corrected_model["type"],
         "reference": {"id": d.corrected_model["reference"]["id"]},
@@ -191,9 +145,8 @@ def _descriptions(d, algebra_hgvs, supremal, ref_seq, root, offset):
         d.get_sequences(),
         invert=d.is_inverted(),
     )
-    _add_dot(
-        root, ref_seq, offset, output, f"{d.corrected_model['reference']['id']}:g."
-    )
+    output["dot"] = "\n".join(to_dot(ref_seq, root))
+    _add_minimal(root, ref_seq, output, f"{d.corrected_model['reference']['id']}:g.")
     return output
 
 
@@ -222,7 +175,7 @@ def normalize_alt(description, only_variants=False, sequence=None):
 
     ref_seq = d.references["reference"]["sequence"]["seq"]
 
-    algebra_extracted_variants, supremal, root, offset = extract_variants(
+    algebra_extracted_variants, supremal, root = extract_variants(
         ref_seq, algebra_variants
     )
 
@@ -232,9 +185,9 @@ def normalize_alt(description, only_variants=False, sequence=None):
     )
 
     if only_variants:
-        output = _only_variants(d, algebra_hgvs, supremal, ref_seq, root, offset)
+        output = _only_variants(d, algebra_hgvs, supremal, ref_seq, root)
     else:
-        output = _descriptions(d, algebra_hgvs, supremal, ref_seq, root, offset)
+        output = _descriptions(d, algebra_hgvs, supremal, ref_seq, root)
 
     output["influence"] = {"min_pos": supremal.start, "max_pos": supremal.end}
 

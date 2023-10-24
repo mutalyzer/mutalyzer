@@ -768,7 +768,7 @@ class Description(object):
                     )
 
     @check_errors
-    def construct_rna_description(self, supremal=None):
+    def construct_rna_description(self, supremal=None, limits=None):
         if supremal:
             delins_variants = [
                 {
@@ -780,9 +780,11 @@ class Description(object):
                       },
                     'type': 'deletion_insertion',
                     'source': 'reference',
-                    'inserted': [{'sequence': supremal.sequence, 'source': 'description'}]
+                    'inserted': []
                  }
             ]
+            if supremal.sequence:
+                delins_variants[0]['inserted'].append({'sequence': supremal.sequence, 'source': 'description'})
         else:
             delins_variants = variants_to_delins(self.de_hgvs_internal_indexing_model["variants"])
 
