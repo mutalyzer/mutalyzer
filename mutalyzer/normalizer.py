@@ -172,7 +172,6 @@ def normalize_alt(description, only_variants=False, sequence=None):
     if not only_variants and d.corrected_model["type"] == "description_protein":
         _no_protein_support()
     algebra_variants = _algebra_variants(d.delins_model["variants"], d.get_sequences())
-
     ref_seq = d.references["reference"]["sequence"]["seq"]
 
     algebra_extracted_variants, supremal, root = extract_variants(

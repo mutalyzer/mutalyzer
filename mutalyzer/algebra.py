@@ -2,7 +2,7 @@ from algebra import Variant
 from algebra.lcs.all_lcs import edit, build_graph
 from algebra.relations.sequence_based import compare as compare_core
 from algebra.relations.supremal_based import compare as compare_supremal
-from algebra.relations.supremal_based import find_supremal, spanning_variant
+from algebra.lcs.supremals import supremal_sequence
 
 from mutalyzer import errors
 from mutalyzer.description import Description
@@ -154,9 +154,8 @@ def _influence_interval_supremal(supremal):
 def _influence_interval(output, ref_seq, obs_seq, hs):
     _, lcs_nodes = edit(ref_seq, obs_seq)
     _, edges = build_graph(ref_seq, obs_seq, lcs_nodes)
-    output[f"influence_{hs}"] = _influence_interval_supremal(
-        spanning_variant(ref_seq, obs_seq, edges)
-    )
+    supremal, *_ = supremal_sequence(ref_seq, obs_seq)
+    output[f"influence_{hs}"] = _influence_interval_supremal(supremal)
 
 
 def _check_sequences_equality(output, lhs, rhs):
@@ -232,13 +231,11 @@ def compare_hgvs(lhs_d, rhs_d):
 
     lhs_observed = lhs_d.get_sequences()["observed"]
     lhs_algebra_variants = _get_algebra_variants(lhs_d)
-    lhs_spanning = spanning_variant(lhs_reference, lhs_observed, lhs_algebra_variants)
-    lhs_supremal, *_ = find_supremal(lhs_reference, lhs_spanning)
+    lhs_supremal, *_ = supremal_sequence(lhs_reference, lhs_observed)
 
     rhs_observed = rhs_d.get_sequences()["observed"]
     rhs_algebra_variants = _get_algebra_variants(rhs_d)
-    rhs_spanning = spanning_variant(rhs_reference, rhs_observed, rhs_algebra_variants)
-    rhs_supremal, *_ = find_supremal(rhs_reference, rhs_spanning)
+    rhs_supremal, *_ = supremal_sequence(rhs_reference, rhs_observed)
 
     output["relation"] = compare_supremal(
         lhs_reference, lhs_supremal, rhs_supremal
