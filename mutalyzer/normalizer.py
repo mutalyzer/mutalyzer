@@ -1,3 +1,6 @@
+"""Interfaces to obtain the normalized (canonical) variant representations or
+the delins model of an input description."""
+
 import itertools
 
 from algebra import Variant
@@ -194,6 +197,9 @@ def normalize_alt(description, only_variants=False, sequence=None):
 
 
 def normalize(description, only_variants=False, sequence=None):
+    """
+    Obtain the normalized (canonical) variant representation.
+    """
     d = Description(
         description=description,
         only_variants=only_variants,

@@ -3,12 +3,15 @@ from algebra.lcs.all_lcs import edit, build_graph
 from algebra.relations.sequence_based import compare as compare_core
 from algebra.relations.supremal_based import compare as compare_supremal
 from algebra.lcs.supremals import supremal_sequence
+from algebra.lcs.supremals import supremal_sequence
+from algebra.relations.sequence_based import compare as compare_core
+from algebra.relations.supremal_based import compare as compare_supremal
 
 from mutalyzer import errors
 from mutalyzer.description import Description
 from mutalyzer.reference import retrieve_reference
 from mutalyzer.util import get_end, get_inserted_sequence, get_start
-from mutalyzer.viewer import view_variants, view_variants_normalized
+from mutalyzer.viewer import view_variants, view_variants_normalized, view_delins
 
 
 def _get_hgvs_and_variant(variant, only_variants=False, ref_seq=None):
@@ -66,7 +69,7 @@ def _get_reference(reference, reference_type):
         return _get_id(reference)
 
 
-def _get_operator(m_input, m_type, reference):
+def _get_operand(m_input, m_type, reference):
     if m_type == "sequence":
         return _get_sequence(m_input)
     if m_type == "hgvs":
@@ -152,8 +155,6 @@ def _influence_interval_supremal(supremal):
 
 
 def _influence_interval(output, ref_seq, obs_seq, hs):
-    _, lcs_nodes = edit(ref_seq, obs_seq)
-    _, edges = build_graph(ref_seq, obs_seq, lcs_nodes)
     supremal, *_ = supremal_sequence(ref_seq, obs_seq)
     output[f"influence_{hs}"] = _influence_interval_supremal(supremal)
 
@@ -201,6 +202,61 @@ def _get_algebra_variants(description):
     return edges
 
 
+def _algebra_variant_to_delins(variant):
+    delins_variant = {
+        "type": "deletion_insertion",
+        "source": "reference",
+        "location": {
+            "type": "range",
+            "start": {"type": "point", "position": variant.start},
+            "end": {"type": "point", "position": variant.end},
+        },
+        "deleted": [],
+        "inserted": [],
+    }
+    if variant.sequence:
+        delins_variant["inserted"].append(
+            {"sequence": variant.sequence, "source": "description"}
+        )
+
+    return delins_variant
+
+
+def _algebra_variant_to_name_model(variant):
+    def _position_to_hgvs():
+        if variant.end - variant.start == 1:
+            return {"type": "point", "position": variant.start + 1}
+        if variant.start == variant.end:
+            return {
+                "type": "range",
+                "start": {"type": "point", "position": variant.start},
+                "end": {"type": "point", "position": variant.start + 1},
+            }
+        return {
+            "type": "range",
+            "start": {"type": "point", "position": variant.start + 1},
+            "end": {"type": "point", "position": variant.end},
+        }
+
+    delins_variant = {
+        "source": "reference",
+        "location": _position_to_hgvs(),
+        "deleted": [],
+        "inserted": [],
+    }
+    if variant.sequence:
+        if variant.start == variant.end:
+            delins_variant["type"] = "insertion"
+        else:
+            delins_variant["type"] = "deletion_insertion"
+        delins_variant["inserted"].append(
+            {"sequence": variant.sequence, "source": "description"}
+        )
+    else:
+        delins_variant["type"] = "deletion"
+    return delins_variant
+
+
 def compare_hgvs(lhs_d, rhs_d):
     output = {}
 
@@ -230,11 +286,9 @@ def compare_hgvs(lhs_d, rhs_d):
         return output
 
     lhs_observed = lhs_d.get_sequences()["observed"]
-    lhs_algebra_variants = _get_algebra_variants(lhs_d)
     lhs_supremal, *_ = supremal_sequence(lhs_reference, lhs_observed)
 
     rhs_observed = rhs_d.get_sequences()["observed"]
-    rhs_algebra_variants = _get_algebra_variants(rhs_d)
     rhs_supremal, *_ = supremal_sequence(rhs_reference, rhs_observed)
 
     output["relation"] = compare_supremal(
@@ -245,7 +299,7 @@ def compare_hgvs(lhs_d, rhs_d):
     output["influence_rhs"] = _influence_interval_supremal(rhs_supremal)
 
     if lhs_d.corrected_model.get("reference"):
-        ref_id = lhs_d.corrected_model['reference']['id']
+        ref_id = lhs_d.corrected_model["reference"]["id"]
     elif lhs_d.references["reference"].get("annotations") and lhs_d.references["reference"]["annotations"].get("id"):
         ref_id = lhs_d.references["reference"]["annotations"]["id"]
     else:
@@ -253,16 +307,29 @@ def compare_hgvs(lhs_d, rhs_d):
 
     output["supremal_lhs"] = {
         "hgvs": f"{ref_id}:g.{lhs_supremal.to_hgvs()}",
-        "spdi": lhs_supremal.to_spdi(ref_id)
+        "spdi": lhs_supremal.to_spdi(ref_id),
     }
 
     output["supremal_rhs"] = {
         "hgvs": f"{ref_id}:g.{rhs_supremal.to_hgvs()}",
-        "spdi": rhs_supremal.to_spdi(ref_id)
+        "spdi": rhs_supremal.to_spdi(ref_id),
     }
 
     output["view_lhs"] = view_variants_normalized(lhs_d)
     output["view_rhs"] = view_variants_normalized(rhs_d)
+
+    lhs_supremal_delins = [_algebra_variant_to_delins(lhs_supremal)]
+    rhs_supremal_delins = [_algebra_variant_to_delins(rhs_supremal)]
+    output["view_lhs_supremal"] = view_delins(
+        lhs_supremal_delins,
+        [_algebra_variant_to_name_model(lhs_supremal)],
+        lhs_d.get_sequences(),
+    )
+    output["view_rhs_supremal"] = view_delins(
+        rhs_supremal_delins,
+        [_algebra_variant_to_name_model(rhs_supremal)],
+        rhs_d.get_sequences(),
+    )
 
     return output
 
@@ -275,8 +342,8 @@ def compare_sequences_based(reference, reference_type, lhs, lhs_type, rhs, rhs_t
         _extend_errors(output, "reference", c_reference["errors"])
         return output
     ref_seq = c_reference["sequence"]
-    c_lhs = _get_operator(lhs, lhs_type, ref_seq)
-    c_rhs = _get_operator(rhs, rhs_type, ref_seq)
+    c_lhs = _get_operand(lhs, lhs_type, ref_seq)
+    c_rhs = _get_operand(rhs, rhs_type, ref_seq)
     c_lhs["reference_sequence"] = ref_seq
     c_rhs["reference_sequence"] = ref_seq
 
@@ -307,10 +374,41 @@ def compare_sequences_based(reference, reference_type, lhs, lhs_type, rhs, rhs_t
     if c_rhs.get("view"):
         output["view_rhs"] = c_rhs["view"]
 
+    lhs_supremal, *_ = supremal_sequence(ref_seq, lhs_seq)
+    rhs_supremal, *_ = supremal_sequence(ref_seq, rhs_seq)
+
+    output["supremal_lhs"] = {
+        "hgvs": f"{lhs_supremal.to_hgvs()}",
+        "spdi": lhs_supremal.to_spdi(),
+    }
+
+    output["supremal_rhs"] = {
+        "hgvs": f"{rhs_supremal.to_hgvs()}",
+        "spdi": rhs_supremal.to_spdi(),
+    }
+
+    lhs_supremal_delins = [_algebra_variant_to_delins(lhs_supremal)]
+    rhs_supremal_delins = [_algebra_variant_to_delins(rhs_supremal)]
+    output["view_lhs_supremal"] = view_delins(
+        lhs_supremal_delins,
+        [_algebra_variant_to_name_model(lhs_supremal)],
+        {"reference": ref_seq},
+    )
+    output["view_rhs_supremal"] = view_delins(
+        rhs_supremal_delins,
+        [_algebra_variant_to_name_model(rhs_supremal)],
+        {"reference": ref_seq},
+    )
+
     return output
 
 
 def compare_hgvs_based(reference, reference_type, lhs, lhs_type, rhs, rhs_type):
+    """
+    Compare two HGVS descriptions (either complete, i.e., including the
+    reference id, or just the variants relative to reference sequence indicated
+    by an id or directly as a string).
+    """
     if lhs_type == "hgvs" and rhs_type == "hgvs":
         lhs_d = Description(lhs)
         lhs_d.normalize()
@@ -352,6 +450,29 @@ def compare_hgvs_based(reference, reference_type, lhs, lhs_type, rhs, rhs_type):
 
 
 def compare(reference, reference_type, lhs, lhs_type, rhs, rhs_type):
+    """
+    Generic interface to the algebra.
+
+    Parameters
+    ----------
+    reference : str
+        The reference id or the sequence.
+    reference_type : str
+        If the reference is a sequence or an id.
+    lhs : str
+        The left operand.
+    lhs_type : str
+        The type of the left operand.
+    rhs : str
+        The right operand.
+    rhs_type : str
+        The type of the right operand.
+
+    Returns
+    -------
+    dict
+        The relation and additional information.
+    """
     checks = _input_types_check(reference_type, lhs_type, rhs_type)
 
     if checks:
@@ -363,6 +484,4 @@ def compare(reference, reference_type, lhs, lhs_type, rhs, rhs_type):
         return compare_sequences_based(
             reference, reference_type, lhs, lhs_type, rhs, rhs_type
         )
-    return compare_hgvs_based(
-        reference, reference_type, lhs, lhs_type, rhs, rhs_type
-    )
+    return compare_hgvs_based(reference, reference_type, lhs, lhs_type, rhs, rhs_type)
