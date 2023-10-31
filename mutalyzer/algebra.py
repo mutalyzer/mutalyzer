@@ -7,7 +7,7 @@ from mutalyzer import errors
 from mutalyzer.description import Description
 from mutalyzer.reference import retrieve_reference
 from mutalyzer.util import get_end, get_inserted_sequence, get_start
-from mutalyzer.viewer import view_variants, view_variants_normalized
+from mutalyzer.viewer import view_variants, view_variants_normalized, view_delins
 
 
 def _get_hgvs_and_variant(variant, only_variants=False, ref_seq=None):
@@ -198,6 +198,61 @@ def _get_algebra_variants(description):
     return edges
 
 
+def _algebra_variant_to_delins(variant):
+    delins_variant = {
+        "type": "deletion_insertion",
+        "source": "reference",
+        "location": {
+            "type": "range",
+            "start": {"type": "point", "position": variant.start},
+            "end": {"type": "point", "position": variant.end},
+        },
+        "deleted": [],
+        "inserted": [],
+    }
+    if variant.sequence:
+        delins_variant["inserted"].append(
+            {"sequence": variant.sequence, "source": "description"}
+        )
+
+    return delins_variant
+
+
+def _algebra_variant_to_name_model(variant):
+    def _position_to_hgvs():
+        if variant.end - variant.start == 1:
+            return {"type": "point", "position": variant.start + 1}
+        if variant.start == variant.end:
+            return {
+                "type": "range",
+                "start": {"type": "point", "position": variant.start},
+                "end": {"type": "point", "position": variant.start + 1},
+            }
+        return {
+            "type": "range",
+            "start": {"type": "point", "position": variant.start + 1},
+            "end": {"type": "point", "position": variant.end},
+        }
+
+    delins_variant = {
+        "source": "reference",
+        "location": _position_to_hgvs(),
+        "deleted": [],
+        "inserted": [],
+    }
+    if variant.sequence:
+        if variant.start == variant.end:
+            delins_variant["type"] = "insertion"
+        else:
+            delins_variant["type"] = "deletion_insertion"
+        delins_variant["inserted"].append(
+            {"sequence": variant.sequence, "source": "description"}
+        )
+    else:
+        delins_variant["type"] = "deletion"
+    return delins_variant
+
+
 def compare_hgvs(lhs_d, rhs_d):
     output = {}
 
@@ -240,7 +295,7 @@ def compare_hgvs(lhs_d, rhs_d):
     output["influence_rhs"] = _influence_interval_supremal(rhs_supremal)
 
     if lhs_d.corrected_model.get("reference"):
-        ref_id = lhs_d.corrected_model['reference']['id']
+        ref_id = lhs_d.corrected_model["reference"]["id"]
     elif lhs_d.references["reference"].get("annotations") and lhs_d.references["reference"]["annotations"].get("id"):
         ref_id = lhs_d.references["reference"]["annotations"]["id"]
     else:
@@ -248,16 +303,29 @@ def compare_hgvs(lhs_d, rhs_d):
 
     output["supremal_lhs"] = {
         "hgvs": f"{ref_id}:g.{lhs_supremal.to_hgvs()}",
-        "spdi": lhs_supremal.to_spdi(ref_id)
+        "spdi": lhs_supremal.to_spdi(ref_id),
     }
 
     output["supremal_rhs"] = {
         "hgvs": f"{ref_id}:g.{rhs_supremal.to_hgvs()}",
-        "spdi": rhs_supremal.to_spdi(ref_id)
+        "spdi": rhs_supremal.to_spdi(ref_id),
     }
 
     output["view_lhs"] = view_variants_normalized(lhs_d)
     output["view_rhs"] = view_variants_normalized(rhs_d)
+
+    lhs_supremal_delins = [_algebra_variant_to_delins(lhs_supremal)]
+    rhs_supremal_delins = [_algebra_variant_to_delins(rhs_supremal)]
+    output["view_lhs_supremal"] = view_delins(
+        lhs_supremal_delins,
+        [_algebra_variant_to_name_model(lhs_supremal)],
+        lhs_d.get_sequences(),
+    )
+    output["view_rhs_supremal"] = view_delins(
+        rhs_supremal_delins,
+        [_algebra_variant_to_name_model(rhs_supremal)],
+        rhs_d.get_sequences(),
+    )
 
     return output
 
@@ -301,6 +369,32 @@ def compare_sequences_based(reference, reference_type, lhs, lhs_type, rhs, rhs_t
         output["view_lhs"] = c_lhs["view"]
     if c_rhs.get("view"):
         output["view_rhs"] = c_rhs["view"]
+
+    lhs_supremal, *_ = supremal_sequence(ref_seq, lhs_seq)
+    rhs_supremal, *_ = supremal_sequence(ref_seq, rhs_seq)
+
+    output["supremal_lhs"] = {
+        "hgvs": f"{lhs_supremal.to_hgvs()}",
+        "spdi": lhs_supremal.to_spdi(),
+    }
+
+    output["supremal_rhs"] = {
+        "hgvs": f"{rhs_supremal.to_hgvs()}",
+        "spdi": rhs_supremal.to_spdi(),
+    }
+
+    lhs_supremal_delins = [_algebra_variant_to_delins(lhs_supremal)]
+    rhs_supremal_delins = [_algebra_variant_to_delins(rhs_supremal)]
+    output["view_lhs_supremal"] = view_delins(
+        lhs_supremal_delins,
+        [_algebra_variant_to_name_model(lhs_supremal)],
+        {"reference": ref_seq},
+    )
+    output["view_rhs_supremal"] = view_delins(
+        rhs_supremal_delins,
+        [_algebra_variant_to_name_model(rhs_supremal)],
+        {"reference": ref_seq},
+    )
 
     return output
 
@@ -386,6 +480,4 @@ def compare(reference, reference_type, lhs, lhs_type, rhs, rhs_type):
         return compare_sequences_based(
             reference, reference_type, lhs, lhs_type, rhs, rhs_type
         )
-    return compare_hgvs_based(
-        reference, reference_type, lhs, lhs_type, rhs, rhs_type
-    )
+    return compare_hgvs_based(reference, reference_type, lhs, lhs_type, rhs, rhs_type)
