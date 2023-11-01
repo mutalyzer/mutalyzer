@@ -11,7 +11,7 @@ from mutalyzer import errors
 from mutalyzer.description import Description
 from mutalyzer.reference import retrieve_reference
 from mutalyzer.util import get_end, get_inserted_sequence, get_start
-from mutalyzer.viewer import view_variants, view_variants_normalized, view_delins
+from mutalyzer.viewer import view_delins
 
 
 def _get_hgvs_and_variant(variant, only_variants=False, ref_seq=None):
@@ -32,9 +32,6 @@ def _get_hgvs_and_variant(variant, only_variants=False, ref_seq=None):
     sequences = d.get_sequences()
     output["sequence"] = sequences["observed"]
     output["reference_sequence"] = sequences["reference"]
-    output["view"] = view_variants(
-        description=variant, only_variants=only_variants, sequence=ref_seq
-    )
 
     return output
 
@@ -144,19 +141,6 @@ def _input_types_check(reference_type, lhs_type, rhs_type):
             errors.invalid_input(rhs_type, operator_types),
         )
     return output
-
-
-def _influence_interval_supremal(supremal):
-    min_pos = supremal.start
-    max_pos = supremal.end
-    if supremal == Variant(0, 0, ""):
-        return {"equal": True}
-    return {"min_pos": min_pos, "max_pos": max_pos}
-
-
-def _influence_interval(output, ref_seq, obs_seq, hs):
-    supremal, *_ = supremal_sequence(ref_seq, obs_seq)
-    output[f"influence_{hs}"] = _influence_interval_supremal(supremal)
 
 
 def _check_sequences_equality(output, lhs, rhs):
@@ -295,9 +279,6 @@ def compare_hgvs(lhs_d, rhs_d):
         lhs_reference, lhs_supremal, rhs_supremal
     ).value
 
-    output["influence_lhs"] = _influence_interval_supremal(lhs_supremal)
-    output["influence_rhs"] = _influence_interval_supremal(rhs_supremal)
-
     if lhs_d.corrected_model.get("reference"):
         ref_id = lhs_d.corrected_model["reference"]["id"]
     elif lhs_d.references["reference"].get("annotations") and lhs_d.references["reference"]["annotations"].get("id"):
@@ -314,9 +295,6 @@ def compare_hgvs(lhs_d, rhs_d):
         "hgvs": f"{ref_id}:g.{rhs_supremal.to_hgvs()}",
         "spdi": rhs_supremal.to_spdi(ref_id),
     }
-
-    output["view_lhs"] = view_variants_normalized(lhs_d)
-    output["view_rhs"] = view_variants_normalized(rhs_d)
 
     lhs_supremal_delins = [_algebra_variant_to_delins(lhs_supremal)]
     rhs_supremal_delins = [_algebra_variant_to_delins(rhs_supremal)]
@@ -366,13 +344,6 @@ def compare_sequences_based(reference, reference_type, lhs, lhs_type, rhs, rhs_t
         return output
 
     output["relation"] = compare_core(ref_seq, lhs_seq, rhs_seq).value
-    _influence_interval(output, ref_seq, lhs_seq, "lhs")
-    _influence_interval(output, ref_seq, rhs_seq, "rhs")
-
-    if c_lhs.get("view"):
-        output["view_lhs"] = c_lhs["view"]
-    if c_rhs.get("view"):
-        output["view_rhs"] = c_rhs["view"]
 
     lhs_supremal, *_ = supremal_sequence(ref_seq, lhs_seq)
     rhs_supremal, *_ = supremal_sequence(ref_seq, rhs_seq)

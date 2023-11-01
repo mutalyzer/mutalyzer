@@ -76,31 +76,6 @@ def test_get_id_no_ref(reference_id):
                 "GGATTGTAGGTTTTGAAAAACCACCCTAAGCCATATTAAGGGGGTTGGAAGAACCATCGAA"
                 "GCCTAAGGCATAGAAGAAAATTTGGGGTTAAGAAAGATGAAGAACAAAAAACAGCTTTATT"
                 "GCTTATACATGACCAAGAAAAGGAAAACATGGCAAAAAAAAAAAAAAAAAA",
-                "view": {
-                    "views": [
-                        {
-                            "start": 0,
-                            "end": 30,
-                            "type": "outside",
-                            "sequence": "AAGTCGAGAGGCGGTGCACACCCGTCGCGC",
-                        },
-                        {
-                            "description": "1del",
-                            "start": 30,
-                            "end": 31,
-                            "type": "variant",
-                            "deleted": {"sequence": "A"},
-                        },
-                        {
-                            "start": 31,
-                            "end": 823,
-                            "type": "outside",
-                            "left": "TGCGCAAACACAGCT",
-                            "right": "AAAAAAAAAAAAAAA",
-                        },
-                    ],
-                    "seq_length": 823,
-                },
             },
         )
     ],
@@ -116,8 +91,6 @@ def test_get_hgvs(description, expected):
             ("AAAAA", "sequence", "ATAAAAA", "sequence", "AATAAA", "sequence"),
             {
                 "relation": "disjoint",
-                "influence_lhs": {"min_pos": 0, "max_pos": 5},
-                "influence_rhs": {"min_pos": 2, "max_pos": 2},
                 "supremal_lhs": {"hgvs": "1_5delinsATAAAAA", "spdi": ":0:5:ATAAAAA"},
                 "supremal_rhs": {"hgvs": "2_3insT", "spdi": ":2:0:T"},
                 "view_lhs_supremal": {
@@ -155,24 +128,8 @@ def test_get_hgvs(description, expected):
             ("AAAAA", "sequence", "ATAAAAA", "sequence", "2_3insT", "variant"),
             {
                 "relation": "disjoint",
-                "influence_lhs": {"min_pos": 0, "max_pos": 5},
-                "influence_rhs": {"min_pos": 2, "max_pos": 2},
                 "supremal_lhs": {"hgvs": "1_5delinsATAAAAA", "spdi": ":0:5:ATAAAAA"},
                 "supremal_rhs": {"hgvs": "2_3insT", "spdi": ":2:0:T"},
-                "view_rhs": {
-                    "views": [
-                        {"start": 0, "end": 2, "type": "outside", "sequence": "AA"},
-                        {
-                            "description": "2_3insT",
-                            "start": 2,
-                            "end": 2,
-                            "type": "variant",
-                            "inserted": {"sequence": "T", "length": 1},
-                        },
-                        {"start": 2, "end": 5, "type": "outside", "sequence": "AAA"},
-                    ],
-                    "seq_length": 5,
-                },
                 "view_lhs_supremal": {
                     "seq_length": 5,
                     "views": [
@@ -215,8 +172,6 @@ def test_get_hgvs(description, expected):
             ),
             {
                 "relation": "is_contained",
-                "influence_lhs": {"min_pos": 5521, "max_pos": 5534},
-                "influence_rhs": {"min_pos": 5521, "max_pos": 5534},
                 "supremal_lhs": {
                     "hgvs": "LRG_24:g.5522_5534delinsGCCCA",
                     "spdi": "LRG_24:5521:13:GCCCA",
@@ -224,58 +179,6 @@ def test_get_hgvs(description, expected):
                 "supremal_rhs": {
                     "hgvs": "LRG_24:g.5522_5534delinsGCCA",
                     "spdi": "LRG_24:5521:13:GCCA",
-                },
-                "view_lhs": {
-                    "views": [
-                        {
-                            "start": 0,
-                            "end": 5524,
-                            "type": "outside",
-                            "left": "GTTCACACTTCTCTC",
-                            "right": "GATGCCCGGCCTGCC",
-                        },
-                        {
-                            "description": "5525_5532del",
-                            "start": 5524,
-                            "end": 5532,
-                            "type": "variant",
-                            "deleted": {"sequence": "CGGGGCAC"},
-                        },
-                        {
-                            "start": 5532,
-                            "end": 11486,
-                            "type": "outside",
-                            "left": "CAGGGAAGGATGGGT",
-                            "right": "CATGTATACACATAC",
-                        },
-                    ],
-                    "seq_length": 11486,
-                },
-                "view_rhs": {
-                    "views": [
-                        {
-                            "start": 0,
-                            "end": 5524,
-                            "type": "outside",
-                            "left": "GTTCACACTTCTCTC",
-                            "right": "GATGCCCGGCCTGCC",
-                        },
-                        {
-                            "description": "5525_5533del",
-                            "start": 5524,
-                            "end": 5533,
-                            "type": "variant",
-                            "deleted": {"sequence": "CGGGGCACC"},
-                        },
-                        {
-                            "start": 5533,
-                            "end": 11486,
-                            "type": "outside",
-                            "left": "AGGGAAGGATGGGTA",
-                            "right": "CATGTATACACATAC",
-                        },
-                    ],
-                    "seq_length": 11486,
                 },
                 "view_lhs_supremal": {
                     "seq_length": 11486,
@@ -344,8 +247,6 @@ def test_get_hgvs(description, expected):
             ),
             {
                 "relation": "is_contained",
-                "influence_lhs": {"min_pos": 5521, "max_pos": 5534},
-                "influence_rhs": {"min_pos": 5521, "max_pos": 5534},
                 "supremal_lhs": {
                     "hgvs": "LRG_24:g.5522_5534delinsGCCCA",
                     "spdi": "LRG_24:5521:13:GCCCA",
@@ -353,58 +254,6 @@ def test_get_hgvs(description, expected):
                 "supremal_rhs": {
                     "hgvs": "LRG_24:g.5522_5534delinsGCCA",
                     "spdi": "LRG_24:5521:13:GCCA",
-                },
-                "view_lhs": {
-                    "views": [
-                        {
-                            "start": 0,
-                            "end": 5524,
-                            "type": "outside",
-                            "left": "GTTCACACTTCTCTC",
-                            "right": "GATGCCCGGCCTGCC",
-                        },
-                        {
-                            "description": "5525_5532del",
-                            "start": 5524,
-                            "end": 5532,
-                            "type": "variant",
-                            "deleted": {"sequence": "CGGGGCAC"},
-                        },
-                        {
-                            "start": 5532,
-                            "end": 11486,
-                            "type": "outside",
-                            "left": "CAGGGAAGGATGGGT",
-                            "right": "CATGTATACACATAC",
-                        },
-                    ],
-                    "seq_length": 11486,
-                },
-                "view_rhs": {
-                    "views": [
-                        {
-                            "start": 0,
-                            "end": 5524,
-                            "type": "outside",
-                            "left": "GTTCACACTTCTCTC",
-                            "right": "GATGCCCGGCCTGCC",
-                        },
-                        {
-                            "description": "5525_5533del",
-                            "start": 5524,
-                            "end": 5533,
-                            "type": "variant",
-                            "deleted": {"sequence": "CGGGGCACC"},
-                        },
-                        {
-                            "start": 5533,
-                            "end": 11486,
-                            "type": "outside",
-                            "left": "AGGGAAGGATGGGTA",
-                            "right": "CATGTATACACATAC",
-                        },
-                    ],
-                    "seq_length": 11486,
                 },
                 "view_lhs_supremal": {
                     "seq_length": 11486,
@@ -473,8 +322,6 @@ def test_get_hgvs(description, expected):
             ),
             {
                 "relation": "is_contained",
-                "influence_lhs": {"min_pos": 5521, "max_pos": 5534},
-                "influence_rhs": {"min_pos": 5521, "max_pos": 5534},
                 "supremal_lhs": {
                     "hgvs": "LRG_24:g.5522_5534delinsGCCCA",
                     "spdi": "LRG_24:5521:13:GCCCA",
@@ -482,58 +329,6 @@ def test_get_hgvs(description, expected):
                 "supremal_rhs": {
                     "hgvs": "LRG_24:g.5522_5534delinsGCCA",
                     "spdi": "LRG_24:5521:13:GCCA",
-                },
-                "view_lhs": {
-                    "views": [
-                        {
-                            "start": 0,
-                            "end": 5524,
-                            "type": "outside",
-                            "left": "GTTCACACTTCTCTC",
-                            "right": "GATGCCCGGCCTGCC",
-                        },
-                        {
-                            "description": "5525_5532del",
-                            "start": 5524,
-                            "end": 5532,
-                            "type": "variant",
-                            "deleted": {"sequence": "CGGGGCAC"},
-                        },
-                        {
-                            "start": 5532,
-                            "end": 11486,
-                            "type": "outside",
-                            "left": "CAGGGAAGGATGGGT",
-                            "right": "CATGTATACACATAC",
-                        },
-                    ],
-                    "seq_length": 11486,
-                },
-                "view_rhs": {
-                    "views": [
-                        {
-                            "start": 0,
-                            "end": 5524,
-                            "type": "outside",
-                            "left": "GTTCACACTTCTCTC",
-                            "right": "GATGCCCGGCCTGCC",
-                        },
-                        {
-                            "description": "5525_5533del",
-                            "start": 5524,
-                            "end": 5533,
-                            "type": "variant",
-                            "deleted": {"sequence": "CGGGGCACC"},
-                        },
-                        {
-                            "start": 5533,
-                            "end": 11486,
-                            "type": "outside",
-                            "left": "AGGGAAGGATGGGTA",
-                            "right": "CATGTATACACATAC",
-                        },
-                    ],
-                    "seq_length": 11486,
                 },
                 "view_lhs_supremal": {
                     "seq_length": 11486,
@@ -602,8 +397,6 @@ def test_get_hgvs(description, expected):
             ),
             {
                 "relation": "is_contained",
-                "influence_lhs": {"min_pos": 5521, "max_pos": 5534},
-                "influence_rhs": {"min_pos": 5521, "max_pos": 5534},
                 "supremal_lhs": {
                     "hgvs": "LRG_24:g.5522_5534delinsGCCCA",
                     "spdi": "LRG_24:5521:13:GCCCA",
@@ -611,58 +404,6 @@ def test_get_hgvs(description, expected):
                 "supremal_rhs": {
                     "hgvs": "LRG_24:g.5522_5534delinsGCCA",
                     "spdi": "LRG_24:5521:13:GCCA",
-                },
-                "view_lhs": {
-                    "views": [
-                        {
-                            "start": 0,
-                            "end": 5524,
-                            "type": "outside",
-                            "left": "GTTCACACTTCTCTC",
-                            "right": "GATGCCCGGCCTGCC",
-                        },
-                        {
-                            "description": "5525_5532del",
-                            "start": 5524,
-                            "end": 5532,
-                            "type": "variant",
-                            "deleted": {"sequence": "CGGGGCAC"},
-                        },
-                        {
-                            "start": 5532,
-                            "end": 11486,
-                            "type": "outside",
-                            "left": "CAGGGAAGGATGGGT",
-                            "right": "CATGTATACACATAC",
-                        },
-                    ],
-                    "seq_length": 11486,
-                },
-                "view_rhs": {
-                    "views": [
-                        {
-                            "start": 0,
-                            "end": 5524,
-                            "type": "outside",
-                            "left": "GTTCACACTTCTCTC",
-                            "right": "GATGCCCGGCCTGCC",
-                        },
-                        {
-                            "description": "5525_5533del",
-                            "start": 5524,
-                            "end": 5533,
-                            "type": "variant",
-                            "deleted": {"sequence": "CGGGGCACC"},
-                        },
-                        {
-                            "start": 5533,
-                            "end": 11486,
-                            "type": "outside",
-                            "left": "AGGGAAGGATGGGTA",
-                            "right": "CATGTATACACATAC",
-                        },
-                    ],
-                    "seq_length": 11486,
                 },
                 "view_lhs_supremal": {
                     "seq_length": 11486,
@@ -731,8 +472,6 @@ def test_get_hgvs(description, expected):
             ),
             {
                 "relation": "equivalent",
-                "influence_lhs": {"min_pos": 5518, "max_pos": 5534},
-                "influence_rhs": {"min_pos": 5518, "max_pos": 5534},
                 "supremal_lhs": {
                     "hgvs": "NG_008376.4:g.5519_5534delinsGAGTTATG",
                     "spdi": "NG_008376.4:5518:16:GAGTTATG",
@@ -740,58 +479,6 @@ def test_get_hgvs(description, expected):
                 "supremal_rhs": {
                     "hgvs": "NG_008376.4:g.5519_5534delinsGAGTTATG",
                     "spdi": "NG_008376.4:5518:16:GAGTTATG",
-                },
-                "view_lhs": {
-                    "views": [
-                        {
-                            "start": 0,
-                            "end": 5524,
-                            "type": "outside",
-                            "left": "GTGTCTGCCAAGGGT",
-                            "right": "ATGGAAGATGAGTTA",
-                        },
-                        {
-                            "description": "5525_5532del",
-                            "start": 5524,
-                            "end": 5532,
-                            "type": "variant",
-                            "deleted": {"sequence": "GTCCTGAG"},
-                        },
-                        {
-                            "start": 5532,
-                            "end": 11312,
-                            "type": "outside",
-                            "left": "TGCCGTTTAAATCAC",
-                            "right": "GGAAGAAGAGGGATC",
-                        },
-                    ],
-                    "seq_length": 11312,
-                },
-                "view_rhs": {
-                    "views": [
-                        {
-                            "start": 0,
-                            "end": 5524,
-                            "type": "outside",
-                            "left": "GTGTCTGCCAAGGGT",
-                            "right": "ATGGAAGATGAGTTA",
-                        },
-                        {
-                            "description": "5525_5532del",
-                            "start": 5524,
-                            "end": 5532,
-                            "type": "variant",
-                            "deleted": {"sequence": "GTCCTGAG"},
-                        },
-                        {
-                            "start": 5532,
-                            "end": 11312,
-                            "type": "outside",
-                            "left": "TGCCGTTTAAATCAC",
-                            "right": "GGAAGAAGAGGGATC",
-                        },
-                    ],
-                    "seq_length": 11312,
                 },
                 "view_lhs_supremal": {
                     "seq_length": 11312,
@@ -860,8 +547,6 @@ def test_get_hgvs(description, expected):
             ),
             {
                 "relation": "contains",
-                "influence_lhs": {"min_pos": 272, "max_pos": 275},
-                "influence_rhs": {"min_pos": 273, "max_pos": 274},
                 "supremal_lhs": {
                     "hgvs": "NG_012337.3:g.273_275delinsAAA",
                     "spdi": "NG_012337.3:272:3:AAA",
@@ -869,59 +554,6 @@ def test_get_hgvs(description, expected):
                 "supremal_rhs": {
                     "hgvs": "NG_012337.3:g.274del",
                     "spdi": "NG_012337.3:273:1:",
-                },
-                "view_lhs": {
-                    "views": [
-                        {
-                            "start": 0,
-                            "end": 273,
-                            "type": "outside",
-                            "left": "GGGCTTGGTTCTACC",
-                            "right": "CTTTTACGAAGAATA",
-                        },
-                        {
-                            "description": "274>A",
-                            "start": 273,
-                            "end": 274,
-                            "type": "variant",
-                            "deleted": {"sequence": "T"},
-                            "inserted": {"sequence": "A", "length": 1},
-                        },
-                        {
-                            "start": 274,
-                            "end": 39784,
-                            "type": "outside",
-                            "left": "ACTTGCCATCAAAAA",
-                            "right": "AAATTACTCAAGGAA",
-                        },
-                    ],
-                    "seq_length": 39784,
-                },
-                "view_rhs": {
-                    "views": [
-                        {
-                            "start": 0,
-                            "end": 273,
-                            "type": "outside",
-                            "left": "GGGCTTGGTTCTACC",
-                            "right": "CTTTTACGAAGAATA",
-                        },
-                        {
-                            "description": "274del",
-                            "start": 273,
-                            "end": 274,
-                            "type": "variant",
-                            "deleted": {"sequence": "T"},
-                        },
-                        {
-                            "start": 274,
-                            "end": 39784,
-                            "type": "outside",
-                            "left": "ACTTGCCATCAAAAA",
-                            "right": "AAATTACTCAAGGAA",
-                        },
-                    ],
-                    "seq_length": 39784,
                 },
                 "view_lhs_supremal": {
                     "seq_length": 39784,
@@ -989,8 +621,6 @@ def test_get_hgvs(description, expected):
             ),
             {
                 "relation": "contains",
-                "influence_lhs": {"min_pos": 272, "max_pos": 275},
-                "influence_rhs": {"min_pos": 273, "max_pos": 274},
                 "supremal_lhs": {
                     "hgvs": "NG_012337.3:g.273_275delinsAAA",
                     "spdi": "NG_012337.3:272:3:AAA",
@@ -998,59 +628,6 @@ def test_get_hgvs(description, expected):
                 "supremal_rhs": {
                     "hgvs": "NG_012337.3:g.274del",
                     "spdi": "NG_012337.3:273:1:",
-                },
-                "view_lhs": {
-                    "views": [
-                        {
-                            "start": 0,
-                            "end": 273,
-                            "type": "outside",
-                            "left": "GGGCTTGGTTCTACC",
-                            "right": "CTTTTACGAAGAATA",
-                        },
-                        {
-                            "description": "274>A",
-                            "start": 273,
-                            "end": 274,
-                            "type": "variant",
-                            "deleted": {"sequence": "T"},
-                            "inserted": {"sequence": "A", "length": 1},
-                        },
-                        {
-                            "start": 274,
-                            "end": 39784,
-                            "type": "outside",
-                            "left": "ACTTGCCATCAAAAA",
-                            "right": "AAATTACTCAAGGAA",
-                        },
-                    ],
-                    "seq_length": 39784,
-                },
-                "view_rhs": {
-                    "views": [
-                        {
-                            "start": 0,
-                            "end": 273,
-                            "type": "outside",
-                            "left": "GGGCTTGGTTCTACC",
-                            "right": "CTTTTACGAAGAATA",
-                        },
-                        {
-                            "description": "274del",
-                            "start": 273,
-                            "end": 274,
-                            "type": "variant",
-                            "deleted": {"sequence": "T"},
-                        },
-                        {
-                            "start": 274,
-                            "end": 39784,
-                            "type": "outside",
-                            "left": "ACTTGCCATCAAAAA",
-                            "right": "AAATTACTCAAGGAA",
-                        },
-                    ],
-                    "seq_length": 39784,
                 },
                 "view_lhs_supremal": {
                     "seq_length": 39784,
@@ -1118,8 +695,6 @@ def test_get_hgvs(description, expected):
             ),
             {
                 "relation": "contains",
-                "influence_lhs": {"min_pos": 272, "max_pos": 275},
-                "influence_rhs": {"min_pos": 273, "max_pos": 274},
                 "supremal_lhs": {
                     "hgvs": "NG_012337.3:g.273_275delinsAAA",
                     "spdi": "NG_012337.3:272:3:AAA",
@@ -1127,59 +702,6 @@ def test_get_hgvs(description, expected):
                 "supremal_rhs": {
                     "hgvs": "NG_012337.3:g.274del",
                     "spdi": "NG_012337.3:273:1:",
-                },
-                "view_lhs": {
-                    "views": [
-                        {
-                            "start": 0,
-                            "end": 273,
-                            "type": "outside",
-                            "left": "GGGCTTGGTTCTACC",
-                            "right": "CTTTTACGAAGAATA",
-                        },
-                        {
-                            "description": "274>A",
-                            "start": 273,
-                            "end": 274,
-                            "type": "variant",
-                            "deleted": {"sequence": "T"},
-                            "inserted": {"sequence": "A", "length": 1},
-                        },
-                        {
-                            "start": 274,
-                            "end": 39784,
-                            "type": "outside",
-                            "left": "ACTTGCCATCAAAAA",
-                            "right": "AAATTACTCAAGGAA",
-                        },
-                    ],
-                    "seq_length": 39784,
-                },
-                "view_rhs": {
-                    "views": [
-                        {
-                            "start": 0,
-                            "end": 273,
-                            "type": "outside",
-                            "left": "GGGCTTGGTTCTACC",
-                            "right": "CTTTTACGAAGAATA",
-                        },
-                        {
-                            "description": "274del",
-                            "start": 273,
-                            "end": 274,
-                            "type": "variant",
-                            "deleted": {"sequence": "T"},
-                        },
-                        {
-                            "start": 274,
-                            "end": 39784,
-                            "type": "outside",
-                            "left": "ACTTGCCATCAAAAA",
-                            "right": "AAATTACTCAAGGAA",
-                        },
-                    ],
-                    "seq_length": 39784,
                 },
                 "view_lhs_supremal": {
                     "seq_length": 39784,
@@ -1247,8 +769,6 @@ def test_get_hgvs(description, expected):
             ),
             {
                 "relation": "disjoint",
-                "influence_lhs": {"min_pos": 272, "max_pos": 275},
-                "influence_rhs": {"min_pos": 269, "max_pos": 271},
                 "supremal_lhs": {
                     "hgvs": "NG_012337.3:g.273_275delinsAAA",
                     "spdi": "NG_012337.3:272:3:AAA",
@@ -1256,59 +776,6 @@ def test_get_hgvs(description, expected):
                 "supremal_rhs": {
                     "hgvs": "NG_012337.3:g.270_271del",
                     "spdi": "NG_012337.3:269:2:",
-                },
-                "view_lhs": {
-                    "seq_length": 39784,
-                    "views": [
-                        {
-                            "start": 0,
-                            "end": 273,
-                            "type": "outside",
-                            "left": "GGGCTTGGTTCTACC",
-                            "right": "CTTTTACGAAGAATA",
-                        },
-                        {
-                            "description": "274>A",
-                            "start": 273,
-                            "end": 274,
-                            "type": "variant",
-                            "deleted": {"sequence": "T"},
-                            "inserted": {"sequence": "A", "length": 1},
-                        },
-                        {
-                            "start": 274,
-                            "end": 39784,
-                            "type": "outside",
-                            "left": "ACTTGCCATCAAAAA",
-                            "right": "AAATTACTCAAGGAA",
-                        },
-                    ],
-                },
-                "view_rhs": {
-                    "seq_length": 39784,
-                    "views": [
-                        {
-                            "start": 0,
-                            "end": 269,
-                            "type": "outside",
-                            "left": "GGGCTTGGTTCTACC",
-                            "right": "TTAACTTTTACGAAG",
-                        },
-                        {
-                            "description": "270_271del",
-                            "start": 269,
-                            "end": 271,
-                            "type": "variant",
-                            "deleted": {"sequence": "AA"},
-                        },
-                        {
-                            "start": 271,
-                            "end": 39784,
-                            "type": "outside",
-                            "left": "TATACTTGCCATCAA",
-                            "right": "AAATTACTCAAGGAA",
-                        },
-                    ],
                 },
                 "view_lhs_supremal": {
                     "seq_length": 39784,
