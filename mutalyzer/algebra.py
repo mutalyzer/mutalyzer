@@ -1,8 +1,4 @@
 from algebra import Variant
-from algebra.lcs.all_lcs import edit, build_graph
-from algebra.relations.sequence_based import compare as compare_core
-from algebra.relations.supremal_based import compare as compare_supremal
-from algebra.lcs.supremals import supremal_sequence
 from algebra.lcs.supremals import supremal_sequence
 from algebra.relations.sequence_based import compare as compare_core
 from algebra.relations.supremal_based import compare as compare_supremal
