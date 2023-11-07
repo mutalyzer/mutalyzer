@@ -182,7 +182,7 @@ def _get_algebra_variants(description):
     return edges
 
 
-def _algebra_variant_to_delins(variant):
+def algebra_variant_to_delins(variant):
     delins_variant = {
         "type": "deletion_insertion",
         "source": "reference",
@@ -202,7 +202,7 @@ def _algebra_variant_to_delins(variant):
     return delins_variant
 
 
-def _algebra_variant_to_name_model(variant):
+def algebra_variant_to_name_model(variant):
     def _position_to_hgvs():
         if variant.end - variant.start == 1:
             return {"type": "point", "position": variant.start + 1}
@@ -292,16 +292,16 @@ def compare_hgvs(lhs_d, rhs_d):
         "spdi": rhs_supremal.to_spdi(ref_id),
     }
 
-    lhs_supremal_delins = [_algebra_variant_to_delins(lhs_supremal)]
-    rhs_supremal_delins = [_algebra_variant_to_delins(rhs_supremal)]
+    lhs_supremal_delins = [algebra_variant_to_delins(lhs_supremal)]
+    rhs_supremal_delins = [algebra_variant_to_delins(rhs_supremal)]
     output["view_lhs_supremal"] = view_delins(
         lhs_supremal_delins,
-        [_algebra_variant_to_name_model(lhs_supremal)],
+        [algebra_variant_to_name_model(lhs_supremal)],
         lhs_d.get_sequences(),
     )
     output["view_rhs_supremal"] = view_delins(
         rhs_supremal_delins,
-        [_algebra_variant_to_name_model(rhs_supremal)],
+        [algebra_variant_to_name_model(rhs_supremal)],
         rhs_d.get_sequences(),
     )
 
@@ -354,16 +354,16 @@ def compare_sequences_based(reference, reference_type, lhs, lhs_type, rhs, rhs_t
         "spdi": rhs_supremal.to_spdi(),
     }
 
-    lhs_supremal_delins = [_algebra_variant_to_delins(lhs_supremal)]
-    rhs_supremal_delins = [_algebra_variant_to_delins(rhs_supremal)]
+    lhs_supremal_delins = [algebra_variant_to_delins(lhs_supremal)]
+    rhs_supremal_delins = [algebra_variant_to_delins(rhs_supremal)]
     output["view_lhs_supremal"] = view_delins(
         lhs_supremal_delins,
-        [_algebra_variant_to_name_model(lhs_supremal)],
+        [algebra_variant_to_name_model(lhs_supremal)],
         {"reference": ref_seq},
     )
     output["view_rhs_supremal"] = view_delins(
         rhs_supremal_delins,
-        [_algebra_variant_to_name_model(rhs_supremal)],
+        [algebra_variant_to_name_model(rhs_supremal)],
         {"reference": ref_seq},
     )
 
