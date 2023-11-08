@@ -768,7 +768,7 @@ class Description(object):
                     )
 
     @check_errors
-    def construct_rna_description(self, supremal=None, limits=None):
+    def construct_rna_description(self, supremal=None):
         if supremal:
             delins_variants = [
                 {
@@ -815,12 +815,7 @@ class Description(object):
             }
             rna_variants_coordinate = de_to_hgvs(
                 rna_variants_coordinate,
-                {
-                    k: str(
-                        Seq(rna_references[k]["sequence"]["seq"]).transcribe().lower()
-                    )
-                    for k in rna_references
-                },
+                {k: str(Seq(rna_references[k]["sequence"]["seq"]).transcribe().lower()) for k in rna_references},
             )
             to_rna_sequences(rna_variants_coordinate)
             rna_model = to_hgvs_locations(

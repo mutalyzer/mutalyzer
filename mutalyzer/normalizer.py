@@ -3,6 +3,7 @@ the delins model of an input description."""
 
 import bisect
 import itertools
+import json
 from collections import deque
 
 from algebra import Variant
@@ -11,7 +12,7 @@ from algebra.extractor import local_supremal
 from algebra.extractor import to_hgvs as to_hgvs_experimental
 from algebra.lcs.all_lcs import dfs_traversal
 from algebra.utils import to_dot
-from algebra.variants import patch
+from algebra.variants import patch, to_hgvs
 from mutalyzer_crossmapper import NonCoding
 from mutalyzer_hgvs_parser import to_model
 
@@ -268,43 +269,52 @@ def construct_rna_description(d, ref_seq, root, algebra_variants):
     # NG_012337.3(NM_003002.4):c.172_175dup
     # NG_012337.3(NM_003002.4):c.[310_314+4dup]
     # NG_012337.3(NM_00-3002.4):c.[300del;310_314+4dup]
+    rna = {}
     exons = d.get_selector_model()["exon"]
-    print("=====")
-    print("exons:")
-    print(exons)
 
     exon_margin = 2
     intron_margin = 4
 
+    status = {
+        "exon_margin": exon_margin,
+        "intron_margin": intron_margin,
+        "local_supremals": {}
+    }
     local_sup = local_supremal(ref_seq, patch(ref_seq, algebra_variants), root)
-    print("local supremals:")
-    for sup in local_sup:
-        print("----")
-        print(ref_seq[sup.start:sup.end])
-        print(sup)
+    for i, sup in enumerate(local_sup):
+        _, _, local_root = extract_variants(ref_seq, [sup])
         sup_start_index, sup_start_offset = get_position_type(sup.start, exons, exon_margin)
         sup_end_index, sup_end_offset = get_position_type(sup.end, exons, intron_margin)
-        print(sup_start_index, sup_end_index)
+        sup_status = {
+            "supremal_affected": False,
+        }
         if sup_end_index - sup_start_index == 1:
-            print("we have to check this")
-            print("rna limits")
-            right_push, left_push = get_sides_limits(root)
-            print(right_push)
-            print(left_push)
+            sup_status["supremal_affected"] = True
+            right_push, left_push = get_sides_limits(local_root)
+            left_push_variants = to_hgvs(left_push[1], ref_seq)
+            right_push_variants = to_hgvs(right_push[1], ref_seq)
+
             if sup_start_index % 2 == 0:
-                print("intron - exon")
-                print(exons[sup_start_index//2][1])
-                if left_push[0] > exons[sup_start_index//2][0] - intron_margin:
-                    print("it can be pushed into the intron")
+                # intron - exon
+                sup_status["between"] = "intron - exon"
+                if left_push[0] < exons[sup_start_index//2][0] - intron_margin:
+                    # it can be pushed into the intron
+                    sup_status["push_intron"] = left_push_variants
                 if right_push[0] > exons[sup_start_index//2][0] + exon_margin:
-                    print("it can be pushed into the exon")
+                    # it can be pushed into the exon
+                    sup_status["push_exon"] = right_push_variants
             else:
-                print("exon - intron")
-                print(exons[sup_start_index//2][1])
+                # exon - intron
+                sup_status["between"] = "exon - intron"
                 if right_push[0] > exons[sup_start_index//2][1] + intron_margin - 1:
-                    print("it can be pushed into the intron")
-                if left_push[0] > exons[sup_start_index//2][1] - exon_margin:
-                    print("it can be pushed into the exon")
+                    # it can be pushed into the intron
+                    sup_status["push_intron"] = right_push_variants
+                if left_push[0] < exons[sup_start_index//2][1] - exon_margin:
+                    # it can be pushed into the exon
+                    sup_status["push_exon"] = left_push_variants
+        status["local_supremals"][i] = sup_status
+
+    print(json.dumps(status, indent=2))
 
 
 def _descriptions(d, algebra_variants, algebra_hgvs, supremal, ref_seq, root):
@@ -324,8 +334,8 @@ def _descriptions(d, algebra_variants, algebra_hgvs, supremal, ref_seq, root):
     d.construct_normalized_description()
     d.construct_equivalent()
 
-    # if d.de_hgvs_model.get("coordinate_system") in ["c", "n"]:
-    #     construct_rna_description(d, ref_seq, root, algebra_variants)
+    if d.de_hgvs_model.get("coordinate_system") in ["c", "n"]:
+        construct_rna_description(d, ref_seq, root, algebra_variants)
 
     d.construct_protein_description()
 
@@ -351,6 +361,16 @@ def _descriptions(d, algebra_variants, algebra_hgvs, supremal, ref_seq, root):
     output["dot"] = "\n".join(to_dot(ref_seq, root))
     _add_minimal(root, ref_seq, output, f"{d.corrected_model['reference']['id']}:g.")
     return output
+
+
+def view_algebra_variants(variants, ref_seq, names=None):
+    if names is None:
+        names = [algebra_variant_to_name_model(v) for v in variants]
+    return view_delins(
+        [algebra_variant_to_delins(v) for v in variants],
+        names,
+        {"reference": ref_seq},
+    )
 
 
 def normalize_alt(description, only_variants=False, sequence=None):
@@ -386,12 +406,9 @@ def normalize_alt(description, only_variants=False, sequence=None):
     else:
         output = _descriptions(d, algebra_extracted_variants, algebra_hgvs, supremal, ref_seq, root)
 
-    local_supremals = local_supremal(ref_seq, patch(ref_seq, algebra_extracted_variants), root)
-
-    output["view_local_supremal"] = view_delins(
-        [algebra_variant_to_delins(v) for v in local_supremals],
-        [algebra_variant_to_name_model(v) for v in local_supremals],
-        {"reference": ref_seq},
+    output["view_local_supremal"] = view_algebra_variants(
+        local_supremal(ref_seq, patch(ref_seq, algebra_extracted_variants), root),
+        ref_seq
     )
 
     output["influence"] = {"min_pos": supremal.start, "max_pos": supremal.end}
