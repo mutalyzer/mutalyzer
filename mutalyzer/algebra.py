@@ -202,6 +202,10 @@ def algebra_variant_to_delins(variant):
     return delins_variant
 
 
+def delins_to_algebra_variant(v, sequences):
+    return Variant(get_start(v), get_end(v), get_inserted_sequence(v, sequences))
+
+
 def algebra_variant_to_name_model(variant):
     def _position_to_hgvs():
         if variant.end - variant.start == 1:

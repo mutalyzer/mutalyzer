@@ -768,25 +768,16 @@ class Description(object):
                     )
 
     @check_errors
-    def construct_rna_description(self, supremal=None):
-        if supremal:
-            delins_variants = [
-                {
-                    "location":
-                     {
-                         "type": "range",
-                         "start": {"type": "point", "position":supremal.start},
-                         "end": {"type": "point", "position": supremal.end}
-                      },
-                    'type': 'deletion_insertion',
-                    'source': 'reference',
-                    'inserted': []
-                 }
-            ]
-            if supremal.sequence:
-                delins_variants[0]['inserted'].append({'sequence': supremal.sequence, 'source': 'description'})
-        else:
-            delins_variants = variants_to_delins(self.de_hgvs_internal_indexing_model["variants"])
+    def construct_rna_description(self):
+        def get_rna_reference_models(reference_model, reference_id, selector_id):
+            rna_reference_model = to_rna_reference_model(reference_model, selector_id)
+            return {reference_id: rna_reference_model, "reference": rna_reference_model}
+
+        def get_rna_sequences(reference_model, reference_id, selector_id):
+            rna_references = get_rna_reference_models(reference_model, reference_id, selector_id)
+            return {k: str(Seq(rna_references[k]["sequence"]["seq"]).transcribe().lower())for k in rna_references}
+
+        delins_variants = variants_to_delins(self.de_hgvs_internal_indexing_model["variants"])
 
         if self.de_hgvs_model.get("coordinate_system") in ["c", "n"]:
             self.rna = {}
@@ -801,30 +792,29 @@ class Description(object):
                 self.rna["errors"] = errors_splice
                 return
 
+            reference_model = self.references["reference"]
+            reference_id = get_reference_id(self.corrected_model)
+            selector_id = self.get_selector_id()
+
             rna_variants_coordinate = to_rna_variants(
                 delins_variants,
                 self.get_sequences(),
                 self.get_selector_model(),
             )
-            rna_reference_model = to_rna_reference_model(
-                self.references["reference"], self.get_selector_id()
-            )
-            rna_references = {
-                get_reference_id(self.corrected_model): rna_reference_model,
-                "reference": rna_reference_model,
-            }
+
             rna_variants_coordinate = de_to_hgvs(
                 rna_variants_coordinate,
-                {k: str(Seq(rna_references[k]["sequence"]["seq"]).transcribe().lower()) for k in rna_references},
+                get_rna_sequences(reference_model, reference_id, selector_id),
             )
             to_rna_sequences(rna_variants_coordinate)
+
             rna_model = to_hgvs_locations(
                 {
                     "reference": self.de_hgvs_internal_indexing_model["reference"],
                     "coordinate_system": "i",
                     "variants": rna_variants_coordinate,
                 },
-                rna_references,
+                get_rna_reference_models(reference_model, reference_id, selector_id),
                 self.corrected_model["coordinate_system"],
                 get_selector_id(self.corrected_model),
                 True,
