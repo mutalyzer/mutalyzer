@@ -26,14 +26,20 @@ from .algebra import (
 )
 from .converter.to_delins import to_delins
 from .converter.to_hgvs_coordinates import to_hgvs_locations
+from .converter.to_hgvs_indexing import to_hgvs_indexing
 from .converter.to_internal_coordinates import to_internal_coordinates
 from .converter.to_internal_indexing import to_internal_indexing
 from .converter.to_rna import to_rna_reference_model, to_rna_sequences, to_rna_variants
 from .converter.variants_de_to_hgvs import de_to_hgvs
 from .description import Description
-from .description_model import get_reference_id, model_to_string, variants_to_description
+from .description_model import (
+    get_reference_id,
+    model_to_string,
+    variants_to_description,
+)
 from .util import construct_sequence, get_end, get_start, roll
 from .viewer import view_delins
+from .errors import splice_site as error_splice_site
 
 
 def add_pre_edges(root):
@@ -326,25 +332,25 @@ def get_rna_variants(d, variants):
     return rna_algebra_hgvs
 
 
-def _genomic_and_coding(algebra, d, selector_id):
+def _genomic_and_coding(algebra_variants, d, selector_id):
     ref_seq = d.references["reference"]["sequence"]["seq"]
     return {
-        "genomic": to_hgvs(algebra, ref_seq),
+        "genomic": to_hgvs(algebra_variants, ref_seq),
         "coding": variants_to_description(extracted_to_hgvs_selector(
-            [algebra_variant_to_delins(v) for v in algebra], d,selector_id)["variants"])
+            algebra_variants, d, selector_id)["variants"])
     }
 
 
 def construct_rna_description(d, local_supremals, algebra_variants):
     # NG_012337.3(NM_003002.4):c.172_175dup
     # NG_012337.3(NM_003002.4):c.[310_314+4dup]
-    # NG_012337.3(NM_00-3002.4):c.[300del;310_314+4dup]
+    # NG_012337.3(NM_003002.4):c.[300del;310_314+4dup]
 
     selector_id = d.get_selector_id()
     ref_seq = d.references["reference"]["sequence"]["seq"]
     exons = d.get_selector_model()["exon"]
 
-    local_supremals_c = extracted_to_hgvs_selector([algebra_variant_to_delins(v) for v in local_supremals], d, selector_id)
+    local_supremals_c = extracted_to_hgvs_selector(local_supremals, d, selector_id)
     print(model_to_string(local_supremals_c))
 
     exon_margin = 2
@@ -403,7 +409,6 @@ def construct_rna_description(d, local_supremals, algebra_variants):
                 # print("see what can be done with the exon:", sup_status.get("push_exon"))
                 sup_status["rna"] = get_rna_variants(d, sup_status.get("push_exon"))
                 sup_status["push_exon"] = _genomic_and_coding(sup_status["push_exon"], d, selector_id)
-
             elif sup_status.get("push_intron") and sup_status.get("push_exon"):
                 sup_status["push_exon"] = _genomic_and_coding(sup_status["push_exon"], d, selector_id)
                 sup_status["push_intron"] = _genomic_and_coding(sup_status["push_intron"], d, selector_id)
@@ -413,7 +418,6 @@ def construct_rna_description(d, local_supremals, algebra_variants):
                 # print("Nothing possible.")
                 rna_description_possible = False
         else:
-            print(local_supremals[i])
             sup_status["rna"] = get_rna_variants(d, [local_supremals[i]])
 
     print(rna_description_possible)
@@ -421,8 +425,7 @@ def construct_rna_description(d, local_supremals, algebra_variants):
         rna_description = []
         for i, sup_status in status["local_supremals"].items():
             if sup_status.get("rna"):
-                rna_description.extend(sup_status.get("rna"))
-        ref_part = d.de_hgvs_internal_indexing_model["reference"]["id"]
+                rna_description.extend(sup_status["rna"])
         description = d.de_hgvs_internal_indexing_model["reference"]["id"]
         if d.get_selector_id():
             description += f"({d.get_selector_id()})"
@@ -436,17 +439,52 @@ def construct_rna_description(d, local_supremals, algebra_variants):
     return status
 
 
+def algebra_variants_to_hgvs(algebra_variants):
+    variants = []
+    for v in sorted(algebra_variants):
+        variant ={
+            "location": {
+                "type": "range",
+                "start": {"type": "point", "position": v.start},
+                "end": {"type": "point", "position": v.end},
+            }
+        }
+        if v.start == v.end:
+            variant["type"] = "insertion"
+            variant["inserted"] = [{"sequence": v.sequence, "source": "description"}]
+        elif not v.sequence:
+            variant["type"] = "deletion"
+            variant["inserted"] = []
+        else:
+            variant["type"] = "deletion_insertion"
+            variant["inserted"] = [{"sequence": v.sequence, "source": "description"}]
+        variants.append(variant)
+    return variants
+
+
 def extracted_to_hgvs_selector(variants, d, to_selector_id):
-    de_hgvs_internal_indexing_model = {
+    print("----")
+    print(variants)
+
+    extracted_model = {
         "reference": {"id": d.corrected_model["reference"]["id"]},
-        "variants": de_to_hgvs(variants, d.get_sequences())
+        "variants": algebra_variants_to_hgvs(variants)
     }
+    print("--")
+    print(variants_to_description(extracted_model["variants"]))
+    print(variants_to_description(to_hgvs_indexing(extracted_model)["variants"]))
+
     de_hgvs_model = to_hgvs_locations(
-        model=de_hgvs_internal_indexing_model,
+        model=extracted_model,
         references=d.references,
         to_selector_id=to_selector_id,
         degenerate=True,
     )
+    print("--")
+    print(variants_to_description(extracted_model["variants"]))
+    print("-")
+    print(variants_to_description(de_hgvs_model["variants"]))
+
     return de_hgvs_model
 
 
@@ -580,8 +618,6 @@ def delins_model(description, only_variants=False, sequence=None):
             if variant.get("inserted"):
                 for inserted in variant.get("inserted"):
                     if not inserted.get("sequence"):
-                        inserted["sequence"] = construct_sequence(
-                            [inserted], d.get_sequences()
-                        )
+                        inserted["sequence"] = construct_sequence([inserted], d.get_sequences())
         output["delins_model"] = d.delins_model
     return output
