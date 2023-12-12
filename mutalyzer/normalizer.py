@@ -36,6 +36,7 @@ from .description_model import (
     get_reference_id,
     model_to_string,
     variants_to_description,
+    variant_to_description,
 )
 from .util import construct_sequence, get_end, get_start, roll
 from .viewer import view_delins
@@ -336,8 +337,7 @@ def _genomic_and_coding(algebra_variants, d, selector_id):
     ref_seq = d.references["reference"]["sequence"]["seq"]
     return {
         "genomic": to_hgvs(algebra_variants, ref_seq),
-        "coding": variants_to_description(extracted_to_hgvs_selector(
-            algebra_variants, d, selector_id)["variants"])
+        "coding": [variant_to_description(v) for v in extracted_to_hgvs_selector(algebra_variants, d, selector_id)["variants"]]
     }
 
 
@@ -351,7 +351,7 @@ def construct_rna_description(d, local_supremals, algebra_variants):
     exons = d.get_selector_model()["exon"]
 
     local_supremals_c = extracted_to_hgvs_selector(local_supremals, d, selector_id)
-    print(model_to_string(local_supremals_c))
+    # print(model_to_string(local_supremals_c))
 
     exon_margin = 2
     intron_margin = 4
@@ -378,10 +378,10 @@ def construct_rna_description(d, local_supremals, algebra_variants):
                     sup_status["push_intron"] = left_push[1]
                 if right_push[0] > exons[sup_start_index//2][0] + exon_margin:
                     # it can be pushed into the exon
-                    print(right_push)
+                    # print(right_push)
                     sup_status["push_exon"] = right_push[1]
-                    print("\n\n\n\ssfd")
-                    print(sup_status["push_exon"])
+                    # print("\n\n\n\ssfd")
+                    # print(sup_status["push_exon"])
             else:
                 # exon - intron
                 sup_status["between"] = "exon - intron"
@@ -391,6 +391,9 @@ def construct_rna_description(d, local_supremals, algebra_variants):
                 if left_push[0] < exons[sup_start_index//2][1] - exon_margin:
                     # it can be pushed into the exon
                     sup_status["push_exon"] = left_push[1]
+        print(extract_variants(ref_seq, [sup]))
+        print(_genomic_and_coding(extract_variants(ref_seq, [sup])[0], d, selector_id))
+        sup_status["hgvs"] = _genomic_and_coding(extract_variants(ref_seq, [sup])[0], d, selector_id)
         sup_status["splice_affected"] = splice_affected
         sup_status["supremal"] = _genomic_and_coding([sup], d, selector_id)
         status["local_supremals"][i] = sup_status
@@ -418,9 +421,10 @@ def construct_rna_description(d, local_supremals, algebra_variants):
                 # print("Nothing possible.")
                 rna_description_possible = False
         else:
+
             sup_status["rna"] = get_rna_variants(d, [local_supremals[i]])
 
-    print(rna_description_possible)
+    # print(rna_description_possible)
     if rna_description_possible:
         rna_description = []
         for i, sup_status in status["local_supremals"].items():
@@ -435,7 +439,7 @@ def construct_rna_description(d, local_supremals, algebra_variants):
             description += f":r.({';'.join(rna_description)})"
         status["description"] = description
 
-    print(json.dumps(status, indent=2))
+    # print(json.dumps(status, indent=2))
     return status
 
 
@@ -463,16 +467,16 @@ def algebra_variants_to_hgvs(algebra_variants):
 
 
 def extracted_to_hgvs_selector(variants, d, to_selector_id):
-    print("----")
-    print(variants)
+    # print("----")
+    # print(variants)
 
     extracted_model = {
         "reference": {"id": d.corrected_model["reference"]["id"]},
         "variants": algebra_variants_to_hgvs(variants)
     }
-    print("--")
-    print(variants_to_description(extracted_model["variants"]))
-    print(variants_to_description(to_hgvs_indexing(extracted_model)["variants"]))
+    # print("--")
+    # print(variants_to_description(extracted_model["variants"]))
+    # print(variants_to_description(to_hgvs_indexing(extracted_model)["variants"]))
 
     de_hgvs_model = to_hgvs_locations(
         model=extracted_model,
@@ -480,10 +484,10 @@ def extracted_to_hgvs_selector(variants, d, to_selector_id):
         to_selector_id=to_selector_id,
         degenerate=True,
     )
-    print("--")
-    print(variants_to_description(extracted_model["variants"]))
-    print("-")
-    print(variants_to_description(de_hgvs_model["variants"]))
+    # print("--")
+    # print(variants_to_description(extracted_model["variants"]))
+    # print("-")
+    # print(variants_to_description(de_hgvs_model["variants"]))
 
     return de_hgvs_model
 
@@ -585,7 +589,7 @@ def normalize_alt(description, only_variants=False, sequence=None):
 
     output["view_local_supremal"] = view_algebra_variants(local_supremals, ref_seq)
 
-    output["influence"] = {"min_pos": supremal.start, "max_pos": supremal.end}
+    output["influence"] = [(v.start, v.end) for v in local_supremals]
 
     return output
 
