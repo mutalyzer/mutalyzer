@@ -10,7 +10,7 @@ from algebra import Variant
 from algebra.extractor import extract as extract_variants
 from algebra.extractor import local_supremal
 from algebra.extractor import to_hgvs as to_hgvs_experimental
-from algebra.lcs.all_lcs import dfs_traversal
+from algebra import LCSgraph
 from algebra.utils import to_dot
 from algebra.variants import patch, to_hgvs
 from Bio.Seq import Seq
@@ -60,7 +60,8 @@ def add_pre_edges(root):
     return sink
 
 
-def get_sides_limits(root, paths=True):
+def get_sides_limits(graph, paths=True):
+    root = graph._source
     sink = add_pre_edges(root)
 
     right = max(root.edges, key=lambda x: x[1].start)
@@ -128,7 +129,7 @@ def _to_dot(reference, root, offset=0):
 
 def get_rna_limits(root, ref_seq, offset=0):
     left, right = get_sides_limits(root)
-    print(left, right)
+    # print(left, right)
 
     left_variants = [Variant(v.start + offset, v.end + offset, v.sequence) for v in left[1]]
     right_variants = [Variant(v.start + offset, v.end + offset, v.sequence) for v in right[1]]
@@ -164,10 +165,11 @@ def post_dominators(node, start, visited, reference):
     return visited
 
 
-def _add_minimal(root, reference, output, prefix=""):
+def _add_minimal(graph, reference, output, prefix=""):
     minimal_descriptions = []
     minimal_length = 100
-    for variants in itertools.islice(dfs_traversal(root), minimal_length):
+
+    for variants in itertools.islice(graph.paths(), minimal_length):
         reference_variants = []
         for variant in variants:
             reference_variants.append(Variant(variant.start, variant.end, variant.sequence))
@@ -362,7 +364,7 @@ def construct_rna_description(d, local_supremals, algebra_variants):
         "local_supremals": {}
     }
     for i, sup in enumerate(local_supremals):
-        _, _, local_root = extract_variants(ref_seq, [sup])
+        _, local_root = extract_variants(ref_seq, [sup])
         sup_start_index, sup_start_offset = get_position_type(sup.start, exons, exon_margin)
         sup_end_index, sup_end_offset = get_position_type(sup.end, exons, intron_margin)
         splice_affected = False
@@ -391,8 +393,8 @@ def construct_rna_description(d, local_supremals, algebra_variants):
                 if left_push[0] < exons[sup_start_index//2][1] - exon_margin:
                     # it can be pushed into the exon
                     sup_status["push_exon"] = left_push[1]
-        print(extract_variants(ref_seq, [sup]))
-        print(_genomic_and_coding(extract_variants(ref_seq, [sup])[0], d, selector_id))
+        # print(extract_variants(ref_seq, [sup]))
+        # print(_genomic_and_coding(extract_variants(ref_seq, [sup])[0], d, selector_id))
         sup_status["hgvs"] = _genomic_and_coding(extract_variants(ref_seq, [sup])[0], d, selector_id)
         sup_status["splice_affected"] = splice_affected
         sup_status["supremal"] = _genomic_and_coding([sup], d, selector_id)
@@ -577,15 +579,16 @@ def normalize_alt(description, only_variants=False, sequence=None):
     algebra_variants = _algebra_variants(d.delins_model["variants"], d.get_sequences())
     ref_seq = d.references["reference"]["sequence"]["seq"]
 
-    algebra_extracted_variants, supremal, root = extract_variants(ref_seq, algebra_variants)
+    algebra_extracted_variants, graph = extract_variants(ref_seq, algebra_variants)
+    supremal = graph.supremal
 
     algebra_hgvs = to_hgvs_experimental(algebra_extracted_variants, ref_seq)
 
-    local_supremals = local_supremal(ref_seq, patch(ref_seq, algebra_extracted_variants), root)
+    local_supremals = local_supremal(ref_seq, graph)
     if only_variants:
-        output = _only_variants(d, algebra_hgvs, supremal, local_supremals, ref_seq, root)
+        output = _only_variants(d, algebra_hgvs, supremal, local_supremals, ref_seq, graph)
     else:
-        output = _descriptions(d, algebra_extracted_variants, algebra_hgvs, supremal, local_supremals, root)
+        output = _descriptions(d, algebra_extracted_variants, algebra_hgvs, supremal, local_supremals, graph)
 
     output["view_local_supremal"] = view_algebra_variants(local_supremals, ref_seq)
 
