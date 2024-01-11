@@ -1,5 +1,5 @@
 from algebra import Variant
-from algebra.lcs.supremals import supremal_sequence
+from algebra import LCSgraph
 from algebra.relations.sequence_based import compare as compare_core
 from algebra.relations.supremal_based import compare as compare_supremal
 
@@ -270,10 +270,12 @@ def compare_hgvs(lhs_d, rhs_d):
         return output
 
     lhs_observed = lhs_d.get_sequences()["observed"]
-    lhs_supremal, *_ = supremal_sequence(lhs_reference, lhs_observed)
+    lhs_graph = LCSgraph.from_sequence(lhs_reference, lhs_observed)
+    lhs_supremal = lhs_graph.supremal
 
     rhs_observed = rhs_d.get_sequences()["observed"]
-    rhs_supremal, *_ = supremal_sequence(rhs_reference, rhs_observed)
+    rhs_graph = LCSgraph.from_sequence(rhs_reference, rhs_observed)
+    rhs_supremal = rhs_graph.supremal
 
     output["relation"] = compare_supremal(
         lhs_reference, lhs_supremal, rhs_supremal
@@ -345,8 +347,11 @@ def compare_sequences_based(reference, reference_type, lhs, lhs_type, rhs, rhs_t
 
     output["relation"] = compare_core(ref_seq, lhs_seq, rhs_seq).value
 
-    lhs_supremal, *_ = supremal_sequence(ref_seq, lhs_seq)
-    rhs_supremal, *_ = supremal_sequence(ref_seq, rhs_seq)
+    lhs_graph = LCSgraph.from_sequence(ref_seq, lhs_seq)
+    lhs_supremal = lhs_graph.supremal
+
+    rhs_graph = LCSgraph.from_sequence(ref_seq, rhs_seq)
+    rhs_supremal = rhs_graph.supremal
 
     output["supremal_lhs"] = {
         "hgvs": f"{lhs_supremal.to_hgvs()}",
