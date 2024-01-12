@@ -89,46 +89,8 @@ def get_sides_limits(graph, paths=True):
     return (right_pos, right_path), (left_pos, left_path)
 
 
-def _to_dot(reference, root, offset=0):
-    """The LCS graph in Graphviz DOT format."""
-
-    def traverse():
-        # breadth-first traversal
-        node_count = 0
-        visited = {root: node_count}
-        queue = deque([root])
-        while queue:
-            node = queue.popleft()
-            if not node.edges:
-                yield f'"s{visited[node]}"' + "[shape=doublecircle]"
-            for succ, variant in node.edges:
-                if succ not in visited:
-                    node_count += 1
-                    visited[succ] = node_count
-                    queue.append(succ)
-                hgvs_variant = Variant(
-                    variant.start + offset,
-                    variant.end + offset,
-                    variant.sequence,
-                ).to_hgvs(reference)
-                yield (
-                    f'"s{visited[node]}" -> "s{visited[succ]}"'
-                    f' [label="{hgvs_variant}"];'
-                )
-
-    return (
-            "digraph {\n"
-            "    rankdir=LR\n"
-            "    edge[fontname=monospace]\n"
-            "    node[shape=circle]\n"
-            "    si[shape=point]\n"
-            "    si->" + f'"s{0}"' + "\n"
-                                     "    " + "\n    ".join(traverse()) + "\n}"
-    )
-
-
-def get_rna_limits(root, ref_seq, offset=0):
-    left, right = get_sides_limits(root)
+def get_rna_limits(graph, ref_seq, offset=0):
+    left, right = get_sides_limits(graph)
     # print(left, right)
 
     left_variants = [Variant(v.start + offset, v.end + offset, v.sequence) for v in left[1]]
@@ -228,7 +190,7 @@ def _add_shift(internal, delins, reference):
         internal["variants"][i]["location"]["end"]["shift"] = shift5
 
 
-def _only_variants(d, algebra_hgvs, supremal, local_supremals, ref_seq, root):
+def _only_variants(d, algebra_hgvs, supremal, local_supremals, ref_seq, graph):
     d.normalized_description = algebra_hgvs
     d.de_hgvs_model = {"variants": to_model(algebra_hgvs, "variants")}
     output = d.output()
@@ -249,8 +211,8 @@ def _only_variants(d, algebra_hgvs, supremal, local_supremals, ref_seq, root):
         d_n.delins_model["variants"], d.de_hgvs_model["variants"], d.get_sequences()
     )
     output["influence"] = {"min_pos": supremal.start, "max_pos": supremal.end}
-    output["dot"] = "\n".join(to_dot(ref_seq, root))
-    _add_minimal(root, ref_seq, output)
+    output["dot"] = "\n".join(to_dot(ref_seq, graph))
+    _add_minimal(graph, ref_seq, output)
     return output
 
 
@@ -494,7 +456,7 @@ def extracted_to_hgvs_selector(variants, d, to_selector_id):
     return de_hgvs_model
 
 
-def _descriptions(d, algebra_variants, algebra_hgvs, supremal, local_supremals, root):
+def _descriptions(d, algebra_variants, algebra_hgvs, supremal, local_supremals, graph):
     reference_id = d.corrected_model["reference"]["id"]
     selector_id = d.get_selector_id()
     ref_seq = d.references["reference"]["sequence"]["seq"]
@@ -540,8 +502,8 @@ def _descriptions(d, algebra_variants, algebra_hgvs, supremal, local_supremals, 
         d.get_sequences(),
         invert=d.is_inverted(),
     )
-    output["dot"] = "\n".join(to_dot(ref_seq, root))
-    _add_minimal(root, ref_seq, output, f"{d.corrected_model['reference']['id']}:g.")
+    output["dot"] = "\n".join(to_dot(ref_seq, graph))
+    _add_minimal(graph, ref_seq, output, f"{d.corrected_model['reference']['id']}:g.")
     return output
 
 
