@@ -1,7 +1,5 @@
-from algebra import Variant
-from algebra import LCSgraph
-from algebra.relations.sequence_based import compare as compare_core
-from algebra.relations.supremal_based import compare as compare_supremal
+from algebra import LCSgraph, Variant
+from algebra.relations.graph_based import compare as compare_core
 
 from mutalyzer import errors
 from mutalyzer.description import Description
@@ -265,21 +263,21 @@ def compare_hgvs(lhs_d, rhs_d):
     if output:
         return output
 
-    lhs_observed = lhs_d.get_sequences()["observed"]
-    lhs_graph = LCSgraph.from_sequence(lhs_reference, lhs_observed)
+    lhs_alg_variants = _get_algebra_variants(lhs_d)
+    lhs_graph = LCSgraph.from_variant(lhs_reference, lhs_alg_variants)
     lhs_supremal = lhs_graph.supremal
 
-    rhs_observed = rhs_d.get_sequences()["observed"]
-    rhs_graph = LCSgraph.from_sequence(rhs_reference, rhs_observed)
+    rhs_alg_variants = _get_algebra_variants(rhs_d)
+    rhs_graph = LCSgraph.from_variant(rhs_reference, rhs_alg_variants)
     rhs_supremal = rhs_graph.supremal
 
-    output["relation"] = compare_supremal(
-        lhs_reference, lhs_supremal, rhs_supremal
-    ).value
+    output["relation"] = compare_core(lhs_reference, lhs_graph, rhs_graph).value
 
     if lhs_d.corrected_model.get("reference"):
         ref_id = lhs_d.corrected_model["reference"]["id"]
-    elif lhs_d.references["reference"].get("annotations") and lhs_d.references["reference"]["annotations"].get("id"):
+    elif lhs_d.references["reference"].get("annotations") and lhs_d.references[
+        "reference"
+    ]["annotations"].get("id"):
         ref_id = lhs_d.references["reference"]["annotations"]["id"]
     else:
         ref_id = rhs_reference
@@ -341,13 +339,13 @@ def compare_sequences_based(reference, reference_type, lhs, lhs_type, rhs, rhs_t
     if output.get("errors"):
         return output
 
-    output["relation"] = compare_core(ref_seq, lhs_seq, rhs_seq).value
-
     lhs_graph = LCSgraph.from_sequence(ref_seq, lhs_seq)
     lhs_supremal = lhs_graph.supremal
 
     rhs_graph = LCSgraph.from_sequence(ref_seq, rhs_seq)
     rhs_supremal = rhs_graph.supremal
+
+    output["relation"] = compare_core(ref_seq, lhs_graph, rhs_graph).value
 
     output["supremal_lhs"] = {
         "hgvs": f"{lhs_supremal.to_hgvs()}",
@@ -383,19 +381,19 @@ def compare_hgvs_based(reference, reference_type, lhs, lhs_type, rhs, rhs_type):
     """
     if lhs_type == "hgvs" and rhs_type == "hgvs":
         lhs_d = Description(lhs)
-        lhs_d.normalize()
+        lhs_d.to_delins()
         rhs_d = Description(rhs)
-        rhs_d.normalize()
+        rhs_d.to_delins()
     elif lhs_type == "hgvs" and rhs_type == "variant":
         lhs_d = Description(lhs)
-        lhs_d.normalize()
+        lhs_d.to_delins()
         if lhs_d.get_sequences() and lhs_d.get_sequences().get("reference"):
             rhs_d = Description(
                 description=rhs,
                 only_variants=True,
                 sequence=lhs_d.get_sequences()["reference"],
             )
-            rhs_d.normalize()
+            rhs_d.to_delins()
         else:
             return
     elif lhs_type == "variant" and rhs_type == "variant":
@@ -411,13 +409,16 @@ def compare_hgvs_based(reference, reference_type, lhs, lhs_type, rhs, rhs_type):
         lhs_d = Description(
             description=lhs, only_variants=True, sequence=reference_sequence
         )
-        lhs_d.normalize()
-        lhs_d.references["reference"]["annotations"] = {"id": ref_id}
+        lhs_d.to_delins()
+        if not lhs_d.errors:
+            lhs_d.references["reference"]["annotations"] = {"id": ref_id}
+
         rhs_d = Description(
             description=rhs, only_variants=True, sequence=reference_sequence
         )
-        rhs_d.normalize()
-        rhs_d.references["reference"]["annotations"] = {"id": ref_id}
+        rhs_d.to_delins()
+        if not rhs_d.errors:
+            rhs_d.references["reference"]["annotations"] = {"id": ref_id}
     return compare_hgvs(lhs_d, rhs_d)
 
 

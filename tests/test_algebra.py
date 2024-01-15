@@ -913,17 +913,61 @@ def test_compare_errors(params, expected):
                 }
             },
         ),
+        (
+            (
+                "AAAAA",
+                "sequence",
+                "2_3insT",
+                "variant",
+                "ATAAAAA",
+                "variant",
+            ),
+            {
+                "errors": {
+                    "rhs": [
+                        {
+                            "code": "ESYNTAXUC",
+                            "details": "Unexpected character.",
+                            "line": 1,
+                            "column": 1,
+                            "pos_in_stream": 0,
+                            "unexpected_character": "A",
+                            "description": "ATAAAAA",
+                            "expecting": [
+                                "'(=)' for predicted no changes",
+                                "a number (to indicate a location or a length)",
+                                "'*' or '-' for an outside CDS location",
+                                "'[('",
+                                "'(' for an uncertainty start or before a selector ID",
+                                "?",
+                                "'[' for multiple variants, insertions, or repeats",
+                                "'pter' or 'qter'",
+                                "'=' to indicate no changes",
+                                "'(['",
+                            ],
+                        }
+                    ]
+                }
+            },
+        ),
     ],
 )
 def test_compare_errors_syntax(params, expected):
     output = compare(*params)
     assert list(output.keys()) == ["errors"]
-    assert list(output["errors"].keys()) == ["rhs"]
-    assert output["errors"]["rhs"][0]["pos_in_stream"] == 6
-    assert output["errors"]["rhs"][0]["unexpected_character"] == "e"
-    assert output["errors"]["rhs"][0]["description"] == "1delete"
-    assert set(output["errors"]["rhs"][0]["expecting"]) == {
-        "'(' for an uncertainty start or before a selector ID",
-        "':' between the reference part and the coordinate system",
-        "a reference / selector ID",
-    }
+    assert list(output["errors"].keys()) == list(expected["errors"].keys())
+    assert (
+        output["errors"]["rhs"][0]["pos_in_stream"]
+        == expected["errors"]["rhs"][0]["pos_in_stream"]
+    )
+    assert (
+        output["errors"]["rhs"][0]["unexpected_character"]
+        == expected["errors"]["rhs"][0]["unexpected_character"]
+    )
+    assert (
+        output["errors"]["rhs"][0]["description"]
+        == expected["errors"]["rhs"][0]["description"]
+    )
+    assert set(output["errors"]["rhs"][0]["expecting"]) == set(
+        expected["errors"]["rhs"][0]["expecting"]
+    )
