@@ -457,8 +457,6 @@ def extracted_to_hgvs_selector(variants, d, to_selector_id):
 
 
 def _descriptions(d, algebra_variants, algebra_hgvs, supremal, local_supremals, graph):
-    reference_id = d.corrected_model["reference"]["id"]
-    selector_id = d.get_selector_id()
     ref_seq = d.references["reference"]["sequence"]["seq"]
 
     algebra_model = {
@@ -518,26 +516,20 @@ def view_algebra_variants(variants, ref_seq, names=None):
 
 
 def normalize_alt(description, only_variants=False, sequence=None):
-    d = Description(
-        description=description, only_variants=only_variants, sequence=sequence
-    )
+    d = Description(description=description, only_variants=only_variants, sequence=sequence)
     d.to_delins()
+
     if d.corrected_model.get("type") == "description_protein":
-        p_d = Description(
-            description=description, only_variants=only_variants, sequence=sequence
-        )
-        p_d.normalize()
-        return p_d.output()
+        return _no_protein_support()
 
     if d.errors:
         return d.output()
+
     if d.only_equals() or d.no_operation():
         d.normalize_only_equals_or_no_operation()
         d.remove_superfluous_selector()
         return d.output()
 
-    if not only_variants and d.corrected_model["type"] == "description_protein":
-        _no_protein_support()
     algebra_variants = _algebra_variants(d.delins_model["variants"], d.get_sequences())
     ref_seq = d.references["reference"]["sequence"]["seq"]
 
