@@ -403,16 +403,21 @@ class Description(object):
                     self.references[r_id], s_id
                 )
                 if c_s_s != c_s and not (
-                    (c_s_s == "c" and c_s in ["r", "p"])
+                    (c_s_s == "c" and c_s in ["n", "r", "p"])
                     or (c_s_s == "n" and c_s == "r")
                 ):
                     self._add_error(
                         errors.coordinate_system_mismatch(c_s, s_id, c_s_s, c_s_path)
                     )
-
             else:
                 r_c_s = get_coordinate_system_from_reference(self.references[r_id])
-                if not ((r_c_s == c_s) and (c_s in ["g", "m", "p"])):
+                if r_c_s == "n" and c_s == "c":
+                    self._add_error(
+                        errors.coordinate_system_mismatch(
+                            c_s, r_id, r_c_s, c_s_path
+                        )
+                    )
+                elif not ((r_c_s == c_s) and (c_s in ["g", "m", "p"])):
                     if is_only_one_selector(self.references[r_id]):
                         self._correct_selector_id_from_coordinate_system(
                             r_id,

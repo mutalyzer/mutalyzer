@@ -3175,6 +3175,29 @@ TESTS = [
         "protein_description": "NG_012337.1(NP_036591.2):p.(Ile92delinsLeuVal)",
         "to_test": True,
     },
+    {
+        "keywords": ["non coding with coding coordinate system"],
+        "input": "NR_038420.1:c.10del",
+        "errors": [
+            "ECOORDINATESYSTEMMISMATCH",
+        ],
+        "to_test": True,
+    },
+    {
+        "keywords": ["non coding with coding coordinate system"],
+        "input": "NG_007485.1(NR_024274.1):c.616del",
+        "errors": [
+            "ECOORDINATESYSTEMMISMATCH",
+        ],
+        "to_test": True,
+    },
+    {
+        "keywords": ["non coding with coding coordinate system"],
+        "input": "NG_007485.1(NM_058195.3):n.204_205insATC",
+        "normalized": "NG_007485.1(NM_058195.3):n.204_205insATC",
+        "rna_description": "NG_012337.1(NM_012459.2):r.(274delinscuag)",
+        "to_test": True,
+    },
 
     # {
     #     "keywords": [
