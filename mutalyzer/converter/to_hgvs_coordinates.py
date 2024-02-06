@@ -173,6 +173,12 @@ def to_hgvs_locations(
     hgvs_model = initialize_hgvs_model(model, to_coordinate_system, to_selector_id)
 
     to_coordinate_system = get_coordinate_system(hgvs_model, references)
+
+    if to_coordinate_system == "c":
+        if selector_model.get("cds") is None:
+            raise TypeError("No CDS found.")
+        elif selector_model.get("exon") is None:
+            raise TypeError("No exons found.")
     crossmap = crossmap_to_hgvs_setup(to_coordinate_system, selector_model, degenerate)
 
     if selector_model and selector_model.get("inverted"):

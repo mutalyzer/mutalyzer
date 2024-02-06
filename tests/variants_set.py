@@ -3184,6 +3184,22 @@ TESTS = [
         "to_test": True,
     },
     {
+        "keywords": ["non coding with genomic system"],
+        "input": "NR_038420.1:g.10del",
+        "errors": [
+            "ECOORDINATESYSTEMMISMATCH",
+        ],
+        "to_test": True,
+    },
+    {
+        "keywords": ["non coding with mitochondrion system"],
+        "input": "NR_038420.1:m.10del",
+        "errors": [
+            "ECOORDINATESYSTEMMISMATCH",
+        ],
+        "to_test": True,
+    },
+    {
         "keywords": ["non coding with coding coordinate system"],
         "input": "NG_007485.1(NR_024274.1):c.616del",
         "errors": [
@@ -3193,9 +3209,42 @@ TESTS = [
     },
     {
         "keywords": ["non coding with coding coordinate system"],
+        "input": "NM_003002.4:n.206_210del",
+        "normalized": "NM_003002.4:c.171_175del",
+        "rna_description": "NM_003002.4:r.(171_175del)",
+        "protein_description": "NM_003002.4(NP_002993.1):p.(Gly58Glnfs*9)",
+        "to_test": True,
+    },
+
+    {
+        "keywords": ["non coding with genomic coordinate system"],
+        "input": "NG_007485.1(NR_024274.1):g.616del",
+        "errors": [
+            "ECOORDINATESYSTEMMISMATCH",
+        ],
+        "to_test": True,
+    },
+    {
+        "keywords": ["non coding with mitochondrion coordinate system"],
+        "input": "NG_007485.1(NR_024274.1):m.616del",
+        "errors": [
+            "ECOORDINATESYSTEMMISMATCH",
+        ],
+        "to_test": True,
+    },
+    {
+        "keywords": ["coding transcript with non coding coordinate system"],
         "input": "NG_007485.1(NM_058195.3):n.204_205insATC",
-        "normalized": "NG_007485.1(NM_058195.3):n.204_205insATC",
-        "rna_description": "NG_012337.1(NM_012459.2):r.(274delinscuag)",
+        "normalized": "NG_007485.1(NM_058195.3):c.44_45insATC",
+        "rna_description": "NG_007485.1(NM_058195.3):r.(44_45insauc)",
+        "to_test": True,
+    },
+    {
+        "keywords": ["coding transcript with no cds and non coding coordinate system"],
+        "input": "NG_009930.1(NM_001099625.2):n.110del",
+        "errors": [
+            "ENOCDS",
+        ],
         "to_test": True,
     },
 

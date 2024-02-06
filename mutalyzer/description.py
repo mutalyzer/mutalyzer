@@ -6,7 +6,11 @@ from Bio.SeqUtils import seq1, seq3
 from extractor import describe_dna
 from mutalyzer_backtranslate import BackTranslate
 from mutalyzer_hgvs_parser import to_model
-from mutalyzer_hgvs_parser.exceptions import UnexpectedCharacter, UnexpectedEnd, NestedDescriptions
+from mutalyzer_hgvs_parser.exceptions import (
+    NestedDescriptions,
+    UnexpectedCharacter,
+    UnexpectedEnd,
+)
 from mutalyzer_mutator import mutate
 from mutalyzer_mutator.util import reverse_complement
 from mutalyzer_retriever.reference import (
@@ -411,11 +415,11 @@ class Description(object):
                     )
             else:
                 r_c_s = get_coordinate_system_from_reference(self.references[r_id])
-                if r_c_s == "n" and c_s == "c":
+                if (r_c_s == "n" and c_s in ["c", "g", "m"]) or (
+                    r_c_s == "c" and c_s in ["g", "m"]
+                ):
                     self._add_error(
-                        errors.coordinate_system_mismatch(
-                            c_s, r_id, r_c_s, c_s_path
-                        )
+                        errors.coordinate_system_mismatch(c_s, r_id, r_c_s, c_s_path)
                     )
                 elif not ((r_c_s == c_s) and (c_s in ["g", "m", "p"])):
                     if is_only_one_selector(self.references[r_id]):
@@ -612,13 +616,39 @@ class Description(object):
     @check_errors
     def construct_de_hgvs_coordinates_model(self):
         if self.de_hgvs_internal_indexing_model:
-            self.de_hgvs_model = to_hgvs_locations(
-                self.de_hgvs_internal_indexing_model,
-                self.references,
-                self.corrected_model.get("coordinate_system"),
-                get_selector_id(self.corrected_model),
-                True,
-            )
+            to_coordinate_system = self.corrected_model.get("coordinate_system")
+            if (
+                self.corrected_model.get("coordinate_system") == "n"
+                and get_coordinate_system_from_selector_id(
+                    self.references["reference"], self.get_selector_id()
+                )
+                == "c"
+            ):
+                to_coordinate_system = "c"
+                self.add_info(
+                    infos.corrected_coordinate_system(
+                        "c", self.get_selector_id(), ["coordinate_system"]
+                    )
+                )
+            if (
+                to_coordinate_system == "c"
+                and self.get_selector_model().get("cds") is None
+            ):
+                self._add_error(
+                    errors.no_cds(
+                        get_reference_id(self.corrected_model),
+                        self.get_selector_id(),
+                        [],
+                    )
+                )
+            else:
+                self.de_hgvs_model = to_hgvs_locations(
+                    self.de_hgvs_internal_indexing_model,
+                    self.references,
+                    to_coordinate_system,
+                    get_selector_id(self.corrected_model),
+                    True,
+                )
 
     def construct_normalized_description(self):
         if self.de_hgvs_model:
@@ -687,14 +717,16 @@ class Description(object):
         l_min, l_max = overlap_min_max(self.references["reference"], l_min, l_max)
         for selector in yield_overlap_ids(self.references["reference"], l_min, l_max):
             if selector["id"] != self.get_selector_id():
-                converted_model = to_hgvs_locations(
-                    model=from_model,
-                    references=self.references,
-                    to_coordinate_system=None,
-                    to_selector_id=selector["id"],
-                    degenerate=True,
-                )
-
+                try:
+                    converted_model = to_hgvs_locations(
+                        model=from_model,
+                        references=self.references,
+                        to_coordinate_system=None,
+                        to_selector_id=selector["id"],
+                        degenerate=True,
+                    )
+                except TypeError:
+                    continue
                 c_s = converted_model["coordinate_system"]
                 if not equivalent.get(c_s):
                     equivalent[c_s] = []
@@ -712,11 +744,14 @@ class Description(object):
                                 self.references,
                                 protein_selector_model,
                             )[0],
-                        "selector": {"id": selector["id"]}}
+                            "selector": {"id": selector["id"]},
+                        }
                     else:
                         if as_description:
-                            e_d = {"description": model_to_string(converted_model),
-                                   "reference": { "selector": {"id": selector["id"]}}}
+                            e_d = {
+                                "description": model_to_string(converted_model),
+                                "reference": {"selector": {"id": selector["id"]}},
+                            }
                         else:
                             e_d = {"description": converted_model}
                     if (
@@ -730,7 +765,6 @@ class Description(object):
                         }
 
                     equivalent[c_s].append(e_d)
-
                 else:
                     if as_description:
                         equivalent[c_s].append(
@@ -816,7 +850,7 @@ class Description(object):
                     "variants": rna_variants_coordinate,
                 },
                 rna_references,
-                self.corrected_model["coordinate_system"],
+                self.de_hgvs_model.get("coordinate_system"),
                 get_selector_id(self.corrected_model),
                 True,
             )
@@ -1104,7 +1138,7 @@ class Description(object):
                 )
 
     def _check_cds(self):
-        for (c_s, _, r_id, _, s_id, s_p, ) in yield_reference_selector_ids_coordinate_system(self.corrected_model):
+        for c_s, _, r_id, _, s_id, s_p in yield_reference_selector_ids_coordinate_system(self.corrected_model):
             if c_s in ["c", "r"] and r_id in self.references:
                 s_m = get_internal_selector_model(
                     self.references[r_id]["annotations"], s_id
@@ -1231,7 +1265,9 @@ class Description(object):
                 self.references["reference"], self.get_selector_id()
             )
             self.references["reference"] = rna_reference_model
-            self.references[get_reference_id(self.corrected_model)] = rna_reference_model
+            self.references[get_reference_id(self.corrected_model)] = (
+                rna_reference_model
+            )
 
     def _check_amino_acids(self):
         for sequence, path in yield_values(
