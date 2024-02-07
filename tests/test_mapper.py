@@ -164,6 +164,18 @@ TEST_SET = [
         ("NG_012337.3(NM_003002.4):c.274G>T", "NM_003002.4", None, "transcript", False),
         "NM_003002.4:c.274G>T",
     ),
+    (
+        ("NM_003002.2:c.-31del", "NG_012337.3", "NM_003002.4", "transcript", True),
+        "NG_012337.3(NM_003002.4):c.-34_-32delinsTGGGAATTGTCGCCTAAGTGGTTCCGGG",
+    ),
+    (
+        ("NM_178172.3:c.45_48dup", "NM_178172.6", None, "transcript", True),
+        "NM_178172.6:c.41delinsGCGGG",
+    ),
+    (
+        ("NM_178172.6:c.41delinsGCGGG", "NM_178172.3", None, "transcript", True),
+        "NM_178172.3:c.45_48dup",
+    ),
 ]
 
 
@@ -173,11 +185,6 @@ def test_mapper(input_params, correct_output):
 
 
 TEST_ERROR = [
-    (
-        ("NM_003002.2:c.-31del", "NG_012337.3", "NM_003002.4", "transcript", True),
-        "EMAPFILTER",
-        "input",
-    ),
     (
         ("NM_003002.2:c.-31del", "NG_012337.3", "NM_003002.2", "transcript", True),
         "ENOSELECTORFOUND",

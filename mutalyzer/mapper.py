@@ -3,7 +3,6 @@ from copy import deepcopy
 import extractor
 from mutalyzer_mutator import mutate
 from mutalyzer_mutator.util import reverse_complement
-from mutalyzer_retriever.reference import get_reference_mol_type
 from mutalyzer_retriever.retriever import extract_feature_model
 
 import mutalyzer.errors as errors
@@ -58,15 +57,6 @@ def _extract_hgvs_internal_model(obs_seq, ref_seq):
         de_variants,
         {"reference": ref_seq, "observed": obs_seq},
     )
-
-
-def _filter(variants, ref_seq1, ref_seq2):
-    raw_de_variants = extractor.describe_dna(ref_seq1, ref_seq2)
-    seq_variants = de_to_hgvs(
-        raw_de_variants,
-        {"reference": ref_seq1, "observed": ref_seq2},
-    )
-    return [v for v in variants if v not in seq_variants]
 
 
 def map_description(
@@ -205,15 +195,6 @@ def map_description(
             raw_de_variants,
             {"reference": ref_seq_to, "observed": ref_seq_from},
         )
-        if not (len(seq_variants) == 1 and seq_variants[0]["type"] == "equal") and [
-            v for v in seq_variants if v not in variants
-        ]:
-            return {
-                "errors": [
-                    {"code": "EMAPFILTER", "details": "Unsuccessful filtering."}
-                ],
-                "source": "input",
-            }
         variants = [v for v in variants if v not in seq_variants]
 
     mapped_description = _get_description(variants, to_r_model, selector_id)
