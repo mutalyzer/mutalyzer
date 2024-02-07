@@ -1370,6 +1370,9 @@ class Description(object):
             self.references = copy.deepcopy(self.references)
             self.references["reference"]["sequence"]["seq"] = p_seq
             self.references[reference_id]["sequence"]["seq"] = p_seq
+            cds_id = self.get_selector_model().get("cds_id")
+            if cds_id:
+                self._correct_selector_id(["reference", "selector", "id"], self.get_selector_id(), cds_id, "the annotations")
 
         self.to_internal_indexing_model()
         self._convert_amino_acids()

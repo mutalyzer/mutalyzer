@@ -44,7 +44,7 @@ TESTS = [
             "translation exception",
         ],
         "input": "NM_005410.4:p.U59delinsTyr",
-        "normalized": "NM_005410.4:p.(Sec59Tyr)",
+        "normalized": "NM_005410.4(NP_005401.3):p.(Sec59Tyr)",
         "to_test": True,
     },
     {
@@ -80,7 +80,7 @@ TESTS = [
             "translation exception",
         ],
         "input": "NM_005410.4:p.U59delinsNP_002993.1:H50_53",
-        "normalized": "NM_005410.4:p.(Sec59delinsHisLeuSerPro)",
+        "normalized": "NM_005410.4(NP_005401.3):p.(Sec59delinsHisLeuSerPro)",
         "to_test": True,
     },
     {
