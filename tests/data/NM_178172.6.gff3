@@ -1,0 +1,18 @@
+##gff-version 3
+#!gff-spec-version 1.21
+#!processor NCBI annotwriter
+##sequence-region NM_178172.6 1 2257
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=9606
+NM_178172.6	RefSeq	region	1	2257	.	+	.	ID=NM_178172.6:1..2257;Dbxref=taxon:9606;Name=8;chromosome=8;gbkey=Src;genome=genomic;map=8q24.3;mol_type=mRNA
+NM_178172.6	RefSeq	gene	1	2257	.	+	.	ID=gene-GPIHBP1;Dbxref=GeneID:338328,HGNC:HGNC:24945,MIM:612757;Name=GPIHBP1;description=glycosylphosphatidylinositol anchored high density lipoprotein binding protein 1;gbkey=Gene;gene=GPIHBP1;gene_synonym=GPI-HBP1,HYPL1D
+NM_178172.6	RefSeq	CDS	51	605	.	+	0	ID=cds-NP_835466.2;Parent=gene-GPIHBP1;Dbxref=CCDS:CCDS34954.1,GenBank:NP_835466.2,GeneID:338328,HGNC:HGNC:24945,MIM:612757;Name=NP_835466.2;Note=isoform 1 precursor is encoded by transcript variant 1;gbkey=CDS;gene=GPIHBP1;product=glycosylphosphatidylinositol-anchored high density lipoprotein-binding protein 1 isoform 1 precursor;protein_id=NP_835466.2
+NM_178172.6	RefSeq	signal_peptide_region_of_CDS	51	110	.	+	.	ID=id-NP_835466.2:1..20;Parent=cds-NP_835466.2;gbkey=Prot;inference=COORDINATES: ab initio prediction:SignalP:4.0
+NM_178172.6	RefSeq	mature_protein_region_of_CDS	111	503	.	+	.	ID=id-NP_835466.2:21..151;Note=propagated from UniProtKB/Swiss-Prot (Q8IV16.3);Parent=cds-NP_835466.2;gbkey=Prot;product=Glycosylphosphatidylinositol-anchored high density lipoprotein-binding protein 1. /id%3DPRO_0000318208
+NM_178172.6	RefSeq	exon	1	102	.	+	.	ID=id-GPIHBP1;Parent=gene-GPIHBP1;Dbxref=GeneID:338328,HGNC:HGNC:24945,MIM:612757;gbkey=exon;gene=GPIHBP1;inference=alignment:Splign:2.1.0
+NM_178172.6	RefSeq	exon	103	231	.	+	.	ID=id-GPIHBP1-2;Parent=gene-GPIHBP1;Dbxref=GeneID:338328,HGNC:HGNC:24945,MIM:612757;gbkey=exon;gene=GPIHBP1;inference=alignment:Splign:2.1.0
+NM_178172.6	RefSeq	exon	232	345	.	+	.	ID=id-GPIHBP1-3;Parent=gene-GPIHBP1;Dbxref=GeneID:338328,HGNC:HGNC:24945,MIM:612757;gbkey=exon;gene=GPIHBP1;inference=alignment:Splign:2.1.0
+NM_178172.6	RefSeq	exon	346	2257	.	+	.	ID=id-GPIHBP1-4;Parent=gene-GPIHBP1;Dbxref=GeneID:338328,HGNC:HGNC:24945,MIM:612757;gbkey=exon;gene=GPIHBP1;inference=alignment:Splign:2.1.0
+NM_178172.6	RefSeq	polyA_site	2257	2257	.	+	.	ID=id-GPIHBP1-5;Parent=gene-GPIHBP1;Dbxref=GeneID:338328,HGNC:HGNC:24945,MIM:612757;Note=major polyA site;gbkey=polyA_site;gene=GPIHBP1
+NM_178172.6	RefSeq	polyA_signal_sequence	2232	2237	.	+	.	ID=id-GPIHBP1-6;Parent=gene-GPIHBP1;Dbxref=GeneID:338328,HGNC:HGNC:24945,MIM:612757;Note=hexamer: AATAAA;gbkey=regulatory;gene=GPIHBP1;regulatory_class=polyA_signal_sequence
+
+
