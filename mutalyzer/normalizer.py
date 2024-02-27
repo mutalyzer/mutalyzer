@@ -272,9 +272,14 @@ def get_rna_variants(d, variants):
         d.get_sequences(),
         d.get_selector_model(),
     )
-    rna_variants_coordinate = de_to_hgvs(rna_delins, get_rna_sequences(d))
-    to_rna_sequences(rna_variants_coordinate)
     rna_reference_models = get_rna_reference_models(d)
+    rna_ref_seq = rna_reference_models["reference"]["sequence"]["seq"]
+    rna_algebra_variants = [delins_to_algebra_variant(v, get_rna_sequences(d)) for v in rna_delins]
+    rna_algebra_extracted_variants, *_ = extract_variants(rna_ref_seq, rna_algebra_variants)
+    rna_variants_coordinate = de_to_hgvs(
+        [algebra_variant_to_delins(v) for v in rna_algebra_extracted_variants],
+        {k: rna_reference_models[k]["sequence"]["seq"] for k in rna_reference_models},
+    )
     rna_model = to_hgvs_locations(
         {
             "reference": d.de_hgvs_internal_indexing_model["reference"],
@@ -282,18 +287,13 @@ def get_rna_variants(d, variants):
             "variants": rna_variants_coordinate,
         },
         rna_reference_models,
-        d.corrected_model["coordinate_system"],
+        d.de_hgvs_model.get("coordinate_system"),
         d.get_selector_id(),
         True,
     )
-    rna_model["coordinate_system"] = "g"
+    rna_model["coordinate_system"] = "r"
     rna_model["predicted"] = True
-    rna_ref_seq = rna_reference_models["reference"]["sequence"]["seq"]
-    internal = to_delins(to_internal_indexing(to_internal_coordinates(rna_model, rna_reference_models)))
-    rna_algebra_variants = [delins_to_algebra_variant(v, get_rna_sequences(d)) for v in internal["variants"]]
-    rna_algebra_extracted_variants, *_ = extract_variants(rna_ref_seq, rna_algebra_variants)
-
-    rna_algebra_hgvs = [to_hgvs_experimental([v], rna_ref_seq) for v in rna_algebra_extracted_variants]
+    rna_algebra_hgvs = [variant_to_description(v) for v in rna_model["variants"]]
     return rna_algebra_hgvs
 
 
@@ -315,7 +315,6 @@ def construct_rna_description(d, local_supremals, algebra_variants):
     exons = d.get_selector_model()["exon"]
 
     local_supremals_c = extracted_to_hgvs_selector(local_supremals, d, selector_id)
-    # print(model_to_string(local_supremals_c))
 
     exon_margin = 2
     intron_margin = 4
@@ -385,7 +384,6 @@ def construct_rna_description(d, local_supremals, algebra_variants):
                 # print("Nothing possible.")
                 rna_description_possible = False
         else:
-
             sup_status["rna"] = get_rna_variants(d, [local_supremals[i]])
 
     # print(rna_description_possible)
