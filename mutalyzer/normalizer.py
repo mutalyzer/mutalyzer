@@ -17,7 +17,6 @@ from .converter.to_delins import to_delins
 from .converter.to_internal_coordinates import to_internal_coordinates
 from .converter.to_internal_indexing import to_internal_indexing
 from .description import Description
-from .rna import predict_rna
 from .util import construct_sequence, get_end, get_start, roll
 from .viewer import view_delins
 
@@ -129,9 +128,6 @@ def _descriptions(d, algebra_hgvs, supremal, local_supremals, graph):
     d.construct_equivalent()
 
     output = d.output()
-
-    if d.de_hgvs_model.get("coordinate_system") in ["c", "n"]:
-        output["rna"] = predict_rna(d, local_supremals)
 
     d.construct_protein_description()
 

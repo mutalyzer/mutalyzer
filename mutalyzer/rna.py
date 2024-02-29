@@ -1,42 +1,30 @@
 import bisect
-import itertools
 import json
 from collections import deque
 
 from algebra import LCSgraph, Variant
 from algebra.extractor import extract as extract_variants
-from algebra.extractor import local_supremal
-from algebra.extractor import to_hgvs as to_hgvs_experimental
-from algebra.utils import to_dot
+from algebra.extractor import local_supremal as get_local_supremal
 from algebra.variants import patch, to_hgvs
 from Bio.Seq import Seq
 from mutalyzer_crossmapper import NonCoding
 from mutalyzer_hgvs_parser import to_model
 
-from mutalyzer.util import get_inserted_sequence, get_location_length
-
 from .algebra import (
     algebra_variant_to_delins,
-    algebra_variant_to_name_model,
     delins_to_algebra_variant,
+    delins_to_algebra_variants
 )
-from .converter.to_delins import to_delins
 from .converter.to_hgvs_coordinates import to_hgvs_locations
-from .converter.to_hgvs_indexing import to_hgvs_indexing
-from .converter.to_internal_coordinates import to_internal_coordinates
-from .converter.to_internal_indexing import to_internal_indexing
-from .converter.to_rna import to_rna_reference_model, to_rna_sequences, to_rna_variants
+from .converter.to_rna import to_rna_reference_model, to_rna_variants
 from .converter.variants_de_to_hgvs import de_to_hgvs
 from .description import Description
 from .description_model import (
     get_reference_id,
-    model_to_string,
     variant_to_description,
     variants_to_description,
+    model_to_string
 )
-from .errors import splice_site as error_splice_site
-from .util import construct_sequence, get_end, get_start, roll
-from .viewer import view_delins
 
 
 def get_position_type(position, exons, len_ss=2):
@@ -156,7 +144,7 @@ def get_rna_variants(d, variants):
     )
     rna_model = to_hgvs_locations(
         {
-            "reference": d.de_hgvs_internal_indexing_model["reference"],
+            "reference": d.corrected_model["reference"],
             "coordinate_system": "i",
             "variants": rna_variants_coordinate,
         },
@@ -205,8 +193,6 @@ def get_rna_limits(graph, ref_seq, offset=0):
     right_model = to_model(
         "[" + ";".join([v.to_hgvs(ref_seq) for v in right_variants]) + "]", "variants"
     )
-    # print(str(left[0] + offset) + ": [" + ";".join([v.to_hgvs(ref_seq) for v in left_variants]) + "]")
-    # print(str(right[0] + offset) + ": [" + ";".join([v.to_hgvs(ref_seq) for v in right_variants]) + "]")
     return (left[0] + offset, left_model), (right[0] + offset, right_model)
 
 
@@ -257,7 +243,6 @@ def predict_rna(d, local_supremals):
     # NG_012337.3(NM_003002.4):c.[310_314+4dup]
     # NG_012337.3(NM_003002.4):c.[300del;310_314+4dup]
 
-    print("yes")
     selector_id = d.get_selector_id()
     ref_seq = d.references["reference"]["sequence"]["seq"]
     exons = d.get_selector_model()["exon"]
@@ -311,7 +296,7 @@ def predict_rna(d, local_supremals):
         sup_status["supremal"] = _genomic_and_coding([sup], d, selector_id)
         status["local_supremals"][i] = sup_status
 
-    # print(json.dumps(status, indent=2))
+    print(json.dumps(status, indent=2))
 
     rna_description_possible = True
     for i, sup_status in status["local_supremals"].items():
@@ -344,14 +329,12 @@ def predict_rna(d, local_supremals):
         else:
             sup_status["rna"] = get_rna_variants(d, [local_supremals[i]])
 
-    print(sup_status)
-    # print(rna_description_possible)
     if rna_description_possible:
         rna_description = []
         for i, sup_status in status["local_supremals"].items():
             if sup_status.get("rna"):
                 rna_description.extend(sup_status["rna"])
-        description = d.de_hgvs_internal_indexing_model["reference"]["id"]
+        description = d.corrected_model["reference"]["id"]
         if d.get_selector_id():
             description += f"({d.get_selector_id()})"
         if len(rna_description) > 1:
@@ -364,6 +347,29 @@ def predict_rna(d, local_supremals):
     return status
 
 
+def _splice_sites_affected(exons, local_supremal, exon_margin=2, intron_margin=4):
+    """
+    Check if the local supremal variants touch the splice sites
+    within the exon/intron margins.
+    """
+    for i, sup in enumerate(local_supremal):
+        sup_start_index, sup_start_offset = get_position_type(sup.start, exons, exon_margin)
+        sup_end_index, sup_end_offset = get_position_type(sup.end, exons, intron_margin)
+        if sup_end_index - sup_start_index == 1:
+            return True
+    return False
+
+
+def _to_rna_variants(variants, exons):
+    x = NonCoding(exons).coordinate_to_noncoding
+    rna_variants = []
+    for variant in variants:
+        start = x(variant.start)[0] - 1
+        end = x(variant.end)[0] + x(variant.end)[1] - 1
+        rna_variants.append(Variant(start, end, str(Seq(variant.sequence).transcribe().lower())))
+    return rna_variants
+
+
 def dna_to_rna(description):
     d = Description(description)
     d.to_delins()
@@ -371,28 +377,43 @@ def dna_to_rna(description):
     if d.errors:
         return d.errors
 
-    selector_id = d.get_selector_id()
     ref_seq = d.references["reference"]["sequence"]["seq"]
-    exons = d.get_selector_model()["exon"]
-
-    print(selector_id, exons)
-
-    algebra_variants = []
-    for variant in d.delins_model["variants"]:
-        algebra_variants.append(Variant(get_start(variant), get_end(variant), get_inserted_sequence(variant, d.get_sequences())))
-    print(algebra_variants)
+    algebra_variants = delins_to_algebra_variants(d.delins_model["variants"], d.get_sequences())
 
     algebra_extracted_variants, graph = extract_variants(ref_seq, algebra_variants)
-    supremal = graph.supremal
-    algebra_hgvs = to_hgvs_experimental(algebra_extracted_variants, ref_seq)
-    local_supremals = local_supremal(ref_seq, graph)
-    print(local_supremals)
-    print(graph)
+    local_supremal = get_local_supremal(ref_seq, graph)
 
-    status = predict_rna(d, local_supremals)
-    print(status)
+    if not _splice_sites_affected(d.get_selector_model()["exon"], local_supremal):
+        print("we can do something")
+        rna_sliced_variants = _to_rna_variants(algebra_extracted_variants, d.get_selector_model()["exon"])
 
+        rna_reference_models = get_rna_reference_models(d)
+        rna_ref_seq = rna_reference_models["reference"]["sequence"]["seq"]
+        rna_algebra_extracted_variants, *_ = extract_variants(
+            rna_ref_seq, rna_sliced_variants
+        )
+        rna_variants_coordinate = de_to_hgvs(
+            [algebra_variant_to_delins(v) for v in
+             rna_algebra_extracted_variants],
+            {k: rna_reference_models[k]["sequence"]["seq"] for k in
+             rna_reference_models},
+        )
 
-
-
-
+        rna_model = to_hgvs_locations(
+            {
+                "reference": d.corrected_model["reference"],
+                "coordinate_system": "i",
+                "variants": rna_variants_coordinate,
+            },
+            rna_reference_models,
+            d.de_hgvs_model.get("coordinate_system"),
+            d.get_selector_id(),
+            True,
+        )
+        rna_model["coordinate_system"] = "r"
+        rna_model["predicted"] = True
+        print(rna_sliced_variants)
+        print(model_to_string(rna_model))
+        return model_to_string(rna_model)
+    else:
+        print("not really")
