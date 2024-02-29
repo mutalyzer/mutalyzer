@@ -1,6 +1,6 @@
 import pytest
 
-from mutalyzer.normalizer import get_position_type
+from mutalyzer.rna import get_position_type
 
 EXONS = [(5026, 5113), (6010, 6127), (7020, 7165), (12958, 13948)]
 
