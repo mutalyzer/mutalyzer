@@ -108,7 +108,7 @@ def _only_variants(d, algebra_hgvs, supremal, local_supremals, ref_seq, graph):
     return output
 
 
-def _descriptions(d, algebra_hgvs, supremal, local_supremals, graph):
+def _descriptions(d, algebra_hgvs, supremal, graph):
     ref_seq = d.references["reference"]["sequence"]["seq"]
 
     algebra_model = {
@@ -128,8 +128,6 @@ def _descriptions(d, algebra_hgvs, supremal, local_supremals, graph):
     d.construct_equivalent()
 
     output = d.output()
-
-    d.construct_protein_description()
 
     output["algebra"] = algebra_hgvs
     output["supremal"] = {
@@ -191,7 +189,7 @@ def normalize_alt(description, only_variants=False, sequence=None):
     if only_variants:
         output = _only_variants(d, algebra_hgvs, supremal, local_supremals, ref_seq, graph)
     else:
-        output = _descriptions(d, algebra_hgvs, supremal, local_supremals, graph)
+        output = _descriptions(d, algebra_hgvs, supremal, graph)
 
     output["view_local_supremal"] = view_algebra_variants(local_supremals, ref_seq)
 

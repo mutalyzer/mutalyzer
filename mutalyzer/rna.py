@@ -370,10 +370,23 @@ def _to_rna_variants(variants, exons):
     return rna_variants
 
 
+def delins_dna_to_algebra_rna_variants(delins_variants, dna_sequences, rna_ref_seq, exons):
+    algebra_variants = delins_to_algebra_variants(delins_variants, dna_sequences)
+
+    algebra_extracted_variants, graph = extract_variants(dna_sequences["reference"], algebra_variants)
+    local_supremal = get_local_supremal(dna_sequences["reference"], graph)
+
+    if not _splice_sites_affected(exons, local_supremal):
+        rna_sliced_variants = _to_rna_variants(algebra_extracted_variants, exons)
+        rna_algebra_extracted_variants, *_ = extract_variants(rna_ref_seq, rna_sliced_variants)
+        return rna_algebra_extracted_variants
+    else:
+        return
+
+
 def dna_to_rna(description):
     d = Description(description)
     d.to_delins()
-    d.print_models_summary()
     if d.errors:
         return d.errors
 
@@ -384,7 +397,6 @@ def dna_to_rna(description):
     local_supremal = get_local_supremal(ref_seq, graph)
 
     if not _splice_sites_affected(d.get_selector_model()["exon"], local_supremal):
-        print("we can do something")
         rna_sliced_variants = _to_rna_variants(algebra_extracted_variants, d.get_selector_model()["exon"])
 
         rna_reference_models = get_rna_reference_models(d)
@@ -416,4 +428,4 @@ def dna_to_rna(description):
         print(model_to_string(rna_model))
         return model_to_string(rna_model)
     else:
-        print("not really")
+        return
