@@ -20,7 +20,7 @@ def get_tests(tests, t_type):
 )
 def test_rna(input_description, rna_expected):
     rna = dna_to_rna(input_description)
-    assert rna == rna_expected
+    assert rna.get("description") == rna_expected
 
 
 @pytest.mark.parametrize(

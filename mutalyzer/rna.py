@@ -371,9 +371,27 @@ def _to_rna_variants(variants, exons):
     """
     x = NonCoding(exons).coordinate_to_noncoding
     rna_variants = []
+    print(exons)
     for variant in variants:
-        start = x(variant.start)[0] - 1
-        end = x(variant.end)[0] + x(variant.end)[1] - 1
+
+        start = variant.start
+        end = variant.end
+
+        intron_start_i = get_position_type(start, exons)[0]
+        intron_end_i = get_position_type(end, exons)[0]
+
+        print(start, end)
+        if intron_start_i % 2 == 0:
+            start = exons[intron_start_i // 2][0]
+        if intron_end_i % 2 == 0:
+            end = exons[intron_start_i // 2][1]
+        print(start, end)
+
+        start = x(start)[0] - 1
+        end = x(end)[0] + x(end)[1] - 1
+
+        print(start, end)
+
         rna_variants.append(Variant(start, end, str(Seq(variant.sequence).transcribe().lower())))
     return rna_variants
 
@@ -392,12 +410,16 @@ def dna_to_rna(description):
     alg_dna_variants, graph = extract_variants(ref_seq, delins_to_algebra(delins, sequences))
     local_supremal = get_local_supremal(ref_seq, graph)
 
+    print(alg_dna_variants)
+
     if not _splice_sites_affected(exons, local_supremal):
         alg_rna_sliced_variants = _to_rna_variants(alg_dna_variants, exons)
         rna_reference_models = get_rna_reference_models(d)
         rna_ref_seq = rna_reference_models["reference"]["sequence"]["seq"]
         alg_rna_variants, *_ = extract_variants(rna_ref_seq, alg_rna_sliced_variants)
-        extracted_variants_model = to_model(to_hgvs(alg_rna_sliced_variants, rna_ref_seq), start_rule="variants")
+        extracted_variants_model = to_model(to_hgvs(alg_rna_variants, rna_ref_seq), start_rule="variants")
+        print("alg_rna_variants", alg_rna_variants)
+        print(extracted_variants_model)
 
         extracted_model = {
             "reference": d.corrected_model["reference"],
@@ -425,6 +447,7 @@ def dna_to_rna(description):
         extracted_model["coordinate_system"] = "r"
         extracted_model["predicted"] = True
 
+        print(model_to_string(extracted_model))
         return {"description": model_to_string(extracted_model)}
     else:
         return {"errors": splice_site([])}
