@@ -29,6 +29,7 @@ from .reference import get_internal_selector_model
 from .description_model import yield_point_locations_for_main_reference, yield_ranges_main_reference
 from .util import set_by_path
 from mutalyzer_mutator.util import reverse_complement
+from .errors import splice_site
 
 
 def get_position_type(position, exons, len_ss=2):
@@ -416,7 +417,14 @@ def dna_to_rna(description):
                     for inserted in variant["inserted"]:
                         if inserted.get("sequence"):
                             inserted["sequence"] = reverse_complement(inserted["sequence"])
+            if variant.get("deleted"):
+                for deleted in variant["deleted"]:
+                    if deleted.get("sequence"):
+                        deleted["sequence"] = reverse_complement(deleted["sequence"])
+
         extracted_model["coordinate_system"] = "r"
         extracted_model["predicted"] = True
 
-        return model_to_string(extracted_model)
+        return {"description": model_to_string(extracted_model)}
+    else:
+        return {"errors": splice_site([])}
