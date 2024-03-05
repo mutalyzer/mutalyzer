@@ -204,7 +204,7 @@ def delins_to_algebra_variant(v, sequences):
     return Variant(get_start(v), get_end(v), get_inserted_sequence(v, sequences))
 
 
-def delins_to_algebra_variants(variants, sequences):
+def delins_to_algebra(variants, sequences):
     return [delins_to_algebra_variant(v, sequences) for v in variants]
 
 

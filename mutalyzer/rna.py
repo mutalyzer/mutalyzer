@@ -6,14 +6,15 @@ from algebra import LCSgraph, Variant
 from algebra.extractor import extract as extract_variants
 from algebra.extractor import local_supremal as get_local_supremal
 from algebra.variants import patch, to_hgvs
+from algebra.extractor import to_hgvs
 from Bio.Seq import Seq
-from mutalyzer_crossmapper import NonCoding
+from mutalyzer_crossmapper import NonCoding, Coding
 from mutalyzer_hgvs_parser import to_model
-
+from .converter.to_hgvs_coordinates import coding_to_point
 from .algebra import (
     algebra_variant_to_delins,
     delins_to_algebra_variant,
-    delins_to_algebra_variants
+    delins_to_algebra
 )
 from .converter.to_hgvs_coordinates import to_hgvs_locations
 from .converter.to_rna import to_rna_reference_model, to_rna_variants
@@ -22,9 +23,12 @@ from .description import Description
 from .description_model import (
     get_reference_id,
     variant_to_description,
-    variants_to_description,
     model_to_string
 )
+from .reference import get_internal_selector_model
+from .description_model import yield_point_locations_for_main_reference, yield_ranges_main_reference
+from .util import set_by_path
+from mutalyzer_mutator.util import reverse_complement
 
 
 def get_position_type(position, exons, len_ss=2):
@@ -361,6 +365,9 @@ def _splice_sites_affected(exons, local_supremal, exon_margin=2, intron_margin=4
 
 
 def _to_rna_variants(variants, exons):
+    """
+    Convert algebra variants locations to the rna (exons) slices.
+    """
     x = NonCoding(exons).coordinate_to_noncoding
     rna_variants = []
     for variant in variants:
@@ -370,62 +377,46 @@ def _to_rna_variants(variants, exons):
     return rna_variants
 
 
-def delins_dna_to_algebra_rna_variants(delins_variants, dna_sequences, rna_ref_seq, exons):
-    algebra_variants = delins_to_algebra_variants(delins_variants, dna_sequences)
-
-    algebra_extracted_variants, graph = extract_variants(dna_sequences["reference"], algebra_variants)
-    local_supremal = get_local_supremal(dna_sequences["reference"], graph)
-
-    if not _splice_sites_affected(exons, local_supremal):
-        rna_sliced_variants = _to_rna_variants(algebra_extracted_variants, exons)
-        rna_algebra_extracted_variants, *_ = extract_variants(rna_ref_seq, rna_sliced_variants)
-        return rna_algebra_extracted_variants
-    else:
-        return
-
-
 def dna_to_rna(description):
     d = Description(description)
     d.to_delins()
     if d.errors:
         return d.errors
 
-    ref_seq = d.references["reference"]["sequence"]["seq"]
-    algebra_variants = delins_to_algebra_variants(d.delins_model["variants"], d.get_sequences())
+    delins = d.delins_model["variants"]
+    sequences = d.get_sequences()
+    exons = d.get_selector_model()["exon"]
 
-    algebra_extracted_variants, graph = extract_variants(ref_seq, algebra_variants)
+    ref_seq = d.references["reference"]["sequence"]["seq"]
+    alg_dna_variants, graph = extract_variants(ref_seq, delins_to_algebra(delins, sequences))
     local_supremal = get_local_supremal(ref_seq, graph)
 
-    if not _splice_sites_affected(d.get_selector_model()["exon"], local_supremal):
-        rna_sliced_variants = _to_rna_variants(algebra_extracted_variants, d.get_selector_model()["exon"])
-
+    if not _splice_sites_affected(exons, local_supremal):
+        alg_rna_sliced_variants = _to_rna_variants(alg_dna_variants, exons)
         rna_reference_models = get_rna_reference_models(d)
         rna_ref_seq = rna_reference_models["reference"]["sequence"]["seq"]
-        rna_algebra_extracted_variants, *_ = extract_variants(
-            rna_ref_seq, rna_sliced_variants
-        )
-        rna_variants_coordinate = de_to_hgvs(
-            [algebra_variant_to_delins(v) for v in
-             rna_algebra_extracted_variants],
-            {k: rna_reference_models[k]["sequence"]["seq"] for k in
-             rna_reference_models},
-        )
+        alg_rna_variants, *_ = extract_variants(rna_ref_seq, alg_rna_sliced_variants)
+        extracted_variants_model = to_model(to_hgvs(alg_rna_sliced_variants, rna_ref_seq), start_rule="variants")
 
-        rna_model = to_hgvs_locations(
-            {
-                "reference": d.corrected_model["reference"],
-                "coordinate_system": "i",
-                "variants": rna_variants_coordinate,
-            },
-            rna_reference_models,
-            d.de_hgvs_model.get("coordinate_system"),
-            d.get_selector_id(),
-            True,
-        )
-        rna_model["coordinate_system"] = "r"
-        rna_model["predicted"] = True
-        print(rna_sliced_variants)
-        print(model_to_string(rna_model))
-        return model_to_string(rna_model)
-    else:
-        return
+        extracted_model = {
+            "reference": d.corrected_model["reference"],
+            "variants": extracted_variants_model,
+            "predicted": True,
+        }
+
+        rna_selector_model = get_internal_selector_model(rna_reference_models["reference"]["annotations"], d.get_selector_id())
+        x = Coding(rna_selector_model["exon"], rna_selector_model["cds"][0], d.is_inverted()).coordinate_to_coding
+        for point, path in yield_point_locations_for_main_reference(extracted_model):
+            set_by_path(extracted_model, path, coding_to_point(x(point["position"] - 1)))
+        if d.is_inverted():
+            for range_location, path in yield_ranges_main_reference(extracted_model):
+                range_location["start"], range_location["end"] = range_location["end"], range_location["start"]
+            for variant in extracted_model["variants"]:
+                if variant.get("inserted"):
+                    for inserted in variant["inserted"]:
+                        if inserted.get("sequence"):
+                            inserted["sequence"] = reverse_complement(inserted["sequence"])
+        extracted_model["coordinate_system"] = "r"
+        extracted_model["predicted"] = True
+
+        return model_to_string(extracted_model)
