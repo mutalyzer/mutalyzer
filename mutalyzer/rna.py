@@ -17,7 +17,7 @@ from .algebra import (
     delins_to_algebra
 )
 from .converter.to_hgvs_coordinates import to_hgvs_locations
-from .converter.to_rna import to_rna_reference_model, to_rna_variants
+from .converter.to_rna import to_rna_variants
 from .converter.variants_de_to_hgvs import de_to_hgvs
 from .description import Description
 from .description_model import (
@@ -25,11 +25,15 @@ from .description_model import (
     variant_to_description,
     model_to_string
 )
-from .reference import get_internal_selector_model
 from .description_model import yield_point_locations_for_main_reference, yield_ranges_main_reference
 from .util import set_by_path
 from mutalyzer_mutator.util import reverse_complement
 from .errors import splice_site
+from copy import deepcopy
+from mutalyzer_retriever.retriever import extract_feature_model
+from .reference import get_internal_selector_model, slice_to_selector, yield_locations
+from mutalyzer_crossmapper import Genomic
+from .util import get_end, get_start, set_end, set_start
 
 
 def get_position_type(position, exons, len_ss=2):
@@ -102,15 +106,6 @@ def extracted_to_hgvs_selector(variants, d, to_selector_id):
     return de_hgvs_model
 
 
-def get_rna_sequences(reference_model, selector_id):
-
-    rna_reference_model = to_rna_reference_model(reference_model, selector_id)
-    return {
-        reference_model["id"]: rna_reference_model,
-        "reference": rna_reference_model,
-    }
-
-
 def get_rna_sequences(d):
     rna_references = get_rna_reference_models(d)
     return {
@@ -124,7 +119,7 @@ def get_rna_reference_models(d):
     reference_id = get_reference_id(d.corrected_model)
     selector_id = d.get_selector_id()
 
-    rna_reference_model = to_rna_reference_model(reference_model, selector_id)
+    rna_reference_model = to_rna_reference_model(reference_model, selector_id, d.is_inverted())
     return {reference_id: rna_reference_model, "reference": rna_reference_model}
 
 
@@ -301,7 +296,7 @@ def predict_rna(d, local_supremals):
         sup_status["supremal"] = _genomic_and_coding([sup], d, selector_id)
         status["local_supremals"][i] = sup_status
 
-    print(json.dumps(status, indent=2))
+    # print(json.dumps(status, indent=2))
 
     rna_description_possible = True
     for i, sup_status in status["local_supremals"].items():
@@ -396,6 +391,57 @@ def _to_rna_variants(variants, exons):
     return rna_variants
 
 
+def to_rna_reference_model(reference_model, selector_id, inverted, transcribe=True):
+    """
+    Get the RNA reference model of the provided selector.
+
+    1. Extract the tree corresponding to the selector from the model (including
+    the parents).
+    2. Slice the sequence.
+    3. Update the model features locations using the crossmapper.
+
+    TODO: Make sure everything is on the plus strand?
+
+    :arg dict reference_model: Reference model.
+    :arg str selector_id: Selector ID.
+    :arg bool transcribe: Transcribe the sequence to RNA.
+    :returns: RNA reference model.
+    :rtype: dict
+    """
+    annotations = deepcopy(extract_feature_model(reference_model["annotations"], selector_id)[0])
+    seq = str(Seq(slice_to_selector(reference_model, selector_id)).transcribe()).lower() if transcribe else slice_to_selector(reference_model, selector_id)
+    if inverted:
+        seq = reverse_complement(seq)
+    selector_model = get_internal_selector_model(annotations, selector_id, True)
+
+    rna_model = {"annotations": annotations, "sequence": {"seq": seq}}
+
+    x = NonCoding(selector_model["exon"]).coordinate_to_noncoding
+    g = Genomic().genomic_to_coordinate
+
+    new_start = x(selector_model["exon"][0][0])[0] - 1
+    new_end = x(selector_model["exon"][-1][-1])[0]
+    print("======")
+    print(len(seq))
+    print(new_start, new_end)
+
+    for location, f_type in yield_locations(rna_model["annotations"]):
+        if f_type in ["CDS", "exon"]:
+            new_start_x = x(get_start(location))
+            new_start_g = g(new_start_x[0])
+
+            new_end_x = x(get_end(location))
+            new_end_g = g(new_end_x[0] + new_end_x[1])
+
+            set_start(location, new_start_g)
+            set_end(location, new_end_g)
+        else:
+            set_start(location, new_start)
+            set_end(location, new_end)
+    return rna_model
+
+
+
 def dna_to_rna(description):
     d = Description(description)
     d.to_delins()
@@ -410,6 +456,7 @@ def dna_to_rna(description):
     alg_dna_variants, graph = extract_variants(ref_seq, delins_to_algebra(delins, sequences))
     local_supremal = get_local_supremal(ref_seq, graph)
 
+    print("alg_dna_variants")
     print(alg_dna_variants)
 
     if not _splice_sites_affected(exons, local_supremal):
@@ -418,6 +465,8 @@ def dna_to_rna(description):
         rna_ref_seq = rna_reference_models["reference"]["sequence"]["seq"]
         alg_rna_variants, *_ = extract_variants(rna_ref_seq, alg_rna_sliced_variants)
         extracted_variants_model = to_model(to_hgvs(alg_rna_variants, rna_ref_seq), start_rule="variants")
+
+        print(json.dumps(rna_reference_models["reference"], indent=2))
         print("alg_rna_variants", alg_rna_variants)
         print(extracted_variants_model)
 
