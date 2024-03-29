@@ -19,10 +19,11 @@ def deletion_to_delins(variant):
 def duplication_to_delins(variant):
     new_variant = copy.deepcopy(variant)
     new_variant["type"] = "deletion_insertion"
-    new_variant["inserted"] = [
-        {"source": "reference", "location": copy.deepcopy(new_variant["location"])}
-    ]
-    set_start(new_variant["location"], get_end(new_variant["location"]))
+    new_variant["inserted"] = [{
+        "source": "reference",
+        "location": copy.deepcopy(new_variant["location"]),
+        'repeat_number': {'type': 'point', 'value': 2}
+    }]
     return new_variant
 
 
