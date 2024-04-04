@@ -793,18 +793,17 @@ class Description(object):
                     get_selector_id(self.de_hgvs_model),
                 )
                 if protein_selector_model:
-                    self.protein = dict(
-                        zip(
-                            ["description", "reference", "predicted"],
-                            get_protein_description(
-                                variants_to_delins(
-                                    self.de_hgvs_internal_indexing_model["variants"]
-                                ),
-                                self.references,
-                                protein_selector_model,
-                            ),
-                        )
+                    p_d = get_protein_description(variants_to_delins(
+                        self.de_hgvs_internal_indexing_model["variants"]
+                    ),
+                        self.references,
+                        protein_selector_model
                     )
+                    self.protein = dict(zip(["description", "reference", "predicted"], p_d[:3]))
+                    if len(p_d) == 6:
+                        self.protein["position_first"] = p_d[3]
+                        self.protein["position_last_original"] = p_d[4]
+                        self.protein["position_last_predicted"] = p_d[5]
 
     @check_errors
     def construct_rna_description(self):

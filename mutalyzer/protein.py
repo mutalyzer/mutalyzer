@@ -392,10 +392,16 @@ def get_protein_description(variants, references, selector_model):
             "{}({}):{}".format(ref_id, protein_id, "p.?"),
             p_ref_seq,
             p_obs_seq,
+            description[1],
+            description[2],
+            description[3]
         )
 
     return (
         "{}({}):{}".format(ref_id, protein_id, description[0]),
         p_ref_seq,
         p_obs_seq,
+        description[1],
+        description[2],
+        description[3]
     )
