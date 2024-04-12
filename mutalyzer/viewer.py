@@ -124,4 +124,4 @@ def view_variants(
     if d.errors:
         return d.output()
     else:
-        return view_variants_normalized(d, invert, left, right)
+        return view_variants_normalized(d, left, right, invert)

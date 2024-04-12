@@ -1560,13 +1560,43 @@ class Description(object):
         self.retrieve_references()
         self.pre_conversion_checks()
 
-        self._correct_chromosome_points()
-        self.to_internal_indexing_model()
-        self._correct_variants_type()
-        self._correct_points()
-        self._check_and_correct_sequences()
+        if self.corrected_model.get("type") == "description_protein":
+            reference_id = self.corrected_model["reference"]["id"]
+            self._check_amino_acids()
+            if self.errors:
+                return
+            if self.get_selector_id():
+                # Convert references to protein model
+                p_seq = get_protein_sequence(
+                    self.references["reference"], self.get_selector_model()
+                )
+                self.references = copy.deepcopy(self.references)
+                self.references["reference"]["sequence"]["seq"] = p_seq
+                self.references[reference_id]["sequence"]["seq"] = p_seq
+                cds_id = self.get_selector_model().get("cds_id")
+                if cds_id:
+                    self._correct_selector_id(["reference", "selector", "id"],
+                                              self.get_selector_id(), cds_id,
+                                              "the annotations")
 
-        self.check()
+            self.to_internal_indexing_model()
+            self._convert_amino_acids()
+            self._correct_variants_type()
+            self._check_and_correct_sequences()
+            self.check()
+            self._check_supported_variants(self.corrected_model)
+
+            if self.errors:
+                return
+
+        else:
+            self._correct_chromosome_points()
+            self.to_internal_indexing_model()
+            self._correct_variants_type()
+            self._correct_points()
+            self._check_and_correct_sequences()
+
+            self.check()
         self._construct_delins_model()
 
     def normalize_only_equals_or_no_operation(self):
