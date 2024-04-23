@@ -64,15 +64,15 @@ def in_frame_description(s1, s2):
     which they are the same again.
 
         >>> in_frame_description('MTAPQQMT*', 'MTAQQMT*')
-        ('p.(Pro4del)', 3, 4, 3)
+        ('Pro4del', 3, 4, 3)
         >>> in_frame_description('MTAPQQMT*', 'MTAQMT*')
-        ('p.(Pro4_Gln5del)', 3, 5, 3)
+        ('Pro4_Gln5del', 3, 5, 3)
         >>> in_frame_description('MTAPQQT*', 'MTAQQMT*')
-        ('p.(Pro4_Gln6delinsGlnGlnMet)', 3, 6, 6)
+        ('Pro4_Gln6delinsGlnGlnMet', 3, 6, 6)
         >>> in_frame_description('MTAPQQMT*', 'MTAPQQMTMQ*')
-        ('p.(*9Metext*2)', 8, 9, 11)
+        ('*9Metext*2', 8, 9, 11)
         >>> in_frame_description('MTAPQQMT*', 'MTAPQQMTMQ')
-        ('p.(*9Metext*?)', 8, 9, 10)
+        ('*9Metext*?', 8, 9, 10)
 
     @arg s1: The original protein.
     @type s1: unicode
@@ -95,7 +95,7 @@ def in_frame_description(s1, s2):
 
     if s1 == s2:
         # Nothing happened.
-        return "p.(=)", 0, 0, 0
+        return "=", 0, 0, 0
 
     lcp = len(longest_common_prefix(s1, s2))
     lcs = len(longest_common_suffix(s1[lcp:], s2[lcp:]))
@@ -109,7 +109,7 @@ def in_frame_description(s1, s2):
             stop = str(abs(len(s1) - len(s2))) if s2_stop else "?"
 
             return (
-                "p.(*%i%sext*%s)" % (len(s1) + 1, seq3(s2[len(s1)]), stop),
+                "*%i%sext*%s" % (len(s1) + 1, seq3(s2[len(s1)]), stop),
                 len(s1),
                 len(s1) + 1,
                 len(s2) + (1 if s2_stop else 0),
@@ -120,13 +120,13 @@ def in_frame_description(s1, s2):
         if lcp - ins_length >= 0 and s1[lcp - ins_length : lcp] == s2[lcp:s2_end]:
             if ins_length == 1:
                 return (
-                    "p.(%s%idup)" % (seq3(s1[lcp - ins_length]), lcp - ins_length + 1),
+                    "%s%idup" % (seq3(s1[lcp - ins_length]), lcp - ins_length + 1),
                     lcp,
                     lcp,
                     lcp + 1,
                 )
             return (
-                "p.(%s%i_%s%idup)"
+                "%s%i_%s%idup"
                 % (
                     seq3(s1[lcp - ins_length]),
                     lcp - ins_length + 1,
@@ -139,7 +139,7 @@ def in_frame_description(s1, s2):
             )
         # if
         return (
-            "p.(%s%i_%s%iins%s)"
+            "%s%i_%s%iins%s"
             % (seq3(s1[lcp - 1]), lcp, seq3(s1[lcp]), lcp + 1, seq3(s2[lcp:s2_end])),
             lcp,
             lcp,
@@ -151,16 +151,16 @@ def in_frame_description(s1, s2):
     if not s2_end - lcp:
         if len(s2) == lcp:
             return (
-                "p.(%s%i*)" % (seq3(s1[len(s2)]), len(s2) + 1),
+                "%s%i*" % (seq3(s1[len(s2)]), len(s2) + 1),
                 lcp,
                 len(s1) + 1,
                 len(s2) + 1,
             )
 
         if lcp + 1 == s1_end:
-            return ("p.(%s%idel)" % (seq3(s1[lcp]), lcp + 1), lcp, lcp + 1, lcp)
+            return ("%s%idel" % (seq3(s1[lcp]), lcp + 1), lcp, lcp + 1, lcp)
         return (
-            "p.(%s%i_%s%idel)" % (seq3(s1[lcp]), lcp + 1, seq3(s1[s1_end - 1]), s1_end),
+            "%s%i_%s%idel" % (seq3(s1[lcp]), lcp + 1, seq3(s1[s1_end - 1]), s1_end),
             lcp,
             s1_end,
             lcp,
@@ -170,7 +170,7 @@ def in_frame_description(s1, s2):
     # Substitution.
     if s1_end == s2_end and s1_end == lcp + 1:
         return (
-            "p.(%s%i%s)" % (seq3(s1[lcp]), lcp + 1, seq3(s2[lcp])),
+            "%s%i%s" % (seq3(s1[lcp]), lcp + 1, seq3(s2[lcp])),
             lcp,
             lcp + 1,
             lcp + 1,
@@ -179,13 +179,13 @@ def in_frame_description(s1, s2):
     # InDel.
     if lcp + 1 == s1_end:
         return (
-            "p.(%s%idelins%s)" % (seq3(s1[lcp]), lcp + 1, seq3(s2[lcp:s2_end])),
+            "%s%idelins%s" % (seq3(s1[lcp]), lcp + 1, seq3(s2[lcp:s2_end])),
             lcp,
             lcp + 1,
             s2_end,
         )
     return (
-        "p.(%s%i_%s%idelins%s)"
+        "%s%i_%s%idelins%s"
         % (seq3(s1[lcp]), lcp + 1, seq3(s1[s1_end - 1]), s1_end, seq3(s2[lcp:s2_end])),
         lcp,
         s1_end,
@@ -201,13 +201,13 @@ def out_of_frame_description(s1, s2):
     end positions (to be compatible with the in_frame_description function).
 
         >>> out_of_frame_description('MTAPQQMT*', 'MTAQQMT*')
-        ('p.(Pro4Glnfs*5)', 3, 9, 8)
+        ('Pro4Glnfs*5', 3, 9, 8)
         >>> out_of_frame_description('MTAPQQMT*', 'MTAQMT*')
-        ('p.(Pro4Glnfs*4)', 3, 9, 7)
+        ('Pro4Glnfs*4', 3, 9, 7)
         >>> out_of_frame_description('MTAPQQT*', 'MTAQQMT*')
-        ('p.(Pro4Glnfs*5)', 3, 8, 8)
+        ('Pro4Glnfs*5', 3, 8, 8)
         >>> out_of_frame_description('MTAPQQT*', 'MTAQQMT')
-        ('p.(Pro4Glnfs*?)', 3, 8, 7)
+        ('Pro4Glnfs*?', 3, 8, 7)
 
     @arg s1: The original protein.
     @type s1: unicode
@@ -229,14 +229,14 @@ def out_of_frame_description(s1, s2):
 
     if lcp == len(s2_seq):  # NonSense mutation.
         if lcp == len(s1_seq):  # Is this correct?
-            return ("p.(=)", 0, 0, 0)
-        return ("p.(%s%i*)" % (seq3(s1[lcp]), lcp + 1), lcp, len(s1), lcp)
+            return "=", 0, 0, 0
+        return "%s%i*" % (seq3(s1[lcp]), lcp + 1), lcp, len(s1), lcp
     if lcp == len(s1_seq):
         # http://www.hgvs.org/mutnomen/FAQ.html#nostop
         stop = str(abs(len(s1_seq) - len(s2_seq))) if "*" in s2 else "?"
 
         return (
-            "p.(*%i%sext*%s)" % (len(s1_seq) + 1, seq3(s2[len(s1_seq)]), stop),
+            "*%i%sext*%s" % (len(s1_seq) + 1, seq3(s2[len(s1_seq)]), stop),
             len(s1_seq),
             len(s1),
             len(s2),
@@ -246,7 +246,7 @@ def out_of_frame_description(s1, s2):
     stop = str(len(s2_seq) - lcp + 1) if "*" in s2 else "?"
 
     return (
-        "p.(%s%i%sfs*%s)" % (seq3(s1[lcp]), lcp + 1, seq3(s2[lcp]), stop),
+        "%s%i%sfs*%s" % (seq3(s1[lcp]), lcp + 1, seq3(s2[lcp]), stop),
         lcp,
         len(s1),
         len(s2),
@@ -260,11 +260,11 @@ def protein_description(cds_stop, s1, s2):
     decide which one to call.
 
         >>> protein_description(34, 'MTAPQQMT*', 'MTAQQMT*')
-        ('p.(Pro4Glnfs*5)', 3, 9, 8)
+        ('Pro4Glnfs*5', 3, 9, 8)
         >>> protein_description(34, 'MTAPQQMT*', 'MTAQQMT')
-        ('p.(Pro4Glnfs*?)', 3, 9, 7)
+        ('Pro4Glnfs*?', 3, 9, 7)
         >>> protein_description(33, 'MTAPQQMT*', 'MTAQQMT*')
-        ('p.(Pro4del)', 3, 4, 3)
+        ('Pro4del', 3, 4, 3)
         >>> protein_description(33, 'MTAPQQMT*', 'TTAQQMT*')
         ('p.?', 0, 4, 3)
 
@@ -398,7 +398,7 @@ def get_protein_description(variants, references, selector_model):
         )
 
     return (
-        "{}({}):{}".format(ref_id, protein_id, description[0]),
+        "{}({}):p.({})".format(ref_id, protein_id, description[0]),
         p_ref_seq,
         p_obs_seq,
         description[1],
