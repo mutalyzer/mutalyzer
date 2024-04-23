@@ -1397,17 +1397,17 @@ class Description(object):
                 to_delins(self.internal_indexing_model)["variants"],
             )
             self.references["observed"] = {"sequence": {"seq": observed_sequence}}
-            selector_id = (
-                "({})".format(self.get_selector_id()) if self.get_selector_id() else ""
-            )
-            p_description = "{}{}:{}".format(
-                reference_id,
-                selector_id,
-                in_frame_description(
-                    self.references["reference"]["sequence"]["seq"], observed_sequence
-                )[0],
-            )
-            self.de_hgvs_model = to_model(p_description)
+            p_variant = in_frame_description(self.references["reference"]["sequence"]["seq"], observed_sequence)[0]
+            self.de_hgvs_model = {
+                "reference": {"id": reference_id},
+                "coordinate_system": "p",
+                "type": "description_protein",
+                "variants": [to_model(p_variant, "p_variant")]
+            }
+            if self.get_selector_id():
+                self.de_hgvs_model["reference"]["selector"] = {"id": self.get_selector_id()}
+            if self.corrected_model.get("predicted") is True:
+                self.de_hgvs_model["predicted"] = True
         self.normalized_description = model_to_string(self.de_hgvs_model)
         equivalent_1a_model = copy.deepcopy(self.de_hgvs_model)
         convert_amino_acids(equivalent_1a_model, "1a")

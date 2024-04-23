@@ -7,6 +7,12 @@ from .commons import code_in, monkey_patches
 TESTS = [
     {
         "keywords": ["protein", "equal", "genomic"],
+        "input": "NG_012337.1(NP_002993.1):p.=",
+        "normalized": "NG_012337.1(NP_002993.1):p.=",
+        "to_test": True,
+    },
+    {
+        "keywords": ["protein", "equal", "genomic"],
         "input": "NG_012337.1(NP_002993.1):p.(=)",
         "normalized": "NG_012337.1(NP_002993.1):p.(=)",
         "to_test": True,
@@ -26,13 +32,13 @@ TESTS = [
     {
         "keywords": ["protein", "substitution", "genomic"],
         "input": "NG_012337.1(NP_002993.1):p.Asp92Tyr",
-        "normalized": "NG_012337.1(NP_002993.1):p.(Asp92Tyr)",
+        "normalized": "NG_012337.1(NP_002993.1):p.Asp92Tyr",
         "to_test": True,
     },
     {
         "keywords": ["protein", "delins", "genomic"],
         "input": "NG_012337.1(NP_002993.1):p.Asp92delinsTyr",
-        "normalized": "NG_012337.1(NP_002993.1):p.(Asp92Tyr)",
+        "normalized": "NG_012337.1(NP_002993.1):p.Asp92Tyr",
         "to_test": True,
     },
     {
@@ -44,7 +50,7 @@ TESTS = [
             "translation exception",
         ],
         "input": "NM_005410.4:p.U59delinsTyr",
-        "normalized": "NM_005410.4(NP_005401.3):p.(Sec59Tyr)",
+        "normalized": "NM_005410.4(NP_005401.3):p.Sec59Tyr",
         "to_test": True,
     },
     {
@@ -80,7 +86,7 @@ TESTS = [
             "translation exception",
         ],
         "input": "NM_005410.4:p.U59delinsNP_002993.1:H50_53",
-        "normalized": "NM_005410.4(NP_005401.3):p.(Sec59delinsHisLeuSerPro)",
+        "normalized": "NM_005410.4(NP_005401.3):p.Sec59delinsHisLeuSerPro",
         "to_test": True,
     },
     {
