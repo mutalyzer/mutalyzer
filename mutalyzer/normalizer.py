@@ -19,7 +19,11 @@ from .converter.to_internal_indexing import to_internal_indexing
 from .description import Description
 from .util import construct_sequence, get_end, get_start, roll
 from .viewer import view_delins
-
+from .rna import dna_to_rna
+from .protein import get_protein_description
+from .reference import get_protein_selector_model
+from .description_model import get_selector_id
+from .converter.to_delins import to_delins, variants_to_delins
 
 def _add_minimal(graph, reference, output, prefix=""):
     minimal_descriptions = []
@@ -149,6 +153,7 @@ def _descriptions(d, algebra_hgvs, supremal, graph):
     )
     output["dot"] = "\n".join(to_dot(ref_seq, graph))
     _add_minimal(graph, ref_seq, output, f"{d.corrected_model['reference']['id']}:g.")
+
     return output
 
 
@@ -194,6 +199,27 @@ def normalize_alt(description, only_variants=False, sequence=None):
     output["view_local_supremal"] = view_algebra_variants(local_supremals, ref_seq)
 
     output["influence"] = [(v.start, v.end) for v in local_supremals]
+
+    if d.de_hgvs_model.get("coordinate_system") in ["c", "n"]:
+        output["rna"] = dna_to_rna(description)
+        if output["rna"].get("errors") is None:
+            protein_selector_model = get_protein_selector_model(
+                d.references["reference"]["annotations"],
+                get_selector_id(d.de_hgvs_model),
+            )
+            if protein_selector_model:
+                p_d = get_protein_description(variants_to_delins(
+                    d.de_hgvs_internal_indexing_model["variants"]
+                ),
+                    d.references,
+                    protein_selector_model
+                )
+                protein = dict(zip(["description", "reference", "predicted"], p_d[:3]))
+                if len(p_d) == 6:
+                    protein["position_first"] = p_d[3]
+                    protein["position_last_original"] = p_d[4]
+                    protein["position_last_predicted"] = p_d[5]
+                output["protein"]= protein
 
     return output
 

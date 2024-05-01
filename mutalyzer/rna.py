@@ -1,39 +1,38 @@
 import bisect
 import json
 from collections import deque
+from copy import deepcopy
 
 from algebra import LCSgraph, Variant
 from algebra.extractor import extract as extract_variants
 from algebra.extractor import local_supremal as get_local_supremal
-from algebra.variants import patch, to_hgvs
 from algebra.extractor import to_hgvs
+from algebra.variants import patch, to_hgvs
 from Bio.Seq import Seq
-from mutalyzer_crossmapper import NonCoding, Coding
+from mutalyzer_crossmapper import Coding, Genomic, NonCoding
 from mutalyzer_hgvs_parser import to_model
-from .converter.to_hgvs_coordinates import coding_to_point
+from mutalyzer_mutator.util import reverse_complement
+from mutalyzer_retriever.retriever import extract_feature_model
+
 from .algebra import (
     algebra_variant_to_delins,
+    delins_to_algebra,
     delins_to_algebra_variant,
-    delins_to_algebra
 )
-from .converter.to_hgvs_coordinates import to_hgvs_locations
+from .converter.to_hgvs_coordinates import coding_to_point, to_hgvs_locations
 from .converter.to_rna import to_rna_variants
 from .converter.variants_de_to_hgvs import de_to_hgvs
 from .description import Description
 from .description_model import (
     get_reference_id,
+    model_to_string,
     variant_to_description,
-    model_to_string
+    yield_point_locations_for_main_reference,
+    yield_ranges_main_reference,
 )
-from .description_model import yield_point_locations_for_main_reference, yield_ranges_main_reference
-from .util import set_by_path
-from mutalyzer_mutator.util import reverse_complement
 from .errors import splice_site
-from copy import deepcopy
-from mutalyzer_retriever.retriever import extract_feature_model
 from .reference import get_internal_selector_model, slice_to_selector, yield_locations
-from mutalyzer_crossmapper import Genomic
-from .util import get_end, get_start, set_end, set_start
+from .util import get_end, get_start, set_by_path, set_end, set_start
 
 
 def get_position_type(position, exons, len_ss=2):
@@ -50,8 +49,7 @@ def get_position_type(position, exons, len_ss=2):
     def _output_intron(index, offset):
         if abs(offset) <= len_ss:
             return index, offset
-        else:
-            return index, 0
+        return index, 0
 
     x = NonCoding(exons).coordinate_to_noncoding
     flattened_exons = [e for exon in exons for e in exon]
@@ -63,8 +61,8 @@ def get_position_type(position, exons, len_ss=2):
         return _output_intron(
             bisect.bisect_right(flattened_exons, position), position_x[1]
         )
-    else:
-        return _output_intron(
+
+    return _output_intron(
             bisect.bisect_left(flattened_exons, position), position_x[1]
         )
 
@@ -259,8 +257,8 @@ def predict_rna(d, local_supremals):
         _, local_root = extract_variants(ref_seq, [sup])
         sup_start_index, sup_start_offset = get_position_type(sup.start, exons, exon_margin)
         sup_end_index, sup_end_offset = get_position_type(sup.end, exons, intron_margin)
-        print(sup_start_index, sup_start_offset)
-        print(sup_end_index, sup_end_offset)
+        # print(sup_start_index, sup_start_offset)
+        # print(sup_end_index, sup_end_offset)
         splice_affected = False
         sup_status = {}
         if sup_end_index - sup_start_index == 1:
@@ -331,7 +329,7 @@ def predict_rna(d, local_supremals):
 
     if rna_description_possible:
         rna_description = []
-        for i, sup_status in status["local_supremals"].items():
+        for _, sup_status in status["local_supremals"].items():
             if sup_status.get("rna"):
                 rna_description.extend(sup_status["rna"])
         description = d.corrected_model["reference"]["id"]
@@ -352,7 +350,7 @@ def _splice_sites_affected(exons, local_supremal, exon_margin=2, intron_margin=4
     Check if the local supremal variants touch the splice sites
     within the exon/intron margins.
     """
-    for i, sup in enumerate(local_supremal):
+    for sup in local_supremal:
         sup_start_index, sup_start_offset = get_position_type(sup.start, exons, exon_margin)
         sup_end_index, sup_end_offset = get_position_type(sup.end, exons, intron_margin)
         if sup_end_index - sup_start_index == 1:
@@ -366,7 +364,6 @@ def _to_rna_variants(variants, exons):
     """
     x = NonCoding(exons).coordinate_to_noncoding
     rna_variants = []
-    print(exons)
     for variant in variants:
 
         start = variant.start
@@ -375,19 +372,16 @@ def _to_rna_variants(variants, exons):
         intron_start_i = get_position_type(start, exons)[0]
         intron_end_i = get_position_type(end, exons)[0]
 
-        print(start, end)
         if intron_start_i % 2 == 0:
             start = exons[intron_start_i // 2][0]
         if intron_end_i % 2 == 0:
             end = exons[intron_start_i // 2][1]
-        print(start, end)
 
         start = x(start)[0] - 1
         end = x(end)[0] + x(end)[1] - 1
 
-        print(start, end)
-
         rna_variants.append(Variant(start, end, str(Seq(variant.sequence).transcribe().lower())))
+
     return rna_variants
 
 
@@ -410,8 +404,6 @@ def to_rna_reference_model(reference_model, selector_id, inverted, transcribe=Tr
     """
     annotations = deepcopy(extract_feature_model(reference_model["annotations"], selector_id)[0])
     seq = str(Seq(slice_to_selector(reference_model, selector_id)).transcribe()).lower() if transcribe else slice_to_selector(reference_model, selector_id)
-    if inverted:
-        seq = reverse_complement(seq)
     selector_model = get_internal_selector_model(annotations, selector_id, True)
 
     rna_model = {"annotations": annotations, "sequence": {"seq": seq}}
@@ -421,9 +413,6 @@ def to_rna_reference_model(reference_model, selector_id, inverted, transcribe=Tr
 
     new_start = x(selector_model["exon"][0][0])[0] - 1
     new_end = x(selector_model["exon"][-1][-1])[0]
-    print("======")
-    print(len(seq))
-    print(new_start, new_end)
 
     for location, f_type in yield_locations(rna_model["annotations"]):
         if f_type in ["CDS", "exon"]:
@@ -456,19 +445,17 @@ def dna_to_rna(description):
     alg_dna_variants, graph = extract_variants(ref_seq, delins_to_algebra(delins, sequences))
     local_supremal = get_local_supremal(ref_seq, graph)
 
-    print("alg_dna_variants")
-    print(alg_dna_variants)
 
     if not _splice_sites_affected(exons, local_supremal):
-        alg_rna_sliced_variants = _to_rna_variants(alg_dna_variants, exons)
+        alg_rna_sliced_variants = to_rna_variants(
+            [algebra_variant_to_delins(v) for v in alg_dna_variants],
+            d.get_sequences(),
+            d.get_selector_model()
+        )
         rna_reference_models = get_rna_reference_models(d)
         rna_ref_seq = rna_reference_models["reference"]["sequence"]["seq"]
-        alg_rna_variants, *_ = extract_variants(rna_ref_seq, alg_rna_sliced_variants)
+        alg_rna_variants, *_ = extract_variants(rna_ref_seq, delins_to_algebra(alg_rna_sliced_variants, {"reference": ref_seq}))
         extracted_variants_model = to_model(to_hgvs(alg_rna_variants, rna_ref_seq), start_rule="variants")
-
-        print(json.dumps(rna_reference_models["reference"], indent=2))
-        print("alg_rna_variants", alg_rna_variants)
-        print(extracted_variants_model)
 
         extracted_model = {
             "reference": d.corrected_model["reference"],
@@ -476,7 +463,8 @@ def dna_to_rna(description):
             "predicted": True,
         }
 
-        rna_selector_model = get_internal_selector_model(rna_reference_models["reference"]["annotations"], d.get_selector_id())
+        rna_selector_model = get_internal_selector_model(rna_reference_models["reference"]["annotations"], d.get_selector_id(), fix_exon=True)
+        print(rna_selector_model)
         x = Coding(rna_selector_model["exon"], rna_selector_model["cds"][0], d.is_inverted()).coordinate_to_coding
         for point, path in yield_point_locations_for_main_reference(extracted_model):
             set_by_path(extracted_model, path, coding_to_point(x(point["position"] - 1)))
@@ -488,15 +476,15 @@ def dna_to_rna(description):
                     for inserted in variant["inserted"]:
                         if inserted.get("sequence"):
                             inserted["sequence"] = reverse_complement(inserted["sequence"])
-            if variant.get("deleted"):
-                for deleted in variant["deleted"]:
-                    if deleted.get("sequence"):
-                        deleted["sequence"] = reverse_complement(deleted["sequence"])
+                if variant.get("deleted"):
+                    for deleted in variant["deleted"]:
+                        if deleted.get("sequence"):
+                            deleted["sequence"] = reverse_complement(deleted["sequence"])
+            extracted_model["variants"].reverse()
 
         extracted_model["coordinate_system"] = "r"
         extracted_model["predicted"] = True
 
-        print(model_to_string(extracted_model))
         return {"description": model_to_string(extracted_model)}
-    else:
-        return {"errors": splice_site([])}
+
+    return {"errors": [splice_site([])]}

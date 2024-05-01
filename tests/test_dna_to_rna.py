@@ -51,4 +51,4 @@ def test_rna_new(input_description, rna_expected):
     ],
 )
 def test_rna_new_errors(description):
-    assert  dna_to_rna(description).get("errors") is not None
+    assert dna_to_rna(description).get("errors") is not None
