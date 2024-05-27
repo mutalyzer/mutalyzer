@@ -3,40 +3,75 @@ from mutalyzer_mutator import mutate
 from mutalyzer_spdi_parser.convert import to_hgvs_internal_model as spdi_to_hgvs
 
 from .converter.to_hgvs_coordinates import to_hgvs_locations
+from .converter.to_internal_indexing import variants_to_internal_indexing
 from .converter.variants_de_to_hgvs import de_to_hgvs
+from .description import Description
 from .description_model import model_to_string
+from .errors import out_of_boundary_greater, sequence_mismatch
 from .reference import get_coordinate_system_from_reference, retrieve_reference
+from .util import get_end, get_start
+
+
+def _errors_check(variant, ref_seq):
+    errors = []
+    if variant.get("deleted") and variant["deleted"][0].get("sequence"):
+        del_ref_seq = ref_seq[get_start(variant): get_end(variant)]
+        del_seq = variant["deleted"][0]["sequence"]
+        if del_seq != del_ref_seq:
+            errors.append(
+                sequence_mismatch(del_ref_seq, del_seq, ["variants", 0]))
+    if get_start(variant) > len(ref_seq):
+        errors.append(
+            out_of_boundary_greater(
+                variant["location"]["start"],
+                get_start(variant) - len(ref_seq),
+                len(ref_seq),
+                ["variants", 0, "location"],
+            )
+        )
+    if get_end(variant) > len(ref_seq):
+        errors.append(
+            out_of_boundary_greater(
+                variant["location"]["start"],
+                get_end(variant) - len(ref_seq),
+                len(ref_seq),
+                ["variants", 0, "location"],
+            )
+        )
+    return errors
 
 
 def spdi_converter(description=None, description_model=None):
     if description:
-        m = spdi_to_hgvs(description)
+        model = spdi_to_hgvs(description)
     elif description_model:
-        m = description_model
+        model = description_model
+    else:
+        return
 
-    # TODO: Move in the spdi-parser or support for non inserted in mutator.
-    if not m["variants"][0].get("inserted"):
-        m["variants"][0]["inserted"] = []
+    r_m = retrieve_reference(model["reference"]["id"])[0]
+    print(r_m)
 
-    r_m = retrieve_reference(m["reference"]["id"])[0]
-    c_s = get_coordinate_system_from_reference(r_m)
+    errors = _errors_check(model["variants"][0], r_m["sequence"]["seq"])
+    if errors:
+        return {"errors": errors}
 
-    ref_seq = r_m["sequence"]["seq"]
-    obs_seq = mutate({"reference": ref_seq}, m["variants"])
+    obs_seq = mutate({"reference": r_m["sequence"]["seq"]}, model["variants"])
+
     d_v = describe_dna(r_m["sequence"]["seq"], obs_seq)
     d_h_m = {
         "variants": de_to_hgvs(
             d_v, {"reference": r_m["sequence"]["seq"], "observed": obs_seq}
         ),
-        "reference": {"id": m["reference"]["id"]},
+        "reference": {"id": model["reference"]["id"]},
         "coordinate_system": "i",
     }
-    if c_s == "c":
-        n_m = to_hgvs_locations(
-            d_h_m, {m["reference"]["id"]: r_m}, c_s, m["reference"]["id"]
-        )
+
+    c_s = get_coordinate_system_from_reference(r_m)
+    if c_s in ["c", "n"]:
+        n_m = to_hgvs_locations(d_h_m, {model["reference"]["id"]: r_m}, c_s, model["reference"]["id"])
     else:
-        n_m = to_hgvs_locations(d_h_m, {m["reference"]["id"]: r_m}, c_s)
+        n_m = to_hgvs_locations(d_h_m, {model["reference"]["id"]: r_m}, c_s)
     n_d = model_to_string(n_m)
 
-    return {"input_model": m, "normalized_description": n_d}
+    return {"input_model": model, "normalized_description": n_d}

@@ -100,12 +100,7 @@ from .util import (
     set_by_path,
     slice_sequence,
     sort_variants,
-    set_start,
-    set_end,
 )
-
-from mutalyzer_spdi_parser.convert import to_hgvs_internal_model as spdi_to_hgvs
-from .converter.to_hgvs_indexing import variants_to_internal_indexing
 
 
 class Description(object):
@@ -198,35 +193,17 @@ class Description(object):
     @check_errors
     def _convert_description_to_model(self):
         start_rule = "variants" if self.only_variants else "description"
-        error = None
         try:
             model = to_model(self.input_description, start_rule)
         except UnexpectedCharacter as e:
-            error = errors.syntax_uc(e)
+            self._add_error(errors.syntax_uc(e))
         except UnexpectedEnd as e:
-            error = errors.syntax_ueof(e)
+            self._add_error(errors.syntax_ueof(e))
         except NestedDescriptions as e:
-            error = errors.syntax_nested(e)
+            self._add_error(errors.syntax_nested(e))
         else:
             if start_rule == "variants":
                 self.input_model = {"variants": model}
-            else:
-                self.input_model = model
-        if error:
-            try:
-                model = spdi_to_hgvs(self.input_description)
-                import json
-                if get_start(model["variants"][0]) == get_end(model["variants"][0]):
-                    model["variants"][0]["type"] = "insertion"
-                    set_start(model["variants"][0]["location"], get_start(model["variants"][0]) + 1)
-                    set_end(model["variants"][0]["location"], get_end(model["variants"][0]) + 2)
-                else:
-                    set_start(model["variants"][0]["location"], get_start(model["variants"][0]) + 1)
-                    model["variants"] = variants_to_internal_indexing(model["variants"])
-                    if get_end(model["variants"][0]["location"]):
-                        set_end(model["variants"][0]["location"], get_end(model["variants"][0]) + 1)
-            except:
-                self._add_error(error)
             else:
                 self.input_model = model
 
