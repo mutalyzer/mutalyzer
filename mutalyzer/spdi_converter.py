@@ -1,25 +1,37 @@
+"""Convert from SPDI to HGVS."""
+
 from extractor import describe_dna
 from mutalyzer_mutator import mutate
+from mutalyzer_retriever.reference import (
+    get_assembly_chromosome_accession,
+    get_assembly_id,
+)
+from mutalyzer_retriever.retriever import get_chromosome_from_selector
 from mutalyzer_spdi_parser.convert import to_hgvs_internal_model as spdi_to_hgvs
 
 from .converter.to_hgvs_coordinates import to_hgvs_locations
 from .converter.variants_de_to_hgvs import de_to_hgvs
 from .description_model import model_to_string
-from .errors import out_of_boundary_greater, sequence_mismatch, reference_not_retrieved
+from .errors import out_of_boundary_greater, reference_not_retrieved, sequence_mismatch
 from .reference import get_coordinate_system_from_reference, retrieve_reference
 from .util import get_end, get_start
-from mutalyzer_retriever.reference import get_assembly_id, get_assembly_chromosome_accession
-from mutalyzer_retriever.retriever import get_chromosome_from_selector
 
 
 def _errors_check(variant, ref_seq):
+    """
+    Check if the deleted sequence matches the reference sequence and
+    if the locations are within the boundaries of te reference sequence.
+
+    :param variant: Description model.
+    :param ref_seq: Reference sequence
+    :return: A list with errors.
+    """
     errors = []
     if variant.get("deleted") and variant["deleted"][0].get("sequence"):
-        del_ref_seq = ref_seq[get_start(variant): get_end(variant)]
+        del_ref_seq = ref_seq[get_start(variant) : get_end(variant)]
         del_seq = variant["deleted"][0]["sequence"]
         if del_seq != del_ref_seq:
-            errors.append(
-                sequence_mismatch(del_ref_seq, del_seq, ["variants", 0]))
+            errors.append(sequence_mismatch(del_ref_seq, del_seq, ["variants", 0]))
     if get_start(variant) > len(ref_seq):
         errors.append(
             out_of_boundary_greater(
@@ -42,6 +54,9 @@ def _errors_check(variant, ref_seq):
 
 
 def _get_ids(model):
+    """
+    Correct `assembly(chromosome_number)`, e.g., `GRCh38(chr11)`.
+    """
     r_id = model["reference"]["id"]
     s_id = None
     if model["reference"].get("selector") and model["reference"]["selector"].get("id"):
@@ -61,13 +76,21 @@ def _get_ids(model):
     return r_id, s_id
 
 
-def spdi_converter(description=None, description_model=None):
-    if description:
+def spdi_converter(description):
+    """
+    Convert an SPDI description to a normalized HGVS description.
+
+    :param description: An SPDI description.
+    :return: The normalized HGVS description and the input model.
+    """
+    try:
         model = spdi_to_hgvs(description)
-    elif description_model:
-        model = description_model
-    else:
-        return
+    except Exception as e:
+        if "Unexpected end-of-input" in str(e):
+            return {"errors": [{"code": "ESYNTAXUEOF", "details": "Unexpected end of input."}]}
+        if "No terminal matches" in str(e):
+            return {"errors": [{"code": "ESYNTAXUC", "details": "Unexpected character."}]}
+        return {"errors": [{"code": "EUNKNOWN"}]}
 
     r_id, s_id = _get_ids(model)
     r_m = retrieve_reference(r_id, s_id)[0]

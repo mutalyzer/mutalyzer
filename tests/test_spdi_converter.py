@@ -30,6 +30,8 @@ def test_spdi_converter(input_description, normalized):
         ("NG_012337.3:71250:1:", ["EOUTOFBOUNDARY", "EOUTOFBOUNDARY"]),
         ("NG_012337.3:1:71250:", ["EOUTOFBOUNDARY"]),
         ("NG_012337.3:7125:100000:", ["EOUTOFBOUNDARY"]),
+        ("NG_012337.3:7125:", ["ESYNTAXUEOF"]),
+        ("NG_012337.3:7125:$", ["ESYNTAXUC"]),
     ],
 )
 def test_errors(input_description, codes):
