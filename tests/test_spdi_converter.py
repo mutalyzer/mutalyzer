@@ -16,7 +16,15 @@ def get_tests(tests, t_type):
 
 
 @pytest.mark.parametrize(
-    "input_description, normalized", get_tests(TESTS_ALL, "normalized")
+    "input_description, normalized",
+    get_tests(TESTS_ALL, "normalized")
+    + [
+        ("NG_012337.3(NM_003002.4):273:T:A", "NG_012337.3:g.274T>A"),
+        ("NG_012337.3(NM_003002.4):273:1:A", "NG_012337.3:g.274T>A"),
+        ("NM_003002.4:308:G:T", "NM_003002.4:c.274G>T"),
+        ("NM_003002.4:308:1:T", "NM_003002.4:c.274G>T"),
+        ("NR_038420.1:10::T", "NR_038420.1:n.10_11insT"),
+    ]
 )
 def test_spdi_converter(input_description, normalized):
     d = spdi_converter(input_description)
