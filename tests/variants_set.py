@@ -1750,6 +1750,7 @@ M2_TESTS = [
             "M2: Range duplication with non-reference sequence argument.",
         ],
         "input": "NM_000143.3:c.44_47dupTGGG",
+        "input_spdi": ["NM_000143.3:106:TGGG:TGCGTGCG"],
         "errors": ["ESEQUENCEMISMATCH"],
         "to_test": True,
     },
@@ -1759,6 +1760,7 @@ M2_TESTS = [
             "M2: Range duplication with length argument.",
         ],
         "input": "NM_000143.3:c.44_47dup4",
+        "input_spdi": ["NM_000143.3:106:4:TGCGTGCG", "NM_000143.3:106:TGCG:TGCGTGCG"],
         "normalized": "NM_000143.3:c.44_47dup",
         "to_test": True,
     },
@@ -2152,6 +2154,7 @@ TESTS = [
     {
         "keywords": [],
         "input": "NM_003002.4:c.1del",
+        "input_spdi": ["NM_003002.4:35:1:", "NM_003002.4:35:A:"],
         "normalized": "NM_003002.4:c.1del",
         "to_test": True,
     },
@@ -2531,6 +2534,8 @@ TESTS = [
     {
         "keywords": [],
         "input": "NG_012337.1(NM_012459.2):c.5_6delinsTAG",
+        "normalized": "NG_012337.1(NM_012459.2):c.5_6delinsTAG",
+        "genomic": "NG_012337.1:g.4917_4918delinsCTA",
         "protein_description": "NG_012337.1(NP_036591.2):p.(Arg2Leufs*23)",
         "rna_description": "NG_012337.1(NM_012459.2):r.(5_6delinsuag)",
         "to_test": True,
@@ -2560,6 +2565,7 @@ TESTS = [
     {
         "keywords": [],
         "input": "NG_012337.1:g.13124_13125del",
+        "input_spdi": ["NG_012337.1:13123:2:", "NG_012337.1:13123:AC:"],
         "normalized": "NG_012337.1:g.13124_13125del",
         "normalized_alt": "NG_012337.1:g.13124_13125del",
         "coding_protein_descriptions": {
@@ -2852,6 +2858,7 @@ TESTS = [
     {
         "keywords": ["#49", "mitochondrion"],
         "input": "NC_012920.1:g.3243A>G",
+        "input_spdi": ["NC_012920.1:3242:A:G", "NC_012920.1:3242:1:G"],
         "normalized": "NC_012920.1:m.3243A>G",
         "normalized_alt": "NC_012920.1:m.3243A>G",
         "infos": ["ICORRECTEDCOORDINATESYSTEM"],
@@ -2961,6 +2968,7 @@ TESTS = [
     {
         "keywords": [],
         "input": "LRG_24:g.5525_5532delinsNM_003002.2:c.*835_qter",
+        "input_spdi": ["LRG_24:5524:8:AAAAAAA", "LRG_24:5524:CGGGGCAC:AAAAAAA"],
         "normalized": "LRG_24:g.5525_5532delinsAAAAAAA",
         "normalized_alt": "LRG_24:g.5525_5532delinsA[7]",
         "to_test": True,
@@ -3008,7 +3016,9 @@ TESTS = [
     {
         "keywords": ["repeat", "dbsnp"],
         "input": "NG_012337.1:g.4917GC[5]",
+        "input_spdi": ["NG_012337.1:4916:4:GCGCGCGCGC", "NG_012337.1:4916:GCGC:GCGCGCGCGC"],
         "genomic": "NG_012337.1:g.4917_4920GC[5]",
+        "normalized": "NG_012337.1:g.4917_4920GC[5]",
         "to_test": True,
     },
     {
@@ -3022,7 +3032,9 @@ TESTS = [
     {
         "keywords": ["repeat", "dbsnp"],
         "input": "NG_012337.1:g.4911GT[5]",
+        "input_spdi": ["NG_012337.1:4910:4:GTGTGTGTGT", "NG_012337.1:4910:GTGT:GTGTGTGTGT"],
         "genomic": "NG_012337.1:g.4911_4914GT[5]",
+        "normalized": "NG_012337.1:g.4911_4914GT[5]",
         "to_test": True,
     },
     {
