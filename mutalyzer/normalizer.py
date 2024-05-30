@@ -25,6 +25,7 @@ from .reference import get_protein_selector_model
 from .description_model import get_selector_id
 from .converter.to_delins import to_delins, variants_to_delins
 
+
 def _add_minimal(graph, reference, output, prefix=""):
     minimal_descriptions = []
     minimal_length = 100

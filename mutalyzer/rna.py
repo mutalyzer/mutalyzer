@@ -7,7 +7,6 @@ from algebra import LCSgraph, Variant
 from algebra.extractor import extract as extract_variants
 from algebra.extractor import local_supremal as get_local_supremal
 from algebra.extractor import to_hgvs
-from algebra.variants import patch, to_hgvs
 from Bio.Seq import Seq
 from mutalyzer_crossmapper import Coding, Genomic, NonCoding
 from mutalyzer_hgvs_parser import to_model
@@ -430,7 +429,6 @@ def to_rna_reference_model(reference_model, selector_id, inverted, transcribe=Tr
     return rna_model
 
 
-
 def dna_to_rna(description):
     d = Description(description)
     d.to_delins()
@@ -444,7 +442,6 @@ def dna_to_rna(description):
     ref_seq = d.references["reference"]["sequence"]["seq"]
     alg_dna_variants, graph = extract_variants(ref_seq, delins_to_algebra(delins, sequences))
     local_supremal = get_local_supremal(ref_seq, graph)
-
 
     if not _splice_sites_affected(exons, local_supremal):
         alg_rna_sliced_variants = to_rna_variants(
@@ -464,7 +461,6 @@ def dna_to_rna(description):
         }
 
         rna_selector_model = get_internal_selector_model(rna_reference_models["reference"]["annotations"], d.get_selector_id(), fix_exon=True)
-        print(rna_selector_model)
         x = Coding(rna_selector_model["exon"], rna_selector_model["cds"][0], d.is_inverted()).coordinate_to_coding
         for point, path in yield_point_locations_for_main_reference(extracted_model):
             set_by_path(extracted_model, path, coding_to_point(x(point["position"] - 1)))
