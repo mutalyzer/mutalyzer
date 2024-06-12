@@ -354,6 +354,8 @@ def _splice_sites_affected(exons, local_supremal, exon_margin=2, intron_margin=4
         sup_end_index, sup_end_offset = get_position_type(sup.end, exons, intron_margin)
         if sup_end_index - sup_start_index == 1:
             return True
+        elif sup_end_index != sup_start_index and (sup_end_index - sup_start_index) % 2 == 0 and sup.sequence:
+            return True
     return False
 
 
