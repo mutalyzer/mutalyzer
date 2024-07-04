@@ -19,10 +19,10 @@ from .converter.to_internal_indexing import to_internal_indexing
 from .description import Description
 from .util import construct_sequence, get_end, get_start, roll
 from .viewer import view_delins
-from .rna import dna_to_rna
+from .rna import dna_to_rna, rna_to_dna
 from .protein import get_protein_description
 from .reference import get_protein_selector_model
-from .description_model import get_selector_id
+from .description_model import get_selector_id, model_to_string
 from .converter.to_delins import to_delins, variants_to_delins
 
 
@@ -168,6 +168,33 @@ def view_algebra_variants(variants, ref_seq, names=None):
     )
 
 
+def _normalize_alt(d_m):
+    d = Description(description_model=d_m)
+    d.to_delins()
+
+    if d.corrected_model.get("type") == "description_protein":
+        return _no_protein_support()
+
+    if d.errors:
+        return d.output()
+
+    if d.only_equals() or d.no_operation():
+        d.normalize_only_equals_or_no_operation()
+        d.remove_superfluous_selector()
+        return d.output()
+
+    algebra_variants = _algebra_variants(d.delins_model["variants"], d.get_sequences())
+    ref_seq = d.references["reference"]["sequence"]["seq"]
+
+    algebra_extracted_variants, graph = extract_variants(ref_seq, algebra_variants)
+    supremal = graph.supremal
+
+    algebra_hgvs = to_hgvs_experimental(algebra_extracted_variants, ref_seq)
+
+    return _descriptions(d, algebra_hgvs, supremal, graph)
+
+
+
 def normalize_alt(description, only_variants=False, sequence=None):
     d = Description(description=description, only_variants=only_variants, sequence=sequence)
     d.to_delins()
@@ -222,6 +249,13 @@ def normalize_alt(description, only_variants=False, sequence=None):
                     protein["position_last_predicted"] = p_d[5]
                 output["protein"]= protein
 
+    elif d.de_hgvs_model.get("coordinate_system") in ["r"]:
+        m = rna_to_dna(description)
+        if not m.get("errors"):
+            _predicted_dna = _normalize_alt(m)
+            if _predicted_dna.get("normalized_model"):
+                _predicted_dna["normalized_model"]["predicted"] = True
+                output["dna"] = {"description": model_to_string(_predicted_dna["normalized_model"])}
     return output
 
 

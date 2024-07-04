@@ -12,6 +12,7 @@ from mutalyzer_crossmapper import Coding, Genomic, NonCoding
 from mutalyzer_hgvs_parser import to_model
 from mutalyzer_mutator.util import reverse_complement
 from mutalyzer_retriever.retriever import extract_feature_model
+from mutalyzer_retriever.reference import get_reference_mol_type
 
 from .algebra import (
     algebra_variant_to_delins,
@@ -30,7 +31,7 @@ from .description_model import (
     yield_ranges_main_reference,
 )
 from .errors import splice_site
-from .reference import get_internal_selector_model, slice_to_selector, yield_locations
+from .reference import get_internal_selector_model, slice_to_selector, yield_locations, get_coordinate_system_from_selector_id
 from .util import get_end, get_start, set_by_path, set_end, set_start
 
 
@@ -445,44 +446,72 @@ def dna_to_rna(description):
     alg_dna_variants, graph = extract_variants(ref_seq, delins_to_algebra(delins, sequences))
     local_supremal = get_local_supremal(ref_seq, graph)
 
-    if not _splice_sites_affected(exons, local_supremal):
-        alg_rna_sliced_variants = to_rna_variants(
-            [algebra_variant_to_delins(v) for v in alg_dna_variants],
-            d.get_sequences(),
-            d.get_selector_model()
-        )
-        rna_reference_models = get_rna_reference_models(d)
-        rna_ref_seq = rna_reference_models["reference"]["sequence"]["seq"]
-        alg_rna_variants, *_ = extract_variants(rna_ref_seq, delins_to_algebra(alg_rna_sliced_variants, {"reference": ref_seq}))
-        extracted_variants_model = to_model(to_hgvs(alg_rna_variants, rna_ref_seq), start_rule="variants")
+    if (
+            get_reference_mol_type(d.references["reference"]) == "genomic DNA" and
+            _splice_sites_affected(exons, local_supremal)
+    ):
+        return {"errors": [splice_site([])]}
 
-        extracted_model = {
-            "reference": d.corrected_model["reference"],
-            "variants": extracted_variants_model,
-            "predicted": True,
-        }
+    alg_rna_sliced_variants = to_rna_variants(
+        [algebra_variant_to_delins(v) for v in alg_dna_variants],
+        d.get_sequences(),
+        d.get_selector_model()
+    )
+    rna_reference_models = get_rna_reference_models(d)
+    rna_ref_seq = rna_reference_models["reference"]["sequence"]["seq"]
+    alg_rna_variants, *_ = extract_variants(rna_ref_seq, delins_to_algebra(alg_rna_sliced_variants, {"reference": ref_seq}))
+    extracted_variants_model = to_model(to_hgvs(alg_rna_variants, rna_ref_seq), start_rule="variants")
 
-        rna_selector_model = get_internal_selector_model(rna_reference_models["reference"]["annotations"], d.get_selector_id(), fix_exon=True)
+    extracted_model = {
+        "reference": d.corrected_model["reference"],
+        "variants": extracted_variants_model,
+        "predicted": True,
+    }
+
+    rna_selector_model = get_internal_selector_model(rna_reference_models["reference"]["annotations"], d.get_selector_id(), fix_exon=True)
+    if rna_selector_model.get("cds"):
         x = Coding(rna_selector_model["exon"], rna_selector_model["cds"][0], d.is_inverted()).coordinate_to_coding
-        for point, path in yield_point_locations_for_main_reference(extracted_model):
-            set_by_path(extracted_model, path, coding_to_point(x(point["position"] - 1)))
-        if d.is_inverted():
-            for range_location, path in yield_ranges_main_reference(extracted_model):
-                range_location["start"], range_location["end"] = range_location["end"], range_location["start"]
-            for variant in extracted_model["variants"]:
-                if variant.get("inserted"):
-                    for inserted in variant["inserted"]:
-                        if inserted.get("sequence"):
-                            inserted["sequence"] = reverse_complement(inserted["sequence"])
-                if variant.get("deleted"):
-                    for deleted in variant["deleted"]:
-                        if deleted.get("sequence"):
-                            deleted["sequence"] = reverse_complement(deleted["sequence"])
-            extracted_model["variants"].reverse()
+    else:
+        x = NonCoding(rna_selector_model["exon"], d.is_inverted()).coordinate_to_noncoding
+    for point, path in yield_point_locations_for_main_reference(extracted_model):
+        set_by_path(extracted_model, path, coding_to_point(x(point["position"] - 1)))
+    if d.is_inverted():
+        for range_location, path in yield_ranges_main_reference(extracted_model):
+            range_location["start"], range_location["end"] = range_location["end"], range_location["start"]
+        for variant in extracted_model["variants"]:
+            if variant.get("inserted"):
+                for inserted in variant["inserted"]:
+                    if inserted.get("sequence"):
+                        inserted["sequence"] = reverse_complement(inserted["sequence"])
+            if variant.get("deleted"):
+                for deleted in variant["deleted"]:
+                    if deleted.get("sequence"):
+                        deleted["sequence"] = reverse_complement(deleted["sequence"])
+        extracted_model["variants"].reverse()
 
-        extracted_model["coordinate_system"] = "r"
-        extracted_model["predicted"] = True
+    extracted_model["coordinate_system"] = "r"
+    extracted_model["predicted"] = True
 
-        return {"description": model_to_string(extracted_model)}
+    return {"description": model_to_string(extracted_model)}
 
-    return {"errors": [splice_site([])]}
+
+def rna_to_dna(description):
+    d = Description(description)
+    d.to_delins()
+    if d.errors:
+        return d.errors
+
+    delins = d.delins_model["variants"]
+    sequences = d.get_sequences()
+    exons = d.get_selector_model()["exon"]
+
+    ref_seq = d.references["reference"]["sequence"]["seq"]
+    alg_dna_variants, graph = extract_variants(ref_seq, delins_to_algebra(delins, sequences))
+    local_supremal = get_local_supremal(ref_seq, graph)
+
+    if _splice_sites_affected(exons, local_supremal):
+        return {"errors": [splice_site([])]}
+
+    d.corrected_model["coordinate_system"] = get_coordinate_system_from_selector_id(d.references["reference"], d.get_selector_id())
+
+    return d.corrected_model
