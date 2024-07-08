@@ -11,8 +11,8 @@ from Bio.Seq import Seq
 from mutalyzer_crossmapper import Coding, Genomic, NonCoding
 from mutalyzer_hgvs_parser import to_model
 from mutalyzer_mutator.util import reverse_complement
-from mutalyzer_retriever.retriever import extract_feature_model
 from mutalyzer_retriever.reference import get_reference_mol_type
+from mutalyzer_retriever.retriever import extract_feature_model
 
 from .algebra import (
     algebra_variant_to_delins,
@@ -31,7 +31,12 @@ from .description_model import (
     yield_ranges_main_reference,
 )
 from .errors import splice_site
-from .reference import get_internal_selector_model, slice_to_selector, yield_locations, get_coordinate_system_from_selector_id
+from .reference import (
+    get_coordinate_system_from_selector_id,
+    get_internal_selector_model,
+    slice_to_selector,
+    yield_locations,
+)
 from .util import get_end, get_start, set_by_path, set_end, set_start
 
 
@@ -62,9 +67,7 @@ def get_position_type(position, exons, len_ss=2):
             bisect.bisect_right(flattened_exons, position), position_x[1]
         )
 
-    return _output_intron(
-            bisect.bisect_left(flattened_exons, position), position_x[1]
-        )
+    return _output_intron(bisect.bisect_left(flattened_exons, position), position_x[1])
 
 
 def algebra_variants_to_hgvs(algebra_variants):
@@ -257,8 +260,6 @@ def predict_rna(d, local_supremals):
         _, local_root = extract_variants(ref_seq, [sup])
         sup_start_index, sup_start_offset = get_position_type(sup.start, exons, exon_margin)
         sup_end_index, sup_end_offset = get_position_type(sup.end, exons, intron_margin)
-        # print(sup_start_index, sup_start_offset)
-        # print(sup_end_index, sup_end_offset)
         splice_affected = False
         sup_status = {}
         if sup_end_index - sup_start_index == 1:
@@ -355,8 +356,15 @@ def _splice_sites_affected(exons, local_supremal, exon_margin=2, intron_margin=4
         sup_end_index, sup_end_offset = get_position_type(sup.end, exons, intron_margin)
         if sup_end_index - sup_start_index == 1:
             return True
-        elif sup_end_index != sup_start_index and (sup_end_index - sup_start_index) % 2 == 0 and sup.sequence:
+        elif (
+            sup_end_index != sup_start_index
+            and (sup_end_index - sup_start_index) % 2 == 0
+            and sup.sequence
+        ):
             return True
+        for exon in exons:
+            if exon[0] == sup.start == sup.end or exon[1] == sup.start == sup.end:
+                return True
     return False
 
 
@@ -405,7 +413,11 @@ def to_rna_reference_model(reference_model, selector_id, inverted, transcribe=Tr
     :rtype: dict
     """
     annotations = deepcopy(extract_feature_model(reference_model["annotations"], selector_id)[0])
-    seq = str(Seq(slice_to_selector(reference_model, selector_id)).transcribe()).lower() if transcribe else slice_to_selector(reference_model, selector_id)
+    seq = (
+        str(Seq(slice_to_selector(reference_model, selector_id)).transcribe()).lower()
+        if transcribe
+        else slice_to_selector(reference_model, selector_id)
+    )
     selector_model = get_internal_selector_model(annotations, selector_id, True)
 
     rna_model = {"annotations": annotations, "sequence": {"seq": seq}}
@@ -436,7 +448,7 @@ def dna_to_rna(description):
     d = Description(description)
     d.to_delins()
     if d.errors:
-        return d.errors
+        return {"errors": [splice_site([])]}
 
     delins = d.delins_model["variants"]
     sequences = d.get_sequences()
@@ -447,19 +459,19 @@ def dna_to_rna(description):
     local_supremal = get_local_supremal(ref_seq, graph)
 
     if (
-            get_reference_mol_type(d.references["reference"]) == "genomic DNA" and
-            _splice_sites_affected(exons, local_supremal)
+        get_reference_mol_type(d.references["reference"]) == "genomic DNA"
+        and _splice_sites_affected(exons, local_supremal)
     ):
         return {"errors": [splice_site([])]}
 
     alg_rna_sliced_variants = to_rna_variants(
         [algebra_variant_to_delins(v) for v in alg_dna_variants],
         d.get_sequences(),
-        d.get_selector_model()
+        d.get_selector_model(),
     )
     rna_reference_models = get_rna_reference_models(d)
     rna_ref_seq = rna_reference_models["reference"]["sequence"]["seq"]
-    alg_rna_variants, *_ = extract_variants(rna_ref_seq, delins_to_algebra(alg_rna_sliced_variants, {"reference": ref_seq}))
+    alg_rna_variants, *_ = extract_variants(rna_ref_seq, delins_to_algebra(alg_rna_sliced_variants, {"reference": ref_seq})    )
     extracted_variants_model = to_model(to_hgvs(alg_rna_variants, rna_ref_seq), start_rule="variants")
 
     extracted_model = {
@@ -499,7 +511,7 @@ def rna_to_dna(description):
     d = Description(description)
     d.to_delins()
     if d.errors:
-        return d.errors
+        return {"errors": [splice_site([])]}
 
     delins = d.delins_model["variants"]
     sequences = d.get_sequences()
@@ -509,9 +521,14 @@ def rna_to_dna(description):
     alg_dna_variants, graph = extract_variants(ref_seq, delins_to_algebra(delins, sequences))
     local_supremal = get_local_supremal(ref_seq, graph)
 
-    if _splice_sites_affected(exons, local_supremal):
+    if (
+        get_reference_mol_type(d.references["reference"]) == "genomic DNA"
+        and _splice_sites_affected(exons, local_supremal)
+    ):
         return {"errors": [splice_site([])]}
 
-    d.corrected_model["coordinate_system"] = get_coordinate_system_from_selector_id(d.references["reference"], d.get_selector_id())
+    d.corrected_model["coordinate_system"] = get_coordinate_system_from_selector_id(
+        d.references["reference"], d.get_selector_id()
+    )
 
     return d.corrected_model

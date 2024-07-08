@@ -256,6 +256,8 @@ def normalize_alt(description, only_variants=False, sequence=None):
             if _predicted_dna.get("normalized_model"):
                 _predicted_dna["normalized_model"]["predicted"] = True
                 output["dna"] = {"description": model_to_string(_predicted_dna["normalized_model"])}
+        else:
+            output["dna"] = m
     return output
 
 
