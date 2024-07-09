@@ -194,8 +194,26 @@ def _normalize_alt(d_m):
     return _descriptions(d, algebra_hgvs, supremal, graph)
 
 
-
 def normalize_alt(description, only_variants=False, sequence=None):
+    def _protein():
+        protein_selector_model = get_protein_selector_model(
+            d.references["reference"]["annotations"],
+            get_selector_id(d.de_hgvs_model),
+        )
+        if protein_selector_model:
+            p_d = get_protein_description(
+                variants_to_delins(d.de_hgvs_internal_indexing_model["variants"]),
+                d.references,
+                protein_selector_model
+            )
+            protein = dict(
+                zip(["description", "reference", "predicted"], p_d[:3]))
+            if len(p_d) == 6:
+                protein["position_first"] = p_d[3]
+                protein["position_last_original"] = p_d[4]
+                protein["position_last_predicted"] = p_d[5]
+            output["protein"] = protein
+
     d = Description(description=description, only_variants=only_variants, sequence=sequence)
     d.to_delins()
 
@@ -231,24 +249,7 @@ def normalize_alt(description, only_variants=False, sequence=None):
     if d.de_hgvs_model.get("coordinate_system") in ["c", "n"]:
         output["rna"] = dna_to_rna(description)
         if output["rna"].get("errors") is None:
-            protein_selector_model = get_protein_selector_model(
-                d.references["reference"]["annotations"],
-                get_selector_id(d.de_hgvs_model),
-            )
-            if protein_selector_model:
-                p_d = get_protein_description(variants_to_delins(
-                    d.de_hgvs_internal_indexing_model["variants"]
-                ),
-                    d.references,
-                    protein_selector_model
-                )
-                protein = dict(zip(["description", "reference", "predicted"], p_d[:3]))
-                if len(p_d) == 6:
-                    protein["position_first"] = p_d[3]
-                    protein["position_last_original"] = p_d[4]
-                    protein["position_last_predicted"] = p_d[5]
-                output["protein"]= protein
-
+            _protein()
     elif d.de_hgvs_model.get("coordinate_system") in ["r"]:
         m = rna_to_dna(description)
         if not m.get("errors"):
@@ -258,6 +259,7 @@ def normalize_alt(description, only_variants=False, sequence=None):
                 output["dna"] = {"description": model_to_string(_predicted_dna["normalized_model"])}
         else:
             output["dna"] = m
+        _protein()
     return output
 
 

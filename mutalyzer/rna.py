@@ -179,7 +179,6 @@ def add_pre_edges(root):
 
 def get_rna_limits(graph, ref_seq, offset=0):
     left, right = get_sides_limits(graph)
-    # print(left, right)
 
     left_variants = [
         Variant(v.start + offset, v.end + offset, v.sequence) for v in left[1]
@@ -273,10 +272,7 @@ def predict_rna(d, local_supremals):
                     sup_status["push_intron"] = left_push[1]
                 if right_push[0] > exons[sup_start_index // 2][0] + exon_margin:
                     # it can be pushed into the exon
-                    # print(right_push)
                     sup_status["push_exon"] = right_push[1]
-                    # print("\n\n\n\ssfd")
-                    # print(sup_status["push_exon"])
             else:
                 # exon - intron
                 sup_status["between"] = "exon - intron"
@@ -286,16 +282,12 @@ def predict_rna(d, local_supremals):
                 if left_push[0] < exons[sup_start_index // 2][1] - exon_margin:
                     # it can be pushed into the exon
                     sup_status["push_exon"] = left_push[1]
-        # print(extract_variants(ref_seq, [sup]))
-        # print(_genomic_and_coding(extract_variants(ref_seq, [sup])[0], d, selector_id))
         sup_status["hgvs"] = _genomic_and_coding(
             extract_variants(ref_seq, [sup])[0], d, selector_id
         )
         sup_status["splice_affected"] = splice_affected
         sup_status["supremal"] = _genomic_and_coding([sup], d, selector_id)
         status["local_supremals"][i] = sup_status
-
-    # print(json.dumps(status, indent=2))
 
     rna_description_possible = True
     for i, sup_status in status["local_supremals"].items():
@@ -342,7 +334,6 @@ def predict_rna(d, local_supremals):
             description += f":r.({';'.join(rna_description)})"
         status["description"] = description
 
-    # print(json.dumps(status, indent=2))
     return status
 
 
