@@ -1916,6 +1916,22 @@ TESTS = [
             "NCBI",
             "g.",
             "single variant",
+            "substitution",
+            "predicted"
+        ],
+        "input": "NG_012337.1:g.(4C>T)",
+        "normalized": "NG_012337.1:g.(4C>T)",
+        "to_test": True,
+    },
+    {
+        "keywords": [
+            "correct input",
+            "no errors",
+            "no warnings",
+            "genomic reference",
+            "NCBI",
+            "g.",
+            "single variant",
             "deletion range",
         ],
         "input": "NG_017013.2:g.17013_17014del",

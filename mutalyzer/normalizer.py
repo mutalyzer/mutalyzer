@@ -123,6 +123,8 @@ def _descriptions(d, algebra_hgvs, supremal, graph):
         "variants": to_model(algebra_hgvs, "variants"),
     }
     internal = to_internal_indexing(to_internal_coordinates(algebra_model, d.get_sequences()))
+    if d.corrected_model.get("predicted"):
+        internal["predicted"] = True
     delins = to_delins(internal)
     _add_shift(internal, delins, ref_seq)
 
