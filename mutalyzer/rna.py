@@ -29,6 +29,7 @@ from .description_model import (
     variant_to_description,
     yield_point_locations_for_main_reference,
     yield_ranges_main_reference,
+    yield_sub_model,
 )
 from .errors import splice_site
 from .reference import (
@@ -521,5 +522,8 @@ def rna_to_dna(description):
     d.corrected_model["coordinate_system"] = get_coordinate_system_from_selector_id(
         d.references["reference"], d.get_selector_id()
     )
+
+    for seq, path in yield_sub_model(d.corrected_model, ["sequence"]):
+        set_by_path(d.corrected_model, path, str(Seq(seq).back_transcribe()).upper())
 
     return d.corrected_model

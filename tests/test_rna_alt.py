@@ -1,6 +1,7 @@
 import pytest
 
 from mutalyzer.rna import dna_to_rna, rna_to_dna, get_position_type
+from mutalyzer.description_model import model_to_string
 
 from .commons import code_in, monkey_patches
 from .variants_set import TESTS_ALL
@@ -94,6 +95,26 @@ def test_dna_to_rna_new(input_description, rna_expected):
 )
 def test_dna_to_rna_new_errors(description):
     assert dna_to_rna(description).get("errors") is not None
+
+
+@pytest.mark.parametrize(
+    "input_description, dna_expected",
+    [
+        ("NG_012337.1(NM_012459.2):r.(269_271c[2])", "NG_012337.1(NM_012459.2):c.(269_271C[2])"),
+        ("NM_012459.2:r.(269_271c[2])", "NM_012459.2:c.(269_271C[2])"),
+        ("NG_012337.1(NM_012459.2):r.(271c>a)", "NG_012337.1(NM_012459.2):c.(271C>A)"),
+        ("NG_012337.3(NM_003002.4):r.(274g>u)", "NG_012337.3(NM_003002.4):c.(274G>T)"),
+        ("NM_003002.4:r.(274g>u)", "NM_003002.4:c.(274G>T)"),
+        ("NG_012337.1(NM_003002.2):r.(166c>a)", "NG_012337.1(NM_003002.2):c.(166C>A)"),
+        ("NR_038420.1:r.(206_210del)", "NR_038420.1:n.(206_210del)"),
+        ("NG_007485.1(NR_024274.1):r.(211_215g[6])", "NG_007485.1(NR_024274.1):n.(211_215G[6])"),
+        ("NM_003002.4:r.(169_170insa[3])", "NM_003002.4:c.(169_170insA[3])"),
+    ],
+)
+def test_rna_to_dna_new(input_description, dna_expected):
+    dna = rna_to_dna(input_description)
+    print(model_to_string(dna))
+    assert model_to_string(dna) == dna_expected
 
 
 @pytest.mark.parametrize(
