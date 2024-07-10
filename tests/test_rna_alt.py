@@ -63,6 +63,8 @@ def test_dna_to_rna_variants_set(input_description, rna_expected):
 @pytest.mark.parametrize(
     "input_description, rna_expected",
     [
+        ("NG_012337.1(NM_003002.2):c.-59_-58insA", "NG_012337.1(NM_003002.2):r.(-59_-58insa)"),
+        ("NG_012337.1(NM_003002.2):c.-60_-59insA", "NG_012337.1(NM_003002.2):r.(-60_-59insa)"),
         ("NG_012337.1(NM_012459.2):c.271del", "NG_012337.1(NM_012459.2):r.(269_271c[2])"),
         ("NM_012459.2:c.271del", "NM_012459.2:r.(269_271c[2])"),
         ("NG_012337.1(NM_012459.2):c.271C>A", "NG_012337.1(NM_012459.2):r.(271c>a)"),
@@ -82,8 +84,9 @@ def test_dna_to_rna_new(input_description, rna_expected):
 @pytest.mark.parametrize(
     "description",
     [
-        "NG_012337.1(NM_003002.2):c.169del",
         "NG_012337.1(NM_003002.2):c.168del",
+        "NG_012337.1(NM_003002.2):c.169del",
+        "NG_012337.1(NM_003002.2):c.170del",
         "NG_012337.3(NM_003002.4):c.169_169+1insAA",
         "NG_012337.3(NM_003002.4):c.169_170insAA",
         "NG_007485.1(NR_024274.1):n.616_616+1insTTTTTT",

@@ -3115,7 +3115,7 @@ TESTS = [
         },
         "protein_description": "NG_008835.1(NP_071436.1):p.(Asn190Thrfs*14)",
         "rna_description": "NG_008835.1(NM_022153.2):r.(569del)",
-        "rna_description_alt": "NG_008835.1(NM_022153.2):r.(566_569a[3])",
+        "rna_description_alt": False,
         "to_test": True,
     },
     {

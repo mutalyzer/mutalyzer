@@ -61,12 +61,12 @@ def get_position_type(position, exons, len_ss=2):
     flattened_exons = [e for exon in exons for e in exon]
     position_x = x(position)
 
+    print(position_x)
+
     if position_x[1] == 0:
         return _output_exon(bisect.bisect_right(flattened_exons, position))
     elif 0 < abs(position_x[1]) <= len_ss and position_x[1] > 0:
-        return _output_intron(
-            bisect.bisect_right(flattened_exons, position), position_x[1]
-        )
+        return _output_intron(bisect.bisect_right(flattened_exons, position), position_x[1])
 
     return _output_intron(bisect.bisect_left(flattened_exons, position), position_x[1])
 
@@ -343,20 +343,41 @@ def _splice_sites_affected(exons, local_supremal, exon_margin=2, intron_margin=4
     Check if the local supremal variants touch the splice sites
     within the exon/intron margins.
     """
+    print("=====")
+    print(exons)
+    ss = []
     for sup in local_supremal:
-        sup_start_index, sup_start_offset = get_position_type(sup.start, exons, exon_margin)
-        sup_end_index, sup_end_offset = get_position_type(sup.end, exons, intron_margin)
-        if sup_end_index - sup_start_index == 1:
-            return True
-        elif (
-            sup_end_index != sup_start_index
-            and (sup_end_index - sup_start_index) % 2 == 0
-            and sup.sequence
-        ):
-            return True
+        print("---")
+        print(sup)
+        affected = False
         for exon in exons:
-            if exon[0] == sup.start == sup.end or exon[1] == sup.start == sup.end:
-                return True
+            exon_start, exon_end = exon
+            print("-")
+            print(exon_start - intron_margin, exon_start + exon_margin)
+            print(exon_end - exon_margin, exon_end + intron_margin)
+            if exon_start - intron_margin <= sup.start < exon_start + exon_margin:
+                print("# 1")
+                affected = True
+            elif exon_end - intron_margin <= sup.start < exon_end + exon_margin:
+                print("# 2")
+                affected = True
+            elif exon_start - intron_margin < sup.end < exon_start + exon_margin:
+                print("# 3")
+                affected = True
+            elif exon_end - intron_margin < sup.start < exon_end + exon_margin:
+                print("# 4")
+                affected = True
+            elif exon_end - exon_margin < sup.end < exon_end + intron_margin:
+                print("# 5")
+                affected = True
+            elif sup.start < exon_start - intron_margin  < exon_start + exon_margin < sup.end:
+                print("# 6")
+                affected = True
+        ss.append(affected)
+
+    print(ss)
+    print(not all(x==False for x in ss))
+    return not all(x==False for x in ss)
     return False
 
 
@@ -515,7 +536,7 @@ def rna_to_dna(description):
 
     if (
         get_reference_mol_type(d.references["reference"]) == "genomic DNA"
-        and _splice_sites_affected(exons, local_supremal)
+        and _splice_sites_affected(exons, local_supremal, 2, 0)
     ):
         return {"errors": [splice_site([])]}
 
