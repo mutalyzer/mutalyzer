@@ -355,16 +355,16 @@ def _splice_sites_affected(exons, local_supremal, exon_margin=2, intron_margin=4
             print("-")
             print(exon_start - intron_margin, exon_start + exon_margin)
             print(exon_end - exon_margin, exon_end + intron_margin)
-            if exon_start - intron_margin <= sup.start < exon_start + exon_margin:
+            if exon_start - intron_margin < sup.start < exon_start + exon_margin:
                 print("# 1")
                 affected = True
-            elif exon_end - intron_margin <= sup.start < exon_end + exon_margin:
+            elif exon_end - exon_margin < sup.start < exon_end + intron_margin:
                 print("# 2")
                 affected = True
             elif exon_start - intron_margin < sup.end < exon_start + exon_margin:
                 print("# 3")
                 affected = True
-            elif exon_end - intron_margin < sup.start < exon_end + exon_margin:
+            elif exon_end - exon_margin < sup.start < exon_end + intron_margin:
                 print("# 4")
                 affected = True
             elif exon_end - exon_margin < sup.end < exon_end + intron_margin:
@@ -457,7 +457,7 @@ def to_rna_reference_model(reference_model, selector_id, inverted, transcribe=Tr
     return rna_model
 
 
-def dna_to_rna(description):
+def dna_to_rna(description, exon_margin=2, intron_margin=4):
     d = Description(description)
     d.to_delins()
     if d.errors:
