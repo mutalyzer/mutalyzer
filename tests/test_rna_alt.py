@@ -173,6 +173,25 @@ def test_dna_to_rna_new_errors(description):
 @pytest.mark.parametrize(
     "input_description, dna_expected",
     [
+        # First exon start: c.-35
+        ("NG_012337.3(NM_003002.4):r.(-34_-33insa)", "NG_012337.3(NM_003002.4):c.(-34_-33insA)"),
+
+        # First exon end: c.52
+        ("NG_012337.3(NM_003002.4):r.(50_51insc)", "NG_012337.3(NM_003002.4):c.(50_51insC)"),
+
+        # Exon 2 start: c.53
+        ("NG_012337.3(NM_003002.4):r.(54_55insa)", "NG_012337.3(NM_003002.4):c.(54_55insA)"),
+
+        # Exon 2 end: c.169
+        ("NG_012337.3(NM_003002.4):r.(167_168insc)", "NG_012337.3(NM_003002.4):c.(167_168insC)"),
+
+        # Last exon start: c.315
+        ("NG_012337.3(NM_003002.4):r.(316_317insc)", "NG_012337.3(NM_003002.4):c.(316_317insC)"),
+
+        # Last exon end: c.*824
+        ("NG_012337.3(NM_003002.4):r.(*821_*822insc)", "NG_012337.3(NM_003002.4):c.(*821_*822insC)"),
+
+        # Other
         ("NG_012337.1(NM_012459.2):r.(269_271c[2])", "NG_012337.1(NM_012459.2):c.(269_271C[2])"),
         ("NM_012459.2:r.(269_271c[2])", "NM_012459.2:c.(269_271C[2])"),
         ("NG_012337.1(NM_012459.2):r.(271c>a)", "NG_012337.1(NM_012459.2):c.(271C>A)"),
@@ -192,6 +211,28 @@ def test_rna_to_dna_new(input_description, dna_expected):
 @pytest.mark.parametrize(
     "description",
     [
+        # First exon start: c.-35
+        "NG_012337.3(NM_003002.4):r.-35_-34insa",
+
+        # First exon end: c.52
+        "NG_012337.3(NM_003002.4):r.51_52insa",
+        "NG_012337.3(NM_003002.4):r.52_53insa",
+
+        # Exon 2 start: c.53
+        "NG_012337.3(NM_003002.4):c.53_54insA",
+
+        # Exon 2 end: c.169
+        "NG_012337.3(NM_003002.4):c.168_169insC",
+        "NG_012337.3(NM_003002.4):c.169_170insC",
+
+        # Last exon start: c.315
+        "NG_012337.3(NM_003002.4):c.314_315insC",
+        "NG_012337.3(NM_003002.4):c.315_316insC",
+
+        # Last exon end: c.*824
+        "NG_012337.3(NM_003002.4):c.*823_*824insC",
+
+        #Other
         "NG_012337.3(NM_003002.4):r.169_170insAAA",
         "NG_007485.1(NR_024274.1):r.616_617insTTTTTT",
     ],
