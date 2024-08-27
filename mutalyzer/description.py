@@ -558,8 +558,10 @@ class Description(object):
     def _construct_delins_model(self):
         self.delins_model = to_delins(self.internal_indexing_model)
         if not are_sorted(self.delins_model["variants"]):
-            self.delins_model["variants"] = sort_variants(self.delins_model["variants"])
-            self.add_info(infos.sorted_variants())
+            sorted_variants, order = sort_variants(self.delins_model["variants"])
+            self.delins_model["variants"] = sorted_variants
+            self.corrected_model["variants"] = [self.corrected_model["variants"][i] for i in order]
+            self.add_info(infos.sorted_variants(order))
 
     def get_sequences(self):
         """
@@ -1105,12 +1107,11 @@ class Description(object):
                 if is_dna(seq):
                     seq_rna = str(Seq(seq).transcribe()).lower()
                     self.add_info(infos.corrected_sequence(seq, seq_rna))
-                    seq_dna = str(Seq(seq_rna).back_transcribe()).upper()
-                    set_by_path(self.corrected_model, path, seq_dna)
+                    set_by_path(self.corrected_model, path, seq_rna)
                     if self.is_inverted():
                         path = reverse_path(self.corrected_model, path)
-                    set_by_path(self.internal_coordinates_model, path, seq_dna)
-                    set_by_path(self.internal_indexing_model, path, seq_dna)
+                    set_by_path(self.internal_coordinates_model, path, seq_rna)
+                    set_by_path(self.internal_indexing_model, path, seq_rna)
                 else:
                     seq_lower = seq.lower()
                     if seq_lower != seq:

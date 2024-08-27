@@ -10,11 +10,7 @@ def are_sorted(variants):
     """
     Check if the provided variants list is sorted.
     """
-    sorted_variants = sort_variants(variants)
-    if sorted_variants == variants:
-        return True
-    else:
-        False
+    return variants == sort_variants(variants)[0]
 
 
 def is_overlap(variants):
@@ -23,7 +19,7 @@ def is_overlap(variants):
 
     TODO: Add support for fuzzy (uncertain) locations.
     """
-    sorted_variants = sort_variants(variants)
+    sorted_variants = sort_variants(variants)[0]
     positions = []
     for point, path in yield_sub_model(
         sorted_variants, ["location", "start", "end"], ["point"]

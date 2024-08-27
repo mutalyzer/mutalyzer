@@ -11,6 +11,7 @@ from .commons import monkey_patches
         (
             "NM_003002.2:r.274g>u",
             {
+                "seq_length": 1382,
                 "views": [
                     {
                         "start": 0,
@@ -35,7 +36,14 @@ from .commons import monkey_patches
                         "right": "aaaaaaaaaaaaaaa",
                     },
                 ],
-                "seq_length": 1382,
+                "infos": [
+                    {
+                        "code": "IWHOLETRANSCRIPTEXON",
+                        "details": "No exon features found in the 'NM_003002.2' reference sequence "
+                        "for 'NM_003002.2'. The entire transcript was assumed as one exon.",
+                        "paths": [("reference", "selector", "id")],
+                    },
+                ],
             },
         ),
         (
@@ -180,6 +188,64 @@ from .commons import monkey_patches
                         "type": "outside",
                         "left": "GSARVAELLLLHGAE",
                         "right": "ARIDAAEGPSDIPD*",
+                    },
+                ],
+            },
+        ),
+        (
+            "NM_003002.4:r.[300del;274G>T]",
+            {
+                "seq_length": 1339,
+                "views": [
+                    {
+                        "start": 0,
+                        "end": 308,
+                        "type": "outside",
+                        "left": "ggguugguggaugac",
+                        "right": "ccuugcucugcgaug",
+                    },
+                    {
+                        "description": "274g>u",
+                        "start": 308,
+                        "end": 309,
+                        "type": "variant",
+                        "deleted": {"sequence": "g"},
+                        "inserted": {"sequence": "u", "length": 1},
+                    },
+                    {
+                        "start": 309,
+                        "end": 334,
+                        "type": "outside",
+                        "sequence": "acuauucccuggcugcagcccucac",
+                    },
+                    {
+                        "description": "300del",
+                        "start": 334,
+                        "end": 335,
+                        "type": "variant",
+                        "deleted": {"sequence": "u"},
+                    },
+                    {
+                        "start": 335,
+                        "end": 1339,
+                        "type": "outside",
+                        "left": "cuucauggucacugg",
+                        "right": "ucuucuaugcuuuua",
+                    },
+                ],
+                "infos": [
+                    {
+                        "code": "CORRECTEDSEQUENCE",
+                        "details": 'Sequence "G" corrected to "g".',
+                    },
+                    {
+                        "code": "CORRECTEDSEQUENCE",
+                        "details": 'Sequence "T" corrected to "u".',
+                    },
+                    {
+                        "code": "ISORTEDVARIANTS",
+                        "details": "Variants were sorted according to their locations.",
+                        "order": [1, 0],
                     },
                 ],
             },
