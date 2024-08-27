@@ -85,11 +85,14 @@ def from_to_selector_equal():
     }
 
 
-def sorted_variants():
-    return {
+def sorted_variants(order=None):
+    output = {
         "code": "ISORTEDVARIANTS",
         "details": "Variants were sorted according to their locations.",
     }
+    if order:
+        output["order"] = order
+    return output
 
 
 def corrected_sequence(original, corrected):
