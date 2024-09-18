@@ -144,13 +144,13 @@ def _descriptions(d, algebra_hgvs, supremal, graph):
 
     output["view_corrected"] = view_delins(
         d.delins_model["variants"],
-        d.corrected_model["variants"],
+        d.corrected_model["variants"] if not d.is_inverted() else list(reversed(d.corrected_model["variants"])),
         d.get_sequences(),
         invert=d.is_inverted(),
     )
     output["view_normalized"] = view_delins(
         delins["variants"],
-        d.de_hgvs_model["variants"],
+        d.de_hgvs_model["variants"] if not d.is_inverted() else list(reversed(d.de_hgvs_model["variants"])),
         d.get_sequences(),
         invert=d.is_inverted(),
     )
