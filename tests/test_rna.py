@@ -84,7 +84,7 @@ TESTS = [
         "keywords": ["rna", "deletion", "genomic", "mRNA"],
         "input": "NG_012337.1(NM_003002.2):r.273del",
         "normalized": "NG_012337.1(NM_003002.2):r.274del",
-        "protein_description": "NG_012337.1(NP_002993.1):p.(Asp92Thrfs*43)",
+        "protein_description": "NG_012337.1(NP_002993.1):p.(Asp92ThrfsTer43)",
         "to_test": True,
     },
     {
@@ -302,7 +302,7 @@ TESTS = [
         ],
         "input": "NG_008835.1(NM_022153.2):r.677_704del",
         "normalized": "NG_008835.1(NM_022153.2):r.677_704del",
-        "protein_description": "NG_008835.1(NP_071436.1):p.(Arg226Profs*102)",
+        "protein_description": "NG_008835.1(NP_071436.1):p.(Arg226ProfsTer102)",
         "to_test": True,
     },
     {
@@ -311,7 +311,7 @@ TESTS = [
         ],
         "input": "NG_012337.3(NM_003002.4):r.169_170insaaa",
         "normalized": "NG_012337.3(NM_003002.4):r.169_170insaaa",
-        "protein_description": "NG_012337.3(NP_002993.1):p.(Ser57*)",
+        "protein_description": "NG_012337.3(NP_002993.1):p.(Ser57Ter)",
         "to_test": True,
     },
 
