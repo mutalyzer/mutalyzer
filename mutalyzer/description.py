@@ -1403,7 +1403,7 @@ class Description(object):
                 "reference": {"id": reference_id},
                 "coordinate_system": "p",
                 "type": "description_protein",
-                "variants": [to_model(p_variant, "p_variant")]
+                "variants": to_model(p_variant, "p_variants")
             }
             if self.get_selector_id():
                 self.de_hgvs_model["reference"]["selector"] = {"id": self.get_selector_id()}

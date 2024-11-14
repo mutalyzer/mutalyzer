@@ -30,6 +30,12 @@ TESTS = [
         "to_test": True,
     },
     {
+        "keywords": ["protein", "equal", "genomic"],
+        "input": "NG_012337.1(NP_002993.1):p.Asp92Asp",
+        "normalized": "NG_012337.1(NP_002993.1):p.=",
+        "to_test": True,
+    },
+    {
         "keywords": ["protein", "substitution", "genomic"],
         "input": "NG_012337.1(NP_002993.1):p.Asp92Tyr",
         "normalized": "NG_012337.1(NP_002993.1):p.Asp92Tyr",
