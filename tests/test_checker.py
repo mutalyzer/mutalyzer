@@ -64,6 +64,8 @@ TESTS_ERROR = [
     ("NG_012337.1:g.20_21ins[?_40]", "EUNCERTAIN"),
     ("NG_012337.1:g.20_21ins[30_40;50_?]", "EUNCERTAIN"),
     ("NG_012337.1:g.20_21ins[30_40;?_60]", "EUNCERTAIN"),
+    ("NG_012337.1:g.20_21AA[30_40]", "EUNCERTAIN"),
+    ("NG_012337.1:g.20_21AA[?]", "EUNCERTAIN"),
     ("NM_004152.3:c.205_685del", "ECDSSLICES"),
     ("NM_004152.3:p.205_685del", "ECDSSLICES"),
 ]

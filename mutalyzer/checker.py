@@ -41,7 +41,7 @@ def contains_uncertain_locations(model):
     Goes through model locations to see if any is uncertain.
 
     :param model: description model
-    :return: True when the first uncertain location if encountered
+    :return: True when the first uncertain location is encountered
              and False if none is encountered.
     """
     for location, path in yield_sub_model(
@@ -50,6 +50,22 @@ def contains_uncertain_locations(model):
         if location.get("uncertain") or (
             location.get("offset") and location["offset"].get("uncertain")
         ):
+            return True
+    return False
+
+
+def contains_uncertain_repeat(model):
+    """
+    Goes through model repeat_numbers to see if any is uncertain.
+
+    :param model: description model
+    :return: True when the first uncertain repeat number is encountered
+             and False if none is encountered.
+    """
+    for repeat_number, path in yield_sub_model(
+        model, ["repeat_number"],
+    ):
+        if repeat_number.get("uncertain"):
             return True
     return False
 

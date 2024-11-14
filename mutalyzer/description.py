@@ -32,6 +32,7 @@ from .checker import (
     are_sorted,
     contains_insert_length,
     contains_uncertain_locations,
+    contains_uncertain_repeat,
     is_overlap,
     splice_sites,
 )
@@ -1191,7 +1192,7 @@ class Description(object):
         self._check_selector_models()
         self._rna()
         self._check_location_extras()
-        if contains_uncertain_locations(self.corrected_model):
+        if contains_uncertain_locations(self.corrected_model) or contains_uncertain_repeat(self.corrected_model):
             self._add_error(errors.uncertain())
         if contains_insert_length(self.corrected_model):
             self._add_error(errors.inserted_length())
