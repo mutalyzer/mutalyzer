@@ -36,6 +36,17 @@ def is_overlap(variants):
     return False
 
 
+def contains_uncertain(model):
+    """
+    Check if there are any uncertainties (location, repeat_number, length) in the model.
+    """
+    return (
+        contains_uncertain_locations(model)
+        or contains_uncertain_repeat(model)
+        or contains_uncertain_length(model)
+    )
+
+
 def contains_uncertain_locations(model):
     """
     Goes through model locations to see if any is uncertain.
@@ -44,12 +55,8 @@ def contains_uncertain_locations(model):
     :return: True when the first uncertain location is encountered
              and False if none is encountered.
     """
-    for location, path in yield_sub_model(
-        model, ["location", "start", "end"], ["point", "range"]
-    ):
-        if location.get("uncertain") or (
-            location.get("offset") and location["offset"].get("uncertain")
-        ):
+    for location, path in yield_sub_model(model, ["location", "start", "end"], ["point", "range"]):
+        if location.get("uncertain") or (location.get("offset") and location["offset"].get("uncertain")):
             return True
     return False
 
@@ -62,10 +69,22 @@ def contains_uncertain_repeat(model):
     :return: True when the first uncertain repeat number is encountered
              and False if none is encountered.
     """
-    for repeat_number, path in yield_sub_model(
-        model, ["repeat_number"],
-    ):
+    for repeat_number, path in yield_sub_model(model, ["repeat_number"]):
         if repeat_number.get("uncertain"):
+            return True
+    return False
+
+
+def contains_uncertain_length(model):
+    """
+    Goes through the `length` model to see if any is uncertain.
+
+    :param model: description model
+    :return: True when the first uncertain repeat number is encountered
+             and False if none is encountered.
+    """
+    for length, path in yield_sub_model(model,["length"]):
+        if length.get("uncertain"):
             return True
     return False
 
