@@ -1321,18 +1321,16 @@ class Description(object):
         translated_vars = []
         for variant in self.internal_indexing_model["variants"]:
             if variant.get("type") == "substitution":
+                if variant["inserted"][0]["sequence"] in ["X", "Xaa"]:
+                    # TODO: Add error message.
+                    return []
                 cds_start = get_start(variant) * 3
                 cds_end = get_end(variant) * 3
-                bt_options = bt.with_dna(
-                    cds_seq[cds_start:cds_end],
-                    variant["inserted"][0]["sequence"],
-                )
+                bt_options = bt.with_dna(cds_seq[cds_start:cds_end], variant["inserted"][0]["sequence"])
                 dna_var_options = []
                 for offset in bt_options:
                     for v in bt_options[offset]:
-                        dna_var_options.append(
-                            "{}{}>{}".format(cds_start + offset + 1, v[0], v[1])
-                        )
+                        dna_var_options.append(f"{cds_start + offset + 1}{v[0]}>{v[1]}")
                 translated_vars.append(dna_var_options)
             else:
                 # TODO: Add error message.

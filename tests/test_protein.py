@@ -143,6 +143,22 @@ TESTS = [
         "normalized": "NP_071436.1:p.(Lys34Val)",
         "to_test": True,
     },
+    {
+        "keywords": [
+            "protein",
+        ],
+        "input": "NP_071436.1:p.(Lys34Xaa)",
+        "normalized": "NP_071436.1:p.(Lys34Xaa)",
+        "to_test": True,
+    },
+    {
+        "keywords": [
+            "protein",
+        ],
+        "input": "NP_071436.1:p.(K34X)",
+        "normalized": "NP_071436.1:p.(Lys34Xaa)",
+        "to_test": True,
+    },
 ]
 
 
