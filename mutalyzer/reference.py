@@ -62,15 +62,24 @@ def _fix_ensembl(r_m, r_id):
         gene_model = get_submodel_by_path(r_m["annotations"], f_p[:-2])
         gene_model["features"] = [f_m]
         f_m = gene_model
+    if r_m["annotations"].get("qualifiers") is None:
+        r_m["annotations"]["qualifiers"] = {}
+    if r_m["annotations"].get("id"):
+        r_m["annotations"]["qualifiers"]["chromosome_number"] = r_m["annotations"]["id"]
+    if (
+            r_m["annotations"].get("features")
+            and len(r_m["annotations"]["features"]) >= 1
+            and r_m["annotations"]["features"][0].get("qualifiers")
+            and r_m["annotations"]["features"][0]["qualifiers"].get("assembly_name")
+    ):
+        r_m["annotations"]["qualifiers"]["assembly_name"] = r_m["annotations"]["features"][0]["qualifiers"].get("assembly_name")
     _update_ensembl_ids(f_m)
     r_m["annotations"]["features"] = [f_m]
     r_m["annotations"]["id"] = f_id
-    if r_m["annotations"].get("qualifiers") is None:
-        r_m["annotations"]["qualifiers"] = {}
     r_m["annotations"]["qualifiers"]["mol_type"] = "genomic DNA"
-    update_locations(
-        r_m["annotations"], r_m["annotations"]["location"]["start"]["position"]
-    )
+    location_offset = r_m["annotations"]["location"]["start"]["position"]
+    update_locations(r_m["annotations"], location_offset)
+    r_m["annotations"]["qualifiers"]["location_offset"] = location_offset
     return r_m
 
 

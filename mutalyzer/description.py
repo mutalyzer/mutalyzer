@@ -85,6 +85,7 @@ from .reference import (
     retrieve_reference,
     slice_to_selector,
     yield_overlap_ids,
+    yield_locations,
 )
 from .util import (
     check_errors,
@@ -1412,6 +1413,43 @@ class Description(object):
         convert_amino_acids(equivalent_1a_model, "1a")
         self.equivalent = {"p": [{"description": model_to_string(equivalent_1a_model)}]}
         self._back_translate()
+
+    def ensembl_model_with_no_offset(self):
+        ref_id = self._get_reference_id(self.corrected_model, [])
+        if ref_id and ref_id.startswith("ENS"):
+            if (
+                self.references.get("reference")
+                and self.references["reference"].get("annotations")
+                and self.references["reference"]["annotations"].get("qualifiers")
+            ):
+                offset = self.references["reference"]["annotations"]["qualifiers"].get("location_offset")
+                if self.de_hgvs_internal_indexing_model:
+                    model = copy.deepcopy(self.de_hgvs_internal_indexing_model)
+                    for location, path in yield_values(model, ["position"]):
+                        set_by_path(model, path, location + offset)
+                    return model
+
+    def _ensembl_to_ncbi_id(self):
+        ref_id = self._get_reference_id(self.corrected_model, [])
+        if ref_id and ref_id.startswith("ENS"):
+            if (
+                self.references.get("reference")
+                and self.references["reference"].get("annotations")
+                and self.references["reference"]["annotations"].get("qualifiers")
+                and self.references["reference"]["annotations"]["qualifiers"].get("chromosome_number")
+                and self.references["reference"]["annotations"]["qualifiers"].get("assembly_name")
+            ):
+                return get_assembly_chromosome_accession(
+                    self.references["reference"]["annotations"]["qualifiers"]["assembly_name"],
+                    self.references["reference"]["annotations"]["qualifiers"]["chromosome_number"]
+                )
+
+    def ensembl_model_to_ncbi(self, model):
+        ncbi_id = self._ensembl_to_ncbi_id()
+        if ncbi_id:
+            ncbi_model = copy.deepcopy(model)
+            ncbi_model["reference"]["id"] = ncbi_id
+            return ncbi_model
 
     @check_errors
     def get_chromosomal_descriptions(self):
