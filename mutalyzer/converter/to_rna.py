@@ -81,9 +81,10 @@ def get_position_type(position, exons, len_ss=2, len_as=5):
     Get the position location within the exons/introns. Even numbers for
     introns and odd numbers for exons are returned. Empty introns are
     considered as well in the returned index. The second returned value
-    represents a splice site (1, -1) or around a splice site (-2, 2) location,
-    otherwise 0 (within an intron outside the splice (around) sites or
-    within an exon).
+    represents a splice site (1 for intron start and -1 for intron end)
+    or around a splice site (2 for intron start and -2 for intron end)
+    location, otherwise 0 (within an intron outside the splice (around)
+    sites or within an exon).
 
     :arg int position: Zero-based position.
     :arg list exons: Zero-based half open exon positions list of tuples.
@@ -109,12 +110,12 @@ def get_position_type(position, exons, len_ss=2, len_as=5):
         else:
             return bisect.bisect_left(exons, position), -2
     else:
-        return bisect.bisect_left(exons, position), 0
+        return bisect.bisect_right(exons, position), 0
 
 
-def get_location_type(location, exons, len_ss=2, len_as=5):
+def get_location_type(location, exons):
     """
-    Returns the location spanning with respect to the exons/introns. Currently
+    Returns the location spanning with respect to the exons/introns. Currently,
     the supported types are: same exon (start and end in the same exon),
     exon - exon (start and end in different exons), same intron,
     and intron - intron.
@@ -124,28 +125,29 @@ def get_location_type(location, exons, len_ss=2, len_as=5):
     :returns: Location type within the exons/introns.
     :rtype: str
     """
-    start_i = get_position_type(get_start(location), exons, len_ss, len_as)
-    end_i = get_position_type(get_end(location) - 1, exons, len_ss, len_as)
+    start_i = get_position_type(get_start(location), exons, 0, 0)
+    end_i = get_position_type(get_end(location) - 1, exons, 0, 0)
     if get_start(location) == get_end(location):
         # this is an insertion
-        if start_i[0] % 2 == 1:
+        if start_i[0] == end_i[0] and start_i[0] % 2 == 1:
             return "same exon"
+        elif start_i[0] == end_i[0]:
+            return "same intron"
         else:
-            if start_i[1] == 0:
-                return "same intron"
+            return "boundary"
     elif start_i[0] % 2 == 1 and end_i[0] % 2 == 1:
         if start_i[0] == end_i[0]:
             return "same exon"
         else:
             return "exon exon"
-    elif start_i[0] % 2 == 0 and end_i[0] % 2 == 0:
-        if start_i[0] == end_i[0] and start_i[1] == 0:
+    elif start_i[0] % 2 == end_i[0] % 2 == 0:
+        if start_i[0] == end_i[0]:
             return "same intron"
-        if start_i[0] != end_i[0] and start_i[1] == 0 and end_i[1] == 0:
+        else:
             return "intron intron"
     elif start_i[0] % 2 == 1 and end_i[0] % 2 == 0:
         return "exon intron"
-    elif start_i[0] % 2 == 0 and end_i[0] % 2 == 1:
+    else:
         return "intron exon"
 
 
@@ -204,12 +206,12 @@ def _set_end_to_exon(location, exons):
     set_end(location, _get_exon_end_position(get_end(location), exons))
 
 
-def _trim_to_exons(variants, exons, sequences):
+def trim_to_exons(variants, exons, sequences):
     """
     Update variants locations to the corresponding exons.
     Notes:
-      - same intron locations are discarded;
-      - splice sites checked should have been performed already.
+      - intron variants are discarded;
+      - splice sites check should have been performed already.
     """
     new_variants = []
     for v in variants:
@@ -239,7 +241,7 @@ def to_rna_variants(variants, sequences, selector_model):
     :returns: Converted RNA variants.
     :rtype: dict
     """
-    trimmed_variants = _trim_to_exons(variants, selector_model["exon"], sequences)
+    trimmed_variants = trim_to_exons(variants, selector_model["exon"], sequences)
 
     x = NonCoding(selector_model["exon"]).coordinate_to_noncoding
     for variant in trimmed_variants:
