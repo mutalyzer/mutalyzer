@@ -122,6 +122,8 @@ def test_infos(input_description, codes):
         ("[1del;2del]", "AAAT", "2_3del"),
         ("1_2insNG_012337.1:g.100", "AAAT", "1_2insT"),
         ("[9dup;14_15insCCTCT]", "CTCTCTCTCTCTCTTG", "10delinsCTCTCTC"),
+        ("[1_2del;5_10inv]", "CACACCCCCA", "[3_4del;5_10inv]"),
+        ("[2_7del;8_34inv;35_36del]", "GTTCGCGGGGAAAGGAAAAAAGCCGCCGGGCAGGAAA", "[2_7del;8_34inv;36_37del]"),
     ],
 )
 def test_only_variants(description, sequence, normalized):
