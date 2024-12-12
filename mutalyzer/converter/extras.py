@@ -92,15 +92,9 @@ def convert_to_exons(variants, exons, sequences):
     for i, v in enumerate(variants):
         slice_v = deepcopy(v)
         if v.get("location"):
-            if get_location_type(v["location"], exons, 0, 0) in [
-                "same exon",
-                "exon exon",
-            ]:
+            if get_location_type(v["location"], exons) in ["same exon", "exon exon"]:
                 set_start(slice_v["location"], x(get_start(slice_v))[0] - 1)
-                set_end(
-                    slice_v["location"],
-                    x(get_end(slice_v))[0] + x(get_end(slice_v))[1] - 1,
-                )
+                set_end(slice_v["location"], x(get_end(slice_v))[0] + x(get_end(slice_v))[1] - 1)
                 if slice_v.get("inserted"):
                     slice_v["inserted"] = [
                         {

@@ -31,7 +31,7 @@ import mutalyzer.infos as infos
 from .checker import (
     are_sorted,
     contains_insert_length,
-    contains_uncertain_locations,
+    contains_uncertain,
     is_overlap,
     splice_sites,
 )
@@ -85,6 +85,7 @@ from .reference import (
     retrieve_reference,
     slice_to_selector,
     yield_overlap_ids,
+    yield_locations,
 )
 from .util import (
     check_errors,
@@ -1191,7 +1192,7 @@ class Description(object):
         self._check_selector_models()
         self._rna()
         self._check_location_extras()
-        if contains_uncertain_locations(self.corrected_model):
+        if contains_uncertain(self.corrected_model):
             self._add_error(errors.uncertain())
         if contains_insert_length(self.corrected_model):
             self._add_error(errors.inserted_length())
@@ -1321,18 +1322,16 @@ class Description(object):
         translated_vars = []
         for variant in self.internal_indexing_model["variants"]:
             if variant.get("type") == "substitution":
+                if variant["inserted"][0]["sequence"] in ["X", "Xaa"]:
+                    # TODO: Add error message.
+                    return []
                 cds_start = get_start(variant) * 3
                 cds_end = get_end(variant) * 3
-                bt_options = bt.with_dna(
-                    cds_seq[cds_start:cds_end],
-                    variant["inserted"][0]["sequence"],
-                )
+                bt_options = bt.with_dna(cds_seq[cds_start:cds_end], variant["inserted"][0]["sequence"])
                 dna_var_options = []
                 for offset in bt_options:
                     for v in bt_options[offset]:
-                        dna_var_options.append(
-                            "{}{}>{}".format(cds_start + offset + 1, v[0], v[1])
-                        )
+                        dna_var_options.append(f"{cds_start + offset + 1}{v[0]}>{v[1]}")
                 translated_vars.append(dna_var_options)
             else:
                 # TODO: Add error message.
@@ -1403,7 +1402,7 @@ class Description(object):
                 "reference": {"id": reference_id},
                 "coordinate_system": "p",
                 "type": "description_protein",
-                "variants": [to_model(p_variant, "p_variant")]
+                "variants": to_model(p_variant, "p_variants")
             }
             if self.get_selector_id():
                 self.de_hgvs_model["reference"]["selector"] = {"id": self.get_selector_id()}
@@ -1414,6 +1413,43 @@ class Description(object):
         convert_amino_acids(equivalent_1a_model, "1a")
         self.equivalent = {"p": [{"description": model_to_string(equivalent_1a_model)}]}
         self._back_translate()
+
+    def ensembl_model_with_no_offset(self):
+        ref_id = self._get_reference_id(self.corrected_model, [])
+        if ref_id and ref_id.startswith("ENS"):
+            if (
+                self.references.get("reference")
+                and self.references["reference"].get("annotations")
+                and self.references["reference"]["annotations"].get("qualifiers")
+            ):
+                offset = self.references["reference"]["annotations"]["qualifiers"].get("location_offset")
+                if self.de_hgvs_internal_indexing_model:
+                    model = copy.deepcopy(self.de_hgvs_internal_indexing_model)
+                    for location, path in yield_values(model, ["position"]):
+                        set_by_path(model, path, location + offset)
+                    return model
+
+    def _ensembl_to_ncbi_id(self):
+        ref_id = self._get_reference_id(self.corrected_model, [])
+        if ref_id and ref_id.startswith("ENS"):
+            if (
+                self.references.get("reference")
+                and self.references["reference"].get("annotations")
+                and self.references["reference"]["annotations"].get("qualifiers")
+                and self.references["reference"]["annotations"]["qualifiers"].get("chromosome_number")
+                and self.references["reference"]["annotations"]["qualifiers"].get("assembly_name")
+            ):
+                return get_assembly_chromosome_accession(
+                    self.references["reference"]["annotations"]["qualifiers"]["assembly_name"],
+                    self.references["reference"]["annotations"]["qualifiers"]["chromosome_number"]
+                )
+
+    def ensembl_model_to_ncbi(self, model):
+        ncbi_id = self._ensembl_to_ncbi_id()
+        if ncbi_id:
+            ncbi_model = copy.deepcopy(model)
+            ncbi_model["reference"]["id"] = ncbi_id
+            return ncbi_model
 
     @check_errors
     def get_chromosomal_descriptions(self):

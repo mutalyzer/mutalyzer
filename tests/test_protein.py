@@ -30,6 +30,12 @@ TESTS = [
         "to_test": True,
     },
     {
+        "keywords": ["protein", "equal", "genomic"],
+        "input": "NG_012337.1(NP_002993.1):p.Asp92Asp",
+        "normalized": "NG_012337.1(NP_002993.1):p.=",
+        "to_test": True,
+    },
+    {
         "keywords": ["protein", "substitution", "genomic"],
         "input": "NG_012337.1(NP_002993.1):p.Asp92Tyr",
         "normalized": "NG_012337.1(NP_002993.1):p.Asp92Tyr",
@@ -135,6 +141,22 @@ TESTS = [
         ],
         "input": "NP_071436.1:p.(Lys34Val)",
         "normalized": "NP_071436.1:p.(Lys34Val)",
+        "to_test": True,
+    },
+    {
+        "keywords": [
+            "protein",
+        ],
+        "input": "NP_071436.1:p.(Lys34Xaa)",
+        "normalized": "NP_071436.1:p.(Lys34Xaa)",
+        "to_test": True,
+    },
+    {
+        "keywords": [
+            "protein",
+        ],
+        "input": "NP_071436.1:p.(K34X)",
+        "normalized": "NP_071436.1:p.(Lys34Xaa)",
         "to_test": True,
     },
 ]

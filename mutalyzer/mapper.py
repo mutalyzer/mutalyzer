@@ -97,11 +97,15 @@ def map_description(
     if slice_to == "transcript":
         selector_model = d.get_selector_model()
         if selector_model:
-            converted_variants, skipped_variants = convert_to_exons(
-                variants,
-                selector_model["exon"],
-                d.get_sequences(),
-            )
+            exons = selector_model["exon"]
+            if all([exons[i][1] == exons[i+1][0] for i in range(len(exons)-1)]):
+                converted_variants, skipped_variants = variants, []
+            else:
+                converted_variants, skipped_variants = convert_to_exons(
+                    variants,
+                    selector_model["exon"],
+                    d.get_sequences(),
+                )
             if skipped_variants:
                 errs = []
                 for v in skipped_variants:

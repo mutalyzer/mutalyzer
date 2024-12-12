@@ -347,7 +347,7 @@ def inserted_to_description(inserted, aa="verbatim"):
         elif insert.get("length"):
             descriptions.append(length_to_description(insert["length"]))
         if insert.get("repeat_number"):
-            descriptions[-1] += "[{}]".format(insert["repeat_number"]["value"])
+            descriptions[-1] += repeat_number_to_description(insert["repeat_number"])
         if insert.get("inverted"):
             descriptions[-1] += "inv"
     if len(inserted) > 1:
@@ -415,7 +415,7 @@ def length_to_description(length):
     :return: Equivalent length string representation.
     """
     if length["type"] == "point":
-        if length.get("value"):
+        if length.get("value") is not None:
             return str(length["value"])
         elif length.get("uncertain"):
             return "?"
@@ -428,3 +428,23 @@ def length_to_description(length):
             return "({})".format(output)
         else:
             return output
+
+
+def repeat_number_to_description(repeat_number):
+    """
+    Convert the repeat_number dictionary model to string.
+    :param repeat_number: Length dictionary model.
+    :return: Equivalent length string representation.
+    """
+    if repeat_number["type"] == "point":
+        if repeat_number.get("value") is not None:
+            output = str(repeat_number["value"])
+        elif repeat_number.get("uncertain"):
+            output = "?"
+    if repeat_number["type"] == "range":
+        output = "{}_{}".format(
+            length_to_description(repeat_number.get("start")),
+            length_to_description(repeat_number.get("end")),
+        )
+    return f"[{output}]"
+

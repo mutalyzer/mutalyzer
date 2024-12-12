@@ -56,51 +56,86 @@ def de_variants_clean(variants, sequences=None):
     Apply the 3' rule to delins variants, get rid of equals, and substitute
     any slices relative to the observed sequence.
     """
+
+    def _get_shifts():
+        """
+        Derive the 3' and 5' shifts.
+        """
+        for i, variant in enumerate(variants):
+            if variant.get("type") == "inversion":
+                new_variants.append(copy.deepcopy(variant))
+                shifts.append((get_start(variant), get_end(variant), 0, 0, None))
+            elif variant.get("type") == "deletion_insertion":
+                variant["inserted"] = update_inserted_with_sequences(variant["inserted"], sequences)
+                inserted_sequence = get_inserted_sequence(variant, sequences)
+                new_variant = copy.deepcopy(variant)
+                shift3 = 0
+                shift5 = 0
+                if get_location_length(variant["location"]) and not inserted_sequence:
+                    shift5, shift3 = roll(
+                        sequences["reference"],
+                        variant["location"]["start"]["position"] + 1,
+                        variant["location"]["end"]["position"],
+                    )
+                    shifts.append((get_start(variant), get_end(variant), shift3, shift5, None))
+
+                elif not get_location_length(variant["location"]) and inserted_sequence:
+                    rolled_sequence = (
+                        sequences["reference"][: get_start(variant)]
+                        + inserted_sequence
+                        + sequences["reference"][get_end(variant) :]
+                    )
+                    shift5, shift3 = roll(rolled_sequence, get_start(variant) + 1, get_end(variant) + len(inserted_sequence))
+
+                    shifts.append((
+                        get_start(variant), get_end(variant), shift3, shift5,
+                        rolled_sequence[get_start(variant)- shift5 : get_end(variant)+ shift3+ len(inserted_sequence)]))
+
+                else:
+                    shifts.append((get_start(variant), get_end(variant), shift3, shift5, None))
+                new_variants.append(new_variant)
+
+    def _update_shifts():
+        """
+        Update the shifts such that variants do not overlap.
+        """
+        for j in range(len(shifts) - 1, 0, -1):
+            left_start, left_end, left_shift3, left_shift5, _ = shifts[j - 1]
+            right_start, right_end, right_shift3, right_shift5, _ = shifts[j]
+
+            if left_shift3 == 0 and right_shift5 > 0:
+                if right_start - right_shift5 < left_end:
+                    right_shift5 -= left_end - (right_start - right_shift5)
+
+            if right_shift5 == 0 and left_shift3 > 0:
+                if left_end + left_shift3 > right_start:
+                    left_shift3 -= left_end + left_shift3 - right_start
+
+            shifts[j - 1] = (left_start, left_end, left_shift3, left_shift5, shifts[j - 1][4])
+            shifts[j] = (right_start, right_end, right_shift3, right_shift5, shifts[j][4])
+
+    def _apply_shifts():
+        """
+        Shift the variants towards 3' and include the shift key.
+        """
+        for i in range(len(new_variants)):
+            # shifts[i][2] towards 3' and shifts[i][3] towards 5'
+            shift = shifts[i][2] + shifts[i][3]
+            new_variants[i]["location"]["start"]["position"] += shifts[i][2]
+            new_variants[i]["location"]["start"]["shift"] = shift
+            new_variants[i]["location"]["end"]["position"] += shifts[i][2]
+            new_variants[i]["location"]["end"]["shift"] = shift
+            if shifts[i][2] and shifts[i][4]:
+                new_variants[i]["inserted"] = [
+                    {"sequence": shifts[i][4][shift:], "source": "description"}
+                ]
+
     new_variants = []
-    for variant in variants:
-        if variant.get("type") == "inversion":
-            new_variants.append(copy.deepcopy(variant))
-        elif variant.get("type") == "deletion_insertion":
-            variant["inserted"] = update_inserted_with_sequences(
-                variant["inserted"], sequences
-            )
-            inserted_sequence = get_inserted_sequence(variant, sequences)
-            new_variant = copy.deepcopy(variant)
-            shift3 = 0
-            shift5 = 0
-            if get_location_length(variant["location"]) and not inserted_sequence:
-                shift5, shift3 = roll(
-                    sequences["reference"],
-                    variant["location"]["start"]["position"] + 1,
-                    variant["location"]["end"]["position"],
-                )
-            elif not get_location_length(variant["location"]) and inserted_sequence:
-                rolled_sequence = (
-                    sequences["reference"][: get_start(variant)]
-                    + inserted_sequence
-                    + sequences["reference"][get_end(variant) :]
-                )
-                shift5, shift3 = roll(
-                    rolled_sequence,
-                    get_start(variant) + 1,
-                    get_end(variant) + len(inserted_sequence),
-                )
-                if shift3:
-                    inserted_rolled_sequence = rolled_sequence[
-                        get_start(variant)
-                        + shift3 : get_end(variant)
-                        + shift3
-                        + len(inserted_sequence)
-                    ]
-                    new_variant["inserted"] = [
-                        {"sequence": inserted_rolled_sequence, "source": "description"}
-                    ]
-            shift = shift3 + shift5
-            new_variant["location"]["start"]["position"] += shift3
-            new_variant["location"]["start"]["shift"] = shift
-            new_variant["location"]["end"]["position"] += shift3
-            new_variant["location"]["end"]["shift"] = shift
-            new_variants.append(new_variant)
+    shifts = []
+
+    _get_shifts()
+    _update_shifts()
+    _apply_shifts()
 
     return new_variants
 
