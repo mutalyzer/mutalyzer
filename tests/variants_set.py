@@ -3236,10 +3236,10 @@ TESTS = [
         "keywords": [
             "exon boundary insertion on mRNA sequence (no introns)",
         ],
-        "input": "NM_003002.4:c.169_170insAAA",
-        "normalized": "NM_003002.4:c.169_170insAAA",
-        "rna_description": "NM_003002.4:r.(169_170insaaa)",
-        "protein_description": "NM_003002.4(NP_002993.1):p.(Ser57*)",
+        "input": "NM_003002.4:c.169_170insATA",
+        "normalized": "NM_003002.4:c.169_170insATA",
+        "rna_description": "NM_003002.4:r.(169_170insaua)",
+        "protein_description": "NM_003002.4(NP_002993.1):p.(Ser57delinsTyrThr)",
 
         "to_test": True,
     },
