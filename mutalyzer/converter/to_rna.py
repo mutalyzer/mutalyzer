@@ -22,7 +22,6 @@ from ..util import (
     set_start,
 )
 from .to_hgvs_coordinates import genomic_to_point, reverse_strand_shift
-from ..validation import location
 
 
 def to_rna_reference_model(reference_model, selector_id, transcribe=True):
