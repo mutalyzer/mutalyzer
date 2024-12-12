@@ -3233,6 +3233,17 @@ TESTS = [
         "to_test": True,
     },
     {
+        "keywords": [
+            "exon boundary insertion on mRNA sequence (no introns)",
+        ],
+        "input": "NM_003002.4:c.169_170insAAA",
+        "normalized": "NM_003002.4:c.169_170insAAA",
+        "rna_description": "NM_003002.4:r.(169_170insaaa)",
+        "protein_description": "NM_003002.4(NP_002993.1):p.(Ser57*)",
+
+        "to_test": True,
+    },
+    {
         "keywords": ["no cds for coding transcripts #73"],
         "input": "NG_009930.1(NM_001099625.2):c.1010",
         "errors": [

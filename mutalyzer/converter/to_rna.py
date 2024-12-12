@@ -22,6 +22,7 @@ from ..util import (
     set_start,
 )
 from .to_hgvs_coordinates import genomic_to_point, reverse_strand_shift
+from ..validation import location
 
 
 def to_rna_reference_model(reference_model, selector_id, transcribe=True):
@@ -224,9 +225,9 @@ def trim_to_exons(variants, exons, sequences):
                 _set_start_to_exon(new_v["location"], _get_flatten_exons(exons))
                 _set_end_to_exon(new_v["location"], _get_flatten_exons(exons))
                 new_variants.append(new_v)
-            elif location_type == "exon exon":
-                new_variants.append(new_v)
-            elif location_type == "same exon":
+            elif (location_type in ["exon exon", "same exon"]
+                  or (location_type == "boundary"
+                      and len(set(_get_flatten_exons(exons))) - 1 == len(_get_flatten_exons(exons))//2)):
                 new_variants.append(new_v)
     return new_variants
 
