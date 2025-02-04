@@ -2621,6 +2621,21 @@ TESTS = [
     },
     {
         "keywords": ["reverse strand"],
+        "input": "NG_009299.1(NM_017668.3):c.[41>CA;250del]",
+        "normalized": "NG_009299.1(NM_017668.3):c.[40dup;*189del]",
+        "genomic": "NG_009299.1:g.[137591del;137802dup]",
+        "infos": ["ICORRECTEDVARIANTTYPE", "ICORRECTEDPOINT"],
+        "to_test": True,
+    },
+    {
+        "keywords": ["reverse strand"],
+        "input": "NG_009299.1(NM_017668.3):c.[250del;41>CA]",
+        "normalized": "NG_009299.1(NM_017668.3):c.[40dup;*189del]",
+        "infos": ["ICORRECTEDVARIANTTYPE", "ICORRECTEDPOINT", "ISORTEDVARIANTS"],
+        "to_test": True,
+    },
+    {
+        "keywords": ["reverse strand"],
         "input": "NG_009299.1(NM_002474.3):c.[310del;295G>A]",
         "normalized": "NG_009299.1(NM_002474.3):c.[295G>A;311del]",
         "infos": ["ISORTEDVARIANTS"],
@@ -3270,7 +3285,6 @@ TESTS = [
         ],
         "to_test": True,
     },
-
     # {
     #     "keywords": [
     #         "rna",

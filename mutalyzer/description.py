@@ -471,8 +471,6 @@ class Description(object):
             if v.get("type") == "substitution":
                 if len(construct_sequence(v["inserted"], self.get_sequences())) > 1:
                     path = ["variants", i, "type"]
-                    if self.is_inverted():
-                        path = reverse_path(self.corrected_model, path)
                     set_by_path(self.corrected_model, path, "deletion_insertion")
                     set_by_path(
                         self.internal_coordinates_model, path, "deletion_insertion"
