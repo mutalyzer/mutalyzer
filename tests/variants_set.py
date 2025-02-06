@@ -3313,6 +3313,46 @@ TESTS = [
         "normalized": "LRG_199(t1):c.11_13G[10]",
         "to_test": True,
     },
+    {
+        "keywords": ["reverse strand"],
+        "input": "NG_012337.1(NM_012459.2):c.274delT",
+        "errors": [
+            "ESEQUENCEMISMATCH",
+        ],
+        "to_test": True,
+    },
+    {
+        "keywords": ["reverse strand"],
+        "input": "NG_012337.1(NM_012459.2):c.274_275TA[5]",
+        "errors": [
+            "EREPEATMISMATCH",
+        ],
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NG_012337.3(NM_003002.4):c.274_275AA[4]",
+        "errors": [
+            "EREPEATMISMATCH",
+        ],
+        "to_test": True,
+    },
+    {
+        "keywords": ["reverse strand"],
+        "input": "NG_012337.1(NM_012459.2):c.10CT[5]",
+        "errors": [
+            "EREPEATMISMATCH",
+        ],
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NG_012337.3(NM_003002.4):c.274AA[4]",
+        "errors": [
+            "EREPEATMISMATCH",
+        ],
+        "to_test": True,
+    },
     # {
     #     "keywords": [
     #         "rna",
