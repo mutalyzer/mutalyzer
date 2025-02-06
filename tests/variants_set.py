@@ -3285,6 +3285,34 @@ TESTS = [
         ],
         "to_test": True,
     },
+    {
+        "keywords": ["mixed repeat"],
+        "input": "LRG_1t1:52_153CAG[21]CAA[1]CAG[1]CCG[1]CCA[1]CCG[7]CCT[2]",
+        "errors": [
+            "EREPEATUNSUPPORTED",
+        ],
+        "to_test": True,
+    },
+    {
+        "keywords": ["strange variant"],
+        "input": "LRG_199t1:c.11LRG_199(t1):c.11",
+        "errors": [
+            "EVARIANTNOTSUPPORTED",
+        ],
+        "to_test": True,
+    },
+    {
+        "keywords": ["strange variant"],
+        "input": "LRG_199t1:c.11LRG_199(t1):c.11[10]",
+        "normalized": "LRG_199(t1):c.11_13G[10]",
+        "to_test": True,
+    },
+    {
+        "keywords": ["strange variant"],
+        "input": "LRG_199t1:c.11NG_012337.3(NM_003002.4):c.14[10]",
+        "normalized": "LRG_199(t1):c.11_13G[10]",
+        "to_test": True,
+    },
     # {
     #     "keywords": [
     #         "rna",

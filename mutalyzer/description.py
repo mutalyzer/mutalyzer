@@ -85,7 +85,6 @@ from .reference import (
     retrieve_reference,
     slice_to_selector,
     yield_overlap_ids,
-    yield_locations,
 )
 from .util import (
     check_errors,
@@ -1007,7 +1006,14 @@ class Description(object):
                 )
         else:
             inserted = v_i["inserted"][0]
-            repeat_unit = inserted["sequence"]
+            if inserted.get("sequence"):
+                repeat_unit = inserted["sequence"]
+            else:
+                if isinstance(inserted["source"], str):
+                    source = inserted["source"]
+                elif isinstance(inserted["source"], dict):
+                    source = inserted["source"]["id"]
+                repeat_unit = slice_sequence(inserted["location"], self.get_sequences()[source])
             point = get_start(v_i)
             while ref_seq[point : point + len(repeat_unit)] == repeat_unit:
                 point += len(repeat_unit)
@@ -1139,11 +1145,17 @@ class Description(object):
     def _check_cds(self):
         for c_s, _, r_id, _, s_id, s_p in yield_reference_selector_ids_coordinate_system(self.corrected_model):
             if c_s in ["c", "r"] and r_id in self.references:
-                s_m = get_internal_selector_model(
-                    self.references[r_id]["annotations"], s_id
-                )
+                s_m = get_internal_selector_model(self.references[r_id]["annotations"], s_id)
                 if s_m and s_m.get("type") == "mRNA" and s_m.get("cds") is None:
                     self._add_error(errors.no_cds(r_id, s_id, s_p))
+
+    def _check_variants(self):
+        if self.corrected_model.get("variants"):
+            for i, v in enumerate(self.corrected_model["variants"]):
+                if v.get("type") == "repeat":
+                    if len(v.get("inserted", [])) == 1:
+                        if v["inserted"][0].get("repeat_number") is None:
+                            self._add_error(errors.variant_not_supported(v, "", []))
 
     def _insertions_same_location(self):
         insertions = {}
@@ -1195,6 +1207,7 @@ class Description(object):
         if contains_insert_length(self.corrected_model):
             self._add_error(errors.inserted_length())
         self._check_cds()
+        self._check_variants()
 
     def assembly_checks(self):
         def _set_new_ids(path, chromosome_id):
