@@ -1,14 +1,9 @@
-from pkg_resources import get_distribution
+from importlib.metadata import metadata
 
 
 def _get_metadata(name):
-    pkg = get_distribution(__package__)
-
-    for line in pkg.get_metadata_lines(pkg.PKG_INFO):
-        if line.startswith("{}: ".format(name)):
-            return line.split(": ")[1]
-
-    return ""
+    meta = metadata(__package__)
+    return meta.get(name, "")
 
 
 _copyright_notice = "Copyright (c) {} <{}>".format(

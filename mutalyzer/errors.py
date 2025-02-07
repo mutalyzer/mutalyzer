@@ -41,6 +41,14 @@ def selector_options(selector_id, selector_type, options, path):
     }
 
 
+def coordinate_system_invalid(coordinate_system, path):
+    return {
+        "code": "ECOORDINATESYSTEMINVALID",
+        "details": f"The provided coordinate system `{coordinate_system}.` is invalid.",
+        "paths": [path],
+    }
+
+
 def no_coordinate_system(path):
     return {
         "code": "ENOCOORDINATESYSTEM",

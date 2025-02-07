@@ -300,7 +300,9 @@ def variant_to_description(variant, protein=False, aa="verbatim"):
                 )
             )
         ):
-            inserted = "[{}]".format(inserted)
+            inserted = "{}".format(inserted)
+        elif variant["type"] == "repeat":
+            inserted = "".join([inserted_to_description([ins]) for ins in variant["inserted"]])
 
     if variant.get("deleted"):
         deleted = inserted_to_description(variant["deleted"])

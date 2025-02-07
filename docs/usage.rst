@@ -19,6 +19,12 @@ Create a cache directory and a configuration file:
     $ mkdir cache
     $ echo MUTALYZER_CACHE_DIR = $(pwd)/cache > config.txt
 
+To ensure that any uncached references encountered during a Mutalyzer run will be added to the cache directory:
+
+.. code-block:: console
+
+    $ echo MUTALYZER_FILE_CACHE_ADD = true >> config.txt
+
 Setup the email address used to communicate with the NCBI:
 
 .. code-block:: console
@@ -35,8 +41,13 @@ Populate the cache:
 
 .. code-block:: console
 
-    $ mutalyzer_retriever --id NC_000022.11 --parse --split --output cache
+    $ MUTALYZER_SETTINGS="$(pwd)/config.txt" mutalyzer_retriever --id NG_012337.3 --parse --split --output cache
 
+For GRCh37 and GRCh38 chromosomal references (``NC_``):
+
+.. code-block:: console
+
+    $ MUTALYZER_SETTINGS="$(pwd)/config.txt" mutalyzer_retriever ncbi_assemblies --ref_id_start NC_ --assembly_id_start GRCh --output cache --include_sequence
 
 Now the tool can be run with the cache:
 
