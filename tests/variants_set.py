@@ -3361,6 +3361,14 @@ TESTS = [
         ],
         "to_test": True,
     },
+    {
+        "keywords": [],
+        "input": "NG_012337.3:a.274G>T",
+        "errors": [
+            "ECOORDINATESYSTEMINVALID",
+        ],
+        "to_test": True,
+    },
     # {
     #     "keywords": [
     #         "rna",

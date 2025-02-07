@@ -343,6 +343,8 @@ class Description:
         ):
             if c_s is None:
                 self._handle_no_coordinate_system(c_s_path, r_id, s_id)
+            elif c_s not in ["g", "c", "n", "r", "p", "m", "o"]:
+                self._add_error(errors.coordinate_system_invalid(c_s, c_s_path))
 
     def _correct_coordinate_system(self, coordinate_system, path, correction_source):
         set_by_path(self.corrected_model, path, coordinate_system)
