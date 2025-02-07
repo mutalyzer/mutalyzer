@@ -3369,6 +3369,53 @@ TESTS = [
         ],
         "to_test": True,
     },
+    {
+        "keywords": [],
+        "input": "NG_007485.1(CDKN2A):n.204_205insATC",
+        "errors": [
+            "ESELECTOROPTIONS",
+        ],
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NG_007485.1(CDKN2A_v001):n.204_205insATC",
+        "errors": [
+            "ESELECTOROPTIONS",
+        ],
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NG_007485.1(1787):n.204_205insATC",
+        "errors": [
+            "ESELECTOROPTIONS",
+        ],
+        "to_test": True,
+    },
+    {
+        "keywords": ["input not for test_description_to_model_to_description"],
+        "input": "NG_012337.3(NM_003002.4):c.274G>NG_012337.3(NM_003002.4):c.274G>T",
+        "errors": [
+            "ESYNTAXNESTED",
+        ],
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NG_012337.3(NM_003002.4):r.274+10G>T",
+        "errors": [
+            "EINTRONICRNA",
+        ],
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NG_012337.3(NM_003002.4):p.(Asp92Tyr)",
+        "normalized": "NG_012337.3(NP_002993.1):p.(Asp92Tyr)",
+        "infos": ["ICORRECTEDSELECTORID"],
+        "to_test": True,
+    },
     # {
     #     "keywords": [
     #         "rna",
