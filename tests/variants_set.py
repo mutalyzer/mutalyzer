@@ -3353,6 +3353,14 @@ TESTS = [
         ],
         "to_test": True,
     },
+    {
+        "keywords": [],
+        "input": "NG_012337.3(NM_003002):274+400G>T",
+        "errors": [
+            "ENOSELECTORFOUND",
+        ],
+        "to_test": True,
+    },
     # {
     #     "keywords": [
     #         "rna",

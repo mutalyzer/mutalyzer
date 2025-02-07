@@ -935,6 +935,7 @@ class Description:
             elif ref_mol_type == "genomic DNA" and c_s == "r":
                 self._add_error(errors.intronic_rna(point, path))
 
+    @check_errors
     def _check_location_extras(self):
         for point, path in yield_sub_model(
             self.corrected_model, ["location", "start", "end"], ["point"]
