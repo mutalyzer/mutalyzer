@@ -275,7 +275,6 @@ def normalize(description, only_variants=False, sequence=None):
         sequence=sequence,
     )
     d.normalize()
-    d.get_chromosomal_descriptions()
     output = d.output()
     return output
 

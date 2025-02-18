@@ -3,15 +3,20 @@ from copy import deepcopy
 import extractor
 from mutalyzer_mutator import mutate
 from mutalyzer_mutator.util import reverse_complement
+from mutalyzer_retriever.reference import (
+    get_assembly_chromosome_accession,
+    get_assembly_id,
+)
 from mutalyzer_retriever.retriever import extract_feature_model
 
-import mutalyzer.errors as errors
+from mutalyzer import errors
 
 from .converter import de_to_hgvs
 from .converter.extras import (
     convert_reference_model,
     convert_to_exons,
     get_gene_locations,
+    get_mane_tag,
 )
 from .converter.to_hgvs_coordinates import to_hgvs_locations
 from .description import Description
@@ -65,22 +70,38 @@ def map_description(
     selector_id=None,
     slice_to=None,
     filter=False,
-    len_max=100000,
+    len_max=110000,
     diff_max=1000,
 ):
-    # Get the observed sequence
     d = Description(description)
     d.normalize()
     if d.errors:
         return {"errors": d.errors, "source": "input"}
     if not d.references and not d.references.get("observed"):
         return {
-            "errors": [{"details": "No observed sequence or other error occured."}],
+            "errors": [{"details": "No observed sequence or other error occurred."}],
             "source": "input",
         }
+
     obs_seq = d.references["observed"]["sequence"]["seq"]
 
+    assembly_id = get_assembly_id(reference_id)
+    if assembly_id:
+        model = d.references["reference"]
+        if (
+                model.get("annotations")
+                and model["annotations"].get("qualifiers")
+                and model["annotations"]["qualifiers"]
+        ):
+            chromosome = model["annotations"]["qualifiers"].get("chromosome")
+            chr_id = get_assembly_chromosome_accession(assembly_id, f"chr{chromosome}")
+            if chr_id and selector_id is None:
+                reference_id = chr_id
+                selector_id = d.get_selector_id()
+                slice_to = "transcript"
+
     to_r_model = retrieve_reference(reference_id, selector_id)[0]
+
     if to_r_model is None:
         return {
             "errors": [errors.reference_not_retrieved(reference_id, [])],
@@ -98,7 +119,7 @@ def map_description(
         selector_model = d.get_selector_model()
         if selector_model:
             exons = selector_model["exon"]
-            if all([exons[i][1] == exons[i+1][0] for i in range(len(exons)-1)]):
+            if all(exons[i][1] == exons[i+1][0] for i in range(len(exons)-1)):
                 converted_variants, skipped_variants = variants, []
             else:
                 converted_variants, skipped_variants = convert_to_exons(
@@ -184,9 +205,7 @@ def map_description(
         and abs(len(ref_seq_to) - len(obs_seq)) > diff_max
     ):
         return {
-            "errors": [
-                errors.lengths_difference(abs(len(ref_seq_to) - len(obs_seq)), diff_max)
-            ],
+            "errors": [errors.lengths_difference(abs(len(ref_seq_to) - len(obs_seq)), diff_max)],
             "source": "input",
         }
 
@@ -203,8 +222,14 @@ def map_description(
 
     mapped_description = _get_description(variants, to_r_model, selector_id)
     m_d = Description(mapped_description)
-    m_d.to_delins()
+    m_d.normalize()
     if m_d.errors:
         return {"errors": m_d.errors, "source": "output"}
-    else:
-        return {"mapped_description": mapped_description}
+    output = {"mapped_description": m_d.normalized_description}
+    if m_d.get_selector_model() and m_d.is_selector_model_valid():
+        tag = get_mane_tag(m_d.get_selector_model())
+        if tag:
+            output["tag"] = tag
+    if m_d.equivalent and m_d.equivalent.get("g") and len(m_d.equivalent["g"]) == 1 and m_d.equivalent["g"][0].get("description"):
+        output["genomic_description"] = m_d.equivalent["g"][0]["description"]
+    return output
