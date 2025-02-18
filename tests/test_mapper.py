@@ -28,7 +28,7 @@ TEST_SET = [
     (
         # Transcript to NG with transcript slice updated version.
         ("NM_003002.2:c.-31del", "NG_012337.3", "NM_003002.4", "transcript", False),
-        "NG_012337.3(NM_003002.4):c.[-34_-32delinsTGGGAATTGTCGCCTAAGTGGTTCCGGG;*824A[18]]",
+        "NG_012337.3(NM_003002.4):c.[-35_-34ins-60_-42;-31_-30insCCGGGT;*824A[18]]",
     ),
     (
         (
@@ -167,7 +167,7 @@ TEST_SET = [
     ),
     (
         ("NM_003002.2:c.-31del", "NG_012337.3", "NM_003002.4", "transcript", True),
-        "NG_012337.3(NM_003002.4):c.-34_-32delinsTGGGAATTGTCGCCTAAGTGGTTCCGGG",
+        "NG_012337.3(NM_003002.4):c.[-35_-34ins-60_-42;-31_-30insCCGGGT]",
     ),
     (
         ("NM_178172.3:c.45_48dup", "NM_178172.6", None, "transcript", True),
