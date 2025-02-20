@@ -95,10 +95,12 @@ def map_description(
         ):
             chromosome = model["annotations"]["qualifiers"].get("chromosome")
             chr_id = get_assembly_chromosome_accession(assembly_id, f"chr{chromosome}")
-            if chr_id and selector_id is None:
+            if chr_id:
                 reference_id = chr_id
-                selector_id = d.get_selector_id()
-                slice_to = "transcript"
+                if selector_id is None:
+                    selector_id = d.get_selector_id()
+                if slice_to is None:
+                    slice_to = "transcript"
 
     to_r_model = retrieve_reference(reference_id, selector_id)[0]
 
