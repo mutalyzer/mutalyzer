@@ -201,6 +201,10 @@ TEST_SET = [
         ("NM_003002.2:c.30del", "GRCH38", "NM_003002.4", "gene", True),
         "NC_000011.10(NM_003002.4):c.31del",
     ),
+    (
+        ("NM_003002.4:c.30del", None, None, None, True),
+        "NC_000011.10(NM_003002.4):c.31del",
+    ),
 ]
 
 

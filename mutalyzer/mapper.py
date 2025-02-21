@@ -64,9 +64,30 @@ def _extract_hgvs_internal_model(obs_seq, ref_seq):
     )
 
 
+def resolve_reference_id(reference_id, selector_id, slice_to, assembly_id, d):
+    """
+    Resolves `reference_id` based on the annotations retrieved from the input description
+    and updates `selector_id` and `slice_to` if necessary.
+    """
+    if reference_id is None or assembly_id:
+        model = d.references["reference"]
+        qualifiers = model.get("annotations", {}).get("qualifiers", {})
+        chromosome = qualifiers.get("chromosome")
+        if chromosome:
+            assembly = assembly_id or "GRCH38"
+            chr_id = get_assembly_chromosome_accession(assembly, f"chr{chromosome}")
+            if chr_id:
+                reference_id = chr_id
+                if selector_id is None:
+                    selector_id = d.get_selector_id()
+                if slice_to is None:
+                    slice_to = "transcript"
+    return reference_id, selector_id, slice_to
+
+
 def map_description(
     description,
-    reference_id,
+    reference_id=None,
     selector_id=None,
     slice_to=None,
     filter=False,
@@ -86,22 +107,9 @@ def map_description(
     obs_seq = d.references["observed"]["sequence"]["seq"]
 
     assembly_id = get_assembly_id(reference_id)
-    if assembly_id:
-        model = d.references["reference"]
-        if (
-                model.get("annotations")
-                and model["annotations"].get("qualifiers")
-                and model["annotations"]["qualifiers"]
-        ):
-            chromosome = model["annotations"]["qualifiers"].get("chromosome")
-            chr_id = get_assembly_chromosome_accession(assembly_id, f"chr{chromosome}")
-            if chr_id:
-                reference_id = chr_id
-                if selector_id is None:
-                    selector_id = d.get_selector_id()
-                if slice_to is None:
-                    slice_to = "transcript"
-
+    reference_id, selector_id, slice_to = resolve_reference_id(
+        reference_id, selector_id, slice_to, assembly_id, d
+    )
     to_r_model = retrieve_reference(reference_id, selector_id)[0]
 
     if to_r_model is None:
@@ -121,7 +129,7 @@ def map_description(
         selector_model = d.get_selector_model()
         if selector_model:
             exons = selector_model["exon"]
-            if all(exons[i][1] == exons[i+1][0] for i in range(len(exons)-1)):
+            if all(exons[i][1] == exons[i + 1][0] for i in range(len(exons) - 1)):
                 converted_variants, skipped_variants = variants, []
             else:
                 converted_variants, skipped_variants = convert_to_exons(
@@ -130,14 +138,11 @@ def map_description(
                     d.get_sequences(),
                 )
             if skipped_variants:
-                errs = []
-                for v in skipped_variants:
-                    errs.append(
-                        errors.location_slice(
-                            d.corrected_model["variants"][v]["location"]
-                        )
-                    )
-                return {"errors": errs, "source": "input"}
+                return {
+                    "errors": [errors.location_slice(d.corrected_model["variants"][v]["location"])for v in skipped_variants],
+                    "source": "input",
+                }
+
             from_r_model = convert_reference_model(
                 d.references["reference"], d.get_selector_id(), slice_to
             )
@@ -163,14 +168,11 @@ def map_description(
                 variants, [g_l], {"reference": ref_seq_from}
             )
             if skipped_variants:
-                errs = []
-                for v in skipped_variants:
-                    errs.append(
-                        errors.location_slice(
-                            d.corrected_model["variants"][v]["location"]
-                        )
-                    )
-                return {"errors": errs, "source": "input"}
+                return {
+                    "errors": [errors.location_slice(d.corrected_model["variants"][v]["location"]) for v in skipped_variants],
+                    "source": "input",
+                }
+
             obs_seq = mutate({"reference": ref_seq_from}, converted_variants)
     elif slice_to is not None:
         return {"errors": [errors.slice_option(slice_to)], "source": "input"}
@@ -194,22 +196,26 @@ def map_description(
 
     ref_seq_to = to_r_model["sequence"]["seq"]
 
-    if len(ref_seq_to) > len_max:
-        return {
-            "errors": [errors.sequence_length(ref_seq_to, len_max)],
-            "source": "input",
-        }
-    if len(obs_seq) > len_max:
-        return {"errors": [errors.sequence_length(obs_seq, len_max)], "source": "input"}
-
-    if (
-        len(ref_seq_to) < len(obs_seq)
-        and abs(len(ref_seq_to) - len(obs_seq)) > diff_max
-    ):
-        return {
-            "errors": [errors.lengths_difference(abs(len(ref_seq_to) - len(obs_seq)), diff_max)],
-            "source": "input",
-        }
+    ref_len = len(ref_seq_to)
+    obs_len = len(obs_seq)
+    if len_max is not None:
+        if ref_len > len_max:
+            return {
+                "errors": [errors.sequence_length(ref_seq_to, len_max)],
+                "source": "input",
+            }
+        if obs_len > len_max:
+            return {
+                "errors": [errors.sequence_length(obs_seq, len_max)],
+                "source": "input",
+            }
+    if diff_max is not None:
+        length_diff = abs(ref_len - obs_len)
+        if ref_len < obs_len and length_diff > diff_max:
+            return {
+                "errors": [errors.lengths_difference(length_diff, diff_max)],
+                "source": "input",
+            }
 
     # Get the description extractor hgvs internal indexing variants
     variants = _extract_hgvs_internal_model(obs_seq, ref_seq_to)
@@ -232,6 +238,11 @@ def map_description(
         tag = get_mane_tag(m_d.get_selector_model())
         if tag:
             output["tag"] = tag
-    if m_d.equivalent and m_d.equivalent.get("g") and len(m_d.equivalent["g"]) == 1 and m_d.equivalent["g"][0].get("description"):
+    if (
+        m_d.equivalent
+        and m_d.equivalent.get("g")
+        and len(m_d.equivalent["g"]) == 1
+        and m_d.equivalent["g"][0].get("description")
+    ):
         output["genomic_description"] = m_d.equivalent["g"][0]["description"]
     return output
