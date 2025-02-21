@@ -85,9 +85,6 @@ def resolve_reference_id(reference_id, selector_id, slice_to, assembly_id, d):
     return reference_id, selector_id, slice_to
 
 
-# Usage
-
-
 def map_description(
     description,
     reference_id=None,
@@ -141,14 +138,11 @@ def map_description(
                     d.get_sequences(),
                 )
             if skipped_variants:
-                errs = []
-                for v in skipped_variants:
-                    errs.append(
-                        errors.location_slice(
-                            d.corrected_model["variants"][v]["location"]
-                        )
-                    )
-                return {"errors": errs, "source": "input"}
+                return {
+                    "errors": [errors.location_slice(d.corrected_model["variants"][v]["location"])for v in skipped_variants],
+                    "source": "input",
+                }
+
             from_r_model = convert_reference_model(
                 d.references["reference"], d.get_selector_id(), slice_to
             )
@@ -174,14 +168,11 @@ def map_description(
                 variants, [g_l], {"reference": ref_seq_from}
             )
             if skipped_variants:
-                errs = []
-                for v in skipped_variants:
-                    errs.append(
-                        errors.location_slice(
-                            d.corrected_model["variants"][v]["location"]
-                        )
-                    )
-                return {"errors": errs, "source": "input"}
+                return {
+                    "errors": [errors.location_slice(d.corrected_model["variants"][v]["location"]) for v in skipped_variants],
+                    "source": "input",
+                }
+
             obs_seq = mutate({"reference": ref_seq_from}, converted_variants)
     elif slice_to is not None:
         return {"errors": [errors.slice_option(slice_to)], "source": "input"}
