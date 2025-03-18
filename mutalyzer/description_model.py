@@ -216,45 +216,48 @@ def model_to_string(model, exclude_superfluous_selector=True, aa="verbatim"):
     :param model: Dictionary holding the variant description model.
     :return: Equivalent reference string representation.
     """
-    if model.get("reference"):
-        reference_id = model["reference"]["id"]
-    elif model.get("source"):
-        reference_id = model["source"]["id"]
-    else:
-        reference_id = None
-    if reference_id:
-        selector_id = get_selector_id(model)
-        if (
-            reference_id
-            and exclude_superfluous_selector
-            and reference_id == selector_id
-        ):
-            selector_id = None
-        if selector_id:
-            reference = "{}({})".format(reference_id, selector_id)
-        else:
-            reference = "{}".format(reference_id)
-    else:
-        reference = None
-    if model.get("coordinate_system"):
-        coordinate_system = model.get("coordinate_system") + "."
-    else:
-        coordinate_system = ""
+    reference = reference_to_description(model, exclude_superfluous_selector)
+    coordinate_system = f"{model.get('coordinate_system', '')}." if model.get("coordinate_system") else ""
+
     if isinstance(model.get("variants"), list):
-        if model.get("type") == "description_protein":
-            variants = variants_to_description(model["variants"], True)
-        else:
-            variants = variants_to_description(model["variants"], False)
+        is_protein = model.get("type") == "description_protein"
+        variants = variants_to_description(model["variants"], is_protein)
+
         if model.get("predicted"):
             variants = f"({variants})"
-        if reference:
-            return "{}:{}{}".format(reference, coordinate_system, variants)
-        else:
-            return "{}".format(variants)
+
+        return f"{reference}:{coordinate_system}{variants}" if reference else variants
+
     if model.get("location"):
-        return "{}:{}{}".format(
-            reference, coordinate_system, location_to_description(model.get("location"))
-        )
+        return f"{reference}:{coordinate_system}{location_to_description(model['location'])}"
+
+    return reference  # Return reference if no variants or location exist
+
+
+def reference_to_description(model, exclude_superfluous_selector=True, aa="verbatim"):
+    reference_id = model.get("reference", {}).get("id") or model.get("source", {}).get("id")
+
+    if not reference_id:
+        return None
+
+    selector_id = get_selector_id(model)
+
+    # Remove superfluous selector if it's the same as reference_id
+    if exclude_superfluous_selector and reference_id == selector_id:
+        selector_id = None
+
+    # If reference_id starts with "LRG_" and follows expected format, append selector_id
+    if (
+            reference_id.startswith("LRG_") and
+            reference_id[4:].isdigit() and
+            selector_id and
+            selector_id[0] in {"t", "p"} and
+            selector_id[1:].isdigit()
+    ):
+        reference_id += selector_id
+        selector_id = None
+
+    return f"{reference_id}({selector_id})" if selector_id else reference_id
 
 
 def variants_to_description(variants, protein=False, aa="verbatim"):

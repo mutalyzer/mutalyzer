@@ -208,14 +208,17 @@ class Description:
 
     @staticmethod
     def _check_if_lrg_reference(reference_id):
-        if reference_id.startswith("LRG_") and "t" in reference_id:
-            lrg_split = reference_id.split("t")
-            if len(lrg_split) == 2 and lrg_split[1].isdigit():
+        if not reference_id.startswith("LRG_"):
+            return None
+
+        for index, char in enumerate(reference_id):
+            if char in {"t", "p"} and reference_id[index + 1:].isdigit():
                 return {
-                    "id": lrg_split[0],
-                    "selector": {"id": "t" + lrg_split[1]},
+                    "id": reference_id[:index],
+                    "selector": {"id": reference_id[index:]}
                 }
-        return None
+
+        return {"id": reference_id, "selector": None}
 
     @check_errors
     def retrieve_references(self):
@@ -1338,6 +1341,15 @@ class Description:
                 mrna_id = s_m["id"]
             if reference_id == mrna_id:
                 reference = f"{mrna_id}"
+            elif (
+                    reference_id.startswith("LRG_") and
+                    len(reference_id) > 4 and
+                    reference_id[4:].isdigit() and
+                    mrna_id and
+                    mrna_id[0] == "t" and
+                    len(mrna_id) > 1 and mrna_id[1:].isdigit()
+            ):
+                reference = f"{reference_id}{mrna_id}"
             else:
                 reference = f"{reference_id}({mrna_id})"
         bt_descriptions = []

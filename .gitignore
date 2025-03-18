@@ -24,3 +24,7 @@ images/other/
 apis
 .pytest_cache/
 docs/html/
+*.txt
+*.svg
+*.gff*
+*.sequence

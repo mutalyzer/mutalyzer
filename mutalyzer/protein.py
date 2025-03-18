@@ -363,17 +363,29 @@ def get_protein_description(variants, references, selector_model):
         variants, sequences, selector_model
     )
 
+    # Handle LRG
+    if (
+            ref_id.startswith("LRG_") and
+            len(ref_id) > 4 and
+            ref_id[4:].isdigit() and
+            protein_id and
+            protein_id[0] in ("t", "p") and
+            len(protein_id) > 1 and protein_id[1:].isdigit()
+    ):
+        reference = ref_id + protein_id
+    else:
+        reference = f"{ref_id}({protein_id})"
     if splice_site_hits:
-        return "{}({}):{}".format(ref_id, protein_id, "p.?"), p_ref_seq, "?"
+        return f"{reference}:p.?", p_ref_seq, "?"
     elif not cds_variants:
-        return "{}({}):{}".format(ref_id, protein_id, "p.(=)"), p_ref_seq, p_ref_seq
+        return f"{reference}:p.(=)", p_ref_seq, p_ref_seq
 
     cds_obs_seq = mutate({"reference": cds_seq_ext}, cds_variants)
 
     p_obs_seq = str(Seq(cds_obs_seq).translate())
 
     if cds_seq[:3] != cds_obs_seq[:3]:
-        return "{}({}):{}".format(ref_id, protein_id, "p.?"), p_ref_seq, "?"
+        return f"{reference}:p.?", p_ref_seq, "?"
 
     # Up to and including the first '*', or the entire string.
     try:
@@ -389,7 +401,7 @@ def get_protein_description(variants, references, selector_model):
         # A different check maybe should be implemented
         # see: NG_012337.1(NM_012459.2):c.5_6delinsTAG
         return (
-            "{}({}):{}".format(ref_id, protein_id, "p.?"),
+            f"{reference}:p.?",
             p_ref_seq,
             p_obs_seq,
             description[1],
@@ -398,7 +410,7 @@ def get_protein_description(variants, references, selector_model):
         )
 
     return (
-        "{}({}):p.({})".format(ref_id, protein_id, description[0]),
+        f"{reference}:p.({description[0]})",
         p_ref_seq,
         p_obs_seq,
         description[1],

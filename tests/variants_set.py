@@ -1153,9 +1153,9 @@ M2_TESTS = [
             "M2: We should be able to use LRG reference sequence without error.",
         ],
         "input": "LRG_1t1:c.266G>T",
-        "normalized": "LRG_1(t1):c.266G>T",  # TODO: check if OK.
+        "normalized": "LRG_1t1:c.266G>T",  # TODO: check if OK.
         "genomic": "LRG_1:g.6855G>T",
-        "protein_description": "LRG_1(p1):p.(Gly89Val)",
+        "protein_description": "LRG_1p1:p.(Gly89Val)",
         "infos": ["ICORRECTEDLRGREFERENCE", "ILRGWARNING"],
         "to_test": True,
     },
@@ -1883,8 +1883,8 @@ M2_TESTS = [
         "keywords": ["protein"],
         "input": "LRG_199t1:c.235_237delinsTAT",
         "genomic": "LRG_199:g.[499798A>T;499800G>T]",
-        "normalized": "LRG_199(t1):c.[235A>T;237G>T]",
-        "protein_description": "LRG_199(p1):p.(Lys79Tyr)",
+        "normalized": "LRG_199t1:c.[235A>T;237G>T]",
+        "protein_description": "LRG_199p1:p.(Lys79Tyr)",
         "to_test": True,
     },
     # All the IVS/EX tests are not any longer relevant.
@@ -2538,12 +2538,12 @@ TESTS = [
         "input": "LRG_24:g.5526_5533del",
         "coding_protein_descriptions": {
             (
-                "LRG_24(t1):c.127_134del",
-                "LRG_24(p1):p.(Gly43Argfs*65)",
+                "LRG_24t1:c.127_134del",
+                "LRG_24p1:p.(Gly43Argfs*65)",
             ),
             (
-                "LRG_24(t2):c.127_134del",
-                "LRG_24(p2):p.(Gly43Argfs*65)",
+                "LRG_24t2:c.127_134del",
+                "LRG_24p2:p.(Gly43Argfs*65)",
             ),
         },
         "to_test": True,
@@ -2568,10 +2568,9 @@ TESTS = [
     },
     {
         "keywords": ["reference", "LRG", "replace"],
-        "input": "LRG_303(t1):c.10_11insLRG_1t1:c.100_101",
-        "normalized": "LRG_303(t1):c.10_11insGA",
-        "normalized_alt": "LRG_303(t1):c.10_11insGA",
-        "infos": ["ILRGWARNING", "ICORRECTEDLRGREFERENCE", "ILRGWARNING"],
+        "input": "LRG_303t1:c.10_11insLRG_1t1:c.100_101",
+        "normalized": "LRG_303t1:c.10_11insGA",
+        "infos": ["ICORRECTEDLRGREFERENCE", "ILRGWARNING", "ICORRECTEDLRGREFERENCE", "ILRGWARNING"],
         "to_test": True,
     },
     {
@@ -3009,25 +3008,22 @@ TESTS = [
     },
     {
         "keywords": [],
-        "input": "LRG_24(t1):c.126_133delins[NM_003002.2:c.pter_-51;NM_003002.2:c.*835_qter]",
-        "normalized": "LRG_24(t1):c.126_133delinsGTGGGAATTGTAAAAAAA",
-        "normalized_alt": "LRG_24(t1):c.126_133delinsGTGGGAATTGTAAAAAAA",
+        "input": "LRG_24t1:c.126_133delins[NM_003002.2:c.pter_-51;NM_003002.2:c.*835_qter]",
+        "normalized": "LRG_24t1:c.126_133delinsGTGGGAATTGTAAAAAAA",
         "genomic": "LRG_24:g.5525_5532delinsGTGGGAATTGTAAAAAAA",
         "to_test": True,
     },
     {
         "keywords": [],
-        "input": "LRG_24(t1):c.pter_qterdelinspter_qter",
-        "normalized": "LRG_24(t1):c.=",
-        "normalized_alt": "LRG_24(t1):c.=",
+        "input": "LRG_24t1:c.pter_qterdelinspter_qter",
+        "normalized": "LRG_24t1:c.=",
         "genomic": "LRG_24:g.=",
         "to_test": True,
     },
     {
         "keywords": [],
-        "input": "LRG_24(t1):c.pter_qterdelins[pter_qter;NM_003002.2:c.*835_qter]",
-        "normalized": "LRG_24(t1):c.*2327_*2328insAAAAAAA",
-        "normalized_alt": "LRG_24(t1):c.*2327_*2328insA[7]",
+        "input": "LRG_24t1:c.pter_qterdelins[pter_qter;NM_003002.2:c.*835_qter]",
+        "normalized": "LRG_24t1:c.*2327_*2328insAAAAAAA",
         "genomic": "LRG_24:g.11486_11487insAAAAAAA",
         "to_test": True,
     },
@@ -3425,7 +3421,7 @@ TESTS = [
     },
     {
         "keywords": ["strange variant"],
-        "input": "LRG_199t1:c.11LRG_199(t1):c.11",
+        "input": "LRG_199t1:c.11LRG_199t1:c.11",
         "errors": [
             "EVARIANTNOTSUPPORTED",
         ],
@@ -3433,14 +3429,14 @@ TESTS = [
     },
     {
         "keywords": ["strange variant"],
-        "input": "LRG_199t1:c.11LRG_199(t1):c.11[10]",
-        "normalized": "LRG_199(t1):c.11_13G[10]",
+        "input": "LRG_199t1:c.11LRG_199t1:c.11[10]",
+        "normalized": "LRG_199t1:c.11_13G[10]",
         "to_test": True,
     },
     {
         "keywords": ["strange variant"],
         "input": "LRG_199t1:c.11NG_012337.3(NM_003002.4):c.14[10]",
-        "normalized": "LRG_199(t1):c.11_13G[10]",
+        "normalized": "LRG_199t1:c.11_13G[10]",
         "to_test": True,
     },
     {
