@@ -1138,9 +1138,9 @@ M2_TESTS = [
             "M2: We should be able to use LRG reference sequence without error.",
         ],
         "input": "LRG_1t1:c.266G>T",
-        "normalized": "LRG_1(t1):c.266G>T",  # TODO: check if OK.
+        "normalized": "LRG_1t1:c.266G>T",  # TODO: check if OK.
         "genomic": "LRG_1:g.6855G>T",
-        "protein_description": "LRG_1(p1):p.(Gly89Val)",
+        "protein_description": "LRG_1p1:p.(Gly89Val)",
         "infos": ["ICORRECTEDLRGREFERENCE", "ILRGWARNING"],
         "to_test": True,
     },
@@ -1868,8 +1868,8 @@ M2_TESTS = [
         "keywords": ["protein"],
         "input": "LRG_199t1:c.235_237delinsTAT",
         "genomic": "LRG_199:g.[499798A>T;499800G>T]",
-        "normalized": "LRG_199(t1):c.[235A>T;237G>T]",
-        "protein_description": "LRG_199(p1):p.(Lys79Tyr)",
+        "normalized": "LRG_199t1:c.[235A>T;237G>T]",
+        "protein_description": "LRG_199p1:p.(Lys79Tyr)",
         "to_test": True,
     },
     # All the IVS/EX tests are not any longer relevant.
@@ -2474,12 +2474,12 @@ TESTS = [
         "input": "LRG_24:g.5526_5533del",
         "coding_protein_descriptions": {
             (
-                "LRG_24(t1):c.127_134del",
-                "LRG_24(p1):p.(Gly43ArgfsTer65)",
+                "LRG_24t1:c.127_134del",
+                "LRG_24p1:p.(Gly43ArgfsTer65)",
             ),
             (
-                "LRG_24(t2):c.127_134del",
-                "LRG_24(p2):p.(Gly43ArgfsTer65)",
+                "LRG_24t2:c.127_134del",
+                "LRG_24p2:p.(Gly43ArgfsTer65)",
             ),
         },
         "to_test": True,
@@ -2502,9 +2502,9 @@ TESTS = [
     },
     {
         "keywords": ["reference", "LRG", "replace"],
-        "input": "LRG_303(t1):c.10_11insLRG_1t1:c.100_101",
-        "normalized": "LRG_303(t1):c.10_11insGA",
-        "infos": ["ILRGWARNING", "ICORRECTEDLRGREFERENCE", "ILRGWARNING"],
+        "input": "LRG_303t1:c.10_11insLRG_1t1:c.100_101",
+        "normalized": "LRG_303t1:c.10_11insGA",
+        "infos": ["ICORRECTEDLRGREFERENCE", "ILRGWARNING", "ICORRECTEDLRGREFERENCE", "ILRGWARNING"],
         "to_test": True,
     },
     {
@@ -2617,6 +2617,21 @@ TESTS = [
         "input": "NG_009299.1(NM_017668.3):c.[250del;41A>C]",
         "normalized": "NG_009299.1(NM_017668.3):c.[41A>C;*189del]",
         "infos": ["ICORRECTEDPOINT", "ISORTEDVARIANTS"],
+        "to_test": True,
+    },
+    {
+        "keywords": ["reverse strand"],
+        "input": "NG_009299.1(NM_017668.3):c.[41>CA;250del]",
+        "normalized": "NG_009299.1(NM_017668.3):c.[40dup;*189del]",
+        "genomic": "NG_009299.1:g.[137591del;137802dup]",
+        "infos": ["ICORRECTEDVARIANTTYPE", "ICORRECTEDPOINT"],
+        "to_test": True,
+    },
+    {
+        "keywords": ["reverse strand"],
+        "input": "NG_009299.1(NM_017668.3):c.[250del;41>CA]",
+        "normalized": "NG_009299.1(NM_017668.3):c.[40dup;*189del]",
+        "infos": ["ICORRECTEDVARIANTTYPE", "ICORRECTEDPOINT", "ISORTEDVARIANTS"],
         "to_test": True,
     },
     {
@@ -2887,22 +2902,22 @@ TESTS = [
     },
     {
         "keywords": [],
-        "input": "LRG_24(t1):c.126_133delins[NM_003002.2:c.pter_-51;NM_003002.2:c.*835_qter]",
-        "normalized": "LRG_24(t1):c.126_133delinsGTGGGAATTGTAAAAAAA",
+        "input": "LRG_24t1:c.126_133delins[NM_003002.2:c.pter_-51;NM_003002.2:c.*835_qter]",
+        "normalized": "LRG_24t1:c.126_133delinsGTGGGAATTGTAAAAAAA",
         "genomic": "LRG_24:g.5525_5532delinsGTGGGAATTGTAAAAAAA",
         "to_test": True,
     },
     {
         "keywords": [],
-        "input": "LRG_24(t1):c.pter_qterdelinspter_qter",
-        "normalized": "LRG_24(t1):c.=",
+        "input": "LRG_24t1:c.pter_qterdelinspter_qter",
+        "normalized": "LRG_24t1:c.=",
         "genomic": "LRG_24:g.=",
         "to_test": True,
     },
     {
         "keywords": [],
-        "input": "LRG_24(t1):c.pter_qterdelins[pter_qter;NM_003002.2:c.*835_qter]",
-        "normalized": "LRG_24(t1):c.*2327_*2328insAAAAAAA",
+        "input": "LRG_24t1:c.pter_qterdelins[pter_qter;NM_003002.2:c.*835_qter]",
+        "normalized": "LRG_24t1:c.*2327_*2328insAAAAAAA",
         "genomic": "LRG_24:g.11486_11487insAAAAAAA",
         "to_test": True,
     },
@@ -3114,6 +3129,17 @@ TESTS = [
         "to_test": True,
     },
     {
+        "keywords": [
+            "exon boundary insertion on mRNA sequence (no introns)",
+        ],
+        "input": "NM_003002.4:c.169_170insATA",
+        "normalized": "NM_003002.4:c.169_170insATA",
+        "rna_description": "NM_003002.4:r.(169_170insaua)",
+        "protein_description": "NM_003002.4(NP_002993.1):p.(Ser57delinsTyrThr)",
+
+        "to_test": True,
+    },
+    {
         "keywords": ["no cds for coding transcripts #73"],
         "input": "NG_009930.1(NM_001099625.2):c.1010",
         "errors": [
@@ -3259,7 +3285,137 @@ TESTS = [
         ],
         "to_test": True,
     },
-
+    {
+        "keywords": ["mixed repeat"],
+        "input": "LRG_1t1:52_153CAG[21]CAA[1]CAG[1]CCG[1]CCA[1]CCG[7]CCT[2]",
+        "errors": [
+            "EREPEATUNSUPPORTED",
+        ],
+        "to_test": True,
+    },
+    {
+        "keywords": ["strange variant"],
+        "input": "LRG_199t1:c.11LRG_199t1:c.11",
+        "errors": [
+            "EVARIANTNOTSUPPORTED",
+        ],
+        "to_test": True,
+    },
+    {
+        "keywords": ["strange variant"],
+        "input": "LRG_199t1:c.11LRG_199t1:c.11[10]",
+        "normalized": "LRG_199t1:c.11_13G[10]",
+        "to_test": True,
+    },
+    {
+        "keywords": ["strange variant"],
+        "input": "LRG_199t1:c.11NG_012337.3(NM_003002.4):c.14[10]",
+        "normalized": "LRG_199t1:c.11_13G[10]",
+        "to_test": True,
+    },
+    {
+        "keywords": ["reverse strand"],
+        "input": "NG_012337.1(NM_012459.2):c.274delT",
+        "errors": [
+            "ESEQUENCEMISMATCH",
+        ],
+        "to_test": True,
+    },
+    {
+        "keywords": ["reverse strand"],
+        "input": "NG_012337.1(NM_012459.2):c.274_275TA[5]",
+        "errors": [
+            "EREPEATMISMATCH",
+        ],
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NG_012337.3(NM_003002.4):c.274_275AA[4]",
+        "errors": [
+            "EREPEATMISMATCH",
+        ],
+        "to_test": True,
+    },
+    {
+        "keywords": ["reverse strand"],
+        "input": "NG_012337.1(NM_012459.2):c.10CT[5]",
+        "errors": [
+            "EREPEATMISMATCH",
+        ],
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NG_012337.3(NM_003002.4):c.274AA[4]",
+        "errors": [
+            "EREPEATMISMATCH",
+        ],
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NG_012337.3(NM_003002):274+400G>T",
+        "errors": [
+            "ENOSELECTORFOUND",
+        ],
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NG_012337.3:a.274G>T",
+        "errors": [
+            "ECOORDINATESYSTEMINVALID",
+        ],
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NG_007485.1(CDKN2A):n.204_205insATC",
+        "errors": [
+            "ESELECTOROPTIONS",
+        ],
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NG_007485.1(CDKN2A_v001):n.204_205insATC",
+        "errors": [
+            "ESELECTOROPTIONS",
+        ],
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NG_007485.1(1787):n.204_205insATC",
+        "errors": [
+            "ESELECTOROPTIONS",
+        ],
+        "to_test": True,
+    },
+    {
+        "keywords": ["input not for test_description_to_model_to_description"],
+        "input": "NG_012337.3(NM_003002.4):c.274G>NG_012337.3(NM_003002.4):c.274G>T",
+        "errors": [
+            "ESYNTAXNESTED",
+        ],
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NG_012337.3(NM_003002.4):r.274+10G>T",
+        "errors": [
+            "EINTRONICRNA",
+        ],
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NG_012337.3(NM_003002.4):p.(Asp92Tyr)",
+        "normalized": "NG_012337.3(NP_002993.1):p.(Asp92Tyr)",
+        "infos": ["ICORRECTEDSELECTORID"],
+        "to_test": True,
+    },
     # {
     #     "keywords": [
     #         "rna",

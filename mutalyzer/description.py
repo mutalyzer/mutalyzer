@@ -16,7 +16,6 @@ from mutalyzer_mutator.util import reverse_complement
 from mutalyzer_retriever.reference import (
     get_assembly_chromosome_accession,
     get_assembly_id,
-    get_chromosome_accession_from_mrna_model,
     get_reference_mol_type,
 )
 from mutalyzer_retriever.related import get_cds_to_mrna
@@ -25,13 +24,11 @@ from mutalyzer_retriever.retriever import (
     get_overlap_models,
 )
 
-import mutalyzer.errors as errors
-import mutalyzer.infos as infos
-
+from . import errors, infos
 from .checker import (
     are_sorted,
     contains_insert_length,
-    contains_uncertain_locations,
+    contains_uncertain,
     is_overlap,
     splice_sites,
 )
@@ -103,7 +100,7 @@ from .util import (
 )
 
 
-class Description(object):
+class Description:
     def __init__(
         self,
         description=None,
@@ -160,8 +157,9 @@ class Description(object):
         self.infos.append(info)
 
     def get_selector_id(self):
-        if self.corrected_model:
-            return get_selector_id(self.corrected_model)
+        if not self.corrected_model:
+            return None
+        return get_selector_id(self.corrected_model)
 
     def get_selector_model(self):
         selector_id = self.get_selector_id()
@@ -172,23 +170,11 @@ class Description(object):
 
     def is_selector_model_valid(self):
         selector_model = self.get_selector_model()
-        if (
-            selector_model
-            and selector_model["type"] == "mRNA"
-            and selector_model.get("cds")
-        ):
-            return True
-        return False
+        return selector_model and selector_model.get("type") == "mRNA" and selector_model.get("cds")
 
     def is_inverted(self):
         selector_model = self.get_selector_model()
-        if (
-            selector_model
-            and selector_model.get("location")
-            and selector_model["location"].get("strand") == -1
-        ):
-            return True
-        return False
+        return selector_model and selector_model.get("location") and selector_model["location"].get("strand") == -1
 
     @check_errors
     def _convert_description_to_model(self):
@@ -222,13 +208,17 @@ class Description(object):
 
     @staticmethod
     def _check_if_lrg_reference(reference_id):
-        if reference_id.startswith("LRG_") and "t" in reference_id:
-            lrg_split = reference_id.split("t")
-            if len(lrg_split) == 2 and lrg_split[1].isdigit():
+        if not reference_id.startswith("LRG_"):
+            return None
+
+        for index, char in enumerate(reference_id):
+            if char in {"t", "p"} and reference_id[index + 1:].isdigit():
                 return {
-                    "id": lrg_split[0],
-                    "selector": {"id": "t" + lrg_split[1]},
+                    "id": reference_id[:index],
+                    "selector": {"id": reference_id[index:]}
                 }
+
+        return {"id": reference_id, "selector": None}
 
     @check_errors
     def retrieve_references(self):
@@ -349,18 +339,13 @@ class Description(object):
 
     @check_errors
     def _check_coordinate_systems(self):
-        for (
-            c_s,
-            c_s_path,
-            r_id,
-            r_path,
-            s_id,
-            s_path,
-        ) in yield_reference_selector_ids_coordinate_system(
+        for c_s, c_s_path, r_id, _, s_id, _ in yield_reference_selector_ids_coordinate_system(
             copy.deepcopy(self.corrected_model)
         ):
             if c_s is None:
                 self._handle_no_coordinate_system(c_s_path, r_id, s_id)
+            elif c_s not in ["g", "c", "n", "r", "p", "m", "o"]:
+                self._add_error(errors.coordinate_system_invalid(c_s, c_s_path))
 
     def _correct_coordinate_system(self, coordinate_system, path, correction_source):
         set_by_path(self.corrected_model, path, coordinate_system)
@@ -392,14 +377,7 @@ class Description(object):
 
     @check_errors
     def _check_coordinate_system_consistency(self):
-        for (
-            c_s,
-            c_s_path,
-            r_id,
-            r_path,
-            s_id,
-            s_path,
-        ) in yield_reference_selector_ids_coordinate_system(
+        for c_s, c_s_path, r_id, r_path, s_id, _ in yield_reference_selector_ids_coordinate_system(
             copy.deepcopy(self.corrected_model)
         ):
             if s_id:
@@ -470,8 +448,6 @@ class Description(object):
             if v.get("type") == "substitution":
                 if len(construct_sequence(v["inserted"], self.get_sequences())) > 1:
                     path = ["variants", i, "type"]
-                    if self.is_inverted():
-                        path = reverse_path(self.corrected_model, path)
                     set_by_path(self.corrected_model, path, "deletion_insertion")
                     set_by_path(
                         self.internal_coordinates_model, path, "deletion_insertion"
@@ -837,10 +813,7 @@ class Description(object):
             rna_variants_coordinate = de_to_hgvs(
                 rna_variants_coordinate,
                 {
-                    k: str(
-                        Seq(rna_references[k]["sequence"]["seq"]).transcribe().lower()
-                    )
-                    for k in rna_references
+                    k: str(Seq(model["sequence"]["seq"]).transcribe().lower()) for k, model in rna_references.items()
                 },
             )
             to_rna_sequences(rna_variants_coordinate)
@@ -965,6 +938,7 @@ class Description(object):
             elif ref_mol_type == "genomic DNA" and c_s == "r":
                 self._add_error(errors.intronic_rna(point, path))
 
+    @check_errors
     def _check_location_extras(self):
         for point, path in yield_sub_model(
             self.corrected_model, ["location", "start", "end"], ["point"]
@@ -992,64 +966,80 @@ class Description(object):
             if abs(get_start(v) - get_end(v)) != 1:
                 self._add_error(errors.insertion_range(v_r["location"], path))
 
+    def _check_repeat(self, path):
+        path_i = reverse_path(self.internal_indexing_model, path) if self.is_inverted() else path
+        v = self.input_model["variants"][path_i[1]]
+        v_i = self.internal_indexing_model["variants"][path[1]]
+
+        inserted = v_i.get("inserted", [])
+        if len(inserted) != 1:
+            self._add_error(errors.repeat_not_supported(v, path))
+            return
+
+        inserted = inserted[0]
+        if v["location"]["type"] == "point" and len(inserted) > 1:
+            self._check_repeat_dbsnp(path, v, v_i)
+            return
+
+        repeat_seq = self._get_repeat_unit_sequence(inserted)
+        if repeat_seq is None:
+            self._add_error(errors.repeat_not_supported(v, path))
+            return
+
+        ref_seq = self.references["reference"]["sequence"]["seq"][get_start(v_i): get_end(v_i)]
+        if self.is_inverted():
+            ref_seq = reverse_complement(ref_seq)
+        if len(ref_seq) % len(repeat_seq) != 0:
+            self._add_error(errors.repeat_reference_sequence_length(path))
+        elif (len(ref_seq) // len(repeat_seq)) * repeat_seq != ref_seq:
+            self._add_error(errors.repeat_sequences_mismatch(ref_seq, repeat_seq, path))
+
+    def _get_repeat_unit_sequence(self, inserted):
+        source = inserted.get("source")
+        if inserted.get("sequence") and source == "description":
+            return inserted["sequence"]
+        if isinstance(source, str):
+            return slice_sequence(inserted["location"], self.get_sequences()[source])
+        if isinstance(source, dict) and "id" in source:
+            return slice_sequence(inserted["location"], self.get_sequences()[source["id"]])
+        return None
+
     def _check_repeat_dbsnp(self, path, v, v_i):
         ref_seq = self.references["reference"]["sequence"]["seq"]
         inserted = v_i["inserted"][0]
+        start_pos = get_start(v_i)
+
+        repeat_unit = self._get_repeat_unit_sequence(inserted)
+        if repeat_unit is None:
+            self._add_error(errors.repeat_sequences_mismatch("", "", path))
+            return
+
         if self.is_inverted():
-            repeat_unit = reverse_complement(inserted["sequence"])
-            point = get_start(v_i)
-            while ref_seq[point - len(repeat_unit) + 1 : point + 1] == repeat_unit:
-                point -= len(repeat_unit)
-            if point <= get_start(v_i):
-                v_i["location"]["start"]["position"] = point + 1
+            repeat_unit = reverse_complement(repeat_unit)
+            new_start = self._find_repeat_start(ref_seq, repeat_unit, start_pos)
+
+            if new_start < start_pos:
+                v_i["location"]["start"]["position"] = new_start + 1
             else:
-                self._add_error(
-                    errors.repeat_sequences_mismatch("", inserted["sequence"], path)
-                )
+                self._add_error(errors.repeat_sequences_mismatch("", inserted["sequence"], path))
         else:
-            inserted = v_i["inserted"][0]
-            repeat_unit = inserted["sequence"]
-            point = get_start(v_i)
-            while ref_seq[point : point + len(repeat_unit)] == repeat_unit:
-                point += len(repeat_unit)
-            if point > get_start(v_i):
-                v_i["location"]["end"]["position"] = point
+            new_end = self._find_repeat_end(ref_seq, repeat_unit, start_pos)
+            if new_end > start_pos:
+                v_i["location"]["end"]["position"] = new_end
             else:
                 self._add_error(errors.repeat_sequences_mismatch("", repeat_unit, path))
 
-    def _check_repeat(self, path):
-        if self.is_inverted():
-            path_i = reverse_path(self.internal_indexing_model, path)
-        else:
-            path_i = path
-        v = self.input_model["variants"][path_i[1]]
-        v_i = self.internal_indexing_model["variants"][path[1]]
-        if v_i.get("inserted") and len(v_i.get("inserted")) == 1:
-            inserted = v_i["inserted"][0]
-            if v["location"]["type"] == "point" and len(inserted) > 1:
-                self._check_repeat_dbsnp(path, v, v_i)
-                return
-            if inserted.get("sequence") and inserted.get("source") == "description":
-                repeat_seq = inserted["sequence"]
-            # TODO: get the sequence from a reference slice
-            else:
-                self._add_error(errors.repeat_not_supported(v, path))
-                return
-            ref_seq = self.references["reference"]["sequence"]["seq"][
-                get_start(v_i) : get_end(v_i)
-            ]
-            if self.is_inverted():
-                ref_seq = reverse_complement(ref_seq)
+    def _find_repeat_start(self, ref_seq, repeat_unit, start):
+        output = start
+        while output >= len(repeat_unit) and ref_seq[output - len(repeat_unit) + 1: output + 1] == repeat_unit:
+            output -= len(repeat_unit)
+        return output
 
-            if len(ref_seq) % len(repeat_seq) != 0:
-                self._add_error(errors.repeat_reference_sequence_length(path))
-            elif (len(ref_seq) // len(repeat_seq)) * repeat_seq != ref_seq:
-                self._add_error(
-                    errors.repeat_sequences_mismatch(ref_seq, repeat_seq, path)
-                )
-        else:
-            # TODO: Convert to delins and switch to warning?
-            self._add_error(errors.repeat_not_supported(v, path))
+    def _find_repeat_end(self, ref_seq, repeat_unit, start):
+        output = start
+        while output + len(repeat_unit) <= len(ref_seq) and ref_seq[output: output + len(repeat_unit)] == repeat_unit:
+            output += len(repeat_unit)
+        return output
 
     def _check_superfluous(self, path):
         """
@@ -1140,11 +1130,17 @@ class Description(object):
     def _check_cds(self):
         for c_s, _, r_id, _, s_id, s_p in yield_reference_selector_ids_coordinate_system(self.corrected_model):
             if c_s in ["c", "r"] and r_id in self.references:
-                s_m = get_internal_selector_model(
-                    self.references[r_id]["annotations"], s_id
-                )
+                s_m = get_internal_selector_model(self.references[r_id]["annotations"], s_id)
                 if s_m and s_m.get("type") == "mRNA" and s_m.get("cds") is None:
                     self._add_error(errors.no_cds(r_id, s_id, s_p))
+
+    def _check_variants(self):
+        if self.corrected_model.get("variants"):
+            for i, v in enumerate(self.corrected_model["variants"]):
+                if v.get("type") == "repeat":
+                    if len(v.get("inserted", [])) == 1:
+                        if v["inserted"][0].get("repeat_number") is None:
+                            self._add_error(errors.variant_not_supported(v, "", []))
 
     def _insertions_same_location(self):
         insertions = {}
@@ -1183,6 +1179,7 @@ class Description(object):
         ):
             self._add_error(errors.overlap())
 
+
     @check_errors
     def pre_conversion_checks(self):
         self._check_selectors_in_references()
@@ -1191,11 +1188,12 @@ class Description(object):
         self._check_selector_models()
         self._rna()
         self._check_location_extras()
-        if contains_uncertain_locations(self.corrected_model):
+        if contains_uncertain(self.corrected_model):
             self._add_error(errors.uncertain())
         if contains_insert_length(self.corrected_model):
             self._add_error(errors.inserted_length())
         self._check_cds()
+        self._check_variants()
 
     def assembly_checks(self):
         def _set_new_ids(path, chromosome_id):
@@ -1270,9 +1268,7 @@ class Description(object):
             )
 
     def _check_amino_acids(self):
-        for sequence, path in yield_values(
-            self.corrected_model, ["sequence", "amino_acid"]
-        ):
+        for sequence, _ in yield_values(self.corrected_model, ["sequence", "amino_acid"]):
             seq_1a = str(seq1(sequence))
             seq_3a = str(seq3(sequence))
             if not ((sequence == str(seq3(seq_1a))) != (sequence == str(seq1(seq_3a)))):
@@ -1321,24 +1317,22 @@ class Description(object):
         translated_vars = []
         for variant in self.internal_indexing_model["variants"]:
             if variant.get("type") == "substitution":
+                if variant["inserted"][0]["sequence"] in ["X", "Xaa"]:
+                    # TODO: Add error message.
+                    return []
                 cds_start = get_start(variant) * 3
                 cds_end = get_end(variant) * 3
-                bt_options = bt.with_dna(
-                    cds_seq[cds_start:cds_end],
-                    variant["inserted"][0]["sequence"],
-                )
+                bt_options = bt.with_dna(cds_seq[cds_start:cds_end], variant["inserted"][0]["sequence"])
                 dna_var_options = []
                 for offset in bt_options:
                     for v in bt_options[offset]:
-                        dna_var_options.append(
-                            "{}{}>{}".format(cds_start + offset + 1, v[0], v[1])
-                        )
+                        dna_var_options.append(f"{cds_start + offset + 1}{v[0]}>{v[1]}")
                 translated_vars.append(dna_var_options)
             else:
                 # TODO: Add error message.
                 return []
         if cds_id == mrna_id or not selector_id:
-            reference = "{}".format(mrna_id)
+            reference = f"{mrna_id}"
         elif selector_id:
             s_m = self.get_selector_model()
             if s_m:
@@ -1346,15 +1340,24 @@ class Description(object):
             if mrna_id is None and s_m.get("type") == "mRNA":
                 mrna_id = s_m["id"]
             if reference_id == mrna_id:
-                reference = "{}".format(mrna_id)
+                reference = f"{mrna_id}"
+            elif (
+                    reference_id.startswith("LRG_") and
+                    len(reference_id) > 4 and
+                    reference_id[4:].isdigit() and
+                    mrna_id and
+                    mrna_id[0] == "t" and
+                    len(mrna_id) > 1 and mrna_id[1:].isdigit()
+            ):
+                reference = f"{reference_id}{mrna_id}"
             else:
-                reference = "{}({})".format(reference_id, mrna_id)
+                reference = f"{reference_id}({mrna_id})"
         bt_descriptions = []
         for t in itertools.product(*translated_vars):
             if len(t) > 1:
-                bt_descriptions.append("{}:c.([{}])".format(reference, ";".join(t)))
+                bt_descriptions.append(f"{reference}:c.([{';'.join(t)}])")
             elif len(t) == 1:
-                bt_descriptions.append("{}:c.({})".format(reference, t[0]))
+                bt_descriptions.append(f"{reference}:c.({t[0]})")
         self.back_translated_descriptions = bt_descriptions
 
     def normalize_protein(self):
@@ -1403,7 +1406,7 @@ class Description(object):
                 "reference": {"id": reference_id},
                 "coordinate_system": "p",
                 "type": "description_protein",
-                "variants": [to_model(p_variant, "p_variant")]
+                "variants": to_model(p_variant, "p_variants")
             }
             if self.get_selector_id():
                 self.de_hgvs_model["reference"]["selector"] = {"id": self.get_selector_id()}
@@ -1415,9 +1418,47 @@ class Description(object):
         self.equivalent = {"p": [{"description": model_to_string(equivalent_1a_model)}]}
         self._back_translate()
 
+    def ensembl_model_with_no_offset(self):
+        ref_id = self._get_reference_id(self.corrected_model, [])
+        if ref_id and ref_id.startswith("ENS"):
+            if (
+                self.references.get("reference")
+                and self.references["reference"].get("annotations")
+                and self.references["reference"]["annotations"].get("qualifiers")
+            ):
+                offset = self.references["reference"]["annotations"]["qualifiers"].get("location_offset")
+                if self.de_hgvs_internal_indexing_model:
+                    model = copy.deepcopy(self.de_hgvs_internal_indexing_model)
+                    for location, path in yield_values(model, ["position"]):
+                        set_by_path(model, path, location + offset)
+                    return model
+
+    def _ensembl_to_ncbi_id(self):
+        ref_id = self._get_reference_id(self.corrected_model, [])
+        if ref_id and ref_id.startswith("ENS"):
+            if (
+                self.references.get("reference")
+                and self.references["reference"].get("annotations")
+                and self.references["reference"]["annotations"].get("qualifiers")
+                and self.references["reference"]["annotations"]["qualifiers"].get("chromosome_number")
+                and self.references["reference"]["annotations"]["qualifiers"].get("assembly_name")
+            ):
+                return get_assembly_chromosome_accession(
+                    self.references["reference"]["annotations"]["qualifiers"]["assembly_name"],
+                    self.references["reference"]["annotations"]["qualifiers"]["chromosome_number"]
+                )
+        return None
+
+    def ensembl_model_to_ncbi(self, model):
+        ncbi_id = self._ensembl_to_ncbi_id()
+        if ncbi_id:
+            ncbi_model = copy.deepcopy(model)
+            ncbi_model["reference"]["id"] = ncbi_id
+            return ncbi_model
+        return None
+
     @check_errors
-    def get_chromosomal_descriptions(self):
-        # TODO: Add tests.
+    def mrna_genomic_info(self):
         if (
             not self.references
             or self.only_variants
@@ -1432,129 +1473,7 @@ class Description(object):
             and (ref_id.startswith("NM_") or ref_id.startswith("XM_"))
         ):
             self.add_info(infos.mrna_genomic_tip())
-        elif (
-            ref_id
-            and get_reference_mol_type(self.references[ref_id]) == "mRNA"
-            and self.corrected_model["coordinate_system"] == "r"
-            and (ref_id.startswith("NM_") or ref_id.startswith("XM_"))
-        ):
-            return
-        chromosome_accessions = get_chromosome_accession_from_mrna_model(
-            ref_id, self.references["reference"]
-        )
-        if not chromosome_accessions:
-            return
 
-        chromosomal_descriptions = []
-        for assembly, chromosome_accession in chromosome_accessions:
-            chromosome_model = retrieve_reference(chromosome_accession, ref_id)[0]
-            if chromosome_model:
-                selector_ids = get_selectors_ids(chromosome_model["annotations"], "c")
-                ref_id_accession = ref_id.split(".")[0]
-                matched_selector_ids = [
-                    i for i in selector_ids if i.startswith(ref_id_accession)
-                ]
-
-                if not matched_selector_ids:
-                    self.add_info(infos.no_selector(chromosome_accession, ref_id))
-                    continue
-                if ref_id not in matched_selector_ids:
-                    self.add_info(
-                        infos.other_versions(
-                            chromosome_accession, ref_id, matched_selector_ids
-                        )
-                    )
-                    continue
-
-                selector_id = ref_id
-
-                from_reference_model = convert_reference_model(
-                    self.references["reference"], selector_id, "transcript"
-                )
-
-                ref_seq_from = from_reference_model["sequence"]["seq"]
-                seqs = self.get_sequences()
-                seqs["reference"] = from_reference_model["sequence"]["seq"]
-                seqs[selector_id] = from_reference_model["sequence"]["seq"]
-                obs_seq = mutate(seqs, self.delins_model["variants"])
-
-                to_reference_model = convert_reference_model(
-                    chromosome_model, selector_id, "transcript"
-                )
-
-                ref_seq_to = to_reference_model["sequence"]["seq"]
-
-                to_inverted = get_internal_selector_model(
-                    chromosome_model["annotations"], selector_id, True
-                ).get("inverted")
-                if to_inverted:
-                    obs_seq = reverse_complement(obs_seq)
-                variants = de_to_hgvs(
-                    describe_dna(ref_seq_to, obs_seq),
-                    {"reference": ref_seq_to, "observed": obs_seq},
-                )
-
-                if (not to_inverted and ref_seq_to != ref_seq_from) or (
-                    to_inverted and reverse_complement(ref_seq_to) != ref_seq_from
-                ):
-                    self.add_info(
-                        infos.mrna_genomic_difference(ref_id, chromosome_accession)
-                    )
-                else:
-                    variants_model = to_hgvs_locations(
-                        {
-                            "type": "description_dna",
-                            "reference": {
-                                "id": chromosome_accession,
-                                "selector": {"id": selector_id},
-                            },
-                            "coordinate_system": "i",
-                            "variants": variants,
-                        },
-                        {
-                            "reference": to_reference_model,
-                            chromosome_model["annotations"]["id"]: to_reference_model,
-                        },
-                        get_coordinate_system_from_selector_id(
-                            chromosome_model, selector_id
-                        ),
-                        selector_id,
-                        True,
-                    )
-                    chr_d = Description(model_to_string(variants_model))
-                    chr_d.to_delins()
-                    chr_d.mutate()
-                    chr_d.extract()
-                    chr_d.construct_de_hgvs_internal_indexing_model()
-                    chr_d.construct_de_hgvs_coordinates_model()
-                    chr_d.construct_normalized_description()
-                    tag = get_mane_tag(chr_d.get_selector_model())
-                    genomic = model_to_string(
-                        to_hgvs_locations(
-                            model=chr_d.de_hgvs_internal_indexing_model,
-                            references=chr_d.references,
-                            to_coordinate_system="g",
-                            to_selector_id=None,
-                            degenerate=True,
-                        )
-                    )
-                    if chr_d.errors:
-                        chromosomal_description = {
-                            "assembly": assembly,
-                            "errors": chr_d.errors,
-                        }
-                    else:
-                        chromosomal_description = {
-                            "assembly": assembly,
-                            "c": chr_d.normalized_description,
-                            "g": genomic,
-                        }
-                    if tag:
-                        chromosomal_description["tag"] = tag
-                    chromosomal_descriptions.append(chromosomal_description)
-
-        if chromosomal_descriptions:
-            self.chromosomal_descriptions = chromosomal_descriptions
 
     def to_delins(self):
         self.assembly_checks()
@@ -1625,6 +1544,8 @@ class Description(object):
 
             self.check()
             self._construct_delins_model()
+            self.mrna_genomic_info()
+
             if self.only_equals() or self.no_operation():
                 self.normalize_only_equals_or_no_operation()
             else:
@@ -1636,6 +1557,8 @@ class Description(object):
                 self.construct_rna_description()
                 self.construct_protein_description()
                 self.construct_equivalent()
+
+
             self.remove_superfluous_selector()
 
         # self.print_models_summary()

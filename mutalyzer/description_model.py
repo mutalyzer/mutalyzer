@@ -216,45 +216,48 @@ def model_to_string(model, exclude_superfluous_selector=True, aa="verbatim"):
     :param model: Dictionary holding the variant description model.
     :return: Equivalent reference string representation.
     """
-    if model.get("reference"):
-        reference_id = model["reference"]["id"]
-    elif model.get("source"):
-        reference_id = model["source"]["id"]
-    else:
-        reference_id = None
-    if reference_id:
-        selector_id = get_selector_id(model)
-        if (
-            reference_id
-            and exclude_superfluous_selector
-            and reference_id == selector_id
-        ):
-            selector_id = None
-        if selector_id:
-            reference = "{}({})".format(reference_id, selector_id)
-        else:
-            reference = "{}".format(reference_id)
-    else:
-        reference = None
-    if model.get("coordinate_system"):
-        coordinate_system = model.get("coordinate_system") + "."
-    else:
-        coordinate_system = ""
+    reference = reference_to_description(model, exclude_superfluous_selector)
+    coordinate_system = f"{model.get('coordinate_system', '')}." if model.get("coordinate_system") else ""
+
     if isinstance(model.get("variants"), list):
-        if model.get("type") == "description_protein":
-            variants = variants_to_description(model["variants"], True)
-        else:
-            variants = variants_to_description(model["variants"], False)
+        is_protein = model.get("type") == "description_protein"
+        variants = variants_to_description(model["variants"], is_protein)
+
         if model.get("predicted"):
             variants = f"({variants})"
-        if reference:
-            return "{}:{}{}".format(reference, coordinate_system, variants)
-        else:
-            return "{}".format(variants)
+
+        return f"{reference}:{coordinate_system}{variants}" if reference else variants
+
     if model.get("location"):
-        return "{}:{}{}".format(
-            reference, coordinate_system, location_to_description(model.get("location"))
-        )
+        return f"{reference}:{coordinate_system}{location_to_description(model['location'])}"
+
+    return reference  # Return reference if no variants or location exist
+
+
+def reference_to_description(model, exclude_superfluous_selector=True, aa="verbatim"):
+    reference_id = model.get("reference", {}).get("id") or model.get("source", {}).get("id")
+
+    if not reference_id:
+        return None
+
+    selector_id = get_selector_id(model)
+
+    # Remove superfluous selector if it's the same as reference_id
+    if exclude_superfluous_selector and reference_id == selector_id:
+        selector_id = None
+
+    # If reference_id starts with "LRG_" and follows expected format, append selector_id
+    if (
+            reference_id.startswith("LRG_") and
+            reference_id[4:].isdigit() and
+            selector_id and
+            selector_id[0] in {"t", "p"} and
+            selector_id[1:].isdigit()
+    ):
+        reference_id += selector_id
+        selector_id = None
+
+    return f"{reference_id}({selector_id})" if selector_id else reference_id
 
 
 def variants_to_description(variants, protein=False, aa="verbatim"):
@@ -300,7 +303,9 @@ def variant_to_description(variant, protein=False, aa="verbatim"):
                 )
             )
         ):
-            inserted = "[{}]".format(inserted)
+            inserted = "{}".format(inserted)
+        elif variant["type"] == "repeat":
+            inserted = "".join([inserted_to_description([ins]) for ins in variant["inserted"]])
 
     if variant.get("deleted"):
         deleted = inserted_to_description(variant["deleted"])
@@ -347,7 +352,7 @@ def inserted_to_description(inserted, aa="verbatim"):
         elif insert.get("length"):
             descriptions.append(length_to_description(insert["length"]))
         if insert.get("repeat_number"):
-            descriptions[-1] += "[{}]".format(insert["repeat_number"]["value"])
+            descriptions[-1] += repeat_number_to_description(insert["repeat_number"])
         if insert.get("inverted"):
             descriptions[-1] += "inv"
     if len(inserted) > 1:
@@ -415,7 +420,7 @@ def length_to_description(length):
     :return: Equivalent length string representation.
     """
     if length["type"] == "point":
-        if length.get("value"):
+        if length.get("value") is not None:
             return str(length["value"])
         elif length.get("uncertain"):
             return "?"
@@ -428,3 +433,23 @@ def length_to_description(length):
             return "({})".format(output)
         else:
             return output
+
+
+def repeat_number_to_description(repeat_number):
+    """
+    Convert the repeat_number dictionary model to string.
+    :param repeat_number: Length dictionary model.
+    :return: Equivalent length string representation.
+    """
+    if repeat_number["type"] == "point":
+        if repeat_number.get("value") is not None:
+            output = str(repeat_number["value"])
+        elif repeat_number.get("uncertain"):
+            output = "?"
+    if repeat_number["type"] == "range":
+        output = "{}_{}".format(
+            length_to_description(repeat_number.get("start")),
+            length_to_description(repeat_number.get("end")),
+        )
+    return f"[{output}]"
+

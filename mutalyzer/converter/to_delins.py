@@ -99,8 +99,7 @@ def variant_to_delins(variant):
         return equal_to_delins(variant)
     elif variant.get("type") == "repeat":
         return repeat_to_delins(variant)
-    # TODO: Add error?
-    print("No variant or not supported variant type.")
+    # TODO: Add error if no supported variant encountered?
 
 
 def variants_to_delins(variants):

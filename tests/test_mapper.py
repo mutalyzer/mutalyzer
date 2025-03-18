@@ -28,7 +28,7 @@ TEST_SET = [
     (
         # Transcript to NG with transcript slice updated version.
         ("NM_003002.2:c.-31del", "NG_012337.3", "NM_003002.4", "transcript", False),
-        "NG_012337.3(NM_003002.4):c.[-34_-32delinsTGGGAATTGTCGCCTAAGTGGTTCCGGG;*824A[18]]",
+        "NG_012337.3(NM_003002.4):c.[-35_-34ins-60_-42;-31_-30insCCGGGT;*824A[18]]",
     ),
     (
         (
@@ -147,6 +147,7 @@ TEST_SET = [
         "NM_012459.2:c.130G>A",
     ),
     (
+        # Reverse strand.
         (
             "NG_012337.1(NM_012459.2):c.130G>A",
             "NM_012459.2",
@@ -166,7 +167,7 @@ TEST_SET = [
     ),
     (
         ("NM_003002.2:c.-31del", "NG_012337.3", "NM_003002.4", "transcript", True),
-        "NG_012337.3(NM_003002.4):c.-34_-32delinsTGGGAATTGTCGCCTAAGTGGTTCCGGG",
+        "NG_012337.3(NM_003002.4):c.[-35_-34ins-60_-42;-31_-30insCCGGGT]",
     ),
     (
         ("NM_178172.3:c.45_48dup", "NM_178172.6", None, "transcript", True),
@@ -175,6 +176,34 @@ TEST_SET = [
     (
         ("NM_178172.6:c.41delinsGCGGG", "NM_178172.3", None, "transcript", True),
         "NM_178172.3:c.45_48dup",
+    ),
+    (
+        ("NM_003002.2:c.-31del", "NC_000011.10", "NM_003002.4", "transcript", False),
+        "NC_000011.10(NM_003002.4):c.[-35_-34ins-60_-42;-31_-30insCCGGGT;*824A[18]]",
+    ),
+    (
+        ("NM_003002.2:c.-31del", "GRCH38", "NM_003002.4"),
+        "NC_000011.10(NM_003002.4):c.[-35_-34ins-60_-42;-31_-30insCCGGGT;*824A[18]]",
+    ),
+    (
+        ("NM_003002.4:c.-31del", "GRCH38"),
+        "NC_000011.10(NM_003002.4):c.-31del",
+    ),
+    (
+        ("NM_003002.2:c.30del", "GRCH38", "NM_003002.4", "transcript", True),
+        "NC_000011.10(NM_003002.4):c.31del",
+    ),
+    (
+        ("NM_003002.2:c.30del", "GRCH38", "NM_003002.4", "gene", False),
+        "NC_000011.10(NM_003002.4):c.[-60_-35dup;31del;52+1_53-1del;169+1_170-1del;314+2_315del;*824A[18]]",
+    ),
+    (
+        ("NM_003002.2:c.30del", "GRCH38", "NM_003002.4", "gene", True),
+        "NC_000011.10(NM_003002.4):c.31del",
+    ),
+    (
+        ("NM_003002.4:c.30del", None, None, None, True),
+        "NC_000011.10(NM_003002.4):c.31del",
     ),
 ]
 
@@ -280,6 +309,19 @@ TEST_ERROR = [
         "input",
     ),
     (
+        # insertion between two exons in mRNA -> a large deletion
+        (
+            "NM_003002.4:c.52_53insA",
+            "NG_012337.3",
+            "NM_003002.4",
+            "transcript",
+            False,
+            100000,
+        ),
+        "EINSERTIONRANGE",
+        "output",
+    ),
+    (
         (
             "NM_003002.4:c.169_170insA",
             "NG_012337.3",
@@ -290,6 +332,192 @@ TEST_ERROR = [
         ),
         "EINSERTIONRANGE",
         "output",
+    ),
+    (
+        (
+            "NM_003002.4:c.314_315insA",
+            "NG_012337.3",
+            "NM_003002.4",
+            "transcript",
+            False,
+            100000,
+        ),
+        "EINSERTIONRANGE",
+        "output",
+    ),
+    (
+        # Reverse strand.
+        (
+            "NG_012337.1(NM_012459.2):c.129_130insA",
+            "NM_012459.2",
+            "NM_012459.2",
+            "transcript",
+            False,
+            100000,
+        ),
+        "EINSERTIONRANGE",
+        "input",
+    ),
+    (
+        # Reverse strand.
+        (
+            "NM_012459.2:c.129_130insA",
+            "NG_012337.1",
+            "NM_012459.2",
+            "transcript",
+            False,
+            100000,
+        ),
+        "EINSERTIONRANGE",
+        "output",
+    ),
+    (
+        (
+            "NG_012337.3(NM_003002.4):c.52+1del",
+            "NM_003002.4",
+            "NM_003002.4",
+            "transcript",
+            False,
+            100000,
+        ),
+        "ELOCATIONSLICE",
+        "input",
+    ),
+    (
+        (
+            "NG_012337.3(NM_003002.4):c.52+1_52+2del",
+            "NM_003002.4",
+            "NM_003002.4",
+            "transcript",
+            False,
+            100000,
+        ),
+        "ELOCATIONSLICE",
+        "input",
+    ),
+    (
+        (
+            "NG_012337.3(NM_003002.4):c.52+1_52+2insAA",
+            "NM_003002.4",
+            "NM_003002.4",
+            "transcript",
+            False,
+            100000,
+        ),
+        "ELOCATIONSLICE",
+        "input",
+    ),
+    (
+        (
+            "NG_012337.3(NM_003002.4):c.53-1del",
+            "NM_003002.4",
+            "NM_003002.4",
+            "transcript",
+            False,
+            100000,
+        ),
+        "ELOCATIONSLICE",
+        "input",
+    ),
+    (
+        (
+            "NG_012337.3(NM_003002.4):c.53-2_53-1insAA",
+            "NM_003002.4",
+            "NM_003002.4",
+            "transcript",
+            False,
+            100000,
+        ),
+        "ELOCATIONSLICE",
+        "input",
+    ),
+    (
+        (
+            "NG_012337.3(NM_003002.4):c.53-2_53-1del",
+            "NM_003002.4",
+            "NM_003002.4",
+            "transcript",
+            False,
+            100000,
+        ),
+        "ELOCATIONSLICE",
+        "input",
+    ),
+    (
+        (
+            "NG_012337.3(NM_003002.4):c.52_52+1insAA",
+            "NM_003002.4",
+            "NM_003002.4",
+            "transcript",
+            False,
+            100000,
+        ),
+        "ELOCATIONSLICE",
+        "input",
+    ),
+    (
+        (
+            "NG_012337.3(NM_003002.4):c.53-1_53insAA",
+            "NM_003002.4",
+            "NM_003002.4",
+            "transcript",
+            False,
+            100000,
+        ),
+        "ELOCATIONSLICE",
+        "input",
+    ),
+    (
+        # Reverse strand.
+        (
+            "NG_012337.1(NM_012459.2):c.129+1del",
+            "NM_012459.2",
+            "NM_012459.2",
+            "transcript",
+            False,
+            100000,
+        ),
+        "ELOCATIONSLICE",
+        "input",
+    ),
+    (
+        # Reverse strand.
+        (
+            "NG_012337.1(NM_012459.2):c.129_129+1del",
+            "NM_012459.2",
+            "NM_012459.2",
+            "transcript",
+            False,
+            100000,
+        ),
+        "ELOCATIONSLICE",
+        "input",
+    ),
+    (
+        # Reverse strand.
+        (
+            "NG_012337.1(NM_012459.2):c.128_129+1del",
+            "NM_012459.2",
+            "NM_012459.2",
+            "transcript",
+            False,
+            100000,
+        ),
+        "ELOCATIONSLICE",
+        "input",
+    ),
+    (
+        # Reverse strand.
+        (
+            "NG_012337.1(NM_012459.2):c.130-1del",
+            "NM_012459.2",
+            "NM_012459.2",
+            "transcript",
+            False,
+            100000,
+        ),
+        "ELOCATIONSLICE",
+        "input",
     ),
 ]
 

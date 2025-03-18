@@ -47,6 +47,12 @@ def test_get_id_no_ref(reference_id):
             {
                 "input": "NM_012459.2:c.1del",
                 "type": "hgvs",
+                'infos': [{
+                    'code': 'IMRNAGENOMICTIP',
+                    'details': "An 'mRNA' sequence was used with the 'c.' coordinate system. Make "
+                               'use of a genomic reference sequence if the experiment performed '
+                               'involved measured DNA.',
+                }],
                 "reference": {"id": "NM_012459.2"},
                 "sequence": "AAGTCGAGAGGCGGTGCACACCCGTCGCGCTGCGCAAACACAGCTGTCGG"
                 "AAGGTGGCGAGCCTGAGGCGAACAATGGCGGAGCTGGGCGAAGCCGATGAAGCGGAGTTGCA"

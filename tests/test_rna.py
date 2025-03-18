@@ -3,7 +3,7 @@ from mutalyzer_hgvs_parser import to_model
 
 from mutalyzer.checker import splice_sites
 from mutalyzer.converter.to_rna import (
-    _trim_to_exons,
+    trim_to_exons,
     get_location_type,
     get_position_type,
     to_rna_reference_model,
@@ -28,7 +28,6 @@ IVARIANTDISCARDED = {
 
 CORRECTEDSEQUENCE = {
     "code": "CORRECTEDSEQUENCE",
-    "details": "CORRECTEDSEQUENCE",
     "details": 'Sequence "AAA" corrected to "aaa".',
 }
 
@@ -955,7 +954,7 @@ def test_trim_to_exons(variants, expected):
     )
 
     # exons: [135, 189, 618, 1200]
-    assert _trim_to_exons(variants, selector_model["exon"], sequences) == expected
+    assert trim_to_exons(variants, selector_model["exon"], sequences) == expected
 
 
 @pytest.mark.parametrize(
@@ -977,7 +976,11 @@ def test_to_rna_variants(variants, expected):
 @pytest.mark.parametrize(
     "location, exons, location_type",
     [
-        ("135_135", [(135, 189), (618, 1200)], "same exon"),
+        ("1_3", [(135, 189), (618, 1200)], "same intron"),
+        ("1_135", [(135, 189), (618, 1200)], "same intron"),
+        ("1_150", [(135, 189), (618, 1200)], "intron exon"),
+        ("1_200", [(135, 189), (618, 1200)], "intron intron"),
+        ("135_135", [(135, 189), (618, 1200)], "boundary"),
         ("135_136", [(135, 189), (618, 1200)], "same exon"),
         ("135_188", [(135, 189), (618, 1200)], "same exon"),
         ("135_189", [(135, 189), (618, 1200)], "same exon"),
@@ -987,16 +990,26 @@ def test_to_rna_variants(variants, expected):
         ("136_619", [(135, 189), (618, 1200)], "exon exon"),
         ("188_188", [(135, 189), (618, 1200)], "same exon"),
         ("188_189", [(135, 189), (618, 1200)], "same exon"),
-        ("618_618", [(135, 189), (618, 1200)], "same exon"),
+        ("618_618", [(135, 189), (618, 1200)], "boundary"),
         ("618_619", [(135, 189), (618, 1200)], "same exon"),
         ("618_1199", [(135, 189), (618, 1200)], "same exon"),
         ("618_1200", [(135, 189), (618, 1200)], "same exon"),
         ("1199_1199", [(135, 189), (618, 1200)], "same exon"),
         ("1199_1200", [(135, 189), (618, 1200)], "same exon"),
+        ("1200_1200", [(135, 189), (618, 1200)], "boundary"),
+        # ---
         ("188_188", [(135, 189), (189, 1200)], "same exon"),
         ("188_189", [(135, 189), (189, 1200)], "same exon"),
-        ("189_189", [(135, 189), (189, 1200)], "same exon"),
+        ("189_189", [(135, 189), (189, 1200)], "boundary"),
         ("188_190", [(135, 189), (189, 1200)], "exon exon"),
+        ("188_190", [(135, 189), (189, 1200)], "exon exon"),
+        # ---
+        ("1_189", [(135, 189), (190, 1200)], "intron exon"),
+        ("1_190", [(135, 189), (190, 1200)], "intron intron"),
+        ("189_189", [(135, 189), (190, 1200)], "boundary"),
+        ("189_190", [(135, 189), (190, 1200)], "same intron"),
+        ("189_191", [(135, 189), (190, 1200)], "intron exon"),
+        ("190_190", [(135, 189), (190, 1200)], "boundary"),
     ],
 )
 def test_get_location_type(location, exons, location_type):
