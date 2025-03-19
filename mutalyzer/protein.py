@@ -47,12 +47,12 @@ def longest_common_suffix(s1, s2):
         'efg'
 
     @arg s1: The first string.
-    @type s1: unicode
+    @type s1: Unicode
     @arg s2: The second string.
-    @type s2: unicode
+    @type s2: Unicode
 
     @return: The longest common suffix of s1 and s2.
-    @rtype: unicode
+    @rtype: Unicode
     """
     return longest_common_prefix(s1[::-1], s2[::-1])[::-1]
 
@@ -70,9 +70,9 @@ def in_frame_description(s1, s2):
         >>> in_frame_description('MTAPQQT*', 'MTAQQMT*')
         ('Pro4_Gln6delinsGlnGlnMet', 3, 6, 6)
         >>> in_frame_description('MTAPQQMT*', 'MTAPQQMTMQ*')
-        ('*9Metext*2', 8, 9, 11)
+        ('Ter9MetextTer2', 8, 9, 11)
         >>> in_frame_description('MTAPQQMT*', 'MTAPQQMTMQ')
-        ('*9Metext*?', 8, 9, 10)
+        ('Ter9MetextTer?', 8, 9, 10)
 
     @arg s1: The original protein.
     @type s1: unicode
@@ -109,7 +109,7 @@ def in_frame_description(s1, s2):
             stop = str(abs(len(s1) - len(s2))) if s2_stop else "?"
 
             return (
-                "*%i%sext*%s" % (len(s1) + 1, seq3(s2[len(s1)]), stop),
+                "Ter%i%sextTer%s" % (len(s1) + 1, seq3(s2[len(s1)]), stop),
                 len(s1),
                 len(s1) + 1,
                 len(s2) + (1 if s2_stop else 0),
@@ -151,7 +151,7 @@ def in_frame_description(s1, s2):
     if not s2_end - lcp:
         if len(s2) == lcp:
             return (
-                "%s%i*" % (seq3(s1[len(s2)]), len(s2) + 1),
+                "%s%iTer" % (seq3(s1[len(s2)]), len(s2) + 1),
                 lcp,
                 len(s1) + 1,
                 len(s2) + 1,
@@ -201,13 +201,13 @@ def out_of_frame_description(s1, s2):
     end positions (to be compatible with the in_frame_description function).
 
         >>> out_of_frame_description('MTAPQQMT*', 'MTAQQMT*')
-        ('Pro4Glnfs*5', 3, 9, 8)
+        ('Pro4GlnfsTer5', 3, 9, 8)
         >>> out_of_frame_description('MTAPQQMT*', 'MTAQMT*')
-        ('Pro4Glnfs*4', 3, 9, 7)
+        ('Pro4GlnfsTer4', 3, 9, 7)
         >>> out_of_frame_description('MTAPQQT*', 'MTAQQMT*')
-        ('Pro4Glnfs*5', 3, 8, 8)
+        ('Pro4GlnfsTer5', 3, 8, 8)
         >>> out_of_frame_description('MTAPQQT*', 'MTAQQMT')
-        ('Pro4Glnfs*?', 3, 8, 7)
+        ('Pro4GlnfsTer?', 3, 8, 7)
 
     @arg s1: The original protein.
     @type s1: unicode
@@ -230,13 +230,13 @@ def out_of_frame_description(s1, s2):
     if lcp == len(s2_seq):  # NonSense mutation.
         if lcp == len(s1_seq):  # Is this correct?
             return "=", 0, 0, 0
-        return "%s%i*" % (seq3(s1[lcp]), lcp + 1), lcp, len(s1), lcp
+        return "%s%iTer" % (seq3(s1[lcp]), lcp + 1), lcp, len(s1), lcp
     if lcp == len(s1_seq):
         # http://www.hgvs.org/mutnomen/FAQ.html#nostop
         stop = str(abs(len(s1_seq) - len(s2_seq))) if "*" in s2 else "?"
 
         return (
-            "*%i%sext*%s" % (len(s1_seq) + 1, seq3(s2[len(s1_seq)]), stop),
+            "Ter%i%sextTer%s" % (len(s1_seq) + 1, seq3(s2[len(s1_seq)]), stop),
             len(s1_seq),
             len(s1),
             len(s2),
@@ -246,7 +246,7 @@ def out_of_frame_description(s1, s2):
     stop = str(len(s2_seq) - lcp + 1) if "*" in s2 else "?"
 
     return (
-        "%s%i%sfs*%s" % (seq3(s1[lcp]), lcp + 1, seq3(s2[lcp]), stop),
+        "%s%i%sfsTer%s" % (seq3(s1[lcp]), lcp + 1, seq3(s2[lcp]), stop),
         lcp,
         len(s1),
         len(s2),
@@ -260,9 +260,9 @@ def protein_description(cds_stop, s1, s2):
     decide which one to call.
 
         >>> protein_description(34, 'MTAPQQMT*', 'MTAQQMT*')
-        ('Pro4Glnfs*5', 3, 9, 8)
+        ('Pro4GlnfsTer5', 3, 9, 8)
         >>> protein_description(34, 'MTAPQQMT*', 'MTAQQMT')
-        ('Pro4Glnfs*?', 3, 9, 7)
+        ('Pro4GlnfsTer?', 3, 9, 7)
         >>> protein_description(33, 'MTAPQQMT*', 'MTAQQMT*')
         ('Pro4del', 3, 4, 3)
         >>> protein_description(33, 'MTAPQQMT*', 'TTAQQMT*')
@@ -310,6 +310,13 @@ def slice_seq(seq, slices, start=None, end=None):
     return output[start:end]
 
 
+def add_trailing_ns(sequence):
+    remainder = len(sequence) % 3
+    if remainder != 0:
+        sequence = sequence + "N" * (3 -  len(sequence) % 3)
+    return sequence
+
+
 def get_protein_sequence(reference_model, selector_model):
     exons = selector_model["exon"]
     cds = [selector_model["cds"][0][0], selector_model["cds"][0][1]]
@@ -317,7 +324,7 @@ def get_protein_sequence(reference_model, selector_model):
     cds_seq = slice_seq(dna_ref_seq, exons, cds[0], cds[1])
     if selector_model["inverted"]:
         cds_seq = reverse_complement(cds_seq)
-    seq = list(str(Seq(cds_seq).translate()))
+    seq = list(str(Seq(add_trailing_ns(cds_seq)).translate()))
     if selector_model.get("translation_exception"):
         x = Coding(
             selector_model["exon"], selector_model["cds"][0], selector_model["inverted"]
@@ -357,7 +364,7 @@ def get_protein_description(variants, references, selector_model):
     else:
         cds_seq_ext = slice_seq(dna_ref_seq, exons, cds[0])
 
-    p_ref_seq = str(Seq(cds_seq).translate())
+    p_ref_seq = str(Seq(add_trailing_ns(cds_seq)).translate())
 
     cds_variants, splice_site_hits = to_rna_protein_coordinates(
         variants, sequences, selector_model
@@ -382,7 +389,7 @@ def get_protein_description(variants, references, selector_model):
 
     cds_obs_seq = mutate({"reference": cds_seq_ext}, cds_variants)
 
-    p_obs_seq = str(Seq(cds_obs_seq).translate())
+    p_obs_seq = str(Seq(add_trailing_ns(cds_obs_seq)).translate())
 
     if cds_seq[:3] != cds_obs_seq[:3]:
         return f"{reference}:p.?", p_ref_seq, "?"
@@ -396,7 +403,7 @@ def get_protein_description(variants, references, selector_model):
 
     cds_stop = len(mutate({"reference": cds_seq}, cds_variants))
     description = protein_description(cds_stop, p_ref_seq, p_obs_seq)
-    if len(cds_variants) > 1 and "*" in description[0]:
+    if len(cds_variants) > 1 and "Ter" in description[0]:
         # TODO: This seems to happen in M2. Check why.
         # A different check maybe should be implemented
         # see: NG_012337.1(NM_012459.2):c.5_6delinsTAG
