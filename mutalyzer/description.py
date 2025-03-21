@@ -711,27 +711,13 @@ class Description:
 
                 if converted_model["coordinate_system"] == "c":
 
-                    protein_selector_model = get_protein_selector_model(
-                        self.references["reference"]["annotations"], selector["id"]
-                    )
-                    if protein_selector_model and as_description:
+                    if as_description:
                         e_d = {
                             "description": model_to_string(converted_model),
-                            "protein_prediction": get_protein_description(
-                                variants_to_delins(from_model["variants"]),
-                                self.references,
-                                protein_selector_model,
-                            )[0],
-                            "selector": {"id": selector["id"]},
+                            "reference": {"selector": {"id": selector["id"]}},
                         }
                     else:
-                        if as_description:
-                            e_d = {
-                                "description": model_to_string(converted_model),
-                                "reference": {"selector": {"id": selector["id"]}},
-                            }
-                        else:
-                            e_d = {"description": converted_model}
+                        e_d = {"description": converted_model}
                     if (
                         selector.get("qualifiers")
                         and selector["qualifiers"].get("tag")
@@ -1528,7 +1514,7 @@ class Description:
         self.construct_normalized_description()
         self.construct_equivalent()
 
-    def normalize(self):
+    def normalize(self, include_extras=True):
         self.assembly_checks()
         self.retrieve_references()
         self.pre_conversion_checks()
@@ -1554,10 +1540,10 @@ class Description:
                 self.construct_de_hgvs_internal_indexing_model()
                 self.construct_de_hgvs_coordinates_model()
                 self.construct_normalized_description()
-                self.construct_rna_description()
-                self.construct_protein_description()
-                self.construct_equivalent()
-
+                if include_extras:
+                    self.construct_rna_description()
+                    self.construct_protein_description()
+                    self.construct_equivalent()
 
             self.remove_superfluous_selector()
 
