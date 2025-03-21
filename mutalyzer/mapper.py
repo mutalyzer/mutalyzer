@@ -90,12 +90,12 @@ def map_description(
     reference_id=None,
     selector_id=None,
     slice_to=None,
-    filter=False,
+    filter_out=False,
     len_max=110000,
     diff_max=1000,
 ):
     d = Description(description)
-    d.normalize()
+    d.normalize(include_extras=False)
     if d.errors:
         return {"errors": d.errors, "source": "input"}
     if not d.references and not d.references.get("observed"):
@@ -220,17 +220,24 @@ def map_description(
     # Get the description extractor hgvs internal indexing variants
     variants = _extract_hgvs_internal_model(obs_seq, ref_seq_to)
 
-    if filter:
+    filtered_variants = False
+    unfiltered_mapped_description = None
+    reference_sequences_description = None
+    if filter_out:
         raw_de_variants = extractor.describe_dna(ref_seq_to, ref_seq_from)
         seq_variants = de_to_hgvs(
             raw_de_variants,
             {"reference": ref_seq_to, "observed": ref_seq_from},
         )
+        unfiltered_mapped_description = _get_description(variants, to_r_model, selector_id)
+        reference_sequences_description = _get_description(seq_variants, to_r_model, selector_id)
         variants = [v for v in variants if v not in seq_variants]
+        if variants != seq_variants:
+            filtered_variants = True
 
     mapped_description = _get_description(variants, to_r_model, selector_id)
     m_d = Description(mapped_description)
-    m_d.normalize()
+    m_d.normalize(include_extras=False)
     if m_d.errors:
         return {"errors": m_d.errors, "source": "output"}
     output = {"mapped_description": m_d.normalized_description}
@@ -245,4 +252,12 @@ def map_description(
         and m_d.equivalent["g"][0].get("description")
     ):
         output["genomic_description"] = m_d.equivalent["g"][0]["description"]
+    output["ref_seq_differences"] = ref_seq_to != ref_seq_from
+    if filter_out:
+        output["filtered_variants"] = filtered_variants
+    if unfiltered_mapped_description:
+        output["unfiltered_mapped_description"] = unfiltered_mapped_description
+    if reference_sequences_description:
+        output["reference_sequences_description"] = reference_sequences_description
+
     return output
