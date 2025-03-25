@@ -649,7 +649,7 @@ class Description:
                 to_selector_id=None,
                 degenerate=True,
             )
-            self.equivalent["g"] = [model_to_string(converted_model)]
+            self.equivalent["g"] = [{"description": model_to_string(converted_model)}]
 
     def construct_equivalent(self, other=None, as_description=True):
         if self.only_variants:

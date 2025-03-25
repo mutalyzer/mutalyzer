@@ -238,6 +238,7 @@ def map_description(
     mapped_description = _get_description(variants, to_r_model, selector_id)
     m_d = Description(mapped_description)
     m_d.normalize(include_extras=False)
+    m_d.construct_genomic_equivalent()
     if m_d.errors:
         return {"errors": m_d.errors, "source": "output"}
     output = {"mapped_description": m_d.normalized_description}
