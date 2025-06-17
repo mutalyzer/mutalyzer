@@ -23,6 +23,7 @@ def _get_hgvs_and_variant(variant, only_variants=False, ref_seq=None):
     if status.get("infos"):
         output["infos"] = status["infos"]
 
+    d.mutate()
     sequences = d.get_sequences()
     output["sequence"] = sequences["observed"]
     output["reference_sequence"] = sequences["reference"]

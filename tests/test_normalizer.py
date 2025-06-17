@@ -121,13 +121,14 @@ def test_infos(input_description, codes):
     [
         ("1A>T", "A", "1A>T"),
         ("1A>T", "AA", "1A>T"),
-        ("2del", "AAAT", "3del"),
-        ("[2del]", "AAAT", "3del"),
-        ("[1del;2del]", "AAAT", "2_3del"),
+        ("2del", "AAAT", "1_3A[2]"),
+        ("[2del]", "AAAT", "1_3A[2]"),
+        ("[1del;2del]", "AAAT", "1_3A[1]"),
         ("1_2insNG_012337.1:g.100", "AAAT", "1_2insT"),
-        ("[9dup;14_15insCCTCT]", "CTCTCTCTCTCTCTTG", "10delinsCTCTCTC"),
-        ("[1_2del;5_10inv]", "CACACCCCCA", "[3_4del;5_10inv]"),
-        ("[2_7del;8_34inv;35_36del]", "GTTCGCGGGGAAAGGAAAAAAGCCGCCGGGCAGGAAA", "[2_7del;8_34inv;36_37del]"),
+        ("[9dup;14_15insCCTCT]", "CTCTCTCTCTCTCTTG", "10delins[CT[3];C]"),
+        ("10delinsCTCTCTC", "CTCTCTCTCTCTCTTG", "10delins[CT[3];C]"),
+        ("[1_2del;5_10inv]", "CACACCCCCA", "3_10delinsTGGGGG"),
+        ("[2_7del;8_34inv;35_36del]", "GTTCGCGGGGAAAGGAAAAAAGCCGCCGGGCAGGAAA", "[2_22delinsCCTGCCCGGCGGCTTTTTT;25delinsT[3];28_30del;33_37del]"),
     ],
 )
 def test_only_variants(description, sequence, normalized):

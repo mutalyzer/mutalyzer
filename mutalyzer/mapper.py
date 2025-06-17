@@ -1,6 +1,6 @@
 from copy import deepcopy
 
-import extractor
+from algebra.extractor import extract_sequence
 from mutalyzer_mutator import mutate
 from mutalyzer_mutator.util import reverse_complement
 from mutalyzer_retriever.reference import (
@@ -19,7 +19,9 @@ from .converter.extras import (
     get_mane_tag,
 )
 from .converter.to_hgvs_coordinates import to_hgvs_locations
-from .description import Description
+from .converter.to_internal_coordinates import to_internal_coordinates
+from .converter.to_internal_indexing import to_internal_indexing
+from .description import Description, to_hgvs_dict
 from .description_model import model_to_string
 from .reference import (
     get_coordinate_system_from_reference,
@@ -31,7 +33,7 @@ from .reference import (
 from .util import slice_seq
 
 
-def _get_description(de_hgvs_internal_indexing_variants, r_model, selector_id=None):
+def _get_description(algebra_extracted_variants, ref_seq, r_model, selector_id=None):
     reference = {"id": r_model["annotations"]["id"]}
     if selector_id:
         reference["selector"] = {"id": selector_id}
@@ -41,11 +43,17 @@ def _get_description(de_hgvs_internal_indexing_variants, r_model, selector_id=No
         if c_s in ["c", "n"]:
             selector_id = r_model["annotations"]["id"]
 
+    algebra_model_forward = {
+        "reference": {"id": r_model["annotations"]["id"]},
+        "coordinate_system": "g",
+        "variants": to_hgvs_dict(algebra_extracted_variants, ref_seq),
+    }
+    internal = to_internal_indexing(to_internal_coordinates(algebra_model_forward, {"reference": r_model["sequence"]["seq"]}))
     de_hgvs_model = to_hgvs_locations(
         {
             "reference": reference,
             "coordinate_system": "i",
-            "variants": de_hgvs_internal_indexing_variants,
+            "variants": internal["variants"],
         },
         {"reference": r_model, r_model["annotations"]["id"]: r_model},
         c_s,
@@ -56,7 +64,7 @@ def _get_description(de_hgvs_internal_indexing_variants, r_model, selector_id=No
 
 
 def _extract_hgvs_internal_model(obs_seq, ref_seq):
-    de_variants = extractor.describe_dna(ref_seq, obs_seq)
+    de_variants = extract_sequence(ref_seq, obs_seq)
 
     return de_to_hgvs(
         de_variants,
@@ -104,6 +112,7 @@ def map_description(
             "source": "input",
         }
 
+    d.mutate()
     obs_seq = d.references["observed"]["sequence"]["seq"]
 
     assembly_id = get_assembly_id(reference_id)
@@ -217,25 +226,19 @@ def map_description(
                 "source": "input",
             }
 
-    # Get the description extractor hgvs internal indexing variants
-    variants = _extract_hgvs_internal_model(obs_seq, ref_seq_to)
-
+    variants, _ = extract_sequence(ref_seq_to, obs_seq)
     filtered_variants = False
     unfiltered_mapped_description = None
     reference_sequences_description = None
     if filter_out:
-        raw_de_variants = extractor.describe_dna(ref_seq_to, ref_seq_from)
-        seq_variants = de_to_hgvs(
-            raw_de_variants,
-            {"reference": ref_seq_to, "observed": ref_seq_from},
-        )
-        unfiltered_mapped_description = _get_description(variants, to_r_model, selector_id)
-        reference_sequences_description = _get_description(seq_variants, to_r_model, selector_id)
+        seq_variants, _ = extract_sequence(ref_seq_to, ref_seq_from)
+        unfiltered_mapped_description = _get_description(variants, ref_seq_to, to_r_model, selector_id)
+        reference_sequences_description = _get_description(seq_variants, ref_seq_to, to_r_model, selector_id)
         variants = [v for v in variants if v not in seq_variants]
         if variants != seq_variants:
             filtered_variants = True
+    mapped_description = _get_description(variants, ref_seq_to, to_r_model, selector_id)
 
-    mapped_description = _get_description(variants, to_r_model, selector_id)
     m_d = Description(mapped_description)
     m_d.normalize(include_extras=False)
     m_d.construct_genomic_equivalent()

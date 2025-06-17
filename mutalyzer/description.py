@@ -1,9 +1,12 @@
 import copy
 import itertools
+from os.path import commonprefix
 
+from algebra import LCSgraph, Variant
+from algebra.extractor import extract as extract_variants
+from algebra.lcs.lcs_graph import trim
 from Bio.Seq import Seq
 from Bio.SeqUtils import seq1, seq3
-from extractor import describe_dna
 from mutalyzer_backtranslate import BackTranslate
 from mutalyzer_hgvs_parser import to_model
 from mutalyzer_hgvs_parser.exceptions import (
@@ -24,6 +27,8 @@ from mutalyzer_retriever.retriever import (
     get_overlap_models,
 )
 
+from mutalyzer.util import get_end, get_inserted_sequence, get_start
+
 from . import errors, infos
 from .checker import (
     are_sorted,
@@ -32,12 +37,7 @@ from .checker import (
     is_overlap,
     splice_sites,
 )
-from .converter.extras import (
-    convert_amino_acids,
-    convert_reference_model,
-    convert_selector_model,
-    get_mane_tag,
-)
+from .converter.extras import convert_amino_acids, convert_selector_model, get_mane_tag
 from .converter.to_delins import to_delins, variants_to_delins
 from .converter.to_hgvs_coordinates import (
     crossmap_to_hgvs_setup,
@@ -52,7 +52,6 @@ from .converter.to_internal_coordinates import (
 )
 from .converter.to_internal_indexing import to_internal_indexing
 from .converter.to_rna import to_rna_reference_model, to_rna_sequences, to_rna_variants
-from .converter.variants_de_to_hgvs import de_to_hgvs
 from .description_model import (
     get_locations_min_max,
     get_reference_id,
@@ -86,6 +85,8 @@ from .reference import (
 from .util import (
     check_errors,
     construct_sequence,
+    create_exact_point_model,
+    create_exact_range_model,
     get_end,
     get_location_length,
     get_start,
@@ -93,11 +94,198 @@ from .util import (
     is_dna,
     is_rna,
     point_in_insertion,
+    reverse_complement,
     reverse_path,
     set_by_path,
     slice_sequence,
     sort_variants,
 )
+
+
+def trim_for_reverse(lhs, rhs):
+    """Find the lengths of the common prefix and common suffix between
+    two sequences."""
+    idx = len(commonprefix([lhs[::-1], rhs[::-1]]))
+    return len(commonprefix([lhs[:len(lhs)-idx], rhs[:len(rhs)-idx]])), idx
+
+
+def to_hgvs_dict(variants, ref_seq, forward_strand=True):
+    """Algebra based experimental version of HGVS serialization with support for
+    tandem repeats and complex variants."""
+    def var_dict(var_type, start, end=None, inserted=None, repeat_number=None, del_seq=None):
+        output = {
+            "location": to_hgvs_position(start, end),
+            "type": var_type,
+            "source": "reference",
+        }
+        if isinstance(inserted, list):
+            output["inserted"] = inserted
+        else:
+            if inserted:
+                output["inserted"] = [{"sequence": inserted, "source": "description"}]
+            if inserted and repeat_number:
+                output["inserted"][0]["repeat_number"] = {"type": "point", "value": repeat_number}
+        if del_seq:
+            output["deleted"] = [{"sequence": del_seq, "source": "description"}]
+        return output
+
+    def repeats(word):
+        length = 0
+        idx = 1
+        lps = [0] * len(word)
+        while idx < len(word):
+            if word[idx] == word[length]:
+                length += 1
+                lps[idx] = length
+                idx += 1
+            elif length != 0:
+                length = lps[length - 1]
+            else:
+                lps[idx] = 0
+                idx += 1
+
+        pattern = len(word) - length
+        if pattern == 0:
+            return "", 0, 0
+        return word[:pattern], len(word) // pattern, len(word) % pattern
+
+    def to_hgvs_position(start, end=None):
+        if end is None or end - start == 1:
+            return create_exact_point_model(start + 1)
+        if start == end:
+            return create_exact_range_model(start, start + 1)
+        return create_exact_range_model(start + 1, end)
+
+    def other(variant):
+        if variant.end - variant.start == 0:
+            if not variant.sequence:
+                return "="
+            # print("insertion sequence", variant.sequence)
+            return var_dict("insertion", variant.start, variant.start, variant.sequence)
+            # return f"{variant.start}_{variant.start + 1}ins{variant.sequence}"
+
+        deleted = ""
+        substitution = ref_seq[variant.start:variant.end]
+
+        if variant.end - variant.start == 1:
+            if not variant.sequence:
+                return var_dict("deletion", variant.start)
+                # return f"{variant.start + 1}del{deleted}"
+            if len(variant.sequence) == 1:
+                return var_dict("substitution", variant.start, del_seq=substitution, inserted=variant.sequence)
+                # return f"{variant.start + 1}{substitution}>{variant.sequence}"
+            return var_dict("deletion_insertion", variant.start, del_seq=deleted, inserted=variant.sequence)
+            # return f"{variant.start + 1}del{deleted}ins{variant.sequence}"
+
+        if not variant.sequence:
+            return var_dict("deletion", variant.start, variant.end, del_seq=deleted)
+            # return f"{variant.start + 1}_{variant.end}del{deleted}"
+
+        return var_dict("deletion_insertion", variant.start, variant.end, del_seq=deleted, inserted=variant.sequence)
+        # return f"{variant.start + 1}_{variant.end}del{deleted}ins{variant.sequence}"
+
+    def hgvs(variant):
+        inserted_unit, inserted_number, inserted_remainder = repeats(variant.sequence)
+        deleted = ref_seq[variant.start:variant.end]
+        deleted_unit, deleted_number, deleted_remainder = repeats(deleted)
+
+        # Select a non-minimal repeat unit if reference and observed are
+        # in agreement.
+        diff = len(inserted_unit) - len(deleted_unit)
+        if diff < 0 and deleted_unit == variant.sequence[:len(inserted_unit) - diff]:
+            inserted_unit = deleted_unit
+            inserted_number = 1
+            inserted_remainder = deleted_remainder
+        elif diff > 0 and inserted_unit == deleted[:len(deleted_unit) + diff]:
+            deleted_unit = inserted_unit
+            deleted_number = 1
+            deleted_remainder = inserted_remainder
+
+        # print(f"{to_hgvs_position(variant.start, variant.end - alt_deleted_remainder)}{inserted_unit}[{inserted_number}]")
+
+        # Repeat structure
+        if deleted_unit == inserted_unit:
+            if deleted_number == inserted_number:
+                raise ValueError("empty variant")
+
+            # Duplication
+            if deleted_number == 1 and inserted_number == 2:
+                if forward_strand:
+                    return var_dict(
+                        "duplication",
+                        variant.start + inserted_remainder,
+                        variant.start + inserted_remainder + len(inserted_unit),
+                    )
+                    # return f"{to_hgvs_position(variant.start + inserted_remainder, variant.start + inserted_remainder + len(inserted_unit))}dup"
+                else:
+                    return var_dict(
+                        "duplication",
+                        variant.start,
+                        variant.start + len(inserted_unit),
+                    )
+            # shift 3'
+            assert deleted_remainder == inserted_remainder
+            if forward_strand:
+                inserted_unit = variant.sequence[inserted_remainder:inserted_remainder + len(inserted_unit)]
+                r_d = var_dict("repeat", variant.start + deleted_remainder, variant.end, inserted_unit, inserted_number)
+                if r_d.get("location", {}).get("start"):
+                    r_d["location"]["start"]["shift"] = deleted_remainder
+                if r_d.get("location", {}).get("end"):
+                    r_d["location"]["end"]["shift"] = deleted_remainder
+                return r_d
+            else:
+                inserted_unit = variant.sequence[:len(inserted_unit)]
+                return var_dict("repeat", variant.start, variant.end - deleted_remainder, inserted_unit, inserted_number)
+            # return f"{to_hgvs_position(variant.start + deleted_remainder, variant.end)}{inserted_unit}[{inserted_number}]"
+
+        # Prefix and suffix trimming
+        if forward_strand:
+            start, end = trim(deleted, variant.sequence)
+        else:
+            start, end = trim_for_reverse(deleted, variant.sequence)
+        trimmed = Variant(variant.start + start, variant.end - end, variant.sequence[start:len(variant.sequence) - end])
+
+        # Inversion
+        if len(trimmed.sequence) > 1 and trimmed.sequence == reverse_complement(ref_seq[trimmed.start:trimmed.end]):
+            return var_dict("inversion", trimmed.start, trimmed.end)
+            # return f"{to_hgvs_position(trimmed.start, trimmed.end)}inv"
+
+        # Deletion/insertion with repeated insertion
+        inserted_unit, inserted_number, inserted_remainder = repeats(trimmed.sequence)
+        if inserted_number > 1:
+            suffix = [{"sequence": inserted_unit, "source": "description", "repeat_number": {"type": "point", "value": inserted_number}}]
+            # suffix = f"{inserted_unit}[{inserted_number}]"
+            if inserted_remainder:
+                suffix = [suffix[0], {"sequence": inserted_unit[:inserted_remainder], "source": "description"}]
+                # suffix = f"[{suffix};{inserted_unit[:inserted_remainder]}]"
+
+            if trimmed.start == trimmed.end:
+                if forward_strand:
+                    return var_dict("insertion", trimmed.start, trimmed.start, suffix)
+                # return f"{to_hgvs_position(trimmed.start, trimmed.end)}ins{suffix}"
+            return var_dict("deletion_insertion", trimmed.start, trimmed.end, suffix)
+            # return f"{to_hgvs_position(trimmed.start, trimmed.end)}delins{suffix}"
+
+        # All other variants
+        return other(trimmed)
+        # return trimmed.to_hgvs(ref_seq)
+
+    if not variants:
+        return []
+
+    if len(variants) == 1:
+        return [hgvs(variants[0])]
+
+    return [hgvs(variant) for variant in variants]
+
+
+def algebra_variants(variants_delins, sequences):
+    variants_algebra = []
+    for variant in variants_delins:
+        variants_algebra.append(
+            Variant(get_start(variant), get_end(variant), get_inserted_sequence(variant, sequences))
+        )
+    return variants_algebra
 
 
 class Description:
@@ -126,8 +314,10 @@ class Description:
         self.delins_model = {}
         self.de_model = {}
         self.de_hgvs_internal_indexing_model = {}
+        self.de_hgvs_internal_indexing_model_reverse = {}
         self.de_hgvs_coordinate_model = {}
         self.de_hgvs_model = {}
+        self.de_hgvs_model_reverse = {}
         self.normalized_description = None
         self.chromosomal_descriptions = None
         self.protein = None
@@ -554,42 +744,65 @@ class Description:
 
     @check_errors
     def extract(self):
-        self.de_model = {
-            "variants": describe_dna(
-                self.references["reference"]["sequence"]["seq"],
-                self.references["observed"]["sequence"]["seq"],
-            ),
-        }
-        if not self.only_variants:
-            self.de_model.update(
-                {
-                    "reference": copy.deepcopy(
-                        self.internal_indexing_model["reference"]
-                    ),
-                    "coordinate_system": "i",
-                }
-            )
+        _algebra_variants = algebra_variants(self.delins_model["variants"], self.get_sequences())
+        ref_seq = self.references["reference"]["sequence"]["seq"]
 
-    @check_errors
-    def construct_de_hgvs_internal_indexing_model(self):
-        if self.de_model:
-            self.de_hgvs_internal_indexing_model = {
-                "variants": de_to_hgvs(
-                    self.de_model["variants"],
-                    self.get_sequences(),
-                ),
+        algebra_extracted_variants, graph = extract_variants(ref_seq, _algebra_variants)
+        supremal = graph.supremal
+
+        if self.only_variants:
+            algebra_model_reverse = {
+                "variants": to_hgvs_dict(algebra_extracted_variants, ref_seq, False),
             }
-            if not self.only_variants:
-                self.de_hgvs_internal_indexing_model.update(
-                    {
-                        "reference": copy.deepcopy(
-                            self.internal_indexing_model["reference"]
-                        ),
-                        "coordinate_system": "i",
-                    }
-                )
-            if self.corrected_model.get("predicted"):
-                self.de_hgvs_internal_indexing_model["predicted"] = True
+            algebra_model_forward = {
+                "variants": to_hgvs_dict(algebra_extracted_variants, ref_seq),
+            }
+        else:
+            algebra_model_forward = {
+                "type": self.corrected_model["type"],
+                "reference": {"id": self.corrected_model["reference"]["id"]},
+                "coordinate_system": "g",
+                "variants": to_hgvs_dict(algebra_extracted_variants, ref_seq),
+            }
+            algebra_model_reverse = {
+                "type": self.corrected_model["type"],
+                "reference": {"id": self.corrected_model["reference"]["id"]},
+                "coordinate_system": "g",
+                "variants": to_hgvs_dict(algebra_extracted_variants, ref_seq, False),
+            }
+
+        internal = to_internal_indexing(to_internal_coordinates(algebra_model_forward, self.get_sequences()))
+        internal_reverse = to_internal_indexing(to_internal_coordinates(algebra_model_reverse, self.get_sequences()))
+
+        if self.corrected_model.get("predicted"):
+            internal["predicted"] = True
+            internal_reverse["predicted"] = True
+        self.de_hgvs_internal_indexing_model = internal
+        self.de_hgvs_internal_indexing_model_reverse = internal_reverse
+        if self.only_variants:
+            self.de_hgvs_model = copy.deepcopy(algebra_model_forward)
+
+
+    # @check_errors
+    # def construct_de_hgvs_internal_indexing_model(self):
+    #     if self.de_model:
+    #         self.de_hgvs_internal_indexing_model = {
+    #             "variants": de_to_hgvs(
+    #                 self.de_model["variants"],
+    #                 self.get_sequences(),
+    #             ),
+    #         }
+    #         if not self.only_variants:
+    #             self.de_hgvs_internal_indexing_model.update(
+    #                 {
+    #                     "reference": copy.deepcopy(
+    #                         self.internal_indexing_model["reference"]
+    #                     ),
+    #                     "coordinate_system": "i",
+    #                 }
+    #             )
+    #         if self.corrected_model.get("predicted"):
+    #             self.de_hgvs_internal_indexing_model["predicted"] = True
 
     @check_errors
     def construct_de_hgvs_coordinates_model(self):
@@ -620,19 +833,32 @@ class Description:
                     )
                 )
             else:
-                self.de_hgvs_model = to_hgvs_locations(
-                    self.de_hgvs_internal_indexing_model,
-                    self.references,
-                    to_coordinate_system,
-                    get_selector_id(self.corrected_model),
-                    True,
-                )
+                if not self.only_variants:
+                    self.de_hgvs_model = to_hgvs_locations(
+                        self.de_hgvs_internal_indexing_model,
+                        self.references,
+                        to_coordinate_system,
+                        get_selector_id(self.corrected_model),
+                        True,
+                    )
+                    self.de_hgvs_model_reverse = to_hgvs_locations(
+                        self.de_hgvs_internal_indexing_model_reverse,
+                        self.references,
+                        to_coordinate_system,
+                        get_selector_id(self.corrected_model),
+                        True,
+                    )
+
 
     def construct_normalized_description(self):
         if self.de_hgvs_model:
             if self.de_hgvs_model.get("coordinate_system") == "r":
                 to_rna_sequences(self.de_hgvs_model)
-            self.normalized_description = model_to_string(self.de_hgvs_model)
+                to_rna_sequences(self.de_hgvs_model_reverse)
+            if self.is_inverted():
+                self.normalized_description = model_to_string(self.de_hgvs_model_reverse)
+            else:
+                self.normalized_description = model_to_string(self.de_hgvs_model)
 
     def construct_genomic_equivalent(self):
         from_model = self.de_hgvs_internal_indexing_model
@@ -660,28 +886,9 @@ class Description:
             from_model = self.de_hgvs_internal_indexing_model
         else:
             return
+        self.construct_genomic_equivalent()
+
         equivalent = {}
-
-        if (
-            get_coordinate_system_from_reference(self.references["reference"])
-            == "g"
-            != self.corrected_model["coordinate_system"]
-            and self.corrected_model["coordinate_system"] != "r"
-        ):
-            converted_model = to_hgvs_locations(
-                model=from_model,
-                references=self.references,
-                to_coordinate_system="g",
-                to_selector_id=None,
-                degenerate=True,
-            )
-            if as_description:
-                equivalent["g"] = [{"description": model_to_string(converted_model)}]
-            else:
-                equivalent["g"] = [{"description": converted_model}]
-            if equivalent:
-                self.equivalent = equivalent
-
         l_min, l_max = get_locations_min_max(from_model)
         if not (l_min and l_max):
             return
@@ -694,6 +901,9 @@ class Description:
 
         l_min, l_max = overlap_min_max(self.references["reference"], l_min, l_max)
         for selector in yield_overlap_ids(self.references["reference"], l_min, l_max):
+            if other is None:
+                if selector and selector.get("location") and selector["location"].get("strand") == -1:
+                    from_model =  self.de_hgvs_internal_indexing_model_reverse
             if selector["id"] != self.get_selector_id():
                 try:
                     converted_model = to_hgvs_locations(
@@ -708,9 +918,7 @@ class Description:
                 c_s = converted_model["coordinate_system"]
                 if not equivalent.get(c_s):
                     equivalent[c_s] = []
-
                 if converted_model["coordinate_system"] == "c":
-
                     if as_description:
                         e_d = {
                             "description": model_to_string(converted_model),
@@ -727,7 +935,6 @@ class Description:
                             "id": selector["id"],
                             "details": selector["qualifiers"]["tag"],
                         }
-
                     equivalent[c_s].append(e_d)
                 else:
                     if as_description:
@@ -736,9 +943,8 @@ class Description:
                         )
                     else:
                         equivalent[c_s].append({"description": converted_model})
-
         if equivalent:
-            self.equivalent = equivalent
+            self.equivalent.update(equivalent)
 
     @check_errors
     def construct_protein_description(self):
@@ -796,18 +1002,25 @@ class Description:
                 get_reference_id(self.corrected_model): rna_reference_model,
                 "reference": rna_reference_model,
             }
-            rna_variants_coordinate = de_to_hgvs(
-                rna_variants_coordinate,
-                {
-                    k: str(Seq(model["sequence"]["seq"]).transcribe().lower()) for k, model in rna_references.items()
-                },
-            )
-            to_rna_sequences(rna_variants_coordinate)
+
+            ref_seq = rna_references["reference"]["sequence"]["seq"]
+            sequences = {"reference": ref_seq}
+            _algebra_variants = algebra_variants(rna_variants_coordinate, sequences)
+            algebra_extracted_variants, graph = extract_variants(ref_seq, _algebra_variants)
+            if self.is_inverted():
+                algebra_model = {
+                    "variants": to_hgvs_dict(algebra_extracted_variants, ref_seq, False),
+                }
+            else:
+                algebra_model = {
+                    "variants": to_hgvs_dict(algebra_extracted_variants, ref_seq),
+                }
+            internal = to_internal_indexing(to_internal_coordinates(algebra_model, sequences))
             rna_model = to_hgvs_locations(
                 {
                     "reference": self.de_hgvs_internal_indexing_model["reference"],
                     "coordinate_system": "i",
-                    "variants": rna_variants_coordinate,
+                    "variants": internal["variants"],
                 },
                 rna_references,
                 self.de_hgvs_model.get("coordinate_system"),
@@ -1386,6 +1599,8 @@ class Description:
                 self.get_sequences(),
                 to_delins(self.internal_indexing_model)["variants"],
             )
+            if "*" in observed_sequence:
+                observed_sequence = observed_sequence.split('*')[0]
             self.references["observed"] = {"sequence": {"seq": observed_sequence}}
             p_variant = in_frame_description(self.references["reference"]["sequence"]["seq"], observed_sequence)[0]
             self.de_hgvs_model = {
@@ -1507,6 +1722,7 @@ class Description:
 
     def normalize_only_equals_or_no_operation(self):
         self.de_hgvs_internal_indexing_model = self.internal_indexing_model
+        self.de_hgvs_internal_indexing_model_reverse = self.internal_indexing_model
         self.references["observed"] = {
             "sequence": {"seq": self.references["reference"]["sequence"]["seq"]}
         }
@@ -1535,9 +1751,7 @@ class Description:
             if self.only_equals() or self.no_operation():
                 self.normalize_only_equals_or_no_operation()
             else:
-                self.mutate()
                 self.extract()
-                self.construct_de_hgvs_internal_indexing_model()
                 self.construct_de_hgvs_coordinates_model()
                 self.construct_normalized_description()
                 if include_extras:

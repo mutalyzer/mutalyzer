@@ -1,7 +1,6 @@
 """Convert from SPDI to HGVS."""
 
-from extractor import describe_dna
-from mutalyzer_mutator import mutate
+from algebra.extractor import extract as extract_variants
 from mutalyzer_retriever.reference import (
     get_assembly_chromosome_accession,
     get_assembly_id,
@@ -10,7 +9,9 @@ from mutalyzer_retriever.retriever import get_chromosome_from_selector
 from mutalyzer_spdi_parser.convert import to_hgvs_internal_model as spdi_to_hgvs
 
 from .converter.to_hgvs_coordinates import to_hgvs_locations
-from .converter.variants_de_to_hgvs import de_to_hgvs
+from .converter.to_internal_coordinates import to_internal_coordinates
+from .converter.to_internal_indexing import to_internal_indexing
+from .description import algebra_variants, to_hgvs_dict
 from .description_model import model_to_string
 from .errors import out_of_boundary_greater, reference_not_retrieved, sequence_mismatch
 from .reference import get_coordinate_system_from_reference, retrieve_reference
@@ -102,16 +103,16 @@ def spdi_converter(description):
     if errors:
         return {"errors": errors}
 
-    obs_seq = mutate({"reference": r_m["sequence"]["seq"]}, model["variants"])
+    algebra_extracted_variants = algebra_variants(model["variants"], {"reference": r_m["sequence"]["seq"]})
+    ref_seq = r_m["sequence"]["seq"]
+    algebra_extracted_variants, _ = extract_variants(ref_seq, algebra_extracted_variants)
 
-    d_v = describe_dna(r_m["sequence"]["seq"], obs_seq)
-    d_h_m = {
-        "variants": de_to_hgvs(
-            d_v, {"reference": r_m["sequence"]["seq"], "observed": obs_seq}
-        ),
-        "reference": {"id": r_id},
-        "coordinate_system": "i",
+    algebra_model = {
+        "reference": {"id": model["reference"]["id"]},
+        "coordinate_system": "g",
+        "variants": to_hgvs_dict(algebra_extracted_variants, ref_seq),
     }
+    d_h_m = to_internal_indexing(to_internal_coordinates(algebra_model, {"reference": r_m["sequence"]["seq"]}))
 
     c_s = get_coordinate_system_from_reference(r_m)
     if c_s in ["c", "n"]:
