@@ -1,6 +1,6 @@
 from copy import deepcopy
 
-from algebra.extractor import extract_sequence
+from algebra import LCSgraph, Variant
 from mutalyzer_mutator import mutate
 from mutalyzer_mutator.util import reverse_complement
 from mutalyzer_retriever.reference import (
@@ -31,6 +31,12 @@ from .reference import (
     retrieve_reference,
 )
 from .util import slice_seq
+
+
+def extract_sequence(reference, observed):
+    graph = LCSgraph.from_variants(reference, [Variant(0, len(reference), observed)])
+    graph.canonical()
+    return graph.canonical()
 
 
 def _get_description(algebra_extracted_variants, ref_seq, r_model, selector_id=None):
@@ -226,12 +232,12 @@ def map_description(
                 "source": "input",
             }
 
-    variants, _ = extract_sequence(ref_seq_to, obs_seq)
+    variants = extract_sequence(ref_seq_to, obs_seq)
     filtered_variants = False
     unfiltered_mapped_description = None
     reference_sequences_description = None
     if filter_out:
-        seq_variants, _ = extract_sequence(ref_seq_to, ref_seq_from)
+        seq_variants = extract_sequence(ref_seq_to, ref_seq_from)
         unfiltered_mapped_description = _get_description(variants, ref_seq_to, to_r_model, selector_id)
         reference_sequences_description = _get_description(seq_variants, ref_seq_to, to_r_model, selector_id)
         variants = [v for v in variants if v not in seq_variants]

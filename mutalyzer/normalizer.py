@@ -4,12 +4,12 @@ the delins model of an input description."""
 import itertools
 from os.path import commonprefix
 
-from algebra import Variant
-from algebra.extractor import extract as extract_variants
-from algebra.extractor import local_supremal
-from algebra.extractor import to_hgvs as to_hgvs_experimental
-from algebra.lcs.lcs_graph import trim
-from algebra.utils import to_dot
+from algebra import LCSgraph, Variant
+# from algebra.extractor import extract as extract_variants
+# from algebra.extractor import local_supremal
+# from algebra.extractor import to_hgvs as to_hgvs_experimental
+# from algebra.utils import to_dot
+
 
 from mutalyzer.util import get_inserted_sequence
 
@@ -42,6 +42,7 @@ from .util import (
     set_by_path,
 )
 from .viewer import view_delins
+import time
 
 
 def _add_minimal(graph, reference, output, prefix=""):

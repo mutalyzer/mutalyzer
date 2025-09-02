@@ -1,6 +1,7 @@
 """Convert from SPDI to HGVS."""
 
-from algebra.extractor import extract as extract_variants
+# from algebra.extractor import extract as extract_variants
+from algebra import LCSgraph, Variant
 from mutalyzer_retriever.reference import (
     get_assembly_chromosome_accession,
     get_assembly_id,
@@ -105,7 +106,8 @@ def spdi_converter(description):
 
     algebra_extracted_variants = algebra_variants(model["variants"], {"reference": r_m["sequence"]["seq"]})
     ref_seq = r_m["sequence"]["seq"]
-    algebra_extracted_variants, _ = extract_variants(ref_seq, algebra_extracted_variants)
+    graph = LCSgraph.from_variants(ref_seq, algebra_extracted_variants)
+    algebra_extracted_variants = graph.canonical()
 
     algebra_model = {
         "reference": {"id": model["reference"]["id"]},

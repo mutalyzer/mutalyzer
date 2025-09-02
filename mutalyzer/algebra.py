@@ -1,11 +1,49 @@
 from algebra import LCSgraph, Variant
-from algebra.relations.graph_based import compare as compare_core
+from algebra import compare as compare_core
+# from algebra.relations.graph_based import compare as compare_core
 
 from mutalyzer import errors
 from mutalyzer.description import Description
 from mutalyzer.reference import retrieve_reference
 from mutalyzer.util import get_end, get_inserted_sequence, get_start
 from mutalyzer.viewer import view_delins
+
+
+def to_hgvs(variant, reference=None, only_substitutions=True):
+    """
+    Taken from the algebra.
+    """
+
+    if variant.end - variant.start == 0:
+        if not variant.sequence:
+            return "="
+        return f"{variant.start}_{variant.start + 1}ins{variant.sequence}"
+
+    deleted = ""
+    substitution = ""
+    if reference is not None:
+        if not only_substitutions:
+            deleted = reference[variant.start:variant.end]
+        substitution = reference[variant.start:variant.end]
+
+    if variant.end - variant.start == 1:
+        if not variant.sequence:
+            return f"{variant.start + 1}del{deleted}"
+        if len(variant.sequence) == 1:
+            return f"{variant.start + 1}{substitution}>{variant.sequence}"
+        return f"{variant.start + 1}del{deleted}ins{variant.sequence}"
+
+    if not variant.sequence:
+        return f"{variant.start + 1}_{variant.end}del{deleted}"
+
+    return f"{variant.start + 1}_{variant.end}del{deleted}ins{variant.sequence}"
+
+
+def to_spdi(variant, reference_id=""):
+    """
+    Taken from the algebra.
+    """
+    return f"{reference_id}:{variant.start}:{variant.end - variant.start}:"f"{variant.sequence}"
 
 
 def _get_hgvs_and_variant(variant, only_variants=False, ref_seq=None):
@@ -273,12 +311,13 @@ def compare_hgvs(lhs_d, rhs_d):
         return output
 
     lhs_alg_variants = _get_algebra_variants(lhs_d)
-    lhs_graph = LCSgraph.from_variant(lhs_reference, lhs_alg_variants)
-    lhs_supremal = lhs_graph.supremal
+    lhs_graph = LCSgraph.from_variants(lhs_reference, lhs_alg_variants)
+    lhs_supremal = lhs_graph.supremal()
+
 
     rhs_alg_variants = _get_algebra_variants(rhs_d)
-    rhs_graph = LCSgraph.from_variant(rhs_reference, rhs_alg_variants)
-    rhs_supremal = rhs_graph.supremal
+    rhs_graph = LCSgraph.from_variants(rhs_reference, rhs_alg_variants)
+    rhs_supremal = rhs_graph.supremal()
 
     output["relation"] = compare_core(lhs_reference, lhs_graph, rhs_graph).value
 
@@ -292,13 +331,13 @@ def compare_hgvs(lhs_d, rhs_d):
         ref_id = rhs_reference
 
     output["supremal_lhs"] = {
-        "hgvs": f"{ref_id}:g.{lhs_supremal.to_hgvs()}",
-        "spdi": lhs_supremal.to_spdi(ref_id),
+        "hgvs": f"{ref_id}:g.{to_hgvs(lhs_supremal)}",
+        "spdi": to_spdi(lhs_supremal, ref_id),
     }
 
     output["supremal_rhs"] = {
-        "hgvs": f"{ref_id}:g.{rhs_supremal.to_hgvs()}",
-        "spdi": rhs_supremal.to_spdi(ref_id),
+        "hgvs": f"{ref_id}:g.{to_hgvs(rhs_supremal)}",
+        "spdi": to_spdi(rhs_supremal, ref_id),
     }
 
     lhs_supremal_delins = [algebra_variant_to_delins(lhs_supremal)]
@@ -348,22 +387,22 @@ def compare_sequences_based(reference, reference_type, lhs, lhs_type, rhs, rhs_t
     if output.get("errors"):
         return output
 
-    lhs_graph = LCSgraph.from_sequence(ref_seq, lhs_seq)
-    lhs_supremal = lhs_graph.supremal
+    lhs_graph = LCSgraph.from_variants(ref_seq, [Variant(0, len(ref_seq), lhs_seq)])
+    lhs_supremal = lhs_graph.supremal()
 
-    rhs_graph = LCSgraph.from_sequence(ref_seq, rhs_seq)
-    rhs_supremal = rhs_graph.supremal
+    rhs_graph = LCSgraph.from_variants(ref_seq, [Variant(0, len(ref_seq), rhs_seq)])
+    rhs_supremal = rhs_graph.supremal()
 
     output["relation"] = compare_core(ref_seq, lhs_graph, rhs_graph).value
 
     output["supremal_lhs"] = {
-        "hgvs": f"{lhs_supremal.to_hgvs()}",
-        "spdi": lhs_supremal.to_spdi(),
+        "hgvs": f"{to_hgvs(lhs_supremal, lhs_seq)}",
+        "spdi": to_spdi(lhs_supremal),
     }
 
     output["supremal_rhs"] = {
-        "hgvs": f"{rhs_supremal.to_hgvs()}",
-        "spdi": rhs_supremal.to_spdi(),
+        "hgvs": f"{to_hgvs(rhs_supremal, rhs_seq)}",
+        "spdi": to_spdi(rhs_supremal),
     }
 
     lhs_supremal_delins = [algebra_variant_to_delins(lhs_supremal)]

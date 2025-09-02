@@ -6,6 +6,14 @@ from _collections import OrderedDict
 from mutalyzer_mutator.util import reverse_complement
 
 
+def trim(lhs, rhs):
+    """Taken from the algebra.
+    Find the lengths of the common prefix and common suffix between
+    two sequences."""
+    idx = len(os.path.commonprefix([lhs, rhs]))
+    return idx, len(os.path.commonprefix([lhs[idx:][::-1], rhs[idx:][::-1]]))
+
+
 def create_exact_point_model(point):
     return {"type": "point", "position": point}
 

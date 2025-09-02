@@ -4,9 +4,11 @@ from collections import deque
 from copy import deepcopy
 
 from algebra import LCSgraph, Variant
-from algebra.extractor import extract as extract_variants
-from algebra.extractor import local_supremal as get_local_supremal
-from algebra.extractor import to_hgvs
+# from algebra.extractor import extract as extract_variants
+# from algebra.extractor import local_supremal as get_local_supremal
+# from algebra.extractor import to_hgvs
+from .algebra import to_hgvs
+from .description import to_hgvs_dict
 from Bio.Seq import Seq
 from mutalyzer_crossmapper import Coding, Genomic, NonCoding
 from mutalyzer_hgvs_parser import to_model
@@ -135,9 +137,8 @@ def get_rna_variants(d, variants):
     rna_algebra_variants = [
         delins_to_algebra_variant(v, get_rna_sequences(d)) for v in rna_delins
     ]
-    rna_algebra_extracted_variants, *_ = extract_variants(
-        rna_ref_seq, rna_algebra_variants
-    )
+    graph = LCSgraph.from_variants(rna_ref_seq, rna_algebra_variants)
+    rna_algebra_extracted_variants = graph.canonical()
     rna_variants_coordinate = de_to_hgvs(
         [algebra_variant_to_delins(v) for v in rna_algebra_extracted_variants],
         {k: rna_reference_models[k]["sequence"]["seq"] for k in rna_reference_models},
@@ -255,7 +256,9 @@ def predict_rna(d, local_supremals):
         "local_supremals": {},
     }
     for i, sup in enumerate(local_supremals):
-        _, local_root = extract_variants(ref_seq, [sup])
+        graph = LCSgraph.from_variants(ref_seq, [sup])
+
+        local_root = graph.canonical()
         sup_start_index, sup_start_offset = get_position_type(sup.start, exons, exon_margin)
         sup_end_index, sup_end_offset = get_position_type(sup.end, exons, intron_margin)
         splice_affected = False
@@ -282,7 +285,7 @@ def predict_rna(d, local_supremals):
                     # it can be pushed into the exon
                     sup_status["push_exon"] = left_push[1]
         sup_status["hgvs"] = _genomic_and_coding(
-            extract_variants(ref_seq, [sup])[0], d, selector_id
+            LCSgraph.from_variants(ref_seq, [sup]).canonical(), d, selector_id
         )
         sup_status["splice_affected"] = splice_affected
         sup_status["supremal"] = _genomic_and_coding([sup], d, selector_id)
@@ -314,7 +317,6 @@ def predict_rna(d, local_supremals):
                 rna_description_possible = False
             else:
                 # The splice is always affected.
-                # print("Nothing possible.")
                 rna_description_possible = False
         else:
             sup_status["rna"] = get_rna_variants(d, [local_supremals[i]])
@@ -450,8 +452,10 @@ def dna_to_rna(description, exon_margin=2, intron_margin=4):
     exons = d.get_selector_model()["exon"]
 
     ref_seq = d.references["reference"]["sequence"]["seq"]
-    alg_dna_variants, graph = extract_variants(ref_seq, delins_to_algebra(delins, sequences))
-    local_supremal = get_local_supremal(ref_seq, graph)
+    # alg_dna_variants, graph = extract_variants(ref_seq, delins_to_algebra(delins, sequences))
+    graph = LCSgraph.from_variants(ref_seq, delins_to_algebra(delins, sequences))
+    alg_dna_variants = graph.canonical()
+    local_supremal = graph.local_supremal()
 
     if (
         get_reference_mol_type(d.references["reference"]) == "genomic DNA"
@@ -466,8 +470,12 @@ def dna_to_rna(description, exon_margin=2, intron_margin=4):
     )
     rna_reference_models = get_rna_reference_models(d)
     rna_ref_seq = rna_reference_models["reference"]["sequence"]["seq"]
-    alg_rna_variants, *_ = extract_variants(rna_ref_seq, delins_to_algebra(alg_rna_sliced_variants, {"reference": ref_seq})    )
-    extracted_variants_model = to_model(to_hgvs(alg_rna_variants, rna_ref_seq), start_rule="variants")
+    # print(rna_ref_seq)
+    # print(alg_rna_sliced_variants)
+    other_graph = LCSgraph.from_variants(rna_ref_seq, delins_to_algebra(alg_rna_sliced_variants, {"reference": rna_ref_seq}))
+    alg_rna_variants = other_graph.canonical()
+    extracted_variants_model = to_hgvs_dict(alg_rna_variants, rna_ref_seq)
+    # print(alg_rna_variants)
 
     extracted_model = {
         "reference": d.corrected_model["reference"],
@@ -540,8 +548,11 @@ def rna_to_dna(description):
     exons = d.get_selector_model()["exon"]
 
     ref_seq = d.references["reference"]["sequence"]["seq"]
-    alg_dna_variants, graph = extract_variants(ref_seq, delins_to_algebra(delins, sequences))
-    local_supremal = get_local_supremal(ref_seq, graph)
+    graph = LCSgraph.from_variants(ref_seq, delins_to_algebra(delins, sequences))
+    # alg_dna_variants, graph = extract_variants(ref_seq, delins_to_algebra(delins, sequences))
+    alg_dna_variants = graph.canonical()
+    local_supremal = graph.local_supremal()
+    # local_supremal = get_local_supremal(ref_seq, graph)
 
     if (
         get_reference_mol_type(d.references["reference"]) == "genomic DNA"

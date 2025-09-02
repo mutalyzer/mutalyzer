@@ -3,8 +3,8 @@ import itertools
 from os.path import commonprefix
 
 from algebra import LCSgraph, Variant
-from algebra.extractor import extract as extract_variants
-from algebra.lcs.lcs_graph import trim
+# from algebra.extractor import extract as extract_variants
+from .util import trim
 from Bio.Seq import Seq
 from Bio.SeqUtils import seq1, seq3
 from mutalyzer_backtranslate import BackTranslate
@@ -100,6 +100,152 @@ from .util import (
     slice_sequence,
     sort_variants,
 )
+
+def to_hgvs(variant, reference=None, only_substitutions=True):
+    """
+    Taken from the algebra.
+    """
+
+    if variant.end - variant.start == 0:
+        if not variant.sequence:
+            return "="
+        return f"{variant.start}_{variant.start + 1}ins{variant.sequence}"
+
+    deleted = ""
+    substitution = ""
+    if reference is not None:
+        if not only_substitutions:
+            deleted = reference[variant.start:variant.end]
+        substitution = reference[variant.start:variant.end]
+
+    if variant.end - variant.start == 1:
+        if not variant.sequence:
+            return f"{variant.start + 1}del{deleted}"
+        if len(variant.sequence) == 1:
+            return f"{variant.start + 1}{substitution}>{variant.sequence}"
+        return f"{variant.start + 1}del{deleted}ins{variant.sequence}"
+
+    if not variant.sequence:
+        return f"{variant.start + 1}_{variant.end}del{deleted}"
+
+    return f"{variant.start + 1}_{variant.end}del{deleted}ins{variant.sequence}"
+
+
+def get_dominators(graph):
+    successors = {}
+    all_nodes = set()
+    tail_nodes = set()
+    head_nodes = set()
+
+    for edge in graph.edges():
+        head, tail = edge["head"], edge["tail"]
+        all_nodes.add(head)
+        all_nodes.add(tail)
+        head_nodes.add(head)
+        tail_nodes.add(tail)
+
+        if head not in successors:
+            successors[head] = []
+        successors[head].append(tail)
+
+    sink = next(iter(tail_nodes - head_nodes), None)
+    source = next(iter(head_nodes - tail_nodes), None)
+
+    if sink is None or source is None:
+        return set()
+
+    source = (head_nodes - tail_nodes).pop()
+    sink = (tail_nodes - head_nodes).pop()
+
+    dominators = {source: {source}}
+
+    for node in all_nodes:
+        if node != source:
+            dominators[node] = all_nodes.copy()
+
+    changed = True
+    while changed:
+        changed = False
+        for node in all_nodes:
+            if node == source:
+                continue
+
+            predecessors = [n for n in all_nodes if n in successors and node in successors[n]]
+
+            if predecessors:
+                new_dominators = set.intersection(*[dominators[pred] for pred in predecessors])
+                new_dominators.add(node)
+
+                if new_dominators != dominators[node]:
+                    dominators[node] = new_dominators
+                    changed = True
+
+    return dominators[sink] - {source, sink}
+
+
+def graph_to_dot(graph, reference, labels=True, dominators=True, complexity_limit=1000):
+    width = ".8" if labels else "1"
+
+    dot_lines = [
+        "digraph {",
+        "rankdir=LR",
+        "edge[fontname=monospace]",
+        f'node[fixedsize=true,fontname=serif,shape=circle,width={width}]'
+    ]
+
+    nodes = {}
+    head_nodes = set()
+    tail_nodes = set()
+    node_index = 0
+    edge_index = 0
+
+    for edge in graph.edges():
+        edge_index += 1
+
+        if edge_index > 200 or edge_index * len(nodes) > complexity_limit:
+            return f"// Graph too complex. Stopped at {edge_index} edges and {len(nodes)} nodes."
+
+        head, tail, variant, count = edge["head"], edge["tail"], edge["variant"], edge["count"]
+
+        tail_nodes.add(tail)
+        head_nodes.add(head)
+
+        if tail not in nodes:
+            nodes[tail] = f"s{node_index}"
+            node_index += 1
+        if head not in nodes:
+            nodes[head] = f"s{node_index}"
+            node_index += 1
+
+        head_id, tail_id = nodes[head], nodes[tail]
+
+        if variant:
+            label = to_hgvs(variant, reference)
+            if count > 1:
+                dot_lines.append(f'  {head_id} -> {tail_id} [label="{label} x {count}",penwidth=2]')
+            else:
+                dot_lines.append(f'  {head_id} -> {tail_id} [label="{label}"]')
+        else:
+            dot_lines.append(f'  {head_id} -> {tail_id} [label="&lambda;",style=dashed]')
+
+    sink_node = next(iter(tail_nodes - head_nodes), None)
+    source_node = next(iter(head_nodes - tail_nodes), None)
+
+    if sink_node:
+        dot_lines.append(f'{nodes[sink_node]}[fillcolor=aliceblue,style=filled,peripheries=2,penwidth=2]')
+
+    if source_node:
+        dot_lines.extend([
+            f'{nodes[source_node]}[fillcolor=aliceblue,style=filled,penwidth=2]',
+            'i[label="",shape=point,width=.1]',
+            f'i->{nodes[source_node]}',
+        ])
+
+    if dominators:
+        for node in get_dominators(graph):
+            dot_lines.append(f'{nodes[node]}[fillcolor=aliceblue,style=filled,penwidth=2]')
+    dot_lines.append("}")
+    return "\n".join(dot_lines)
 
 
 def trim_for_reverse(lhs, rhs):
@@ -747,8 +893,10 @@ class Description:
         _algebra_variants = algebra_variants(self.delins_model["variants"], self.get_sequences())
         ref_seq = self.references["reference"]["sequence"]["seq"]
 
-        algebra_extracted_variants, graph = extract_variants(ref_seq, _algebra_variants)
-        supremal = graph.supremal
+        graph = LCSgraph.from_variants(ref_seq, _algebra_variants)
+        print(graph_to_dot(graph, ref_seq))
+        algebra_extracted_variants = graph.canonical()
+        supremal = graph.supremal()
 
         if self.only_variants:
             algebra_model_reverse = {
@@ -1006,7 +1154,13 @@ class Description:
             ref_seq = rna_references["reference"]["sequence"]["seq"]
             sequences = {"reference": ref_seq}
             _algebra_variants = algebra_variants(rna_variants_coordinate, sequences)
-            algebra_extracted_variants, graph = extract_variants(ref_seq, _algebra_variants)
+
+            if _algebra_variants:
+                graph = LCSgraph.from_variants(ref_seq, _algebra_variants)
+                algebra_extracted_variants = graph.canonical()
+            else:
+                algebra_extracted_variants = []
+
             if self.is_inverted():
                 algebra_model = {
                     "variants": to_hgvs_dict(algebra_extracted_variants, ref_seq, False),
