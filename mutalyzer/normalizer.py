@@ -2,47 +2,23 @@
 the delins model of an input description."""
 
 import itertools
-from os.path import commonprefix
 
 from algebra import LCSgraph, Variant
-# from algebra.extractor import extract as extract_variants
-# from algebra.extractor import local_supremal
-# from algebra.extractor import to_hgvs as to_hgvs_experimental
-# from algebra.utils import to_dot
-
 
 from mutalyzer.util import get_inserted_sequence
 
-from .algebra import algebra_variant_to_delins, algebra_variant_to_name_model
+from .algebra import algebra_variant_to_delins, to_hgvs_dict
+from .compare import algebra_variant_to_name_model
 from .converter.to_delins import to_delins, variants_to_delins
-from .converter.to_hgvs_coordinates import (
-    crossmap_to_hgvs_setup,
-    initialize_hgvs_model,
-    point_to_hgvs,
-)
 from .converter.to_internal_coordinates import to_internal_coordinates
 from .converter.to_internal_indexing import to_internal_indexing
-from .description import Description, to_hgvs_dict
-from .description_model import (
-    get_selector_id,
-    model_to_string,
-    variants_to_description,
-    yield_point_locations_for_main_reference,
-)
+from .description import Description
+from .description_model import get_selector_id, model_to_string
 from .protein import get_protein_description
 from .reference import get_coordinate_system_from_reference, get_protein_selector_model
 from .rna import dna_to_rna, rna_to_dna
-from .util import (
-    construct_sequence,
-    create_exact_point_model,
-    create_exact_range_model,
-    get_end,
-    get_start,
-    reverse_complement,
-    set_by_path,
-)
+from .util import construct_sequence, get_end, get_start
 from .viewer import view_delins
-import time
 
 
 def _add_minimal(graph, reference, output, prefix=""):

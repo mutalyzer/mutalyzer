@@ -1,14 +1,8 @@
 import bisect
-import json
 from collections import deque
 from copy import deepcopy
 
 from algebra import LCSgraph, Variant
-# from algebra.extractor import extract as extract_variants
-# from algebra.extractor import local_supremal as get_local_supremal
-# from algebra.extractor import to_hgvs
-from .algebra import to_hgvs
-from .description import to_hgvs_dict
 from Bio.Seq import Seq
 from mutalyzer_crossmapper import Coding, Genomic, NonCoding
 from mutalyzer_hgvs_parser import to_model
@@ -16,10 +10,15 @@ from mutalyzer_mutator.util import reverse_complement
 from mutalyzer_retriever.reference import get_reference_mol_type
 from mutalyzer_retriever.retriever import extract_feature_model
 
+# from algebra.extractor import extract as extract_variants
+# from algebra.extractor import local_supremal as get_local_supremal
+# from algebra.extractor import to_hgvs
 from .algebra import (
     algebra_variant_to_delins,
     delins_to_algebra,
     delins_to_algebra_variant,
+    to_hgvs,
+    to_hgvs_dict,
 )
 from .converter.to_hgvs_coordinates import coding_to_point, to_hgvs_locations
 from .converter.to_rna import to_rna_variants
@@ -362,7 +361,7 @@ def _splice_sites_affected(exons, local_supremal, exon_margin=2, intron_margin=4
                 affected = True
         ss.append(affected)
 
-    return not all(x==False for x in ss)
+    return not all(x is False for x in ss)
 
 
 def _to_rna_variants(variants, exons):
@@ -534,7 +533,7 @@ def _splice_sites_affected_back(exons, local_supremal, exon_margin=2):
                 affected = True
         ss.append(affected)
 
-    return not all(x==False for x in ss)
+    return not all(x is False for x in ss)
 
 
 def rna_to_dna(description):
@@ -550,7 +549,7 @@ def rna_to_dna(description):
     ref_seq = d.references["reference"]["sequence"]["seq"]
     graph = LCSgraph.from_variants(ref_seq, delins_to_algebra(delins, sequences))
     # alg_dna_variants, graph = extract_variants(ref_seq, delins_to_algebra(delins, sequences))
-    alg_dna_variants = graph.canonical()
+    # alg_dna_variants = graph.canonical()
     local_supremal = graph.local_supremal()
     # local_supremal = get_local_supremal(ref_seq, graph)
 

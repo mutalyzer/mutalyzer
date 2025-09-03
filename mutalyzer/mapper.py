@@ -11,6 +11,7 @@ from mutalyzer_retriever.retriever import extract_feature_model
 
 from mutalyzer import errors
 
+from .algebra import to_hgvs_dict
 from .converter import de_to_hgvs
 from .converter.extras import (
     convert_reference_model,
@@ -21,7 +22,7 @@ from .converter.extras import (
 from .converter.to_hgvs_coordinates import to_hgvs_locations
 from .converter.to_internal_coordinates import to_internal_coordinates
 from .converter.to_internal_indexing import to_internal_indexing
-from .description import Description, to_hgvs_dict
+from .description import Description
 from .description_model import model_to_string
 from .reference import (
     get_coordinate_system_from_reference,

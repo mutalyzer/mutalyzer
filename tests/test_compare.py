@@ -1,6 +1,6 @@
 import pytest
 
-from mutalyzer.algebra import _get_hgvs_and_variant, _get_id, compare
+from mutalyzer.compare import _get_hgvs_and_variant, _get_id, compare
 from mutalyzer.reference import retrieve_reference
 
 from .commons import code_in, monkey_patches

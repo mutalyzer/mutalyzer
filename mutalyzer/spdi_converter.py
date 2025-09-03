@@ -1,7 +1,7 @@
 """Convert from SPDI to HGVS."""
 
 # from algebra.extractor import extract as extract_variants
-from algebra import LCSgraph, Variant
+from algebra import LCSgraph
 from mutalyzer_retriever.reference import (
     get_assembly_chromosome_accession,
     get_assembly_id,
@@ -9,10 +9,10 @@ from mutalyzer_retriever.reference import (
 from mutalyzer_retriever.retriever import get_chromosome_from_selector
 from mutalyzer_spdi_parser.convert import to_hgvs_internal_model as spdi_to_hgvs
 
+from .algebra import algebra_variants, to_hgvs_dict
 from .converter.to_hgvs_coordinates import to_hgvs_locations
 from .converter.to_internal_coordinates import to_internal_coordinates
 from .converter.to_internal_indexing import to_internal_indexing
-from .description import algebra_variants, to_hgvs_dict
 from .description_model import model_to_string
 from .errors import out_of_boundary_greater, reference_not_retrieved, sequence_mismatch
 from .reference import get_coordinate_system_from_reference, retrieve_reference

@@ -1,12 +1,319 @@
-from algebra import LCSgraph, Variant
-from algebra import compare as compare_core
-# from algebra.relations.graph_based import compare as compare_core
+from os.path import commonprefix
 
-from mutalyzer import errors
-from mutalyzer.description import Description
-from mutalyzer.reference import retrieve_reference
-from mutalyzer.util import get_end, get_inserted_sequence, get_start
-from mutalyzer.viewer import view_delins
+from algebra import Variant
+from mutalyzer_mutator.util import reverse_complement
+
+from mutalyzer.util import (
+    create_exact_point_model,
+    create_exact_range_model,
+    get_end,
+    get_inserted_sequence,
+    get_start,
+)
+
+from .util import trim
+
+
+def get_dominators(graph):
+    successors = {}
+    all_nodes = set()
+    tail_nodes = set()
+    head_nodes = set()
+
+    for edge in graph.edges():
+        head, tail = edge["head"], edge["tail"]
+        all_nodes.add(head)
+        all_nodes.add(tail)
+        head_nodes.add(head)
+        tail_nodes.add(tail)
+
+        if head not in successors:
+            successors[head] = []
+        successors[head].append(tail)
+
+    sink = next(iter(tail_nodes - head_nodes), None)
+    source = next(iter(head_nodes - tail_nodes), None)
+
+    if sink is None or source is None:
+        return set()
+
+    source = (head_nodes - tail_nodes).pop()
+    sink = (tail_nodes - head_nodes).pop()
+
+    dominators = {source: {source}}
+
+    for node in all_nodes:
+        if node != source:
+            dominators[node] = all_nodes.copy()
+
+    changed = True
+    while changed:
+        changed = False
+        for node in all_nodes:
+            if node == source:
+                continue
+
+            predecessors = [n for n in all_nodes if n in successors and node in successors[n]]
+
+            if predecessors:
+                new_dominators = set.intersection(*[dominators[pred] for pred in predecessors])
+                new_dominators.add(node)
+
+                if new_dominators != dominators[node]:
+                    dominators[node] = new_dominators
+                    changed = True
+
+    return dominators[sink] - {source, sink}
+
+
+def graph_to_dot(graph, reference, labels=True, dominators=True, complexity_limit=1000):
+    width = ".8" if labels else "1"
+
+    dot_lines = [
+        "digraph {",
+        "rankdir=LR",
+        "edge[fontname=monospace]",
+        f'node[fixedsize=true,fontname=serif,shape=circle,width={width}]'
+    ]
+
+    nodes = {}
+    head_nodes = set()
+    tail_nodes = set()
+    node_index = 0
+    edge_index = 0
+
+    for edge in graph.edges():
+        edge_index += 1
+
+        if edge_index > 200 or edge_index * len(nodes) > complexity_limit:
+            return f"// Graph too complex. Stopped at {edge_index} edges and {len(nodes)} nodes."
+
+        head, tail, variant, count = edge["head"], edge["tail"], edge["variant"], edge["count"]
+
+        tail_nodes.add(tail)
+        head_nodes.add(head)
+
+        if tail not in nodes:
+            nodes[tail] = f"s{node_index}"
+            node_index += 1
+        if head not in nodes:
+            nodes[head] = f"s{node_index}"
+            node_index += 1
+
+        head_id, tail_id = nodes[head], nodes[tail]
+
+        if variant:
+            label = to_hgvs(variant, reference)
+            if count > 1:
+                dot_lines.append(f'  {head_id} -> {tail_id} [label="{label} x {count}",penwidth=2]')
+            else:
+                dot_lines.append(f'  {head_id} -> {tail_id} [label="{label}"]')
+        else:
+            dot_lines.append(f'  {head_id} -> {tail_id} [label="&lambda;",style=dashed]')
+
+    sink_node = next(iter(tail_nodes - head_nodes), None)
+    source_node = next(iter(head_nodes - tail_nodes), None)
+
+    if sink_node:
+        dot_lines.append(f'{nodes[sink_node]}[fillcolor=aliceblue,style=filled,peripheries=2,penwidth=2]')
+
+    if source_node:
+        dot_lines.extend([
+            f'{nodes[source_node]}[fillcolor=aliceblue,style=filled,penwidth=2]',
+            'i[label="",shape=point,width=.1]',
+            f'i->{nodes[source_node]}',
+        ])
+
+    if dominators:
+        for node in get_dominators(graph):
+            dot_lines.append(f'{nodes[node]}[fillcolor=aliceblue,style=filled,penwidth=2]')
+    dot_lines.append("}")
+    return "\n".join(dot_lines)
+
+
+def trim_for_reverse(lhs, rhs):
+    """Find the lengths of the common prefix and common suffix between
+    two sequences."""
+    idx = len(commonprefix([lhs[::-1], rhs[::-1]]))
+    return len(commonprefix([lhs[:len(lhs)-idx], rhs[:len(rhs)-idx]])), idx
+
+
+def to_hgvs_dict(variants, ref_seq, forward_strand=True):
+    """Algebra based experimental version of HGVS serialization with support for
+    tandem repeats and complex variants."""
+    def var_dict(var_type, start, end=None, inserted=None, repeat_number=None, del_seq=None):
+        output = {
+            "location": to_hgvs_position(start, end),
+            "type": var_type,
+            "source": "reference",
+        }
+        if isinstance(inserted, list):
+            output["inserted"] = inserted
+        else:
+            if inserted:
+                output["inserted"] = [{"sequence": inserted, "source": "description"}]
+            if inserted and repeat_number:
+                output["inserted"][0]["repeat_number"] = {"type": "point", "value": repeat_number}
+        if del_seq:
+            output["deleted"] = [{"sequence": del_seq, "source": "description"}]
+        return output
+
+    def repeats(word):
+        length = 0
+        idx = 1
+        lps = [0] * len(word)
+        while idx < len(word):
+            if word[idx] == word[length]:
+                length += 1
+                lps[idx] = length
+                idx += 1
+            elif length != 0:
+                length = lps[length - 1]
+            else:
+                lps[idx] = 0
+                idx += 1
+
+        pattern = len(word) - length
+        if pattern == 0:
+            return "", 0, 0
+        return word[:pattern], len(word) // pattern, len(word) % pattern
+
+    def to_hgvs_position(start, end=None):
+        if end is None or end - start == 1:
+            return create_exact_point_model(start + 1)
+        if start == end:
+            return create_exact_range_model(start, start + 1)
+        return create_exact_range_model(start + 1, end)
+
+    def other(variant):
+        if variant.end - variant.start == 0:
+            if not variant.sequence:
+                return "="
+            # print("insertion sequence", variant.sequence)
+            return var_dict("insertion", variant.start, variant.start, variant.sequence)
+            # return f"{variant.start}_{variant.start + 1}ins{variant.sequence}"
+
+        deleted = ""
+        substitution = ref_seq[variant.start:variant.end]
+
+        if variant.end - variant.start == 1:
+            if not variant.sequence:
+                return var_dict("deletion", variant.start)
+                # return f"{variant.start + 1}del{deleted}"
+            if len(variant.sequence) == 1:
+                return var_dict("substitution", variant.start, del_seq=substitution, inserted=variant.sequence)
+                # return f"{variant.start + 1}{substitution}>{variant.sequence}"
+            return var_dict("deletion_insertion", variant.start, del_seq=deleted, inserted=variant.sequence)
+            # return f"{variant.start + 1}del{deleted}ins{variant.sequence}"
+
+        if not variant.sequence:
+            return var_dict("deletion", variant.start, variant.end, del_seq=deleted)
+            # return f"{variant.start + 1}_{variant.end}del{deleted}"
+
+        return var_dict("deletion_insertion", variant.start, variant.end, del_seq=deleted, inserted=variant.sequence)
+        # return f"{variant.start + 1}_{variant.end}del{deleted}ins{variant.sequence}"
+
+    def hgvs(variant):
+        inserted_unit, inserted_number, inserted_remainder = repeats(variant.sequence)
+        deleted = ref_seq[variant.start:variant.end]
+        deleted_unit, deleted_number, deleted_remainder = repeats(deleted)
+
+        # Select a non-minimal repeat unit if reference and observed are
+        # in agreement.
+        diff = len(inserted_unit) - len(deleted_unit)
+        if diff < 0 and deleted_unit == variant.sequence[:len(inserted_unit) - diff]:
+            inserted_unit = deleted_unit
+            inserted_number = 1
+            inserted_remainder = deleted_remainder
+        elif diff > 0 and inserted_unit == deleted[:len(deleted_unit) + diff]:
+            deleted_unit = inserted_unit
+            deleted_number = 1
+            deleted_remainder = inserted_remainder
+
+        # print(f"{to_hgvs_position(variant.start, variant.end - alt_deleted_remainder)}{inserted_unit}[{inserted_number}]")
+
+        # Repeat structure
+        if deleted_unit == inserted_unit:
+            if deleted_number == inserted_number:
+                raise ValueError("empty variant")
+
+            # Duplication
+            if deleted_number == 1 and inserted_number == 2:
+                if forward_strand:
+                    return var_dict(
+                        "duplication",
+                        variant.start + inserted_remainder,
+                        variant.start + inserted_remainder + len(inserted_unit),
+                    )
+                    # return f"{to_hgvs_position(variant.start + inserted_remainder, variant.start + inserted_remainder + len(inserted_unit))}dup"
+                return var_dict(
+                    "duplication",
+                    variant.start,
+                    variant.start + len(inserted_unit),
+                )
+            # shift 3'
+            assert deleted_remainder == inserted_remainder
+            if forward_strand:
+                inserted_unit = variant.sequence[inserted_remainder:inserted_remainder + len(inserted_unit)]
+                r_d = var_dict("repeat", variant.start + deleted_remainder, variant.end, inserted_unit, inserted_number)
+                if r_d.get("location", {}).get("start"):
+                    r_d["location"]["start"]["shift"] = deleted_remainder
+                if r_d.get("location", {}).get("end"):
+                    r_d["location"]["end"]["shift"] = deleted_remainder
+                return r_d
+            inserted_unit = variant.sequence[:len(inserted_unit)]
+            return var_dict("repeat", variant.start, variant.end - deleted_remainder, inserted_unit, inserted_number)
+            # return f"{to_hgvs_position(variant.start + deleted_remainder, variant.end)}{inserted_unit}[{inserted_number}]"
+
+        # Prefix and suffix trimming
+        if forward_strand:
+            start, end = trim(deleted, variant.sequence)
+        else:
+            start, end = trim_for_reverse(deleted, variant.sequence)
+        trimmed = Variant(variant.start + start, variant.end - end, variant.sequence[start:len(variant.sequence) - end])
+
+        # Inversion
+        if len(trimmed.sequence) > 1 and trimmed.sequence == reverse_complement(ref_seq[trimmed.start:trimmed.end]):
+            return var_dict("inversion", trimmed.start, trimmed.end)
+            # return f"{to_hgvs_position(trimmed.start, trimmed.end)}inv"
+
+        # Deletion/insertion with repeated insertion
+        inserted_unit, inserted_number, inserted_remainder = repeats(trimmed.sequence)
+        if inserted_number > 1:
+            suffix = [{"sequence": inserted_unit, "source": "description", "repeat_number": {"type": "point", "value": inserted_number}}]
+            # suffix = f"{inserted_unit}[{inserted_number}]"
+            if inserted_remainder:
+                suffix = [suffix[0], {"sequence": inserted_unit[:inserted_remainder], "source": "description"}]
+                # suffix = f"[{suffix};{inserted_unit[:inserted_remainder]}]"
+
+            if trimmed.start == trimmed.end:
+                if forward_strand:
+                    return var_dict("insertion", trimmed.start, trimmed.start, suffix)
+                # return f"{to_hgvs_position(trimmed.start, trimmed.end)}ins{suffix}"
+            return var_dict("deletion_insertion", trimmed.start, trimmed.end, suffix)
+            # return f"{to_hgvs_position(trimmed.start, trimmed.end)}delins{suffix}"
+
+        # All other variants
+        return other(trimmed)
+        # return trimmed.to_hgvs(ref_seq)
+
+    if not variants:
+        return []
+
+    if len(variants) == 1:
+        return [hgvs(variants[0])]
+
+    return [hgvs(variant) for variant in variants]
+
+
+def algebra_variants(variants_delins, sequences):
+    variants_algebra = []
+    for variant in variants_delins:
+        variants_algebra.append(
+            Variant(get_start(variant), get_end(variant), get_inserted_sequence(variant, sequences))
+        )
+    return variants_algebra
+
 
 
 def to_hgvs(variant, reference=None, only_substitutions=True):
@@ -46,179 +353,6 @@ def to_spdi(variant, reference_id=""):
     return f"{reference_id}:{variant.start}:{variant.end - variant.start}:"f"{variant.sequence}"
 
 
-def _get_hgvs_and_variant(variant, only_variants=False, ref_seq=None):
-    output = {"input": variant, "type": "variant" if only_variants else "hgvs"}
-
-    d = Description(description=variant, only_variants=only_variants, sequence=ref_seq)
-    d.normalize()
-
-    status = d.output()
-    if status.get("input_model") and status["input_model"].get("reference"):
-        output["reference"] = status["input_model"]["reference"]
-    if status.get("errors"):
-        output["errors"] = status["errors"]
-        return output
-    if status.get("infos"):
-        output["infos"] = status["infos"]
-
-    d.mutate()
-    sequences = d.get_sequences()
-    output["sequence"] = sequences["observed"]
-    output["reference_sequence"] = sequences["reference"]
-
-    return output
-
-
-def _get_id(reference_id):
-    output = {"input": reference_id, "type": "id", "reference": {"id": reference_id}}
-    reference_model = retrieve_reference(reference_id)[0]
-    # TODO: update the reference id if different in the model?
-    if reference_model is None:
-        output["errors"] = [errors.reference_not_retrieved(reference_id, [])]
-    else:
-        output["sequence"] = reference_model["sequence"]["seq"]
-        output["annotations"] = {"id": reference_model["annotations"]["id"]}
-    return output
-
-
-def _get_sequence(seq):
-    return {
-        "input": seq,
-        "type": "sequence",
-        "sequence": seq,
-        "reference_sequence": seq,
-    }
-
-
-def _get_reference(reference, reference_type):
-    if reference is None and reference_type is None:
-        return None
-    if reference_type == "sequence":
-        return _get_sequence(reference)
-    if reference_type == "id":
-        return _get_id(reference)
-
-
-def _get_operand(m_input, m_type, reference):
-    if m_type == "sequence":
-        return _get_sequence(m_input)
-    if m_type == "hgvs":
-        return _get_hgvs_and_variant(m_input)
-    if m_type == "variant":
-        return _get_hgvs_and_variant(m_input, True, reference)
-
-
-def _sort(d):
-    if isinstance(d, list):
-        for v in d:
-            _sort(v)
-    if isinstance(d, dict):
-        for k in d:
-            if isinstance(d[k], list):
-                d[k] = sorted(d[k])
-            if isinstance(d[k], dict):
-                _sort(d[k])
-
-
-def _add_message(o, m, t):
-    if m and m.get("errors"):
-        _sort(m["errors"])
-        if o.get("errors") is None:
-            o["errors"] = {}
-        o["errors"][t] = m["errors"]
-
-
-def _add_standard_messages(o, c_reference, c_lhs, c_rhs):
-    _add_message(o, c_reference, "reference")
-    _add_message(o, c_lhs, "lhs")
-    _add_message(o, c_rhs, "rhs")
-
-
-def _append_error(d, k, v):
-    if d.get("errors") is None:
-        d["errors"] = {}
-    if d["errors"].get(k) is None:
-        d["errors"][k] = []
-    d["errors"][k].append(v)
-
-
-def _extend_errors(d, k, v):
-    if d.get("errors") is None:
-        d["errors"] = {}
-    if d["errors"].get(k) is None:
-        d["errors"][k] = []
-    d["errors"][k].extend(v)
-
-
-def _input_types_check(reference_type, lhs_type, rhs_type):
-    output = {}
-    if reference_type and reference_type not in ["sequence", "id"]:
-        _append_error(
-            output,
-            "reference_type",
-            errors.invalid_input(reference_type, ["sequence", "id"]),
-        )
-
-    operator_types = ["sequence", "variant", "hgvs"]
-    if lhs_type not in operator_types:
-        _append_error(
-            output,
-            "lhs_type",
-            errors.invalid_input(lhs_type, operator_types),
-        )
-
-    if rhs_type not in operator_types:
-        _append_error(
-            output,
-            "rhs_type",
-            errors.invalid_input(rhs_type, operator_types),
-        )
-    return output
-
-
-def _check_sequences_equality(output, lhs, rhs):
-    if lhs["reference_sequence"] != rhs["reference_sequence"]:
-        _append_error(
-            output,
-            "reference",
-            {
-                "code": "ESEQUENCEMISMATCH",
-                "details": "Different reference sequences for LHS and RHS.",
-            },
-        )
-
-
-def _check_sequence_length(output, ref_seq, len_max):
-    if len(ref_seq) > len_max:
-        _append_error(
-            output,
-            "reference",
-            {
-                "code": "ESEQUENCELENGTH",
-                "details": f"Sequence length {len(ref_seq)} too large (maximum supported is {len_max}).",
-            },
-        )
-
-
-def _get_algebra_variants(description):
-    """
-    Convert the delins variants to algebra variant edges.
-
-    :param description: Normalizer description object.
-    :return: Algebra variant edges.
-    """
-    edges = []
-    for variant in description.delins_model["variants"]:
-        edges.append(
-            Variant(
-                get_start(variant),
-                get_end(variant),
-                get_inserted_sequence(variant, description.get_sequences()),
-            )
-        )
-    return edges
-
-
 def algebra_variant_to_delins(variant):
     delins_variant = {
         "type": "deletion_insertion",
@@ -245,264 +379,3 @@ def delins_to_algebra_variant(v, sequences):
 
 def delins_to_algebra(variants, sequences):
     return [delins_to_algebra_variant(v, sequences) for v in variants]
-
-
-def algebra_variant_to_name_model(variant):
-    def _position_to_hgvs():
-        if variant.end - variant.start == 1:
-            return {"type": "point", "position": variant.start + 1}
-        if variant.start == variant.end:
-            return {
-                "type": "range",
-                "start": {"type": "point", "position": variant.start},
-                "end": {"type": "point", "position": variant.start + 1},
-            }
-        return {
-            "type": "range",
-            "start": {"type": "point", "position": variant.start + 1},
-            "end": {"type": "point", "position": variant.end},
-        }
-
-    delins_variant = {
-        "source": "reference",
-        "location": _position_to_hgvs(),
-        "deleted": [],
-        "inserted": [],
-    }
-    if variant.sequence:
-        if variant.start == variant.end:
-            delins_variant["type"] = "insertion"
-        else:
-            delins_variant["type"] = "deletion_insertion"
-        delins_variant["inserted"].append(
-            {"sequence": variant.sequence, "source": "description"}
-        )
-    else:
-        delins_variant["type"] = "deletion"
-    return delins_variant
-
-
-def compare_hgvs(lhs_d, rhs_d):
-    output = {}
-
-    if lhs_d.errors:
-        _extend_errors(output, "lhs", lhs_d.errors)
-
-    if rhs_d.errors:
-        _extend_errors(output, "rhs", rhs_d.errors)
-
-    if output:
-        return output
-
-    lhs_reference = lhs_d.get_sequences()["reference"]
-    rhs_reference = rhs_d.get_sequences()["reference"]
-
-    if lhs_reference != rhs_reference:
-        _append_error(
-            output,
-            "reference",
-            {
-                "code": "ESEQUENCEMISMATCH",
-                "details": "Different reference sequences for LHS and RHS.",
-            },
-        )
-
-    if output:
-        return output
-
-    lhs_alg_variants = _get_algebra_variants(lhs_d)
-    lhs_graph = LCSgraph.from_variants(lhs_reference, lhs_alg_variants)
-    lhs_supremal = lhs_graph.supremal()
-
-
-    rhs_alg_variants = _get_algebra_variants(rhs_d)
-    rhs_graph = LCSgraph.from_variants(rhs_reference, rhs_alg_variants)
-    rhs_supremal = rhs_graph.supremal()
-
-    output["relation"] = compare_core(lhs_reference, lhs_graph, rhs_graph).value
-
-    if lhs_d.corrected_model.get("reference"):
-        ref_id = lhs_d.corrected_model["reference"]["id"]
-    elif lhs_d.references["reference"].get("annotations") and lhs_d.references[
-        "reference"
-    ]["annotations"].get("id"):
-        ref_id = lhs_d.references["reference"]["annotations"]["id"]
-    else:
-        ref_id = rhs_reference
-
-    output["supremal_lhs"] = {
-        "hgvs": f"{ref_id}:g.{to_hgvs(lhs_supremal)}",
-        "spdi": to_spdi(lhs_supremal, ref_id),
-    }
-
-    output["supremal_rhs"] = {
-        "hgvs": f"{ref_id}:g.{to_hgvs(rhs_supremal)}",
-        "spdi": to_spdi(rhs_supremal, ref_id),
-    }
-
-    lhs_supremal_delins = [algebra_variant_to_delins(lhs_supremal)]
-    rhs_supremal_delins = [algebra_variant_to_delins(rhs_supremal)]
-    output["view_lhs_supremal"] = view_delins(
-        lhs_supremal_delins,
-        [algebra_variant_to_name_model(lhs_supremal)],
-        lhs_d.get_sequences(),
-    )
-    output["view_rhs_supremal"] = view_delins(
-        rhs_supremal_delins,
-        [algebra_variant_to_name_model(rhs_supremal)],
-        rhs_d.get_sequences(),
-    )
-
-    return output
-
-
-def compare_sequences_based(reference, reference_type, lhs, lhs_type, rhs, rhs_type):
-    output = {}
-
-    c_reference = _get_reference(reference, reference_type)
-    if c_reference.get("errors"):
-        _extend_errors(output, "reference", c_reference["errors"])
-        return output
-    ref_seq = c_reference["sequence"]
-    c_lhs = _get_operand(lhs, lhs_type, ref_seq)
-    c_rhs = _get_operand(rhs, rhs_type, ref_seq)
-    c_lhs["reference_sequence"] = ref_seq
-    c_rhs["reference_sequence"] = ref_seq
-
-    _add_standard_messages(output, c_reference, c_lhs, c_rhs)
-
-    if output.get("errors"):
-        return output
-
-    if c_reference:
-        ref_seq = c_reference["sequence"]
-    else:
-        ref_seq = c_lhs["reference_sequence"]
-    lhs_seq = c_lhs["sequence"]
-    rhs_seq = c_rhs["sequence"]
-
-    _check_sequence_length(output, ref_seq, 100000)
-    _check_sequences_equality(output, c_lhs, c_rhs)
-
-    if output.get("errors"):
-        return output
-
-    lhs_graph = LCSgraph.from_variants(ref_seq, [Variant(0, len(ref_seq), lhs_seq)])
-    lhs_supremal = lhs_graph.supremal()
-
-    rhs_graph = LCSgraph.from_variants(ref_seq, [Variant(0, len(ref_seq), rhs_seq)])
-    rhs_supremal = rhs_graph.supremal()
-
-    output["relation"] = compare_core(ref_seq, lhs_graph, rhs_graph).value
-
-    output["supremal_lhs"] = {
-        "hgvs": f"{to_hgvs(lhs_supremal, lhs_seq)}",
-        "spdi": to_spdi(lhs_supremal),
-    }
-
-    output["supremal_rhs"] = {
-        "hgvs": f"{to_hgvs(rhs_supremal, rhs_seq)}",
-        "spdi": to_spdi(rhs_supremal),
-    }
-
-    lhs_supremal_delins = [algebra_variant_to_delins(lhs_supremal)]
-    rhs_supremal_delins = [algebra_variant_to_delins(rhs_supremal)]
-    output["view_lhs_supremal"] = view_delins(
-        lhs_supremal_delins,
-        [algebra_variant_to_name_model(lhs_supremal)],
-        {"reference": ref_seq},
-    )
-    output["view_rhs_supremal"] = view_delins(
-        rhs_supremal_delins,
-        [algebra_variant_to_name_model(rhs_supremal)],
-        {"reference": ref_seq},
-    )
-
-    return output
-
-
-def compare_hgvs_based(reference, reference_type, lhs, lhs_type, rhs, rhs_type):
-    """
-    Compare two HGVS descriptions (either complete, i.e., including the
-    reference id, or just the variants relative to reference sequence indicated
-    by an id or directly as a string).
-    """
-    if lhs_type == "hgvs" and rhs_type == "hgvs":
-        lhs_d = Description(lhs)
-        lhs_d.to_delins()
-        rhs_d = Description(rhs)
-        rhs_d.to_delins()
-    elif lhs_type == "hgvs" and rhs_type == "variant":
-        lhs_d = Description(lhs)
-        lhs_d.to_delins()
-        if lhs_d.get_sequences() and lhs_d.get_sequences().get("reference"):
-            rhs_d = Description(
-                description=rhs,
-                only_variants=True,
-                sequence=lhs_d.get_sequences()["reference"],
-            )
-            rhs_d.to_delins()
-        else:
-            return
-    elif lhs_type == "variant" and rhs_type == "variant":
-        if reference_type == "sequence":
-            reference_sequence = reference
-            ref_id = reference
-        elif reference_type == "id":
-            check = _get_id(reference)
-            if check.get("errors"):
-                return check
-            reference_sequence = check["sequence"]
-            ref_id = check["annotations"]["id"]
-        lhs_d = Description(
-            description=lhs, only_variants=True, sequence=reference_sequence
-        )
-        lhs_d.to_delins()
-        if not lhs_d.errors:
-            lhs_d.references["reference"]["annotations"] = {"id": ref_id}
-
-        rhs_d = Description(
-            description=rhs, only_variants=True, sequence=reference_sequence
-        )
-        rhs_d.to_delins()
-        if not rhs_d.errors:
-            rhs_d.references["reference"]["annotations"] = {"id": ref_id}
-    return compare_hgvs(lhs_d, rhs_d)
-
-
-def compare(reference, reference_type, lhs, lhs_type, rhs, rhs_type):
-    """
-    Generic interface to the algebra.
-
-    Parameters
-    ----------
-    reference : str
-        The reference id or the sequence.
-    reference_type : str
-        If the reference is a sequence or an id.
-    lhs : str
-        The left operand.
-    lhs_type : str
-        The type of the left operand.
-    rhs : str
-        The right operand.
-    rhs_type : str
-        The type of the right operand.
-
-    Returns
-    -------
-    dict
-        The relation and additional information.
-    """
-    checks = _input_types_check(reference_type, lhs_type, rhs_type)
-
-    if checks:
-        return checks
-
-    if reference_type in ["sequence", "id"] and (
-        lhs_type == "sequence" or rhs_type == "sequence"
-    ):
-        return compare_sequences_based(
-            reference, reference_type, lhs, lhs_type, rhs, rhs_type
-        )
-    return compare_hgvs_based(reference, reference_type, lhs, lhs_type, rhs, rhs_type)
