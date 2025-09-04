@@ -25,7 +25,7 @@ from mutalyzer_retriever.retriever import (
 )
 
 from . import errors, infos
-from .algebra import algebra_variants, graph_to_dot, to_hgvs_dict
+from .algebra import algebra_variants, graph_to_dot, to_hgvs_dict, to_hgvs, to_spdi
 from .checker import (
     are_sorted,
     contains_insert_length,
@@ -126,6 +126,7 @@ class Description:
         self.de_hgvs_coordinate_model = {}
         self.de_hgvs_model = {}
         self.de_hgvs_model_reverse = {}
+        self.graph = None
         self.normalized_description = None
         self.chromosomal_descriptions = None
         self.protein = None
@@ -555,9 +556,9 @@ class Description:
         _algebra_variants = algebra_variants(self.delins_model["variants"], self.get_sequences())
         ref_seq = self.references["reference"]["sequence"]["seq"]
 
-        graph = LCSgraph.from_variants(ref_seq, _algebra_variants)
+        self.graph = LCSgraph.from_variants(ref_seq, _algebra_variants)
         # print(graph_to_dot(graph, ref_seq))
-        algebra_extracted_variants = graph.canonical()
+        algebra_extracted_variants = self.graph.canonical()
 
         if self.only_variants:
             algebra_model_reverse = {
@@ -1607,6 +1608,18 @@ class Description:
             output["errors"] = self.errors
         if self.infos:
             output["infos"] = self.infos
+        if self.graph:
+            output["dot"] = graph_to_dot(self.graph, self.sequence)
+            if self.only_variants:
+                output["supremal"] = {
+                    "hgvs": to_hgvs(self.graph.supremal(), self.sequence),
+                    "spdi": to_spdi(self.graph.supremal(), self.sequence),
+                }
+            else:
+                output["supremal"] = {
+                    "hgvs": f"{self.corrected_model['reference']['id']}:g.{to_hgvs(self.graph.supremal(), self.sequence)}",
+                    "spdi": to_spdi(self.graph.supremal(), self.corrected_model['reference']['id'])
+                }
 
         if self.get_selector_model() and self.is_selector_model_valid():
             output["selector_short"] = convert_selector_model(self.get_selector_model())
