@@ -25,7 +25,15 @@ from mutalyzer_retriever.retriever import (
 )
 
 from . import errors, infos
-from .algebra import algebra_variants, graph_to_dot, to_hgvs_dict, to_hgvs, to_spdi
+from .algebra import (
+    algebra_variant_to_delins,
+    algebra_variant_to_name_model,
+    algebra_variants,
+    graph_to_dot,
+    to_hgvs,
+    to_hgvs_dict,
+    to_spdi,
+)
 from .checker import (
     are_sorted,
     contains_insert_length,
@@ -53,6 +61,7 @@ from .description_model import (
     get_reference_id,
     get_selector_id,
     model_to_string,
+    variant_to_description,
     yield_reference_ids,
     yield_reference_selector_ids,
     yield_reference_selector_ids_coordinate_system,
@@ -82,6 +91,7 @@ from .util import (
     check_errors,
     construct_sequence,
     get_end,
+    get_inserted_sequence,
     get_location_length,
     get_start,
     get_submodel_by_path,
@@ -94,6 +104,111 @@ from .util import (
     slice_sequence,
     sort_variants,
 )
+
+
+def _get_sequence_view(seq, l_l=15, l_r=15):
+    s = 0
+    e = len(seq)
+    if e - s > l_l + l_r:
+        return {"left": seq[s : s + l_l], "right": seq[e - l_l : e]}
+    if 0 < e - s <= l_l + l_r:
+        return {"sequence": seq[s:e]}
+
+
+def _get_view_inside(s, e, sequences, variant, l_l=15, l_r=15):
+    ref_seq = sequences["reference"]
+    view = {"start": s, "end": e, "type": "variant"}
+    del_seq = ref_seq[s:e]
+    if del_seq:
+        view["deleted"] = _get_sequence_view(del_seq)
+    ins_seq = get_inserted_sequence(variant, sequences)
+    if ins_seq:
+        view["inserted"] = _get_sequence_view(ins_seq)
+        view["inserted"]["length"] = len(ins_seq)
+    return view
+
+
+def _get_view_outside(s, e, ref_seq):
+    view = {"start": s, "end": e, "type": "outside"}
+    seq = ref_seq[s:e]
+    if seq:
+        view.update(_get_sequence_view(seq))
+    return view
+
+
+def _get_segments(variants, ref_seq):
+    points = []
+    for variant in variants:
+        points += [get_start(variant), get_end(variant)]
+    points = [0] + points + [len(ref_seq)]
+    return [(points[i - 1], points[i]) for i in range(len(points))[1:]]
+
+
+def _invert_left_right(view, inv_view):
+    inv_view["left"] = reverse_complement(view["right"])
+    inv_view["right"] = reverse_complement(view["left"])
+
+
+def _invert_view(v, inv_v):
+    if inv_v.get("left") and inv_v.get("right"):
+        _invert_left_right(v, inv_v)
+    elif inv_v.get("sequence"):
+        inv_v["sequence"] = reverse_complement(v["sequence"])
+
+
+def _invert_views(views, ref_length):
+    inv_vs = []
+    for v in views[::-1]:
+        inv_v = copy.deepcopy(v)
+        inv_v["start"] = ref_length - v["end"]
+        inv_v["end"] = ref_length - v["start"]
+        if inv_v.get("type") == "outside":
+            _invert_view(v, inv_v)
+        if inv_v.get("type") == "variant":
+            if inv_v.get("deleted"):
+                _invert_view(v["deleted"], inv_v["deleted"])
+            if inv_v.get("inserted"):
+                _invert_view(v["inserted"], inv_v["inserted"])
+        inv_vs.append(inv_v)
+    return inv_vs
+
+
+def view_delins(
+    delins_variants, name_variants, sequences, left=15, right=15, invert=False
+):
+    ref_seq = sequences["reference"]
+    segments = _get_segments(delins_variants, ref_seq)
+
+    views = []
+    for i, segment in enumerate(segments):
+        if i % 2 == 0:
+            view = _get_view_outside(*segment, ref_seq)
+        else:
+            view = {"description": variant_to_description(name_variants[i // 2])}
+            view.update(
+                _get_view_inside(
+                    *segment, sequences, delins_variants[i // 2], left, right
+                )
+            )
+        views.append(view)
+
+    output = {"seq_length": len(ref_seq)}
+    if invert:
+        views = _invert_views(views, len(ref_seq))
+        output["inverted"] = True
+    output["views"] = views
+
+    return output
+
+
+def view_algebra_variants(variants, ref_seq, names=None):
+    if names is None:
+        names = [algebra_variant_to_name_model(v) for v in variants]
+    return view_delins(
+        [algebra_variant_to_delins(v) for v in variants],
+        names,
+        {"reference": ref_seq},
+    )
 
 
 class Description:
@@ -196,6 +311,7 @@ class Description:
         reference_id = get_reference_id(self.corrected_model)
         if reference_id in self.references:
             self.references["reference"] = self.references[reference_id]
+            self.sequence = self.references["reference"]["sequence"]["seq"]
 
     def _correct_reference_id(self, path, original_id, corrected_id):
         set_by_path(self.corrected_model, path, corrected_id)
@@ -557,7 +673,6 @@ class Description:
         ref_seq = self.references["reference"]["sequence"]["seq"]
 
         self.graph = LCSgraph.from_variants(ref_seq, _algebra_variants)
-        # print(graph_to_dot(graph, ref_seq))
         algebra_extracted_variants = self.graph.canonical()
 
         if self.only_variants:
@@ -1620,6 +1735,9 @@ class Description:
                     "hgvs": f"{self.corrected_model['reference']['id']}:g.{to_hgvs(self.graph.supremal(), self.sequence)}",
                     "spdi": to_spdi(self.graph.supremal(), self.corrected_model['reference']['id'])
                 }
+            if self.graph.local_supremal() and self.sequence:
+                output["view_local_supremal"] = view_algebra_variants(self.graph.local_supremal(), self.sequence)
+                output["influence"] = [(v.start, v.end) for v in self.graph.local_supremal()]
 
         if self.get_selector_model() and self.is_selector_model_valid():
             output["selector_short"] = convert_selector_model(self.get_selector_model())

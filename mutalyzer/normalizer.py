@@ -284,7 +284,6 @@ def normalize_alt(description, only_variants=False, sequence=None):
     #     print(model_to_string(hgvs_model))
 
     output["view_local_supremal"] = view_algebra_variants(local_supremals, ref_seq)
-
     output["influence"] = [(v.start, v.end) for v in local_supremals]
 
     if d.de_hgvs_model.get("coordinate_system") in ["c", "n"]:

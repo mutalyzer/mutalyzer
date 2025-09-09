@@ -2,11 +2,16 @@ from algebra import LCSgraph, Variant
 from algebra import compare as compare_core
 
 from mutalyzer import errors
+from mutalyzer.algebra import (
+    algebra_variant_to_delins,
+    algebra_variant_to_name_model,
+    to_hgvs,
+    to_spdi,
+)
 from mutalyzer.description import Description
 from mutalyzer.reference import retrieve_reference
 from mutalyzer.util import get_end, get_inserted_sequence, get_start
 from mutalyzer.viewer import view_delins
-from mutalyzer.algebra import to_hgvs, to_spdi, algebra_variant_to_delins
 
 
 def _get_hgvs_and_variant(variant, only_variants=False, ref_seq=None):
@@ -179,41 +184,6 @@ def _get_reference(reference, reference_type):
         return _get_sequence(reference)
     if reference_type == "id":
         return _get_id(reference)
-
-
-def algebra_variant_to_name_model(variant):
-    def _position_to_hgvs():
-        if variant.end - variant.start == 1:
-            return {"type": "point", "position": variant.start + 1}
-        if variant.start == variant.end:
-            return {
-                "type": "range",
-                "start": {"type": "point", "position": variant.start},
-                "end": {"type": "point", "position": variant.start + 1},
-            }
-        return {
-            "type": "range",
-            "start": {"type": "point", "position": variant.start + 1},
-            "end": {"type": "point", "position": variant.end},
-        }
-
-    delins_variant = {
-        "source": "reference",
-        "location": _position_to_hgvs(),
-        "deleted": [],
-        "inserted": [],
-    }
-    if variant.sequence:
-        if variant.start == variant.end:
-            delins_variant["type"] = "insertion"
-        else:
-            delins_variant["type"] = "deletion_insertion"
-        delins_variant["inserted"].append(
-            {"sequence": variant.sequence, "source": "description"}
-        )
-    else:
-        delins_variant["type"] = "deletion"
-    return delins_variant
 
 
 def compare_hgvs(lhs_d, rhs_d):

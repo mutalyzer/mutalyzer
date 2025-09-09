@@ -14,6 +14,41 @@ from mutalyzer.util import (
 from .util import trim
 
 
+def algebra_variant_to_name_model(variant):
+    def _position_to_hgvs():
+        if variant.end - variant.start == 1:
+            return {"type": "point", "position": variant.start + 1}
+        if variant.start == variant.end:
+            return {
+                "type": "range",
+                "start": {"type": "point", "position": variant.start},
+                "end": {"type": "point", "position": variant.start + 1},
+            }
+        return {
+            "type": "range",
+            "start": {"type": "point", "position": variant.start + 1},
+            "end": {"type": "point", "position": variant.end},
+        }
+
+    delins_variant = {
+        "source": "reference",
+        "location": _position_to_hgvs(),
+        "deleted": [],
+        "inserted": [],
+    }
+    if variant.sequence:
+        if variant.start == variant.end:
+            delins_variant["type"] = "insertion"
+        else:
+            delins_variant["type"] = "deletion_insertion"
+        delins_variant["inserted"].append(
+            {"sequence": variant.sequence, "source": "description"}
+        )
+    else:
+        delins_variant["type"] = "deletion"
+    return delins_variant
+
+
 def get_dominators(graph):
     successors = {}
     all_nodes = set()
