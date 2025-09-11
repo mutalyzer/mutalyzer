@@ -1,7 +1,7 @@
 from copy import deepcopy
 
 from Bio.SeqUtils import seq1, seq3
-from mutalyzer_crossmapper import NonCoding
+from mutalyzer_crossmapper import Coding, Genomic, NonCoding
 from mutalyzer_retriever.retriever import extract_feature_model
 
 from ..description_model import location_to_description, yield_values
@@ -148,3 +148,31 @@ def convert_reference_model(reference_model, selector_id=None, slice_to=None):
         loc["start"]["position"] = x(loc["start"]["position"])[0] - 1
         loc["end"]["position"] = x(loc["end"]["position"] - 1)[0]
     return new_r_model
+
+
+def g_to_cn(point, selector):
+    coordinate = Genomic().genomic_to_coordinate(point)
+
+    if len(selector) == 3:
+        c = Coding(*selector)
+        position, offset, section = c.coordinate_to_coding(coordinate, True)[:3]
+        output = []
+        if section == -1:
+            output.append(f"-{abs(position)}")
+        elif section == 1:
+            output.append(f"*{position}")
+        else:
+            output.append(str(position))
+        if offset > 0:
+            output.append(f"+{offset}")
+        elif offset < 0:
+            output.append(f"{offset}")
+        return "".join(output)
+
+    n = NonCoding(*selector)
+    position, offset, section = n.coordinate_to_noncoding(coordinate)[:3]
+    if offset > 0:
+        return f"{position}+{offset}"
+    if offset < 0:
+        return f"{position}{offset}"
+    return str(position)

@@ -3,6 +3,7 @@ from os.path import commonprefix
 from algebra import Variant
 from mutalyzer_mutator.util import reverse_complement
 
+from mutalyzer.converter.extras import g_to_cn
 from mutalyzer.util import (
     create_exact_point_model,
     create_exact_range_model,
@@ -101,8 +102,8 @@ def get_dominators(graph):
     return dominators[sink] - {source, sink}
 
 
-def graph_to_dot(graph, reference, labels=True, dominators=True, complexity_limit=1000):
-    width = ".8" if labels else "1"
+def graph_to_dot(graph, reference, selector=None, dominators=True, edges_limit=100):
+    width = ".8"
 
     dot_lines = [
         "digraph {",
@@ -120,10 +121,13 @@ def graph_to_dot(graph, reference, labels=True, dominators=True, complexity_limi
     for edge in graph.edges():
         edge_index += 1
 
-        if edge_index > 200 or edge_index * len(nodes) > complexity_limit:
+        if edge_index >= edges_limit:
             return f"// Graph too complex. Stopped at {edge_index} edges and {len(nodes)} nodes."
 
         head, tail, variant, count = edge["head"], edge["tail"], edge["variant"], edge["count"]
+
+        if selector and selector[-1] is True:
+            head, tail = tail, head
 
         tail_nodes.add(tail)
         head_nodes.add(head)
@@ -138,7 +142,7 @@ def graph_to_dot(graph, reference, labels=True, dominators=True, complexity_limi
         head_id, tail_id = nodes[head], nodes[tail]
 
         if variant:
-            label = to_hgvs(variant, reference)
+            label = to_hgvs(variant, reference, selector)
             if count > 1:
                 dot_lines.append(f'  {head_id} -> {tail_id} [label="{label} x {count}",penwidth=2]')
             else:
@@ -351,15 +355,25 @@ def algebra_variants(variants_delins, sequences):
 
 
 
-def to_hgvs(variant, reference=None, only_substitutions=True):
+def to_hgvs(variant, reference=None, selector=None, only_substitutions=True):
     """
-    Taken from the algebra.
+    Adapted from the algebra.
     """
+    def _loc(start, end=None):
+        if selector is not None:
+            if end is not None:
+                if selector[-1]:
+                    return f"{g_to_cn(end, selector)}_{g_to_cn(start, selector)}"
+                return f"{g_to_cn(start, selector)}_{g_to_cn(end, selector)}"
+            return f"{g_to_cn(start, selector)}"
+        if end:
+            return f"{start}_{end}"
+        return start
 
     if variant.end - variant.start == 0:
         if not variant.sequence:
             return "="
-        return f"{variant.start}_{variant.start + 1}ins{variant.sequence}"
+        return f"{_loc(variant.start, variant.start + 1)}ins{variant.sequence}"
 
     deleted = ""
     substitution = ""
@@ -370,15 +384,15 @@ def to_hgvs(variant, reference=None, only_substitutions=True):
 
     if variant.end - variant.start == 1:
         if not variant.sequence:
-            return f"{variant.start + 1}del{deleted}"
+            return f"{_loc(variant.start + 1)}del{deleted}"
         if len(variant.sequence) == 1:
-            return f"{variant.start + 1}{substitution}>{variant.sequence}"
-        return f"{variant.start + 1}del{deleted}ins{variant.sequence}"
+            return f"{_loc(variant.start + 1)}{substitution}>{variant.sequence}"
+        return f"{_loc(variant.start + 1)}del{deleted}ins{variant.sequence}"
 
     if not variant.sequence:
-        return f"{variant.start + 1}_{variant.end}del{deleted}"
+        return f"{_loc(variant.start + 1, variant.end)}del{deleted}"
 
-    return f"{variant.start + 1}_{variant.end}del{deleted}ins{variant.sequence}"
+    return f"{_loc(variant.start + 1, variant.end)}del{deleted}ins{variant.sequence}"
 
 
 def to_spdi(variant, reference_id=""):

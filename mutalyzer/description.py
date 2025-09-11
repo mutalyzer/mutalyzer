@@ -1724,7 +1724,14 @@ class Description:
         if self.infos:
             output["infos"] = self.infos
         if self.graph:
-            output["dot"] = graph_to_dot(self.graph, self.sequence)
+            selector = self.get_selector_model()
+            if selector:
+                if selector.get("exon") and selector.get("cds"):
+                    selector = (selector.get("exon"), selector.get("cds")[0], self.is_inverted())
+                elif selector.get("exon") and selector.get("cds") is None:
+                    selector = (selector.get("exon"), self.is_inverted())
+            output["dot"] = graph_to_dot(self.graph, self.sequence, selector)
+
             if self.only_variants:
                 output["supremal"] = {
                     "hgvs": to_hgvs(self.graph.supremal(), self.sequence),
