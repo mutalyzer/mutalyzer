@@ -1731,6 +1731,8 @@ class Description:
                 elif selector.get("exon") and selector.get("cds") is None:
                     selector = (selector.get("exon"), self.is_inverted())
             output["dot"] = graph_to_dot(self.graph, self.sequence, selector)
+            c_s = self.corrected_model["coordinate_system"]
+            ref = f"{self.corrected_model['reference']['id']}"
 
             if self.only_variants:
                 output["supremal"] = {
@@ -1738,11 +1740,23 @@ class Description:
                     "spdi": to_spdi(self.graph.supremal(), self.sequence),
                 }
             else:
+                if self.corrected_model["reference"].get("selector"):
+                    ref += f"({self.corrected_model['reference']["selector"]['id']})"
                 output["supremal"] = {
-                    "hgvs": f"{self.corrected_model['reference']['id']}:g.{to_hgvs(self.graph.supremal(), self.sequence)}",
+                    "hgvs": f"{ref}:{c_s}.{to_hgvs(self.graph.supremal(), self.sequence, selector)}",
                     "spdi": to_spdi(self.graph.supremal(), self.corrected_model['reference']['id'])
                 }
             if self.graph.local_supremal() and self.sequence:
+                local_supremal_hgvs = [to_hgvs(l_s, self.sequence, selector) for l_s in self.graph.local_supremal()]
+                if len(local_supremal_hgvs) == 1:
+                    local_supremal_hgvs = local_supremal_hgvs[0]
+                else:
+                    if selector and selector[-1]:
+                        local_supremal_hgvs = f"[{';'.join(reversed(local_supremal_hgvs))}]"
+                    else:
+                        local_supremal_hgvs = f"[{';'.join(local_supremal_hgvs)}]"
+                output["local_supremal"] = {
+                    "hgvs": f"{ref}:{c_s}.{local_supremal_hgvs}"}
                 output["view_local_supremal"] = view_algebra_variants(self.graph.local_supremal(), self.sequence)
                 output["influence"] = [(v.start, v.end) for v in self.graph.local_supremal()]
 

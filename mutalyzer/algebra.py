@@ -359,6 +359,11 @@ def to_hgvs(variant, reference=None, selector=None, only_substitutions=True):
     """
     Adapted from the algebra.
     """
+    def _seq(sequence):
+        if selector is not None and selector[-1]:
+            return reverse_complement(sequence)
+        return sequence
+
     def _loc(start, end=None):
         if selector is not None:
             if end is not None:
@@ -373,7 +378,7 @@ def to_hgvs(variant, reference=None, selector=None, only_substitutions=True):
     if variant.end - variant.start == 0:
         if not variant.sequence:
             return "="
-        return f"{_loc(variant.start, variant.start + 1)}ins{variant.sequence}"
+        return f"{_loc(variant.start, variant.start + 1)}ins{_seq(variant.sequence)}"
 
     deleted = ""
     substitution = ""
@@ -386,13 +391,13 @@ def to_hgvs(variant, reference=None, selector=None, only_substitutions=True):
         if not variant.sequence:
             return f"{_loc(variant.start + 1)}del{deleted}"
         if len(variant.sequence) == 1:
-            return f"{_loc(variant.start + 1)}{substitution}>{variant.sequence}"
-        return f"{_loc(variant.start + 1)}del{deleted}ins{variant.sequence}"
+            return f"{_loc(variant.start + 1)}{substitution}>{_seq(variant.sequence)}"
+        return f"{_loc(variant.start + 1)}del{deleted}ins{_seq(variant.sequence)}"
 
     if not variant.sequence:
         return f"{_loc(variant.start + 1, variant.end)}del{deleted}"
 
-    return f"{_loc(variant.start + 1, variant.end)}del{deleted}ins{variant.sequence}"
+    return f"{_loc(variant.start + 1, variant.end)}del{deleted}ins{_seq(variant.sequence)}"
 
 
 def to_spdi(variant, reference_id=""):
