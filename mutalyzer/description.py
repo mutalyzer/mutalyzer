@@ -1,5 +1,6 @@
 import copy
 import itertools
+import time
 
 from algebra import LCSgraph
 # from algebra.extractor import extract as extract_variants
@@ -1731,8 +1732,6 @@ class Description:
                 elif selector.get("exon") and selector.get("cds") is None:
                     selector = (selector.get("exon"), self.is_inverted())
             output["dot"] = graph_to_dot(self.graph, self.sequence, selector)
-            c_s = self.corrected_model["coordinate_system"]
-            ref = f"{self.corrected_model['reference']['id']}"
 
             if self.only_variants:
                 output["supremal"] = {
@@ -1740,6 +1739,8 @@ class Description:
                     "spdi": to_spdi(self.graph.supremal(), self.sequence),
                 }
             else:
+                c_s = self.corrected_model["coordinate_system"]
+                ref = f"{self.corrected_model['reference']['id']}"
                 if self.corrected_model["reference"].get("selector"):
                     ref += f"({self.corrected_model['reference']["selector"]['id']})"
                 output["supremal"] = {
@@ -1749,16 +1750,25 @@ class Description:
             if self.graph.local_supremal() and self.sequence:
                 local_supremal_hgvs = [to_hgvs(l_s, self.sequence, selector) for l_s in self.graph.local_supremal()]
                 if len(local_supremal_hgvs) == 1:
-                    local_supremal_hgvs = local_supremal_hgvs[0]
+                    variants = local_supremal_hgvs[0]
                 else:
                     if selector and selector[-1]:
-                        local_supremal_hgvs = f"[{';'.join(reversed(local_supremal_hgvs))}]"
+                        variants = f"[{';'.join(reversed(local_supremal_hgvs))}]"
                     else:
-                        local_supremal_hgvs = f"[{';'.join(local_supremal_hgvs)}]"
-                output["local_supremal"] = {
-                    "hgvs": f"{ref}:{c_s}.{local_supremal_hgvs}"}
-                output["view_local_supremal"] = view_algebra_variants(self.graph.local_supremal(), self.sequence)
-                output["influence"] = [(v.start, v.end) for v in self.graph.local_supremal()]
+                        variants = f"[{';'.join(local_supremal_hgvs)}]"
+                if self.only_variants:
+                    output["local_supremal"] = {
+                        "hgvs": f"{variants}"}
+                else:
+                    output["local_supremal"] = {
+                        "hgvs": f"{ref}:{c_s}.{variants}"}
+                    output["view_local_supremal"] = view_delins(
+                        [algebra_variant_to_delins(v) for v in self.graph.local_supremal()],
+                        [to_model(v, "variant") for v in local_supremal_hgvs],
+                        self.get_sequences(),
+                        invert=False if selector is None else selector[-1]
+                    )
+                    output["influence"] = [(v.start, v.end) for v in self.graph.local_supremal()]
 
         if self.get_selector_model() and self.is_selector_model_valid():
             output["selector_short"] = convert_selector_model(self.get_selector_model())
