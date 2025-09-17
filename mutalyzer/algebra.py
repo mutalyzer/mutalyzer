@@ -150,10 +150,11 @@ def graph_to_dot(graph, reference, selector=None, dominators=True, edges_limit=1
                     last_sequence = variant.sequence[offset:] + variant.sequence[:offset]
                 variant_last = Variant(variant.start + (count - 1), variant.end + (count -1 ), last_sequence)
                 label_end = to_hgvs(variant_last, reference, selector)
+                more = f"\n(+{count-2} more)" if count - 2 > 0 else ""
                 if selector and selector[-1]:
-                    label = f"{label_end} ... {label} | {count}"
+                    label = f"{label_end}{more}\n{label}"
                 else:
-                    label = f"{label} ... {label_end} | {count}"
+                    label = f"{label}{more}\n{label_end}"
 
                 dot_lines.append(f'  {head_id} -> {tail_id} [label="{label}",penwidth=2]')
             else:
