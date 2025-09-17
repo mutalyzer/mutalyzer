@@ -366,8 +366,6 @@ M2_TESTS = [
         ],
         "input": "NG_012772.1(BRCA2_v001):c.632_681del",
         "normalized": "NG_012772.1(NM_000059.3):c.632_681del",
-        "protein_description": "NG_012772.1(NP_000050.2):p.(Val211GlufsTer10)",
-        # TODO: Add splice site warning?
         "to_test": True,
     },
     {
@@ -3268,7 +3266,6 @@ TESTS = [
                 "NG_012337.1(NP_001076439.1):p.(=)",
             ),
         },
-        "protein_description": "NG_012337.1(NP_036591.2):p.(Gln43His)",
         "to_test": True,
     },
     {
@@ -3292,7 +3289,6 @@ TESTS = [
                 "NG_012337.1(NP_001076439.1):p.(=)",
             ),
         },
-        "protein_description": "NG_012337.1(NP_036591.2):p.(Val44Met)",
         "to_test": True,
     },
     {
@@ -3328,9 +3324,9 @@ TESTS = [
         ],
         "input": "NG_008835.1(NM_022153.2):c.677-21_704+62del",
         "normalized": "NG_008835.1(NM_022153.2):c.677-18_704+65del",
-        "rna_description": "NG_008835.1(NM_022153.2):r.(677_704del)",
-        "rna_description_alt": False,
-        "protein_description": "NG_008835.1(NP_071436.1):p.(Arg226ProfsTer102)",
+        # "rna_description": "NG_008835.1(NM_022153.2):r.(677_704del)",
+        # "rna_description_alt": False,
+        # "protein_description": "NG_008835.1(NP_071436.1):p.(Arg226ProfsTer102)",
         "to_test": True,
     },
     {
@@ -3339,9 +3335,9 @@ TESTS = [
         ],
         "input": "NG_008835.1(NM_022153.2):c.677-20_704+62del",
         "normalized": "NG_008835.1(NM_022153.2):c.677-20_704+62del",
-        "rna_description": "NG_008835.1(NM_022153.2):r.(677_704del)",
-        "rna_description_alt": False,
-        "protein_description": "NG_008835.1(NP_071436.1):p.(Arg226ProfsTer102)",
+        # "rna_description": "NG_008835.1(NM_022153.2):r.(677_704del)",
+        # "rna_description_alt": False,
+        # "protein_description": "NG_008835.1(NP_071436.1):p.(Arg226ProfsTer102)",
         "to_test": True,
     },
     {

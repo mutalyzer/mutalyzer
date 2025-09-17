@@ -389,6 +389,12 @@ def test_rna(input_description, normalized):
         "NG_012337.3(NM_012459.4):c.84+3_84+8del",
         # "NG_012337.3(NM_003002.4):c.52+8_169+8delinsAAA",
         # "NG_012337.3(NM_012459.4):c.84+8_*503delinsAAA",
+        "NG_012772.1(BRCA2_v001):c.632_681del",
+        "NG_012337.1(NM_012459.2):c.129G>T",
+        "NG_012337.1(NM_012459.2):c.130G>A",
+        "NG_008835.1(NM_022153.2):c.677-21_704+62del",
+        "NG_008835.1(NM_022153.2):c.677-21_704+62del",
+        "NG_008835.1(NM_022153.2):c.677-20_704+62del"
     ],
 )
 def test_rna_splice_sites_errors(input_description):

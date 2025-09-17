@@ -906,7 +906,7 @@ class Description:
         if self.de_hgvs_model.get("coordinate_system") in ["c", "n"]:
             self.rna = {}
             errors_splice, infos_splice = splice_sites(
-                variants_to_delins(self.de_hgvs_internal_indexing_model["variants"]),
+                [algebra_variant_to_delins(v) for v in self.graph.local_supremal()],
                 self.get_sequences(),
                 self.get_selector_model(),
             )
