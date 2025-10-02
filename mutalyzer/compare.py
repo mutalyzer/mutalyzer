@@ -1,5 +1,6 @@
 from algebra import LCSgraph, Variant
 from algebra import compare as compare_core
+from mutalyzer_spdi_parser.convert import to_hgvs_internal_model as spdi_to_internal
 
 from mutalyzer import errors
 from mutalyzer.algebra import (
@@ -8,6 +9,7 @@ from mutalyzer.algebra import (
     to_hgvs,
     to_spdi,
 )
+from mutalyzer.converter.to_hgvs_coordinates import to_hgvs_locations
 from mutalyzer.description import Description
 from mutalyzer.reference import retrieve_reference
 from mutalyzer.util import get_end, get_inserted_sequence, get_start
@@ -325,6 +327,17 @@ def compare_sequences_based(reference, reference_type, lhs, lhs_type, rhs, rhs_t
     return output
 
 
+def _hgvs_or_spdi_description(description):
+    d = Description(description)
+    if len(d.errors) != 1 or not d.errors[0].get("code", "").startswith("ESYNTAX"):
+        return d
+    try:
+        model = to_hgvs_locations(spdi_to_internal(description), [])
+    except Exception:
+        return d
+    return Description(description_model=model)
+
+
 def compare_hgvs_based(reference, reference_type, lhs, lhs_type, rhs, rhs_type):
     """
     Compare two HGVS descriptions (either complete, i.e., including the
@@ -332,12 +345,12 @@ def compare_hgvs_based(reference, reference_type, lhs, lhs_type, rhs, rhs_type):
     by an id or directly as a string).
     """
     if lhs_type == "hgvs" and rhs_type == "hgvs":
-        lhs_d = Description(lhs)
+        lhs_d = _hgvs_or_spdi_description(lhs)
         lhs_d.to_delins()
-        rhs_d = Description(rhs)
+        rhs_d = _hgvs_or_spdi_description(rhs)
         rhs_d.to_delins()
     elif lhs_type == "hgvs" and rhs_type == "variant":
-        lhs_d = Description(lhs)
+        lhs_d = _hgvs_or_spdi_description(lhs)
         lhs_d.to_delins()
         if lhs_d.get_sequences() and lhs_d.get_sequences().get("reference"):
             rhs_d = Description(
