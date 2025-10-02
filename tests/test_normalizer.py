@@ -152,3 +152,160 @@ def test_only_variants_errors(description, sequence, codes):
     assert codes == [
         error["code"] for error in normalize(description, True, sequence)["errors"]
     ]
+
+
+@pytest.mark.parametrize(
+    "description, errors",
+    [
+        (
+            "NM_003002.4:c.50+10del",
+            [
+                {
+                    "code": "EINTRONIC",
+                    "reference_id": "NM_003002.4",
+                    "paths": [["variants", 0, "location"]],
+                    "details": "Intronic position 50+10 used with a non intronic reference sequence (NM_003002.4).",
+                    "positions": ["50+10"],
+                    "suggestions": [
+                        {
+                            "assembly_id": "GRCh38",
+                            "description": "NC_000011.10(NM_003002.4):c.50+10del",
+                        },
+                        {
+                            "assembly_id": "GRCh37",
+                            "description": "NC_000011.9(NM_003002.4):c.50+10del",
+                        },
+                    ],
+                }
+            ],
+        ),
+        (
+            "NM_003002.4:c.50+10_50+12del",
+            [
+                {
+                    "code": "EINTRONIC",
+                    "reference_id": "NM_003002.4",
+                    "paths": [
+                        ["variants", 0, "location", "start"],
+                        ["variants", 0, "location", "end"],
+                    ],
+                    "details": "Intronic positions [50+10;50+12] used with a non intronic reference sequence (NM_003002.4).",
+                    "positions": ["50+10", "50+12"],
+                    "suggestions": [
+                        {
+                            "assembly_id": "GRCh38",
+                            "description": "NC_000011.10(NM_003002.4):c.50+10_50+12del",
+                        },
+                        {
+                            "assembly_id": "GRCh37",
+                            "description": "NC_000011.9(NM_003002.4):c.50+10_50+12del",
+                        },
+                    ],
+                }
+            ],
+        ),
+        (
+            "NG_012337.3(NM_003002.4):c.274delinsNM_003002.4(SDHD):c.310+10",
+            [
+                {
+                    "code": "EINTRONIC",
+                    "reference_id": "NM_003002.4",
+                    "paths": [["variants", 0, "inserted", 0, "location"]],
+                    "details": "Intronic position 310+10 used with a non intronic reference sequence (NM_003002.4).",
+                    "positions": ["310+10"],
+                    "suggestions": [
+                        {
+                            "assembly_id": "GRCh38",
+                            "description": "NG_012337.3(NM_003002.4):c.274delinsNC_000011.10(NM_003002.4):c.310+10",
+                        },
+                        {
+                            "assembly_id": "GRCh37",
+                            "description": "NG_012337.3(NM_003002.4):c.274delinsNC_000011.9(NM_003002.4):c.310+10",
+                        },
+                    ],
+                }
+            ],
+        ),
+        (
+            "NM_024426.4:c.[52+5_52+10del;100delinsNM_003002.4:52+2;169+1delins52+10_52+15]",
+            [
+                {
+                    "code": "EINTRONIC",
+                    "reference_id": "NM_024426.4",
+                    "paths": [
+                        ["variants", 0, "location", "start"],
+                        ["variants", 0, "location", "end"],
+                        ["variants", 2, "location"],
+                        ["variants", 2, "inserted", 0, "location", "start"],
+                        ["variants", 2, "inserted", 0, "location", "end"],
+                    ],
+                    "details": "Intronic positions [52+5;52+10;169+1;52+10;52+15] used with a non intronic reference sequence (NM_024426.4).",
+                    "positions": ["52+5", "52+10", "169+1", "52+10", "52+15"],
+                    "suggestions": [
+                        {
+                            "assembly_id": "GRCh38",
+                            "description": "NC_000011.10(NM_024426.4):c.[52+5_52+10del;100delinsNM_003002.4:c.52+2;169+1delins52+10_52+15]",
+                        },
+                        {
+                            "assembly_id": "GRCh37",
+                            "description": "NC_000011.9(NM_024426.4):c.[52+5_52+10del;100delinsNM_003002.4:c.52+2;169+1delins52+10_52+15]",
+                        },
+                    ],
+                },
+                {
+                    "code": "EINTRONIC",
+                    "reference_id": "NM_003002.4",
+                    "paths": [["variants", 1, "inserted", 0, "location"]],
+                    "details": "Intronic position 52+2 used with a non intronic reference sequence (NM_003002.4).",
+                    "positions": ["52+2"],
+                },
+            ],
+        ),
+        (
+            "NG_012337.3(NM_003002.4):c.274delins[NM_003002.4(SDHD):c.310+10;NM_024426.4:c.100+50_100+55]",
+            [
+                {
+                    "code": "EINTRONIC",
+                    "reference_id": "NM_024426.4",
+                    "paths": [
+                        ["variants", 0, "inserted", 1, "location", "start"],
+                        ["variants", 0, "inserted", 1, "location", "end"],
+                    ],
+                    "details": "Intronic positions [100+50;100+55] used with a non intronic reference sequence (NM_024426.4).",
+                    "positions": ["100+50", "100+55"],
+                },
+                {
+                    "code": "EINTRONIC",
+                    "reference_id": "NM_003002.4",
+                    "paths": [["variants", 0, "inserted", 0, "location"]],
+                    "details": "Intronic position 310+10 used with a non intronic reference sequence (NM_003002.4).",
+                    "positions": ["310+10"],
+                },
+            ],
+        ),
+    ],
+)
+def test_intronic(monkeypatch, description, errors):
+    def _get_chromosome_from_selector(assembly_id, ref_id):
+        if assembly_id == "GRCh38" and ref_id in ["NM_003002.4", "NM_024426.4"]:
+            return "NC_000011.10"
+        if assembly_id == "GRCh37" and ref_id in ["NM_003002.4", "NM_024426.4"]:
+            return "NC_000011.9"
+        return None
+
+    def _sequences_differ(r, s):
+        if r == "NC_000011.10" and s in ["NM_003002.4", "NM_024426.4"]:
+            return False
+        elif r == "NC_000011.9" and s in ["NM_003002.4", "NM_024426.4"]:
+            return False
+        return True
+
+    monkeypatch.setattr(
+        "mutalyzer.description.get_chromosome_from_selector",
+        _get_chromosome_from_selector,
+    )
+    monkeypatch.setattr(
+        "mutalyzer.description._slices_differ",
+        _sequences_differ,
+    )
+    assert normalize(description)["errors"] == errors

@@ -1,9 +1,7 @@
 import copy
 import itertools
-import time
 
 from algebra import LCSgraph
-# from algebra.extractor import extract as extract_variants
 from Bio.Seq import Seq
 from Bio.SeqUtils import seq1, seq3
 from mutalyzer_backtranslate import BackTranslate
@@ -105,6 +103,12 @@ from .util import (
     slice_sequence,
     sort_variants,
 )
+
+
+def _slices_differ(chr_id, s_id):
+    return slice_to_selector(
+        retrieve_reference(chr_id, s_id)[0], s_id, True
+    ) != slice_to_selector(retrieve_reference(s_id, s_id)[0], s_id)
 
 
 def _get_sequence_view(seq, l_l=15, l_r=15):
@@ -278,10 +282,11 @@ class Description:
 
     def get_selector_model(self):
         selector_id = self.get_selector_id()
-        if self.references and selector_id:
+        if self.references and selector_id and self.references.get("reference"):
             return get_internal_selector_model(
                 self.references["reference"]["annotations"], selector_id, True
             )
+        return None
 
     def is_selector_model_valid(self):
         selector_model = self.get_selector_model()
@@ -708,28 +713,6 @@ class Description:
         if self.only_variants:
             self.de_hgvs_model = copy.deepcopy(algebra_model_forward)
 
-
-    # @check_errors
-    # def construct_de_hgvs_internal_indexing_model(self):
-    #     if self.de_model:
-    #         self.de_hgvs_internal_indexing_model = {
-    #             "variants": de_to_hgvs(
-    #                 self.de_model["variants"],
-    #                 self.get_sequences(),
-    #             ),
-    #         }
-    #         if not self.only_variants:
-    #             self.de_hgvs_internal_indexing_model.update(
-    #                 {
-    #                     "reference": copy.deepcopy(
-    #                         self.internal_indexing_model["reference"]
-    #                     ),
-    #                     "coordinate_system": "i",
-    #                 }
-    #             )
-    #         if self.corrected_model.get("predicted"):
-    #             self.de_hgvs_internal_indexing_model["predicted"] = True
-
     @check_errors
     def construct_de_hgvs_coordinates_model(self):
         if self.de_hgvs_internal_indexing_model:
@@ -774,7 +757,6 @@ class Description:
                         get_selector_id(self.corrected_model),
                         True,
                     )
-
 
     def construct_normalized_description(self):
         if self.de_hgvs_model:
@@ -1050,7 +1032,112 @@ class Description:
                 if point.get("outside_cds"):
                     self._add_error(errors.outside_cds(point, path))
 
-    def _check_intronic_point(self, point, path):
+    def _get_intronic_errors(self):
+        intronic_errors = []
+        ref_paths = {}
+
+        for point, path in yield_sub_model(self.corrected_model, ["location", "start", "end"], ["point"]):
+            if point.get("offset"):
+                is_nested = False
+                ref_id = self.corrected_model["reference"]["id"]
+                ref_path = ["reference", "id"]
+                c_s = self.corrected_model["coordinate_system"]
+
+                for ins_or_del in ["inserted", "deleted"]:
+                    if ins_or_del in path:
+                        submodel = get_submodel_by_path(self.corrected_model, path[: path.index(ins_or_del) + 2])
+                        nested_ref_id = get_reference_id(submodel)
+                        if nested_ref_id:
+                            ref_id = nested_ref_id
+                            is_nested = True
+                            ref_path = path[: path.index(ins_or_del) + 2] + ["source", "id"]
+                        if submodel.get("coordinate_system"):
+                            c_s = submodel["coordinate_system"]
+
+                ref_mol_type = get_reference_mol_type(self.references[ref_id])
+                if ref_mol_type in ["mRNA", "ncRNA", "transcribed RNA"] and c_s in ["c", "n"]:
+                    intronic_errors.append((ref_id, point, path, is_nested))
+                    ref_paths.setdefault(ref_id, []).append(ref_path)
+
+        return intronic_errors, ref_paths
+
+    def _get_chr_suggestions(self, intronic_errors):
+        suggestions = {}
+        for ref_id in {e[0] for e in intronic_errors}:
+            for assembly_id in ["GRCh38", "GRCh37"]:
+                chr_id = get_chromosome_from_selector(assembly_id, ref_id)
+                if chr_id:
+                    suggestions.setdefault(ref_id, {})[assembly_id] = (chr_id, ref_id, _slices_differ(chr_id, ref_id))
+        return suggestions
+
+    def _generate_suggestion_descriptions(self, model, suggestions, ref_paths):
+        descriptions = []
+        for ref_id, assemblies in suggestions.items():
+            if ref_id not in ref_paths:
+                continue
+            for assembly_id, (chr_id, _, seq_diff) in assemblies.items():
+                modified_model = copy.deepcopy(model)
+                for path in ref_paths[ref_id]:
+                    set_by_path(modified_model, path, chr_id)
+                entry = {
+                    "assembly_id": assembly_id,
+                    "description": model_to_string(modified_model)
+                }
+                if seq_diff:
+                    entry["sequence_mismatch"] = True
+                descriptions.append(entry)
+        return descriptions
+
+    def _add_main_ref_intronic_error(self, chr_suggestions, main_errors, ref_paths):
+        ref_id = main_errors[0][0]
+        suggestions = self._generate_suggestion_descriptions(
+            self.corrected_model,
+            {ref_id: chr_suggestions[ref_id]},
+            ref_paths
+        )
+        points = [e[1] for e in main_errors]
+        paths = [e[2] for e in main_errors]
+        self._add_error(errors.intronic(ref_id, points, paths, suggestions))
+
+    def _add_nested_ref_intronic_error(self, chr_suggestions, nested_errors, ref_paths):
+        ref_id = nested_errors[0][0]
+        suggestions = self._generate_suggestion_descriptions(self.corrected_model, chr_suggestions, ref_paths)
+        points = [e[1] for e in nested_errors]
+        paths = [e[2] for e in nested_errors]
+        self._add_error(errors.intronic(ref_id, points, paths, suggestions))
+
+    def _add_intronic_errors_without_suggestions(self, nested_errors):
+        for ref_id in {e[0] for e in nested_errors}:
+            ref_errors = [e for e in nested_errors if e[0] == ref_id]
+            points = [e[1] for e in ref_errors]
+            paths = [e[2] for e in ref_errors]
+            self._add_error(errors.intronic(ref_id, points, paths))
+
+    def _include_intronic_suggestions(self, intronic_errors, chr_suggestions, ref_paths):
+        main_errors = [e for e in intronic_errors if not e[3]]
+        nested_errors = [e for e in intronic_errors if e[3]]
+
+        if main_errors:
+            self._add_main_ref_intronic_error(chr_suggestions, main_errors, ref_paths)
+
+        if nested_errors:
+            unique_ref_ids = {e[0] for e in nested_errors}
+            if not main_errors and len(unique_ref_ids) == 1:
+                self._add_nested_ref_intronic_error(chr_suggestions, nested_errors, ref_paths)
+            else:
+                self._add_intronic_errors_without_suggestions(nested_errors)
+
+    def _check_intronic_point_no_introns(self):
+        intronic_errors, ref_paths = self._get_intronic_errors()
+        chr_suggestions = self._get_chr_suggestions(intronic_errors)
+
+        if chr_suggestions:
+            self._include_intronic_suggestions(intronic_errors, chr_suggestions, ref_paths)
+        else:
+            for e in intronic_errors:
+                self._add_error(errors.intronic(e[0], [e[1]], [e[2]]))
+
+    def _check_intronic_point_r_genomic(self, point, path):
         if point.get("offset"):
             ref_id = self.corrected_model["reference"]["id"]
             c_s = self.corrected_model["coordinate_system"]
@@ -1063,19 +1150,15 @@ class Description:
                     if submodel.get("coordinate_system"):
                         c_s = submodel["coordinate_system"]
             ref_mol_type = get_reference_mol_type(self.references[ref_id])
-            if ref_mol_type in ["mRNA", "ncRNA", "transcribed RNA"]:
-                # TODO: find the actual NM(NC) description
-                self._add_error(errors.intronic(point, path))
-            elif ref_mol_type == "genomic DNA" and c_s == "r":
+            if ref_mol_type == "genomic DNA" and c_s == "r":
                 self._add_error(errors.intronic_rna(point, path))
 
     @check_errors
     def _check_location_extras(self):
-        for point, path in yield_sub_model(
-            self.corrected_model, ["location", "start", "end"], ["point"]
-        ):
+        self._check_intronic_point_no_introns()
+        for point, path in yield_sub_model(self.corrected_model, ["location", "start", "end"], ["point"]):
             self._check_genomic_point(point, path)
-            self._check_intronic_point(point, path)
+            self._check_intronic_point_r_genomic(point, path)
 
     def _check_insertion_location(self, path):
         """
@@ -1309,7 +1392,6 @@ class Description:
             or self._insertions_same_location()
         ):
             self._add_error(errors.overlap())
-
 
     @check_errors
     def pre_conversion_checks(self):
@@ -1606,7 +1688,6 @@ class Description:
             and (ref_id.startswith("NM_") or ref_id.startswith("XM_"))
         ):
             self.add_info(infos.mrna_genomic_tip())
-
 
     def to_delins(self):
         self.assembly_checks()
