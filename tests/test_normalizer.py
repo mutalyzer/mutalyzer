@@ -332,7 +332,7 @@ def test_gene_mane(monkeypatch, description, chr_id, gene_suggestions, normalize
     def _get_gene_suggestions(gene_name):
         return gene_suggestions
 
-    def _get_chromosome_from_selector(assembly, gene_name):
+    def get_grch38_chromosome(gene_suggestions):
         return chr_id
 
     monkeypatch.setattr(
@@ -340,8 +340,8 @@ def test_gene_mane(monkeypatch, description, chr_id, gene_suggestions, normalize
         _get_gene_suggestions,
     )
     monkeypatch.setattr(
-        "mutalyzer.description.get_chromosome_from_selector",
-        _get_chromosome_from_selector,
+        "mutalyzer.description.get_grch38_chromosome",
+        get_grch38_chromosome,
     )
     assert normalize(description)["normalized_description"] == normalized
 
@@ -441,7 +441,7 @@ def test_gene_mane_errors(monkeypatch, description, chr_id, gene, gene_suggestio
             return gene_suggestions
         return None
 
-    def _get_chromosome_from_selector(assembly, gene_name):
+    def get_grch38_chromosome(gene_suggestions):
         return chr_id
 
     monkeypatch.setattr(
@@ -449,7 +449,7 @@ def test_gene_mane_errors(monkeypatch, description, chr_id, gene, gene_suggestio
         _get_gene_suggestions,
     )
     monkeypatch.setattr(
-        "mutalyzer.description.get_chromosome_from_selector",
-        _get_chromosome_from_selector,
+        "mutalyzer.description.get_grch38_chromosome",
+        get_grch38_chromosome,
     )
     assert normalize(description)["errors"] == errors

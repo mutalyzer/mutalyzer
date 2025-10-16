@@ -87,6 +87,7 @@ from .reference import (
     slice_to_selector,
     yield_overlap_ids,
     get_mane_transcript,
+    get_grch38_chromosome,
 )
 from .util import (
     check_errors,
@@ -377,13 +378,11 @@ class Description:
         Check if reference_id is a gene name and handle it.
         Returns True if it was a gene (whether successful or error), False otherwise.
         """
-
         suggestions = get_gene_suggestions(reference_id)
         if not suggestions:
             return False  # No gene data
 
-        # TODO: this can be improved.
-        chr_id = get_chromosome_from_selector("GRCh38", reference_id)
+        chr_id = get_grch38_chromosome(suggestions)
         if not chr_id:
             return False
 
