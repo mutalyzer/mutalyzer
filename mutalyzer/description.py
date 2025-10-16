@@ -21,6 +21,7 @@ from mutalyzer_retriever.related import get_cds_to_mrna
 from mutalyzer_retriever.retriever import (
     get_chromosome_from_selector,
     get_overlap_models,
+    get_gene_suggestions
 )
 
 from . import errors, infos
@@ -85,6 +86,7 @@ from .reference import (
     retrieve_reference,
     slice_to_selector,
     yield_overlap_ids,
+    get_mane_transcript,
 )
 from .util import (
     check_errors,
@@ -341,59 +343,180 @@ class Description:
 
         return {"id": reference_id, "selector": None}
 
-    @check_errors
     def retrieve_references(self):
         """
-        Populate the references
+        Populate the references from the corrected model.
         """
-
-        def _update_references(r_id, r_model):
-            if self.references.get(r_id) is not None:
-                a_m = self.references[r_id]["annotations"]
-                r_m = r_model["annotations"]
-                if a_m != r_m:
-                    if a_m.get("features") and r_m.get("features"):
-                        for feature in r_m.get("features"):
-                            if feature not in a_m["features"]:
-                                a_m["features"].append(feature)
-                        a_m["features"].extend(r_m["features"])
-                    if not a_m.get("features") and r_m.get("features"):
-                        a_m["features"] = r_m["features"]
-            else:
-                self.references[r_id] = r_model
-
         if not self.corrected_model:
             return
+
         if self.only_variants and self.sequence:
             self.references["reference"] = {"sequence": {"seq": self.sequence}}
+
         for reference_id, path in yield_reference_ids(self.corrected_model):
-            selector_id = get_selector_id(
-                get_submodel_by_path(self.corrected_model, path[:-2])
+            self._process_reference(reference_id, path)
+
+    def _process_reference(self, reference_id, path):
+        """
+        Process a single reference: normalize if needed, then retrieve.
+        """
+        # Skip main reference if we already have it (only_variants with sequence)
+        if self.only_variants and self.sequence and self._is_main_reference_path(path):
+            return
+
+        if self._handle_gene(reference_id, path):
+            return
+
+        if self._handle_lrg(reference_id, path):
+            return
+
+        self._retrieve_and_store_reference(reference_id, path)
+
+    def _handle_gene(self, reference_id, path):
+        """
+        Check if reference_id is a gene name and handle it.
+        Returns True if it was a gene (whether successful or error), False otherwise.
+        """
+
+        suggestions = get_gene_suggestions(reference_id)
+        if not suggestions:
+            return False  # No gene data
+
+        # TODO: this can be improved.
+        chr_id = get_chromosome_from_selector("GRCh38", reference_id)
+        if not chr_id:
+            return False
+
+        # Try MANE (Select or Plus Clinical)
+        mane_transcript = get_mane_transcript(suggestions, chr_id)
+        if mane_transcript and mane_transcript.get("id"):
+            transcript_id = mane_transcript["id"]
+            set_by_path(self.corrected_model, path[:-1], {"id": chr_id, "selector": {"id": transcript_id}})
+            self.add_info(infos.corrected_reference_id(reference_id, f"{chr_id}({transcript_id})", path))
+            new_path = path[:-1] + ("id",)
+            self._retrieve_and_store_reference(chr_id, new_path)
+            return True
+
+        # No MANE - report error with suggestions
+        if chr_id in suggestions and suggestions[chr_id]:
+            suggested_descriptions = self._generate_gene_transcript_suggestions(
+                self.corrected_model, chr_id, suggestions[chr_id], path
             )
-            reference_model = retrieve_reference(reference_id, selector_id)[0]
-            if reference_model is None:
-                lrg = self._check_if_lrg_reference(reference_id)
-                if lrg:
-                    reference_model = retrieve_reference(lrg["id"])[0]
-                    if reference_model:
-                        self._correct_lrg_reference_id(reference_id, lrg, path)
-                        reference_id = lrg["id"]
-            if reference_model is None:
-                self._add_error(errors.reference_not_retrieved(reference_id, [path]))
-            else:
-                reference_id_in_model = get_reference_id_from_model(reference_model)
-                if reference_id_in_model != reference_id:
-                    self._correct_reference_id(
-                        path, reference_id, reference_id_in_model
-                    )
-                    _update_references(reference_id_in_model, reference_model)
-                    ref_id = reference_id_in_model
-                else:
-                    _update_references(reference_id, reference_model)
-                    ref_id = reference_id
-                if ref_id.startswith("LRG_"):
-                    self.add_info(infos.lrg_warning(ref_id, path))
-                self._set_main_reference()
+            self._add_error(errors.gene_multiple_transcripts(reference_id, chr_id, suggested_descriptions, path))
+
+        return True  # Was a gene, but couldn't resolve
+
+    def _handle_lrg(self, reference_id, path):
+        """
+        Check if reference_id is LRG shorthand and handle it.
+        Returns True if it was LRG shorthand, False otherwise.
+        """
+        lrg_parts = self._check_if_lrg_reference(reference_id)
+        if not lrg_parts:
+            return False
+
+        if lrg_parts.get("selector"):
+            # It's like LRG_Xty, correct and retrieve it
+            set_by_path(self.corrected_model, path[:-1], lrg_parts)
+            self.add_info(infos.corrected_lrg_reference(reference_id, lrg_parts, path))
+            new_path = path[:-1] + ("id",)
+            self._retrieve_and_store_reference(lrg_parts["id"], new_path)
+            return True
+
+        # It's just LRG_X, retrieve as is
+        self._retrieve_and_store_reference(reference_id, path)
+        return True
+
+    def _is_main_reference_path(self, path):
+        """
+        Check if path points to the main reference (not a nested insertion/deletion reference).
+        """
+        return 'inserted' not in path and 'deleted' not in path
+
+    def _generate_gene_transcript_suggestions(self, model, chr_id, transcript_options, path):
+        """
+        Generate suggested descriptions for each transcript option of a gene.
+        """
+        suggestions = []
+
+        for transcript in transcript_options:
+            transcript_id = transcript.get("id")
+            if not transcript_id:
+                continue
+
+            modified_model = copy.deepcopy(model)
+            set_by_path(modified_model, path[:-1], {"id": chr_id, "selector": {"id": transcript_id}})
+
+            entry = {
+                "description": model_to_string(modified_model),
+                "transcript_id": transcript_id,
+                "chromosome_id": chr_id,
+            }
+
+            if transcript.get("tag"):
+                entry["tag"] = transcript["tag"]
+
+            suggestions.append(entry)
+
+        return suggestions
+
+    def _retrieve_and_store_reference(self, reference_id, path):
+        """
+        Retrieve a single reference by ID and store it.
+        """
+        selector_id = get_selector_id(get_submodel_by_path(self.corrected_model, path[:-2]))
+        reference_model, _ = retrieve_reference(reference_id, selector_id)
+
+        if not reference_model:
+            self._add_error(errors.reference_not_retrieved(reference_id, [path]))
+            return
+
+        # Check if a different reference_id was retrieved (e.g., version correction)
+        actual_ref_id = get_reference_id_from_model(reference_model)
+        if actual_ref_id != reference_id:
+            self._correct_reference_id(path, reference_id, actual_ref_id)
+            reference_id = actual_ref_id
+
+        self._add_to_references(reference_id, reference_model)
+
+        if reference_id.startswith("LRG_"):
+            self.add_info(infos.lrg_warning(reference_id, path))
+
+        self._set_main_reference()
+
+    def _add_to_references(self, ref_id, reference_model):
+        """
+        Add or update reference in self.references, merging features if it exists.
+        """
+        if ref_id not in self.references:
+            self.references[ref_id] = reference_model
+            return
+
+        existing_annotations = self.references[ref_id]["annotations"]
+        new_annotations = reference_model["annotations"]
+        if existing_annotations != new_annotations:
+            self._merge_annotations(existing_annotations, new_annotations)
+
+    def _merge_annotations(self, existing_annotations, new_annotations):
+        """
+        Merge features from new_annotations into existing_annotations without duplicates.
+        """
+        existing_features = existing_annotations.get("features")
+        new_features = new_annotations.get("features")
+
+        if not new_features:
+            return
+
+        if not existing_features:
+            existing_annotations["features"] = new_features
+            return
+
+        existing_ids = {f.get("id") for f in existing_features if f.get("id")}
+
+        for feature in new_features:
+            feature_id = feature.get("id")
+            if not feature_id or feature_id not in existing_ids:
+                existing_features.append(feature)
 
     @check_errors
     def _check_selectors_in_references(self):
@@ -425,7 +548,7 @@ class Description:
         if len(gene_selectors) == 1:
             self._correct_selector_id(path, selector_id, gene_selectors[0], "gene name")
             return
-        elif len(gene_selectors) > 1:
+        if len(gene_selectors) > 1:
             self._add_error(
                 errors.selector_options(selector_id, "gene", gene_selectors, path)
             )
@@ -440,7 +563,7 @@ class Description:
                     path, selector_id, gene_selectors[0], "gene name"
                 )
                 return
-            elif len(gene_selectors) > 1:
+            if len(gene_selectors) > 1:
                 self._add_error(
                     errors.selector_options(gene_name, "gene", gene_selectors, path)
                 )
@@ -451,7 +574,7 @@ class Description:
         if len(gene_selectors) == 1:
             self._correct_selector_id(path, selector_id, gene_selectors[0], "gene HGNC")
             return
-        elif len(gene_selectors) > 1:
+        if len(gene_selectors) > 1:
             self._add_error(
                 errors.selector_options(selector_id, "gene HGNC", gene_selectors, path)
             )
@@ -805,7 +928,8 @@ class Description:
             overlapping_models = get_overlap_models(
                 get_reference_id(self.corrected_model), l_min, l_max
             )
-            self.references["reference"]["annotations"].update(overlapping_models)
+            if overlapping_models:
+                self.references["reference"]["annotations"].update(overlapping_models)
 
         l_min, l_max = overlap_min_max(self.references["reference"], l_min, l_max)
         for selector in yield_overlap_ids(self.references["reference"], l_min, l_max):
@@ -1484,7 +1608,7 @@ class Description:
         for sequence, _ in yield_values(self.corrected_model, ["sequence", "amino_acid"]):
             seq_1a = str(seq1(sequence))
             seq_3a = str(seq3(sequence))
-            if not ((sequence == str(seq3(seq_1a))) != (sequence == str(seq1(seq_3a)))):
+            if not (sequence == str(seq3(seq_1a))) != (sequence == str(seq1(seq_3a))):
                 self._add_error(
                     {
                         "code": "EAA",
@@ -1614,7 +1738,7 @@ class Description:
                 to_delins(self.internal_indexing_model)["variants"],
             )
             if "*" in observed_sequence:
-                observed_sequence = observed_sequence.split('*')[0]
+                observed_sequence = observed_sequence.split('*', maxsplit=1)[0]
             self.references["observed"] = {"sequence": {"seq": observed_sequence}}
             p_variant = in_frame_description(self.references["reference"]["sequence"]["seq"], observed_sequence)[0]
             self.de_hgvs_model = {
@@ -1647,6 +1771,7 @@ class Description:
                     for location, path in yield_values(model, ["position"]):
                         set_by_path(model, path, location + offset)
                     return model
+        return None
 
     def _ensembl_to_ncbi_id(self):
         ref_id = self._get_reference_id(self.corrected_model, [])
@@ -1823,7 +1948,7 @@ class Description:
                 c_s = self.corrected_model["coordinate_system"]
                 ref = f"{self.corrected_model['reference']['id']}"
                 if self.corrected_model["reference"].get("selector"):
-                    ref += f"({self.corrected_model['reference']["selector"]['id']})"
+                    ref += f"({self.corrected_model['reference']['selector']['id']})"
                 output["supremal"] = {
                     "hgvs": f"{ref}:{c_s}.{to_hgvs(self.graph.supremal(), self.sequence, selector)}",
                     "spdi": to_spdi(self.graph.supremal(), self.corrected_model['reference']['id'])

@@ -512,3 +512,28 @@ def yield_locations_selector_id(r_model, selector_id):
     ]:
         if feature.get("location"):
             yield feature["location"], feature["type"]
+
+
+def get_mane_transcript(suggestions, reference_id):
+    """
+    Get MANE Select or MANE Plus Clinical transcript if available.
+    MANE Select is preferred over MANE Plus Clinical.
+
+    Returns:
+        dict with transcript info (including 'id' and 'tag') if MANE transcript found, else None.
+    """
+    if not suggestions or reference_id not in suggestions:
+        return None
+
+    transcripts = suggestions[reference_id]
+
+    mane_plus_clinical = None
+
+    for transcript in transcripts:
+        tag = transcript.get("tag")
+        if tag == "MANE Select":
+            return transcript
+        if tag == "MANE Plus Clinical":
+            mane_plus_clinical = transcript
+
+    return mane_plus_clinical
