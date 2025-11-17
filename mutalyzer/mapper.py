@@ -28,7 +28,7 @@ from .reference import (
     get_coordinate_system_from_reference,
     get_coordinate_system_from_selector_id,
     get_internal_selector_model,
-    get_only_selector_id,
+    get_first_selector_id,
     retrieve_reference,
 )
 from .util import slice_seq
@@ -167,7 +167,7 @@ def map_description(
         if (
             selector_id is None
             and get_coordinate_system_from_reference(to_r_model) == "c"
-            and get_only_selector_id(to_r_model) == reference_id
+            and get_first_selector_id(to_r_model) == reference_id
         ):
             selector_id = reference_id
     elif slice_to == "gene":

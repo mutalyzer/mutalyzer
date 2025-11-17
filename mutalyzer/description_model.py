@@ -45,7 +45,7 @@ def yield_reference_ids(model, path=[]):
         if k in ["reference", "source"]:
             if isinstance(model[k], dict) and model[k].get("id"):
                 yield model[k]["id"], tuple(path + [k, "id"])
-        elif k in ["variants", "inserted"]:
+        elif k in ["variants", "inserted", "deleted"]:
             for i, sub_model in enumerate(model[k]):
                 yield from yield_reference_ids(sub_model, path + [k, i])
 

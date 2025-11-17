@@ -105,24 +105,31 @@ def outside_cds(location, path):
     }
 
 
-def intronic(ref_id, locations, paths, suggestions=None):
+def intronic(positions, suggestions=None, assemblies=None):
+    details_parts = []
+    for ref_id, location_descs in positions.items():
+        if len(location_descs) > 1:
+            locations = "[" + ";".join(location_descs) + "]"
+            details_parts.append(
+                f"Intronic positions {locations} used with a non intronic reference sequence {ref_id}."
+            )
+        else:
+            details_parts.append(
+                f"Intronic position {location_descs[0]} used with a non intronic reference sequence {ref_id}."
+            )
+
     output = {
         "code": "EINTRONIC",
-        "reference_id": ref_id,
-        "paths": paths,
+        "positions": positions,
+        "details": " ".join(details_parts)
     }
-    if len(locations) == 1:
-        s_location = location_to_description(locations[0])
-        output["details"] = f"Intronic position {s_location} used with a non intronic reference sequence ({ref_id})."
-        output["positions"] = [ s_location ]
-    else:
-        s_location = "[" + ";".join([location_to_description(p) for p in locations]) + "]"
-        output["details"] = f"Intronic positions {s_location} used with a non intronic reference sequence ({ref_id})."
-        output["positions"] = [ location_to_description(p) for p in locations ]
+
     if suggestions:
         output["suggestions"] = suggestions
-    return output
+    if assemblies:
+        output["assemblies"] = assemblies
 
+    return output
 
 def intronic_rna(location, path):
     return {
