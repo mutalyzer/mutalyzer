@@ -1141,6 +1141,7 @@ class Description:
                 self._add_error(errors.range_reversed(location, path))
 
     def _check_genomic_point(self, point, path):
+        """Checks if intronic points are provided with a g. coordinate system."""
         if point.get("offset") or point.get("outside_cds"):
             c_s = self.corrected_model.get("coordinate_system")
             for ins_or_del in ["inserted", "deleted"]:
@@ -1230,8 +1231,7 @@ class Description:
                                 continue
                             tag = get_mane_tag(s_m)
                             if tag:
-                                suggestion['tag'] = tag
-
+                                suggestion["tag"] = tag
                     suggestions[assembly_id][ref_id] = suggestion
                 else:
                     suggestions[assembly_id][ref_id] = None
@@ -1293,8 +1293,63 @@ class Description:
                 self._add_error(errors.intronic_rna(point, path))
 
     @check_errors
+    def _check_exon_offsets(self):
+        """
+        Check if positions with offsets start from an exon boundary and if the offset direction is correct.
+        """
+        for point, path in yield_sub_model(self.corrected_model, ["location", "start", "end"], ["point"]):
+            if not point.get("offset"):
+                continue
+            ref_id = self.corrected_model["reference"]["id"]
+            sel_id = get_selector_id(self.corrected_model)
+            c_s = self.corrected_model["coordinate_system"]
+
+            for ins_or_del in ["inserted", "deleted"]:
+                if ins_or_del in path:
+                    submodel = get_submodel_by_path(self.corrected_model, path[:path.index(ins_or_del) + 2])
+                    nested_ref_id = get_reference_id(submodel)
+                    sel_id = get_selector_id(submodel)
+                    if nested_ref_id:
+                        ref_id = nested_ref_id
+                    if submodel.get("coordinate_system"):
+                        c_s = submodel["coordinate_system"]
+                    break
+
+            ref_mol_type = get_reference_mol_type(self.references[ref_id])
+            if ref_mol_type in ["genomic DNA"] and c_s in ["c", "n"] and sel_id is not None:
+                s_m = get_internal_selector_model(self.references[ref_id]["annotations"], sel_id)
+                crossmap = crossmap_to_internal_setup(c_s, s_m)
+                position = point.get("position")
+                section = 0
+                if point.get("outside_cds"):
+                    if point["outside_cds"] == "upstream":
+                        section = -1
+                        position = -1 * position
+                    elif point["outside_cds"] == "downstream":
+                        section = 1
+                is_exon_start = False
+                is_exon_end = False
+                point_coordinate = crossmap["crossmap_function"]((position, 0, section))
+                for exon in s_m["exon"]:
+                    if s_m.get("inverted"):
+                        exon_start, exon_end = exon[1] - 1, exon[0]
+                    else:
+                        exon_start, exon_end = exon[0], exon[1] - 1
+                    if point_coordinate == exon_start:
+                        is_exon_start = True
+                    elif point_coordinate == exon_end:
+                        is_exon_end = True
+                if not (is_exon_start or is_exon_end):
+                    self._add_error(errors.exon_boundary(point, path))
+                elif is_exon_start and point["offset"]["value"] > 0:
+                    self._add_error(errors.offset_direction(point, path))
+                elif is_exon_end and point["offset"]["value"] < 0:
+                    self._add_error(errors.offset_direction(point, path))
+
+    @check_errors
     def _check_location_extras(self):
         self._check_intronic_point_no_introns()
+        self._check_exon_offsets()
         for point, path in yield_sub_model(self.corrected_model, ["location", "start", "end"], ["point"]):
             self._check_genomic_point(point, path)
             self._check_intronic_point_r_genomic(point, path)

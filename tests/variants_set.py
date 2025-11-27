@@ -2784,7 +2784,7 @@ TESTS = [
     },
     {
         "keywords": [],
-        "input": "NG_012337.1(NM_003002.2):c.[274+20C>T;400_401insNM_003002.4:100_102]",
+        "input": "NG_012337.1(NM_003002.2):c.[169+1018>T;400_401insNM_003002.4:100_102]",
         "normalized": "NG_012337.1(NM_003002.2):c.[294C>T;399_401T[6]]",
         "infos": ["ICORRECTEDCOORDINATESYSTEM", "ICORRECTEDPOINT"],
         "to_test": True,
@@ -3602,6 +3602,30 @@ TESTS = [
         "normalized": "NG_012337.1(NM_012459.2):c.[10_13CA[3];22_25del]",
         "genomic": "NG_012337.1:g.[4900_4903del;4911_4914GT[3]]",
         "rna_description": "NG_012337.1(NM_012459.2):r.([10_13ca[3];22_25del])",
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NG_012337.3(NM_003002.4):c.[52+10_53-3del;52-20del;53+30del;50+10del]",
+        "errors": [
+            "EOFFSETDIRECTION", "EOFFSETDIRECTION", "EEXONBOUNDARY"
+        ],
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NG_012337.1(NM_012459.2):c.[-30-10del;-30+10del;-20del;-20+10del;129+10del;130-20del;129+30del;130+40del;140+10del;*494+20del;*495+30del]",
+        "errors": [
+            "EOFFSETDIRECTION", "EEXONBOUNDARY", "EOFFSETDIRECTION", "EEXONBOUNDARY", "EEXONBOUNDARY"
+        ],
+        "to_test": True,
+    },
+    {
+        "keywords": [],
+        "input": "NG_007485.1(NR_024274.1):[1-10del;1+20del;400+30del;616+40del;616-50del]",
+        "errors": [
+            "EOFFSETDIRECTION", "EEXONBOUNDARY", "EOFFSETDIRECTION"
+        ],
         "to_test": True,
     },
 

@@ -89,6 +89,23 @@ def offset(location, path):
     }
 
 
+def offset_direction(location, path):
+    return {
+        "code": "EOFFSETDIRECTION",
+        "details": f"In {location_to_description(location)} the offset is not in the correct direction "
+                   f"relative to the exon boundary.",
+        "paths": [path],
+    }
+
+
+def exon_boundary(point, path):
+    return {
+        "code": "EEXONBOUNDARY",
+        "details": f"Point {location_to_description(point)} is not relative to a correct exon boundary.",
+        "paths": [path],
+    }
+
+
 def outside_cds(location, path):
     if location["outside_cds"] == "upstream":
         d_in = "-"
