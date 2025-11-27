@@ -151,65 +151,181 @@ def _rotate_sequence(sequence, offset):
     return sequence[offset:] + sequence[:offset]
 
 
-def graph_to_dot(graph, reference, selector=None, dominators=True, edges_limit=100):
-    width = "1"
-
-    dot_lines = [
-        "digraph {",
-        "rankdir=LR",
-        "edge[fontname=monospace]",
-        f'node[fixedsize=true,fontname=serif,shape=circle,width={width}]'
-    ]
-
+def _assign_node_ids(all_nodes, source_node, sink_node):
+    """
+    Assign DOT node IDs with source as s0 and sink as highest number.
+    """
     nodes = {}
+    node_info = {}
+    node_index = 0
+    sorted_nodes = sorted(all_nodes)
+
+    for node in sorted_nodes:
+        if node == source_node:
+            nodes[node] = "s0"
+        elif node == sink_node:
+            # Reserve the last ID for sink
+            continue
+        else:
+            # Skip s0 since it's reserved for source
+            if source_node is not None:
+                nodes[node] = f"s{node_index + 1}"
+                node_index += 1
+            else:
+                nodes[node] = f"s{node_index}"
+                node_index += 1
+
+        node_info[node] = f"{node}"
+
+    # Assign sink node the highest number
+    if sink_node is not None:
+        if source_node is not None:
+            nodes[sink_node] = f"s{node_index + 1}"
+        else:
+            nodes[sink_node] = f"s{node_index}"
+        node_info[sink_node] = f"{sink_node}"
+
+    return nodes, node_info
+
+
+def _collect_nodes(graph, selector, edges_limit):
+    """
+    Collect all nodes and identify special nodes (source/sink).
+    """
+    all_nodes = set()
     head_nodes = set()
     tail_nodes = set()
-    node_index = 0
-    edge_index = 0
+    edge_count = 0
+    limit_exceeded = False
 
     for edge in graph.edges():
-        edge_index += 1
+        edge_count += 1
 
-        if edge_index >= edges_limit:
-            return f"// Graph too complex. Stopped at {edge_index} edges and {len(nodes)} nodes."
-
-        head, tail, variant, count = edge["head"], edge["tail"], edge["variant"], edge["count"]
+        head, tail = edge["head"], edge["tail"]
 
         if selector and selector[-1] is True:
             head, tail = tail, head
 
-        tail_nodes.add(tail)
+        all_nodes.add(head)
+        all_nodes.add(tail)
         head_nodes.add(head)
+        tail_nodes.add(tail)
 
-        if tail not in nodes:
-            nodes[tail] = f"s{node_index}"
-            node_index += 1
-        if head not in nodes:
-            nodes[head] = f"s{node_index}"
-            node_index += 1
+        if edge_count >= edges_limit:
+            limit_exceeded = True
+            break
 
-        if variant:
-            label = variant_label(variant, count, reference, selector)
-            pen_width = "1" if count == 1 else "2"
-            dot_lines.append(f'  {nodes[head]} -> {nodes[tail]} [label="{label}",penwidth={pen_width}]')
-        else:
-            dot_lines.append(f'  {nodes[head]} -> {nodes[tail]} [label="&lambda;",style=dashed]')
+    return all_nodes, head_nodes, tail_nodes, edge_count, limit_exceeded
 
-    sink_node = next(iter(tail_nodes - head_nodes), None)
-    source_node = next(iter(head_nodes - tail_nodes), None)
+
+def _create_edge_dot(head, tail, variant, count, reference, selector, nodes):
+    """
+    Create DOT notation for a single edge.
+    """
+    if variant:
+        label = variant_label(variant, count, reference, selector)
+        pen_width = "1" if count == 1 else "2"
+        tooltip = f"Variant: {variant}\\nCount: {count}"
+
+        return (
+            f'  {nodes[head]} -> {nodes[tail]} '
+            f'[label="{label}",penwidth={pen_width},'
+            f'tooltip="{tooltip}",edgetooltip="{tooltip}",labeltooltip="{tooltip}"]'
+        )
+    else:
+        empty_tooltip = "Empty transition"
+        return (
+            f'  {nodes[head]} -> {nodes[tail]} '
+            f'[label="&lambda;",style=dashed,'
+            f'tooltip="{empty_tooltip}",edgetooltip="{empty_tooltip}",labeltooltip="{empty_tooltip}"]'
+        )
+
+
+def _style_nodes(nodes, node_info, source_node, sink_node, dominator_nodes):
+    """
+    Generate DOT notation for node styling (source, sink, dominators, regular nodes).
+    """
+    dot_lines = []
+
+    # Build set of all styled nodes
+    styled_nodes = set()
     if sink_node:
-        dot_lines.append(f'{nodes[sink_node]}[fillcolor=aliceblue,style=filled,peripheries=2,penwidth=2]')
+        styled_nodes.add(sink_node)
+    if source_node:
+        styled_nodes.add(source_node)
+    styled_nodes.update(dominator_nodes)
 
+    # Style sink node
+    if sink_node:
+        dot_lines.append(
+            f'{nodes[sink_node]}'
+            f'[fillcolor=aliceblue,style=filled,peripheries=2,penwidth=2,'
+            f'tooltip="Sink node\\n{node_info[sink_node]}"]'
+        )
+
+    # Style source node
     if source_node:
         dot_lines.extend([
-            f'{nodes[source_node]}[fillcolor=aliceblue,style=filled,penwidth=2]',
-            'i[label="",shape=point,width=.1]',
+            f'{nodes[source_node]}'
+            f'[fillcolor=aliceblue,style=filled,penwidth=2,'
+            f'tooltip="Source node\\n{node_info[source_node]}"]',
+            'i[label="",shape=point,width=.1,tooltip="Start"]',
             f'i->{nodes[source_node]}',
         ])
 
-    if dominators:
-        for node in get_dominators(graph):
-            dot_lines.append(f'{nodes[node]}[fillcolor=aliceblue,style=filled,penwidth=2]')
+    # Style dominator nodes (excluding source/sink to avoid overwriting)
+    for node in dominator_nodes:
+        if node not in [sink_node, source_node]:
+            dot_lines.append(
+                f'{nodes[node]}'
+                f'[fillcolor=aliceblue,style=filled,penwidth=2,'
+                f'tooltip="Dominator node\\n{node_info[node]}"]'
+            )
+
+    # Add tooltips for regular nodes (those without special styling)
+    for node, node_id in nodes.items():
+        if node not in styled_nodes:
+            dot_lines.append(f'{node_id}[tooltip="{node_info[node]}"]')
+
+    return dot_lines
+
+
+def graph_to_dot(graph, reference, selector=None, dominators=True, edges_limit=100):
+    """
+    Convert a graph to DOT format for visualization purposes.
+
+    It includes styled nodes (source, sink, dominators) and edges with variants.
+    Tooltips are added to both nodes and edges for additional information.
+    The source node is always labeled as s0, and the sink node gets the highest number.
+    """
+    dot_lines = [
+        "digraph {",
+        "rankdir=LR",
+        "edge[fontname=monospace]",
+        f'node[fixedsize=true,fontname=serif,shape=circle,width=1]'
+    ]
+
+    summary = _collect_nodes(graph, selector, edges_limit)
+    if summary[4]:
+        return f"// Graph too complex. Stopped at {summary[3]} edges and {len(summary[0])} nodes."
+
+    all_nodes, head_nodes, tail_nodes, _, _ = summary
+
+    source_node = next(iter(head_nodes - tail_nodes), None)
+    sink_node = next(iter(tail_nodes - head_nodes), None)
+
+    nodes, node_info = _assign_node_ids(all_nodes, source_node, sink_node)
+
+    for edge in graph.edges():
+        head, tail, variant, count = edge["head"], edge["tail"], edge["variant"], edge["count"]
+        if selector and selector[-1] is True:
+            head, tail = tail, head
+        edge_dot = _create_edge_dot(head, tail, variant, count, reference, selector, nodes)
+        dot_lines.append(edge_dot)
+
+    dominator_nodes = get_dominators(graph) if dominators else set()
+    node_styling = _style_nodes(nodes, node_info, source_node, sink_node, dominator_nodes)
+    dot_lines.extend(node_styling)
     dot_lines.append("}")
     return "\n".join(dot_lines)
 
