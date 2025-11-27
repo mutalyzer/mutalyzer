@@ -102,6 +102,55 @@ def get_dominators(graph):
     return dominators[sink] - {source, sink}
 
 
+def variant_label(variant, count, reference, selector):
+    """
+    Generate HGVS label(s) for variant(s).
+
+    Args:
+        variant: Variant object with start, end, and sequence attributes.
+        count: Number of variants to display.
+        reference: Reference sequence.
+        selector: Controls output order (reversed if last element is True).
+
+    Returns:
+        String with HGVS notation for the variant(s).
+    """
+    label = to_hgvs(variant, reference, selector)
+
+    if count <= 1:
+        return label
+
+    last_sequence = _rotate_sequence(variant.sequence, count - 1)
+    variant_last = Variant(variant.start + (count - 1), variant.end + (count - 1), last_sequence)
+    label_end = to_hgvs(variant_last, reference, selector)
+
+    if count == 3:
+        middle_sequence = _rotate_sequence(variant.sequence, count - 2)
+        variant_middle = Variant(variant.start + (count - 2), variant.end + (count - 2), middle_sequence)
+        middle_content = to_hgvs(variant_middle, reference, selector)
+    elif count > 3:
+        middle_content = f"(+{count - 2} more)"
+    else:  # count == 2
+        middle_content = ""
+
+    parts = [label, label_end]
+    if middle_content:
+        parts = [label, middle_content, label_end]
+
+    if selector and len(selector) > 0 and selector[-1]:
+        parts = parts[::-1]
+
+    return "\n".join(parts)
+
+
+def _rotate_sequence(sequence, offset):
+    """Rotate sequence by offset positions."""
+    if not sequence:
+        return ""
+    offset = offset % len(sequence)
+    return sequence[offset:] + sequence[:offset]
+
+
 def graph_to_dot(graph, reference, selector=None, dominators=True, edges_limit=100):
     width = "1"
 
@@ -139,32 +188,15 @@ def graph_to_dot(graph, reference, selector=None, dominators=True, edges_limit=1
             nodes[head] = f"s{node_index}"
             node_index += 1
 
-        head_id, tail_id = nodes[head], nodes[tail]
-
         if variant:
-            label = to_hgvs(variant, reference, selector)
-            if count > 1:
-                last_sequence = ""
-                if variant.sequence:
-                    offset = (count - 1) % len(variant.sequence)
-                    last_sequence = variant.sequence[offset:] + variant.sequence[:offset]
-                variant_last = Variant(variant.start + (count - 1), variant.end + (count -1 ), last_sequence)
-                label_end = to_hgvs(variant_last, reference, selector)
-                more = f"\n(+{count-2} more)" if count - 2 > 0 else ""
-                if selector and selector[-1]:
-                    label = f"{label_end}{more}\n{label}"
-                else:
-                    label = f"{label}{more}\n{label_end}"
-
-                dot_lines.append(f'  {head_id} -> {tail_id} [label="{label}",penwidth=2]')
-            else:
-                dot_lines.append(f'  {head_id} -> {tail_id} [label="{label}"]')
+            label = variant_label(variant, count, reference, selector)
+            pen_width = "1" if count == 1 else "2"
+            dot_lines.append(f'  {nodes[head]} -> {nodes[tail]} [label="{label}",penwidth={pen_width}]')
         else:
-            dot_lines.append(f'  {head_id} -> {tail_id} [label="&lambda;",style=dashed]')
+            dot_lines.append(f'  {nodes[head]} -> {nodes[tail]} [label="&lambda;",style=dashed]')
 
     sink_node = next(iter(tail_nodes - head_nodes), None)
     source_node = next(iter(head_nodes - tail_nodes), None)
-
     if sink_node:
         dot_lines.append(f'{nodes[sink_node]}[fillcolor=aliceblue,style=filled,peripheries=2,penwidth=2]')
 
