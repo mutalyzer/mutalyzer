@@ -3,7 +3,7 @@ import copy
 import re
 
 from mutalyzer_mutator.util import reverse_complement
-from mutalyzer_retriever.reference import GRCH38, get_reference_mol_type
+from mutalyzer_retriever.reference import ASSEMBLIES, get_reference_mol_type
 from mutalyzer_retriever.retriever import (
     NoReferenceError,
     NoReferenceRetrieved,
@@ -639,9 +639,8 @@ def get_mane_transcript(suggestions, reference_id):
     return mane_plus_clinical
 
 
-def get_grch38_chromosome(suggestions):
-    """
-    Find the GRCh38 chromosome ID in the suggestions.
-    """
-    chrs = set(GRCH38.values()) & set(suggestions.keys())
-    return chrs.pop() if chrs else None
+def get_assembly_from_chr_id(chr_id):
+    for a in ASSEMBLIES:
+        if chr_id in ASSEMBLIES[a].values():
+            return a
+    return None

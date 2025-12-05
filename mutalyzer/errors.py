@@ -13,12 +13,12 @@ def mismatch(input_description, model_description):
         ),
     }
 
-def gene_multiple_transcripts(reference_id, chr_id, options, path):
+def gene_as_reference_id(gene_name, chr_ids, options, path):
     return {
-        "code": "EGENEMULTIPLETRANSCRIPTS",
-        "details": f"Reference {reference_id} identified as gene on {chr_id}.",
-        "gene": reference_id,
-        "chr_id": chr_id,
+        "code": "EGENEASREFERENCEID",
+        "details": f"Reference {gene_name} identified as a gene name.",
+        "gene": gene_name,
+        "chr_ids": chr_ids,
         "options": options,
         "paths": [path],
     }

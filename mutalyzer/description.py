@@ -87,8 +87,7 @@ from .reference import (
     retrieve_reference,
     slice_to_selector,
     yield_overlap_ids,
-    get_mane_transcript,
-    get_grch38_chromosome,
+    get_assembly_from_chr_id,
 )
 from .util import (
     check_errors,
@@ -107,7 +106,6 @@ from .util import (
     slice_sequence,
     sort_variants,
 )
-
 
 def _slices_differ(chr_id, s_id):
     return slice_to_selector(
@@ -381,30 +379,22 @@ class Description:
         """
         suggestions = get_gene_suggestions(reference_id)
         if not suggestions:
-            return False  # No gene data
-
-        chr_id = get_grch38_chromosome(suggestions)
-        if not chr_id:
             return False
 
-        # Try MANE (Select or Plus Clinical)
-        mane_transcript = get_mane_transcript(suggestions, chr_id)
-        if mane_transcript and mane_transcript.get("id"):
-            transcript_id = mane_transcript["id"]
-            set_by_path(self.corrected_model, path[:-1], {"id": chr_id, "selector": {"id": transcript_id}})
-            self.add_info(infos.corrected_reference_id(reference_id, f"{chr_id}({transcript_id})", path))
-            new_path = path[:-1] + ("id",)
-            self._retrieve_and_store_reference(chr_id, new_path)
-            return True
+        descriptions = {}
+        for chr_id in suggestions:
+            a_id = get_assembly_from_chr_id(chr_id)
+            if chr_id:
+                _descriptions = self._generate_gene_transcript_suggestions(
+                    self.corrected_model, chr_id, suggestions[chr_id], path
+                )
+                if _descriptions:
+                    descriptions[a_id] = _descriptions
+        print(suggestions)
+        print(descriptions)
+        self._add_error(errors.gene_as_reference_id(reference_id, list(suggestions.keys()), descriptions, path))
 
-        # No MANE - report error with suggestions
-        if chr_id in suggestions and suggestions[chr_id]:
-            suggested_descriptions = self._generate_gene_transcript_suggestions(
-                self.corrected_model, chr_id, suggestions[chr_id], path
-            )
-            self._add_error(errors.gene_multiple_transcripts(reference_id, chr_id, suggested_descriptions, path))
-
-        return True  # Was a gene, but couldn't resolve
+        return True
 
     def _handle_lrg(self, reference_id, path):
         """
@@ -1210,10 +1200,11 @@ class Description:
             'tag': str (optional)
         } or None}}
         """
-        suggestions = {assembly_id: {} for assembly_id in assembly_ids}
+        suggestions = {}
         unique_refs = {e[0] for e in intronic_errors}
 
         for assembly_id in assembly_ids:
+            assembly_id_suggestions = {}
             for ref_id in unique_refs:
                 chr_id = get_chromosome_from_selector(assembly_id, ref_id)
                 if chr_id:
@@ -1232,10 +1223,9 @@ class Description:
                             tag = get_mane_tag(s_m)
                             if tag:
                                 suggestion["tag"] = tag
-                    suggestions[assembly_id][ref_id] = suggestion
-                else:
-                    suggestions[assembly_id][ref_id] = None
-
+                    assembly_id_suggestions[ref_id] = suggestion
+            if assembly_id_suggestions:
+                suggestions[assembly_id] = assembly_id_suggestions
         return suggestions
 
     def _check_intronic_point_no_introns(self):
@@ -1244,7 +1234,7 @@ class Description:
         if not intronic_errors:
             return
 
-        assembly_ids = ("GRCh38", "GRCh37")
+        assembly_ids = ("GRCh38", "T2T", "GRCh37")
         chr_suggestions = self._get_chr_suggestions(intronic_errors, assembly_ids)
 
         descriptions = []
@@ -1253,7 +1243,7 @@ class Description:
             has_replacements = False
 
             for ref_id in ref_paths:
-                suggestion = chr_suggestions[assembly_id].get(ref_id)
+                suggestion = chr_suggestions.get(assembly_id, {}).get(ref_id)
                 if suggestion:
                     chr_id = suggestion['chr_id']
                     has_replacements = True
@@ -1274,6 +1264,7 @@ class Description:
         for ref_id, point, path, _ in intronic_errors:
             positions.setdefault(ref_id, []).append(location_to_description(point))
 
+        print(chr_suggestions)
         self._add_error(errors.intronic(positions, descriptions if descriptions else None, chr_suggestions))
 
     def _check_intronic_point_r_genomic(self, point, path):
@@ -1968,7 +1959,6 @@ class Description:
                     self.construct_equivalent()
 
             self.remove_superfluous_selector()
-
         # self.print_models_summary()
 
     def output(self):

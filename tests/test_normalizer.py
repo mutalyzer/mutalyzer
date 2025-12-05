@@ -397,39 +397,6 @@ def test_intronic(monkeypatch, description, errors):
             sorted(errors, key=lambda e: (e.get('code', ''), str(e.get('paths', [])))))
 
 
-@pytest.mark.parametrize(
-    "description, chr_id, gene_suggestions, normalized",
-    [
-        (
-                "SDHD:c.52+65del",
-                "NG_012337.3",  # We use this instead of NC_000011.10
-                {
-                    'NG_012337.3': [
-                        {'id': 'NM_003002.4', 'tag': 'MANE Select'},
-                        {'id': 'NM_001276506.2'}
-                    ]
-                },
-                "NG_012337.3(NM_003002.4):c.52+65del"
-        ),
-    ],
-)
-def test_gene_mane(monkeypatch, description, chr_id, gene_suggestions, normalized):
-    def _get_gene_suggestions(gene_name):
-        return gene_suggestions
-
-    def get_grch38_chromosome(gene_suggestions):
-        return chr_id
-
-    monkeypatch.setattr(
-        "mutalyzer.description.get_gene_suggestions",
-        _get_gene_suggestions,
-    )
-    monkeypatch.setattr(
-        "mutalyzer.description.get_grch38_chromosome",
-        get_grch38_chromosome,
-    )
-    assert normalize(description)["normalized_description"] == normalized
-
 
 @pytest.mark.parametrize(
     "description, chr_id, gene, gene_suggestions, errors",
@@ -440,93 +407,69 @@ def test_gene_mane(monkeypatch, description, chr_id, gene_suggestions, normalize
                 "SDHD",
                 {
                     'NG_012337.3': [
-                        {'id': 'NM_003002.3'},
-                        {'id': 'NM_001276506.2'}
+                        {"id": "NM_003002.3"},
+                        {"id": "NM_001276506.2"}
                     ]
                 },
                 [{
-                    'code': 'EGENEMULTIPLETRANSCRIPTS',
-                    'details': 'Reference SDHD identified as gene on NG_012337.3.',
-                    'gene': 'SDHD',
-                    'chr_id': 'NG_012337.3',
-                    'options': [{
-                        'description': 'NG_012337.3(NM_003002.3):c.52+65del',
-                        'transcript_id': 'NM_003002.3',
-                        'chromosome_id': 'NG_012337.3'
-                    }, {
-                        'description': 'NG_012337.3(NM_001276506.2):c.52+65del',
-                        'transcript_id': 'NM_001276506.2',
-                        'chromosome_id': 'NG_012337.3'
-                    }],
-                    'paths': [('reference', 'id')]
-                }]
+                    "code": 'EGENEASREFERENCEID',
+                    "details": 'Reference SDHD identified as a gene name.',
+                    "gene": 'SDHD',
+                    "chr_ids": ["NG_012337.3"],
+                    "options": {"NG_012337.3": [{"description": "NG_012337.3(NM_003002.3):c.52+65del",
+                                                 "transcript_id": "NM_003002.3",
+                                                 "chromosome_id": "NG_012337.3"
+                                                 },
+                                                {"description": "NG_012337.3(NM_001276506.2):c.52+65del",
+                                                 "transcript_id": "NM_001276506.2",
+                                                 "chromosome_id": "NG_012337.3"}]},
+                    "paths": [("reference", "id")]}]
         ),
-        # Complex description with nested gene reference
         (
                 "SDHD:c.274delinsNM_003002.4:52",
                 "NG_012337.3",
                 "SDHD",
                 {
-                    'NG_012337.3': [
-                        {'id': 'NM_003002.3', 'tag': 'RefSeq Select'},
-                        {'id': 'NM_001276506.2'}
+                    "NG_012337.3": [
+                        {"id": "NM_003002.3", "tag": "RefSeq Select"},
+                        {"id": "NM_001276506.2"}
                     ]
                 },
                 [{
-                    'code': 'EGENEMULTIPLETRANSCRIPTS',
-                    'details': 'Reference SDHD identified as gene on NG_012337.3.',
-                    'gene': 'SDHD',
-                    'chr_id': 'NG_012337.3',
-                    'options': [{
-                        'description': 'NG_012337.3(NM_003002.3):c.274delinsNM_003002.4:52',
-                        'transcript_id': 'NM_003002.3',
-                        'chromosome_id': 'NG_012337.3',
-                        'tag': 'RefSeq Select'
-                    }, {
-                        'description': 'NG_012337.3(NM_001276506.2):c.274delinsNM_003002.4:52',
-                        'transcript_id': 'NM_001276506.2',
-                        'chromosome_id': 'NG_012337.3'
-                    }],
-                    'paths': [('reference', 'id')]
-                }]
+                    "code": "EGENEASREFERENCEID",
+                    "details": "Reference SDHD identified as a gene name.",
+                    "gene": "SDHD",
+                    "chr_ids": ["NG_012337.3"],
+                    "options": {"NG_012337.3": [{"description": "NG_012337.3(NM_003002.3):c.274delinsNM_003002.4:52",
+                                                 "transcript_id": "NM_003002.3",
+                                                 "chromosome_id": "NG_012337.3",
+                                                 "tag": "RefSeq Select"},
+                                                {"description": "NG_012337.3(NM_001276506.2):c.274delinsNM_003002.4:52",
+                                                 "transcript_id": "NM_001276506.2",
+                                                 "chromosome_id": "NG_012337.3"}]},
+                    "paths": [("reference", "id")]}]
+
         ),
-        # Gene not found - returns None from API
         (
             "UNKNOWNGENE:c.100A>G",
             None,
             "UNKNOWNGENE",
             None,
             [{
-                'code': 'ERETR',
-                'details': 'Reference UNKNOWNGENE could not be retrieved.',
-                'paths': [[('reference', 'id')]]
-            }]
-        ),
-        # Gene found but chromosome not mapped
-        (
-            "TESTGENE:c.100A>G",
-            None,  # No chromosome mapping
-            "TESTGENE",
-            {
-                'NC_000001.11': [
-                    {'id': 'NM_000001.1', 'tag': 'MANE Select'}
-                ]
-            },
-            [{
-                'code': 'ERETR',
-                'details': 'Reference TESTGENE could not be retrieved.',
-                'paths': [[('reference', 'id')]]
+                "code": "ERETR",
+                "details": "Reference UNKNOWNGENE could not be retrieved.",
+                "paths": [[("reference", "id")]]
             }]
         ),
     ],
 )
-def test_gene_mane_errors(monkeypatch, description, chr_id, gene, gene_suggestions, errors):
+def test_gene_as_reference_id_error(monkeypatch, description, chr_id, gene, gene_suggestions, errors):
     def _get_gene_suggestions(gene_name):
         if gene_name == gene:
             return gene_suggestions
         return None
 
-    def get_grch38_chromosome(gene_suggestions):
+    def get_assembly_from_chr_id(gene_suggestions):
         return chr_id
 
     monkeypatch.setattr(
@@ -534,7 +477,7 @@ def test_gene_mane_errors(monkeypatch, description, chr_id, gene, gene_suggestio
         _get_gene_suggestions,
     )
     monkeypatch.setattr(
-        "mutalyzer.description.get_grch38_chromosome",
-        get_grch38_chromosome,
+        "mutalyzer.description.get_assembly_from_chr_id",
+        get_assembly_from_chr_id,
     )
     assert normalize(description)["errors"] == errors
