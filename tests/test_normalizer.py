@@ -167,8 +167,8 @@ def test_only_variants_errors(description, sequence, codes):
                             "50+10"
                         ]
                     },
-                    "details": "Intronic position 50+10 used with a non intronic reference sequence NM_003002.4.",
-                    "suggestions": [
+                    "details": "Intronic position `50+10` was used with a non intronic reference sequence `NM_003002.4`.",
+                    "options": [
                         {
                             "assembly_id": "GRCh38",
                             "description": "NC_000011.10(NM_003002.4):c.50+10del"
@@ -206,8 +206,8 @@ def test_only_variants_errors(description, sequence, codes):
                             "50+12"
                         ]
                     },
-                    "details": "Intronic positions [50+10;50+12] used with a non intronic reference sequence NM_003002.4.",
-                    "suggestions": [
+                    "details": "Intronic positions `50+10`, `50+12` were used with a non intronic reference sequence `NM_003002.4`.",
+                    "options": [
                         {
                             "assembly_id": "GRCh38",
                             "description": "NC_000011.10(NM_003002.4):c.50+10_50+12del"
@@ -244,8 +244,8 @@ def test_only_variants_errors(description, sequence, codes):
                             "310+10"
                         ]
                     },
-                    "details": "Intronic position 310+10 used with a non intronic reference sequence NM_003002.4.",
-                    "suggestions": [
+                    "details": "Intronic position `310+10` was used with a non intronic reference sequence `NM_003002.4`.",
+                    "options": [
                         {
                             "assembly_id": "GRCh38",
                             "description": "NG_012337.3(NM_003002.4):c.274delinsNC_000011.10(NM_003002.4):c.310+10"
@@ -289,8 +289,10 @@ def test_only_variants_errors(description, sequence, codes):
                             "52+2"
                         ]
                     },
-                    "details": "Intronic positions [52+5;52+10;169+1;52+10;52+15] used with a non intronic reference sequence NM_024426.4. Intronic position 52+2 used with a non intronic reference sequence NM_003002.4.",
-                    "suggestions": [
+                    "details": "Intronic positions `52+5`, `52+10`, `169+1`, `52+10`, `52+15` were used with a non "
+                               "intronic reference sequence `NM_024426.4`. Intronic position `52+2` was used with a "
+                               "non intronic reference sequence `NM_003002.4`.",
+                    "options": [
                         {
                             "assembly_id": "GRCh38",
                             "description": "NM_024426.4:c.[52+5_52+10del;100delinsNC_000011.10(NM_003002.4):c.52+2;169+1delins52+10_52+15]"
@@ -336,8 +338,10 @@ def test_only_variants_errors(description, sequence, codes):
                             "100+55"
                         ]
                     },
-                    "details": "Intronic position 310+10 used with a non intronic reference sequence NM_003002.4. Intronic positions [100+50;100+55] used with a non intronic reference sequence NM_024426.4.",
-                    "suggestions": [
+                    "details": "Intronic position `310+10` was used with a non intronic reference sequence "
+                               "`NM_003002.4`. Intronic positions `100+50`, `100+55` were "
+                               "used with a non intronic reference sequence `NM_024426.4`.",
+                    "options": [
                         {
                             "assembly_id": "GRCh38",
                             "description": "NG_012337.3(NM_003002.4):c.274delins[NC_000011.10(NM_003002.4):c.310+10;NM_024426.4:c.100+50_100+55]"
@@ -413,7 +417,7 @@ def test_intronic(monkeypatch, description, errors):
                 },
                 [{
                     "code": 'EGENEASREFERENCEID',
-                    "details": 'Reference SDHD identified as a gene name.',
+                    "details": "`SDHD` is an invalid reference identifier; it appears to be a gene name.",
                     "gene": 'SDHD',
                     "chr_ids": ["NG_012337.3"],
                     "options": {"NG_012337.3": [{"description": "NG_012337.3(NM_003002.3):c.52+65del",
@@ -437,7 +441,7 @@ def test_intronic(monkeypatch, description, errors):
                 },
                 [{
                     "code": "EGENEASREFERENCEID",
-                    "details": "Reference SDHD identified as a gene name.",
+                    "details": "`SDHD` is an invalid reference identifier; it appears to be a gene name.",
                     "gene": "SDHD",
                     "chr_ids": ["NG_012337.3"],
                     "options": {"NG_012337.3": [{"description": "NG_012337.3(NM_003002.3):c.274delinsNM_003002.4:52",
@@ -457,7 +461,7 @@ def test_intronic(monkeypatch, description, errors):
             None,
             [{
                 "code": "ERETR",
-                "details": "Reference UNKNOWNGENE could not be retrieved.",
+                "details": "`UNKNOWNGENE` could not be retrieved; it may be an invalid reference identifier.",
                 "paths": [[("reference", "id")]]
             }]
         ),

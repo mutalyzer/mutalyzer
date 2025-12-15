@@ -16,7 +16,7 @@ from .commons import code_in, monkey_patches
 
 ESPLICESITE = {
     "code": "ESPLICESITE",
-    "details": "Splice site(s) affected.",
+    "details": "Variant affects one or more splice sites.",
     "paths": [["variants", 0]],
 }
 
@@ -266,7 +266,7 @@ TESTS = [
         "errors": [
             {
                 "code": "ESEQUENCEMISMATCH",
-                "details": "g not found in the reference sequence, found u instead.",
+                "details": "`g` was not found in the reference sequence; `u` was found instead.",
                 "paths": [["variants", 0, "deleted"]],
             }
         ],
@@ -283,7 +283,7 @@ TESTS = [
         "errors": [
             {
                 "code": "ENORNA",
-                "details": "Sequence t is not an RNA sequence.",
+                "details": "Sequence `t` is invalid; it is not an RNA sequence.",
                 "paths": [["variants", 0, "deleted", 0, "sequence"]],
             }
         ],
@@ -298,7 +298,7 @@ TESTS = [
         "errors": [
             {
                 "code": "ESEQUENCEMISMATCH",
-                "details": "u not found in the reference sequence, found a instead.",
+                "details": "`u` was not found in the reference sequence; `a` was found instead.",
                 "paths": [["variants", 1, "deleted"]],
             }
         ],

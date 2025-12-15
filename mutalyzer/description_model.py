@@ -390,20 +390,16 @@ def point_to_description(point, aa="verbatim"):
     :param point: Position dictionary.
     :return: Equivalent position string representation.
     """
-    outside_cds = offset = ""
     if point.get("amino_acid"):
         sequence = point.get("amino_acid")
     else:
         sequence = ""
-    if point.get("outside_cds"):
-        if point["outside_cds"] == "downstream":
-            outside_cds = "*"
-        elif point["outside_cds"] == "upstream":
-            outside_cds = "-"
+    outside_cds = point_outside_cds(point)
     if point.get("uncertain"):
         position = "?"
     else:
         position = str(point.get("position"))
+    offset = ""
     if point.get("offset"):
         if point["offset"].get("value"):
             offset = "%+d" % point["offset"]["value"]
@@ -414,6 +410,24 @@ def point_to_description(point, aa="verbatim"):
                 offset = "+?"
     return "{}{}{}{}".format(sequence, outside_cds, position, offset)
 
+
+def point_outside_cds(point):
+    if point.get("outside_cds", "") == "downstream":
+        return "*"
+    if point.get("outside_cds", "") == "upstream":
+        return "-"
+    return ""
+
+
+def point_offset_sign(point):
+    if point.get("offset", {}).get("value") < 0:
+        return "-"
+    if point.get("offset", {}).get("value") >= 0 :
+        return "+"
+    return ""
+
+def point_position(point):
+    return f"{point_outside_cds(point)}{point.get("position")}"
 
 def length_to_description(length):
     """
@@ -454,4 +468,3 @@ def repeat_number_to_description(repeat_number):
             length_to_description(repeat_number.get("end")),
         )
     return f"[{output}]"
-

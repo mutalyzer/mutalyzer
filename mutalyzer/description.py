@@ -390,8 +390,6 @@ class Description:
                 )
                 if _descriptions:
                     descriptions[a_id] = _descriptions
-        print(suggestions)
-        print(descriptions)
         self._add_error(errors.gene_as_reference_id(reference_id, list(suggestions.keys()), descriptions, path))
 
         return True
@@ -524,6 +522,19 @@ class Description:
             )
         )
 
+    def _generate_gene_transcript_suggestions_selectors(self, model, transcript_options, path):
+        suggestions = []
+        for transcript_id in transcript_options:
+            modified_model = copy.deepcopy(model)
+            set_by_path(modified_model, path, transcript_id)
+            entry = {
+                "description": model_to_string(modified_model),
+                "transcript_id": transcript_id,
+            }
+            suggestions.append(entry)
+        return suggestions
+
+
     def handle_selector_not_found(self, reference_id, selector_id, path):
         """
         Checks if the `selector_id` is either a gene name, HGNC gene id, or
@@ -539,9 +550,8 @@ class Description:
             self._correct_selector_id(path, selector_id, gene_selectors[0], "gene name")
             return
         if len(gene_selectors) > 1:
-            self._add_error(
-                errors.selector_options(selector_id, "gene", gene_selectors, path)
-            )
+            options = self._generate_gene_transcript_suggestions_selectors(self.corrected_model, gene_selectors, path)
+            self._add_error(errors.selector_options(selector_id, "gene", options, path))
             return
         if "_v" in selector_id:
             gene_name = selector_id.split("_v")[0]
@@ -554,9 +564,8 @@ class Description:
                 )
                 return
             if len(gene_selectors) > 1:
-                self._add_error(
-                    errors.selector_options(gene_name, "gene", gene_selectors, path)
-                )
+                options = self._generate_gene_transcript_suggestions_selectors(self.corrected_model, gene_selectors, path)
+                self._add_error(errors.selector_options(gene_name, "gene", options, path))
                 return
         gene_selectors = get_gene_selectors_hgnc(
             selector_id, self.references[reference_id]
@@ -565,9 +574,8 @@ class Description:
             self._correct_selector_id(path, selector_id, gene_selectors[0], "gene HGNC")
             return
         if len(gene_selectors) > 1:
-            self._add_error(
-                errors.selector_options(selector_id, "gene HGNC", gene_selectors, path)
-            )
+            options = self._generate_gene_transcript_suggestions_selectors(self.corrected_model, gene_selectors, path)
+            self._add_error(errors.selector_options(selector_id, "gene HGNC", options, path))
             return
         self._add_error(errors.no_selector_found(reference_id, selector_id, path))
 
@@ -615,9 +623,7 @@ class Description:
             copy.deepcopy(self.corrected_model)
         ):
             if s_id:
-                c_s_s = get_coordinate_system_from_selector_id(
-                    self.references[r_id], s_id
-                )
+                c_s_s = get_coordinate_system_from_selector_id(self.references[r_id], s_id)
                 if c_s_s != c_s and not (
                     (c_s_s == "c" and c_s in ["n", "r", "p"])
                     or (c_s_s == "n" and c_s == "r")
@@ -666,15 +672,9 @@ class Description:
                 and selector_model.get("exception")
                 and selector_model.get("exception") == "ribosomal slippage"
             ):
-                self._add_error(
-                    errors.cds_slices(
-                        f"Expcetion: \"{selector_model.get('exception')}\"."
-                    )
-                )
+                self._add_error(errors.cds_slices(selector_id, selector_model.get("exception")))
             if selector_model.get("whole_exon_transcript"):
-                self.add_info(
-                    infos.whole_transcript_exon(reference_id, selector_id, path)
-                )
+                self.add_info(infos.whole_transcript_exon(reference_id, selector_id, path))
 
     @check_errors
     def _correct_variants_type(self):
@@ -1264,7 +1264,6 @@ class Description:
         for ref_id, point, path, _ in intronic_errors:
             positions.setdefault(ref_id, []).append(location_to_description(point))
 
-        print(chr_suggestions)
         self._add_error(errors.intronic(positions, descriptions if descriptions else None, chr_suggestions))
 
     def _check_intronic_point_r_genomic(self, point, path):
@@ -1389,7 +1388,7 @@ class Description:
         if self.is_inverted():
             ref_seq = reverse_complement(ref_seq)
         if len(ref_seq) % len(repeat_seq) != 0:
-            self._add_error(errors.repeat_reference_sequence_length(path))
+            self._add_error(errors.repeat_reference_sequence_length(len(ref_seq), len(repeat_seq), path))
         elif (len(ref_seq) // len(repeat_seq)) * repeat_seq != ref_seq:
             self._add_error(errors.repeat_sequences_mismatch(ref_seq, repeat_seq, path))
 
