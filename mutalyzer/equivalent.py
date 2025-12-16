@@ -28,12 +28,12 @@ def overlap_mane_selectors(reference_id, start, end):
     """Return overlapping MANE Select transcripts for a given reference and position."""
     reference_model, found = get_reference_model(reference_id)
     if not found:
-        return set()
-    mane_selectors = set()
+        return list()
+    mane_selectors = list()
     reference_annotations = reference_model.get("annotations", {})
     for feature in yield_feature_models(reference_annotations):
         if "rna" in feature.get("type").lower() and is_overlap(feature, start, end) and is_mane(feature):
-            mane_selectors.add(feature.get("id"))
+            mane_selectors.append(feature.get("id"))
     return mane_selectors
 
 
@@ -41,12 +41,12 @@ def annotated_transcripts(reference_id):
     """Return all annotated transcripts for a given reference."""
     reference_model, found = get_reference_model(reference_id)
     if not found:
-        return set()
-    annotated_transcripts = set()
+        return list()
+    annotated_transcripts = list()
     reference_annotations = reference_model.get("annotations", {})
     for feature in yield_feature_models(reference_annotations):
         if "rna" in feature.get("type").lower():
-            annotated_transcripts.add(feature.get("id"))
+            annotated_transcripts.append(feature.get("id"))
     return annotated_transcripts
 
 def overlap_transcripts(reference_id, start, end):
@@ -55,16 +55,16 @@ def overlap_transcripts(reference_id, start, end):
     # loop over the features of the model and check if there are features of interest overlapping the position
     #   - feature type: check if is transcript
     #   - location range: contains input
-    # retrun: a set of overlap transcripts
+    # retrun: a list of overlap transcripts
 
     reference_model, found = get_reference_model(reference_id)
     if not found:
-        return set()
-    overlap_transcripts = set()
+        return list()
+    overlap_transcripts = list()
     reference_annotations = reference_model.get("annotations", {})
     for feature in yield_feature_models(reference_annotations):
         if "rna" in feature.get("type").lower() and is_overlap(feature, start, end):
-            overlap_transcripts.add(feature.get("id"))
+            overlap_transcripts.append(feature.get("id"))
     return overlap_transcripts
 
 
@@ -117,7 +117,7 @@ def convert_description(description, selectors):
         return d
     reference_id = get_reference_id(d.corrected_model)
     all_transcripts = annotated_transcripts(reference_id)
-    missing_transcripts = set(selectors) - all_transcripts
+    missing_transcripts = list(selectors) - all_transcripts
     if missing_transcripts:
         return {
             "errors": [{"details": f"Transcript(s) not found: {', '.join(missing_transcripts)}"}],
@@ -149,16 +149,16 @@ if __name__ == "__main__":
         description="Generate equivalent variant descriptions for a transcript."
     )
 
-    parser.add_argument(
+    parser.append_argument(
         "reference",
         help="A reference sequence accession (e.g., 'NC_000023.11')"
     )
-    parser.add_argument(
+    parser.append_argument(
         "start",
         type=int,
         help="A location point at the start of the mutation"
     )
-    parser.add_argument(
+    parser.append_argument(
         "end",
         type=int,
         help="A location point at the end of the mutation"
@@ -166,8 +166,8 @@ if __name__ == "__main__":
 
 
     args = parser.parse_args()
-    print(convert_description("NC_000011.10:g.112088971delinsTTTTT", ["NM_003002.4", "NM_014741.5"]))
+    print(convert_description("NC_000011.10(NM_003002.4):c.274G>T", ["NM_003002.4", "NM_001276504.2"]))
 
     # print(overlap_transcripts(args.reference, args.start, args.end))
-    # print(annotated_transcripts(args.reference))
+    print(annotated_transcripts(args.reference))
     # print(overlap_mane_selectors(args.reference, args.start, args.end))
