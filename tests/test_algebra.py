@@ -32,7 +32,7 @@ def test_get_id_no_ref(reference_id):
         "errors": [
             {
                 "code": "ERETR",
-                "details": "Reference NO_REF could not be retrieved.",
+                "details": "`NO_REF` could not be retrieved; it may be an invalid reference identifier.",
                 "paths": [[]],
             }
         ],
@@ -861,21 +861,21 @@ def test_compare(params, expected):
                     "reference_type": [
                         {
                             "code": "EINVALIDINPUT",
-                            "details": "hgvs not valid.",
+                            "details": "`hgvs` is invalid.",
                             "options": ["sequence", "id"],
                         }
                     ],
                     "lhs_type": [
                         {
                             "code": "EINVALIDINPUT",
-                            "details": "HGVS not valid.",
+                            "details": "`HGVS` is invalid.",
                             "options": ["sequence", "variant", "hgvs"],
                         }
                     ],
                     "rhs_type": [
                         {
                             "code": "EINVALIDINPUT",
-                            "details": "varianT not valid.",
+                            "details": "`varianT` is invalid.",
                             "options": ["sequence", "variant", "hgvs"],
                         }
                     ],

@@ -306,7 +306,7 @@ def slice_seq(seq, slices, start=None, end=None):
     for s in slices:
         output += seq[s[0] : s[1]]
     start = new_index(start, slices) if start else 0
-    end = new_index(end, slices) if end else -1
+    end = new_index(end, slices) if end else None
     return output[start:end]
 
 

@@ -264,7 +264,7 @@ def test_view_variants(description, output):
             [
                 {
                     "code": "EVARIANTNOTSUPPORTED",
-                    "details": "Variant Met54[Ile;66] type frame_shift not supported.",
+                    "details": "Variant `Met54IlefsTer66` of type `frame_shift` is not supported.",
                     "paths": [["variants", 0]],
                 }
             ],

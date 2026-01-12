@@ -65,7 +65,7 @@ TESTS = [
         "errors": [
             {
                 "code": "EAMINOACIDMISMATCH",
-                "details": "D not found in the reference sequence, found U instead.",
+                "details": "Amino acid sequence `D` was not found in the reference sequence; `U` was found instead.",
                 "paths": [["variants", 0, "location"]],
             }
         ],
@@ -77,7 +77,7 @@ TESTS = [
         "errors": [
             {
                 "code": "EAMINOACIDMISMATCH",
-                "details": "D not found in the reference sequence, found U instead.",
+                "details": "Amino acid sequence `D` was not found in the reference sequence; `U` was found instead.",
                 "paths": [["variants", 0, "location"]],
             }
         ],
@@ -108,12 +108,12 @@ TESTS = [
         "errors": [
             {
                 "code": "EAMINOACIDMISMATCH",
-                "details": "D not found in the reference sequence, found U instead.",
+                "details": "Amino acid sequence `D` was not found in the reference sequence; `U` was found instead.",
                 "paths": [["variants", 0, "location"]],
             },
             {
                 "code": "EAMINOACIDMISMATCH",
-                "details": "D not found in the reference sequence, found H instead.",
+                "details": "Amino acid sequence `D` was not found in the reference sequence; `H` was found instead.",
                 "paths": [["variants", 0, "inserted", 0, "location", "start"]],
             },
         ],

@@ -45,7 +45,7 @@ def yield_reference_ids(model, path=[]):
         if k in ["reference", "source"]:
             if isinstance(model[k], dict) and model[k].get("id"):
                 yield model[k]["id"], tuple(path + [k, "id"])
-        elif k in ["variants", "inserted"]:
+        elif k in ["variants", "inserted", "deleted"]:
             for i, sub_model in enumerate(model[k]):
                 yield from yield_reference_ids(sub_model, path + [k, i])
 
@@ -159,7 +159,7 @@ def yield_point_locations_all(model, path=[]):
                 yield from yield_point_locations_all(sub_model, path + [k, i])
 
 
-def yield_sub_model(model, keys, types=None, path=[]):
+def yield_sub_model(model, keys, types=None, path=None):
     """
 
     :param model:
@@ -167,6 +167,8 @@ def yield_sub_model(model, keys, types=None, path=[]):
     :param types:
     :param path:
     """
+    if path is None:
+        path = []
     if isinstance(model, dict):
         for k in model.keys():
             if (k in keys and not types) or (
@@ -330,6 +332,15 @@ def variant_to_description(variant, protein=False, aa="verbatim"):
         variant_type = "con"
     elif variant_type == "equal":
         variant_type = "="
+    elif variant_type == "frame_shift":
+        variant_type = "fs"
+        ins = variant.get("inserted", [])
+        if len(ins) == 2 and ins[0].get("sequence") and ins[1].get("location") and ins[1]["location"].get("position"):
+            if len(ins[0]["sequence"]) == 3:
+                inserted = f"Ter{ins[1]['location']['position']}"
+            else:
+                inserted = f"*{ins[1]['location']['position']}"
+            deleted_location += ins[0]["sequence"]
     else:
         variant_type = ""
     return "{}{}{}".format(deleted_location, variant_type, inserted)
@@ -388,20 +399,16 @@ def point_to_description(point, aa="verbatim"):
     :param point: Position dictionary.
     :return: Equivalent position string representation.
     """
-    outside_cds = offset = ""
     if point.get("amino_acid"):
         sequence = point.get("amino_acid")
     else:
         sequence = ""
-    if point.get("outside_cds"):
-        if point["outside_cds"] == "downstream":
-            outside_cds = "*"
-        elif point["outside_cds"] == "upstream":
-            outside_cds = "-"
+    outside_cds = point_outside_cds(point)
     if point.get("uncertain"):
         position = "?"
     else:
         position = str(point.get("position"))
+    offset = ""
     if point.get("offset"):
         if point["offset"].get("value"):
             offset = "%+d" % point["offset"]["value"]
@@ -412,6 +419,24 @@ def point_to_description(point, aa="verbatim"):
                 offset = "+?"
     return "{}{}{}{}".format(sequence, outside_cds, position, offset)
 
+
+def point_outside_cds(point):
+    if point.get("outside_cds", "") == "downstream":
+        return "*"
+    if point.get("outside_cds", "") == "upstream":
+        return "-"
+    return ""
+
+
+def point_offset_sign(point):
+    if point.get("offset", {}).get("value") < 0:
+        return "-"
+    if point.get("offset", {}).get("value") >= 0 :
+        return "+"
+    return ""
+
+def point_position(point):
+    return f"{point_outside_cds(point)}{point.get('position')}"
 
 def length_to_description(length):
     """
@@ -452,4 +477,3 @@ def repeat_number_to_description(repeat_number):
             length_to_description(repeat_number.get("end")),
         )
     return f"[{output}]"
-

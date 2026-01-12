@@ -939,7 +939,7 @@ M2_TESTS = [
         ],
         "input": "NG_008939.1:g.5207_5212delins[4300_4320]",
         "normalized": "NG_008939.1:g.5207_5212delinsGTCCTGTGCTCATTATCTGGC",
-        "normalized": "NG_008939.1:g.[5207_5208delinsGTCCTGT;5211_5212delinsTCATTATCTGGC]",
+        "normalized_alt": "NG_008939.1:g.[5207_5208delinsGTCCTGT;5211_5212delinsTCATTATCTGGC]",
         "genomic": "NG_008939.1:g.5207_5212delinsGTCCTGTGCTCATTATCTGGC",
         "coding_protein_descriptions": {
             (
@@ -2770,10 +2770,10 @@ TESTS = [
     },
     {
         "keywords": [],
-        "input": "NG_012337.1(NM_003002.2):c.[274+20C>T;400_401insNM_003002.4:100_102]",
-        "normalized": "NG_012337.1(NM_003002.2):c.[294C>T;399_401T[6]]",
-        "normalized_alt": "NG_012337.1(NM_003002.2):c.[294C>T;399_401T[6]]",
-        "infos": ["ICORRECTEDCOORDINATESYSTEM", "ICORRECTEDPOINT"],
+        "input": "NG_012337.1(NM_003002.2):c.400_401insNM_003002.4:100_102",
+        "normalized": "NG_012337.1(NM_003002.2):c.399_401T[6]",
+        "normalized_alt": "NG_012337.1(NM_003002.2):c.399_401T[6]",
+        "infos": ["ICORRECTEDCOORDINATESYSTEM"],
         "to_test": True,
     },
     {
