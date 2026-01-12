@@ -612,6 +612,7 @@ def test_get_feature(reference_id, feature_id, feature_model):
             {
                 "id": "NM_003002.2",
                 "cds_id": "NP_002993.1",
+                "gene_id": "SDHD",
                 "type": "mRNA",
                 "inverted": False,
                 "location": {
@@ -630,6 +631,7 @@ def test_get_feature(reference_id, feature_id, feature_model):
             {
                 "id": "NP_002993.1",
                 "mrna_id": "NM_003002.2",
+                "gene_id": "SDHD",
                 "type": "CDS",
                 "inverted": False,
                 "location": {

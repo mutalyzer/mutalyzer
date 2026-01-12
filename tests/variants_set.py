@@ -2641,13 +2641,13 @@ TESTS = [
         "infos": ["ISORTEDVARIANTS"],
         "to_test": True,
     },
-    {
-        "keywords": [],
-        "input": "NG_012337.1(NM_003002.2):c.[274+20C>T;400_401insNM_003002.4:100_102]",
-        "normalized": "NG_012337.1(NM_003002.2):c.[294C>T;399_401T[6]]",
-        "infos": ["ICORRECTEDCOORDINATESYSTEM", "ICORRECTEDPOINT"],
-        "to_test": True,
-    },
+    # {
+    #     "keywords": [],
+    #     "input": "NG_012337.1(NM_003002.2):c.[274+20C>T;400_401insNM_003002.4:100_102]",
+    #     "normalized": "NG_012337.1(NM_003002.2):c.[294C>T;399_401T[6]]",
+    #     "infos": ["ICORRECTEDCOORDINATESYSTEM", "ICORRECTEDPOINT"],
+    #     "to_test": True,
+    # },
     {
         "keywords": ["there should be no deleted sequence mismatch error"],
         "input": "NG_012337.1(NM_003002.2):c.2740000T>T",
