@@ -1,8 +1,10 @@
 import argparse
+from mutalyzer_hgvs_parser import to_model
 from mutalyzer.description_model import get_reference_id, model_to_string
 from mutalyzer.converter.to_hgvs_coordinates import to_hgvs_locations
 from mutalyzer.reference import retrieve_reference, yield_feature_models, is_overlap
 from mutalyzer.description_model import get_reference_id, model_to_string
+from mutalyzer.position_converter import position_convert
 from mutalyzer.description import Description
 from algebra.lcs.lcs_graph import LCSgraph
 from algebra.extractor.extractor import canonical
@@ -71,8 +73,8 @@ def overlap_genes(reference_id, start, end):
     return overlap_genes
 
 
-def gene_to_transcripts(reference_id: str, gene_symbol: str):
-    """Return all transcripts for a given gene in a reference."""
+def annotated_transcripts(reference_id: str, gene_symbol: str):
+    """Return all annotated transcripts for a given gene in a reference."""
     reference_model, found = get_reference_model(reference_id)
     if not found:
         return list()
@@ -86,7 +88,9 @@ def gene_to_transcripts(reference_id: str, gene_symbol: str):
             for sub_feature in yield_feature_models(feature):
                 if "rna" in sub_feature.get("type").lower():
                     transcripts.append(sub_feature.get("id"))
+            break
     return transcripts
+
 
 def get_normalized_model(description):
     d = Description(
@@ -146,51 +150,20 @@ def transcript_to_gene(transcript_id: str):
 
 def convert_description(description, selector_id):
     """Convert a given variant description to a transcript specific description."""
-    #TODO:
-        # -Discuss if the description should be noramalized or not, now it is normalized first
-        # -Add support for transcript descriptison as input (e,g, NM_001127208.3:c.100del)
-        #  via chromosomal description?
+    #DISCUSSIONS:
+        # - Should we normalize the input or the output description?
+        #   - Current implementation do not normalize the input nor the output description
+        # - TODO: Add support for transcript descriptison as input (e,g, NM_001127208.3:c.100del)
 
-    # -normalize the description
-    # -check if selector is in the affected genes
-    d = get_normalized_model(description)
-    if d.errors:
-        return d
 
-    gene = transcript_to_gene(selector_id)
-    if not gene:
-        raise ValueError(f"Cannot find annotated gene for transcript {selector_id}.")
-
-    affected_genes = set()
-    boundaries = get_canonical_variants_boundaries(description)
-    for start, end in boundaries:
-        affected_gene = overlap_genes(
-            reference_id=get_reference_id(d.corrected_model),
-            start=start,
-            end=end,
-        )
-        affected_genes.update(affected_gene)
-    if gene not in affected_genes:
-        raise ValueError(f"Selector transcript {selector_id} does not belong to affected genes {affected_genes}.")
-
-    converted_descriptions = []
-    if d.de_hgvs_internal_indexing_model:
-        from_model = d.de_hgvs_internal_indexing_model
-    else:
-        from_model = None
-
-    try:
-        converted_model = to_hgvs_locations(
-            model=from_model,
-            references=d.references,
-            to_coordinate_system="c",
-            to_selector_id=selector_id,
-            degenerate=True,
-        )
-    except Exception as e:
-        return {"errors": [{"details": str(e)}], "source": "conversion"}
-    converted_descriptions.append(model_to_string(converted_model))
-    return converted_descriptions
+    model = to_model(description=description)
+    p_c = position_convert(
+        description_model=model, to_selector_id=selector_id, include_overlapping=False
+    )
+    if p_c.get("errors"):
+        return p_c
+    converted_m = model_to_string(p_c["converted_model"])
+    return converted_m
 
 
 if __name__ == "__main__":
@@ -218,5 +191,5 @@ if __name__ == "__main__":
     print(convert_description("NC_000004.12(XM_047415843.1):c.100del", "NM_001127208.3"))
 
     print(overlap_genes(args.reference, args.start, args.end))
-    print(gene_to_transcripts(args.reference, "SDHD"))
+    print(annotated_transcripts("NG_012337.3", "SDHD"))
     # print(overlap_mane_selectors(args.reference, args.start, args.end))
