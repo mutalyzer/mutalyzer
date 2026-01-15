@@ -76,7 +76,7 @@ def overlap_genes(reference_id, start, end):
 def annotated_transcripts(reference_id: str, gene_symbol: str):
     """Return all annotated transcripts for a given gene in a reference."""
     reference_model, found = get_reference_model(reference_id)
-    if not found:
+    if not found or not gene_symbol:
         return list()
     transcripts = list()
     reference_annotations = reference_model.get("annotations", {})
@@ -153,8 +153,7 @@ def convert_description(description, selector_id):
     #DISCUSSIONS:
         # - Should we normalize the input or the output description?
         #   - Current implementation do not normalize the input nor the output description
-        # - TODO: Add support for transcript descriptison as input (e,g, NM_001127208.3:c.100del)
-
+        # - TODO: Add support for transcript descriptison as input (e,g, NM_001127208.3:c.100del) via chr?
 
     model = to_model(description=description)
     p_c = position_convert(
@@ -162,8 +161,8 @@ def convert_description(description, selector_id):
     )
     if p_c.get("errors"):
         return p_c
-    converted_m = model_to_string(p_c["converted_model"])
-    return converted_m
+    converted_d = model_to_string(p_c["converted_model"])
+    return get_normalized_model(converted_d)
 
 
 if __name__ == "__main__":
@@ -189,7 +188,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     print(convert_description("NC_000004.12(XM_047415843.1):c.100del", "NM_001127208.3"))
-
+    print(annotated_genes(args.reference))
     print(overlap_genes(args.reference, args.start, args.end))
-    print(annotated_transcripts("NG_012337.3", "SDHD"))
+    print(annotated_transcripts("NC_000011.10", "SDHD"))
     # print(overlap_mane_selectors(args.reference, args.start, args.end))
