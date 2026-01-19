@@ -99,24 +99,21 @@ def get_normalized_model(description):
         sequence=None,
     )
     d.normalize(include_extras=True)
-
-    if d.errors:
-        return d
-    if not d.references and not d.references.get("observed"):
-        d.errors.append({
-            "details": "No observed sequence or other error occurred.",
-            "source": "input",
-        })
     return d
 
 def get_canonical_variants(description):
     """Return the superemals of a given variant description, algebra based extractor."""
-    d = get_normalized_model(description)
+    normalized_m = get_normalized_model(description)
 
-    if d.errors:
-        return d
-    observed  = d.references["observed"]["sequence"]["seq"]
-    reference = d.references["reference"]["sequence"]["seq"]
+    if normalized_m.errors:
+        return {"errors": normalized_m.errors, "source": "input"}
+    if not normalized_m.references and not normalized_m.references.get("observed"):
+        return {
+            "errors": [{"details": "No observed sequence or other error occurred."}],
+            "source": "input",
+        }
+    observed  = normalized_m.references["observed"]["sequence"]["seq"]
+    reference = normalized_m.references["reference"]["sequence"]["seq"]
     Graph = LCSgraph.from_sequence(reference, observed)
     return canonical(Graph)
 
@@ -148,21 +145,38 @@ def transcript_to_gene(transcript_id: str):
     return None
 
 
-def convert_description(description, selector_id):
+def convert_to_selector_description(description, selector_id):
     """Convert a given variant description to a transcript specific description."""
     #DISCUSSIONS:
         # - Should we normalize the input or the output description?
-        #   - Current implementation do not normalize the input nor the output description
-        # - TODO: Add support for transcript descriptison as input (e,g, NM_001127208.3:c.100del) via chr?
+        #   - Current implementation normalizes the output description
 
-    model = to_model(description=description)
+    d_model = to_model(description=description)
     p_c = position_convert(
-        description_model=model, to_selector_id=selector_id, include_overlapping=False
+        description_model=d_model, to_selector_id=selector_id, include_overlapping=False
     )
-    if p_c.get("errors"):
+    if p_c.get("errors") or p_c.get("infos"):
         return p_c
     converted_d = model_to_string(p_c["converted_model"])
-    return get_normalized_model(converted_d)
+    normalized_m = get_normalized_model(converted_d)
+
+    if normalized_m.normalized_description:
+        return normalized_m.normalized_description
+
+
+def convert_to_genomic_description(description):
+    """Convert a given variant description to a genomic specific description."""
+    d_model = to_model(description=description)
+    p_c = position_convert(
+        description_model=d_model, to_coordinate_system="g", include_overlapping=False
+    )
+    if p_c.get("errors") or p_c.get("infos"):
+        return p_c
+    converted_d = model_to_string(p_c["converted_model"])
+    normalized_m = get_normalized_model(converted_d)
+
+    if normalized_m.normalized_description:
+        return normalized_m.normalized_description
 
 
 if __name__ == "__main__":
@@ -187,8 +201,10 @@ if __name__ == "__main__":
 
 
     args = parser.parse_args()
-    print(convert_description("NC_000004.12(XM_047415843.1):c.100del", "NM_001127208.3"))
+    print(convert_to_selector_description("NC_000004.12(XM_047415843.1):c.100del", "NM_001127208.3"))
+    print(convert_to_genomic_description("NC_000004.12(NM_001127208.3):c.100del"))
     print(annotated_genes(args.reference))
     print(overlap_genes(args.reference, args.start, args.end))
     print(annotated_transcripts("NC_000011.10", "SDHD"))
+    # print(get_canonical_variants("NC_000011.10(NM_003002.4):c.100del"))
     # print(overlap_mane_selectors(args.reference, args.start, args.end))
