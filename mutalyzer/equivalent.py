@@ -1,6 +1,6 @@
 import argparse
 from mutalyzer_hgvs_parser import to_model
-from mutalyzer.description_model import get_reference_id, model_to_string
+from mutalyzer.description_model import get_reference_id, get_selector_id, model_to_string
 from mutalyzer.converter.to_hgvs_coordinates import to_hgvs_locations
 from mutalyzer.reference import retrieve_reference, yield_feature_models, is_overlap
 from mutalyzer.description_model import get_reference_id, model_to_string
@@ -167,6 +167,19 @@ def convert_to_selector_description(description, selector_id):
 def convert_to_genomic_description(description):
     """Convert a given variant description to a genomic specific description."""
     d_model = to_model(description=description)
+    reference_id = get_reference_id(d_model)
+    selector_id = get_selector_id(d_model)
+    if not selector_id:
+        return {
+            "errors": [{"details": "No selector id found in the input description."}],
+            "source": "input",
+        }
+    if selector_id == reference_id:
+        return {
+            "errors": [{"details": "The selector id is the same as the reference id in the input description."}],
+            "source": "input",
+        }
+
     p_c = position_convert(
         description_model=d_model, to_coordinate_system="g", include_overlapping=False
     )
@@ -175,11 +188,14 @@ def convert_to_genomic_description(description):
     converted_d = model_to_string(p_c["converted_model"])
     normalized_m = get_normalized_model(converted_d)
 
-    if normalized_m.normalized_description:
+    if normalized_m.errors:
+        return {"errors": normalized_m.errors, "source": "input"}
+    elif normalized_m.normalized_description:
         return normalized_m.normalized_description
 
 
 if __name__ == "__main__":
+
     parser = argparse.ArgumentParser(
         description="Generate equivalent variant descriptions for a transcript."
     )
@@ -202,9 +218,10 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     print(convert_to_selector_description("NC_000004.12(XM_047415843.1):c.100del", "NM_001127208.3"))
-    print(convert_to_genomic_description("NC_000004.12(NM_001127208.3):c.100del"))
+    print(convert_to_genomic_description("NM_001127208.3(NM_001127208.3):c.100del"))
+    print(convert_to_genomic_description("NC_000004.12(XM_047415843.1):c.100del"))
     print(annotated_genes(args.reference))
     print(overlap_genes(args.reference, args.start, args.end))
     print(annotated_transcripts("NC_000011.10", "SDHD"))
-    # print(get_canonical_variants("NC_000011.10(NM_003002.4):c.100del"))
+    print(get_canonical_variants("NC_000011.10(NM_003002.4):c.100del"))
     # print(overlap_mane_selectors(args.reference, args.start, args.end))
