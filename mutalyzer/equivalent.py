@@ -29,16 +29,18 @@ def get_reference_model(reference_id):
     return reference_model, reference_model is not None
 
 
-def overlap_mane_selectors(reference_id, start, end):
-    """Return overlapping MANE Select transcripts for a given reference and position."""
+def overlap_mane_selectors(reference_id, gene_symbol):
+    """Return overlapping MANE Select transcripts for a given reference and a gene."""
     reference_model, found = get_reference_model(reference_id)
     if not found:
         return list()
     mane_selectors = list()
     reference_annotations = reference_model.get("annotations", {})
     for feature in yield_feature_models(reference_annotations):
-        if "rna" in feature.get("type").lower() and is_overlap(feature, start, end) and is_mane(feature):
-            mane_selectors.append(feature.get("id"))
+        if "gene" == feature.get("type").lower() and gene_symbol.lower() == feature.get("id",[]).lower():
+            for sub_feature in yield_feature_models(feature):
+                if "rna" in sub_feature.get("type").lower() and is_mane(sub_feature):
+                    mane_selectors.append(sub_feature.get("id"))
     return mane_selectors
 
 
@@ -53,6 +55,7 @@ def annotated_genes(reference_id):
         if "gene" in feature.get("type").lower():
             annotated_genes.append(feature.get("id"))
     return annotated_genes
+
 
 def overlap_genes(reference_id, start, end):
     """"Return overlapping genes for a given reference and position."""
@@ -217,11 +220,11 @@ if __name__ == "__main__":
 
 
     args = parser.parse_args()
-    print(convert_to_selector_description("NC_000004.12(XM_047415843.1):c.100del", "NM_001127208.3"))
-    print(convert_to_genomic_description("NM_001127208.3(NM_001127208.3):c.100del"))
-    print(convert_to_genomic_description("NC_000004.12(XM_047415843.1):c.100del"))
-    print(annotated_genes(args.reference))
-    print(overlap_genes(args.reference, args.start, args.end))
-    print(annotated_transcripts("NC_000011.10", "SDHD"))
-    print(get_canonical_variants("NC_000011.10(NM_003002.4):c.100del"))
-    # print(overlap_mane_selectors(args.reference, args.start, args.end))
+    # print(convert_to_selector_description("NC_000004.12(XM_047415843.1):c.100del", "NM_001127208.3"))
+    # print(convert_to_genomic_description("NM_001127208.3(NM_001127208.3):c.100del"))
+    # print(convert_to_genomic_description("NC_000004.12(XM_047415843.1):c.100del"))
+    # print(annotated_genes(args.reference))
+    # print(overlap_genes(args.reference, args.start, args.end))
+    # print(annotated_transcripts("NC_000011.10", "SDHD"))
+    # print(get_canonical_variants("NC_000011.10(NM_003002.4):c.100del"))
+    print(overlap_mane_selectors("NC_000011.10", "SDHD"))
