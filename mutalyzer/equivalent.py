@@ -8,6 +8,7 @@ from mutalyzer.position_converter import position_convert
 from mutalyzer.description import Description
 from algebra.lcs.lcs_graph import LCSgraph
 from algebra.extractor.extractor import canonical
+from mutalyzer_retriever.related import get_related
 
 
 import pprint
@@ -29,19 +30,24 @@ def get_reference_model(reference_id):
     return reference_model, reference_model is not None
 
 
-def overlap_mane_selectors(reference_id, gene_symbol):
+def overlap_mane_selectors(gene_symbol):
     """Return overlapping MANE Select transcripts for a given reference and a gene."""
-    reference_model, found = get_reference_model(reference_id)
-    if not found:
-        return list()
-    mane_selectors = list()
-    reference_annotations = reference_model.get("annotations", {})
-    for feature in yield_feature_models(reference_annotations):
-        if "gene" == feature.get("type").lower() and gene_symbol.lower() == feature.get("id",[]).lower():
-            for sub_feature in yield_feature_models(feature):
-                if "rna" in sub_feature.get("type").lower() and is_mane(sub_feature):
-                    mane_selectors.append(sub_feature.get("id"))
-    return mane_selectors
+    related_model = get_related(gene_symbol)
+    assemblies = related_model.get("assemblies", [])
+    for assembly in assemblies:
+        if assembly.get("name") == "GRCh38.p14":
+            reference_id = assembly.get("accession")
+            reference_model, found = get_reference_model(reference_id)
+            if not found:
+                return list()
+            mane_selectors = list()
+            reference_annotations = reference_model.get("annotations", {})
+            for feature in yield_feature_models(reference_annotations):
+                if "gene" == feature.get("type").lower() and gene_symbol.lower() == feature.get("id",[]).lower():
+                    for sub_feature in yield_feature_models(feature):
+                        if "rna" in sub_feature.get("type").lower() and is_mane(sub_feature):
+                            mane_selectors.append(sub_feature.get("id"))
+            return mane_selectors
 
 
 def annotated_genes(reference_id):
@@ -227,4 +233,4 @@ if __name__ == "__main__":
     # print(overlap_genes(args.reference, args.start, args.end))
     # print(annotated_transcripts("NC_000011.10", "SDHD"))
     # print(get_canonical_variants("NC_000011.10(NM_003002.4):c.100del"))
-    print(overlap_mane_selectors("NC_000011.10", "SDHD"))
+    # print(overlap_mane_selectors("NC_000011.10", "SDHD"))
