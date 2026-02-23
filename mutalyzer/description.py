@@ -1169,6 +1169,10 @@ class Description:
         """
         Check if positions with offsets start from an exon boundary and if the offset direction is correct.
         """
+        def _offset_upstream(offset):
+            return offset.get("upstream", False) or offset.get("value", 0) < 0
+        def _offset_downstream(offset):
+            return offset.get("downstream", False) or offset.get("value", 0) > 0
         for point, path in yield_sub_model(self.corrected_model, ["location", "start", "end"], ["point"]):
             if not point.get("offset"):
                 continue
@@ -1213,9 +1217,9 @@ class Description:
                         is_exon_end = True
                 if not (is_exon_start or is_exon_end):
                     self._add_error(errors.exon_boundary(point, path))
-                elif is_exon_start and point["offset"]["value"] > 0:
+                elif is_exon_start and _offset_downstream(point["offset"]):
                     self._add_error(errors.offset_direction(point, path))
-                elif is_exon_end and point["offset"]["value"] < 0:
+                elif is_exon_end and _offset_upstream(point["offset"]):
                     self._add_error(errors.offset_direction(point, path))
 
     @check_errors
