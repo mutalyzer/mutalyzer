@@ -99,7 +99,11 @@ def offset(location, path):
 
 def offset_direction(point, path):
     # NG_012337.3(NM_003002.4):c.52-20del
-    sign = "-" if point["offset"]["value"] < 0 else "+"
+    offset = point.get('offset', {})
+    if offset.get('upstream', False) or offset.get('value', 0) < 0:
+        sign = "-"
+    elif offset.get('downstream', False) or offset.get('value', 0) > 0:
+        sign = "+"
     return {
         "code": "EOFFSETDIRECTION",
         "details": f"`{location_to_description(point)}` is invalid; the sign `{sign}` of the offset may be wrong "
