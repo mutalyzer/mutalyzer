@@ -93,8 +93,8 @@ def convert_to_exons(variants, exons, sequences):
         slice_v = deepcopy(v)
         if v.get("location"):
             if get_location_type(v["location"], exons) in ["same exon", "exon exon"]:
-                set_start(slice_v["location"], x(get_start(slice_v))[0] - 1)
-                set_end(slice_v["location"], x(get_end(slice_v))[0] + x(get_end(slice_v))[1] - 1)
+                set_start(slice_v["location"], x(get_start(slice_v))["position"] - 1)
+                set_end(slice_v["location"], x(get_end(slice_v))["position"] + x(get_end(slice_v))["offset"] - 1)
                 if slice_v.get("inserted"):
                     slice_v["inserted"] = [
                         {
@@ -145,6 +145,6 @@ def convert_reference_model(reference_model, selector_id=None, slice_to=None):
         x = NonCoding([g_l]).coordinate_to_noncoding
 
     for loc, feature_type in yield_locations_selector_id(new_r_model, selector_id):
-        loc["start"]["position"] = x(loc["start"]["position"])[0] - 1
-        loc["end"]["position"] = x(loc["end"]["position"] - 1)[0]
+        loc["start"]["position"] = x(loc["start"]["position"])["position"] - 1
+        loc["end"]["position"] = x(loc["end"]["position"] - 1)["position"]
     return new_r_model

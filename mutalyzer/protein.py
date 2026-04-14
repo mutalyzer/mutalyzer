@@ -330,7 +330,7 @@ def get_protein_sequence(reference_model, selector_model):
             selector_model["exon"], selector_model["cds"][0], selector_model["inverted"]
         )
         for t_e in selector_model.get("translation_exception")["exceptions"]:
-            seq[x.coordinate_to_protein(get_start(t_e))[0] - 1] = t_e["amino_acid"]
+            seq[x.coordinate_to_protein(get_start(t_e))["position"] - 1] = t_e["amino_acid"]
     return "".join(seq)
 
 

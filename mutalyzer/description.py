@@ -1192,16 +1192,15 @@ class Description:
                 s_m = get_internal_selector_model(self.references[ref_id]["annotations"], sel_id)
                 crossmap = crossmap_to_internal_setup(c_s, s_m)
                 position = point.get("position")
-                section = 0
+                region = ""
                 if point.get("outside_cds"):
                     if point["outside_cds"] == "upstream":
-                        section = -1
-                        position = -1 * position
+                        region = "-"
                     elif point["outside_cds"] == "downstream":
-                        section = 1
+                        region = "*"
                 is_exon_start = False
                 is_exon_end = False
-                point_coordinate = crossmap["crossmap_function"]((position, 0, section))
+                point_coordinate = crossmap["crossmap_function"](({"position": position, "offset": 0, "region": region}))
                 for exon in s_m["exon"]:
                     if s_m.get("inverted"):
                         exon_start, exon_end = exon[1] - 1, exon[0]

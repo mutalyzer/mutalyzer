@@ -18,37 +18,30 @@ from .to_internal_coordinates import get_coordinate_system
 
 
 def genomic_to_point(genomic):
-    point = {"type": "point", "position": genomic}
+    point = {"type": "point", "position": genomic["position"]}
     return point
 
 
 def coding_to_point(coding):
-    position, offset, section = coding[:3]
-    point = {"type": "point", "position": position}
+    point = {"type": "point", "position": coding["position"]}
 
-    if section == -1:
+    if coding["region"] == "-":
         point["outside_cds"] = "upstream"
-        point["position"] = abs(point["position"])
-    elif section == 1:
+    elif coding["region"] == "*":
         point["outside_cds"] = "downstream"
-
-    if offset != 0:
-        point["offset"] = {"value": offset}
+    if coding["offset"] != 0:
+        point["offset"] = {"value": coding["offset"]}
     return point
 
 
 def noncoding_to_point(noncoding):
-    position, offset, section = noncoding[:3]
-    point = {"type": "point", "position": position}
-
-    if offset != 0:
-        point["offset"] = {"value": offset}
+    point = {"type": "point", "position": noncoding["position"]}
+    if noncoding["offset"] != 0:
+        point["offset"] = {"value": noncoding["offset"]}
     return point
 
 
-def point_to_hgvs(
-    point, crossmap_function, point_function, degenerate=False, inverted=False
-):
+def point_to_hgvs(point, crossmap_function, point_function, degenerate=False, inverted=False):
     if point.get("uncertain"):
         return {"type": "point", "uncertain": True}
     else:
@@ -90,6 +83,7 @@ def crossmap_to_hgvs_setup(coordinate_system, selector_model=None, degenerate=Fa
         return {
             "crossmap_function": crossmap.coordinate_to_noncoding,
             "point_function": noncoding_to_point,
+            "degenerate": degenerate,
             "inverted": selector_model["inverted"],
         }
     else:

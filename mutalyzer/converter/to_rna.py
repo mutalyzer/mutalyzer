@@ -57,19 +57,18 @@ def to_rna_reference_model(reference_model, selector_id, transcribe=True):
     x = NonCoding(s_m["exon"]).coordinate_to_noncoding
     g = Genomic().genomic_to_coordinate
 
-    new_start = x(s_m["exon"][0][0])[0] - 1
-    new_end = x(s_m["exon"][-1][-1])[0]
+    new_start = x(s_m["exon"][0][0])["position"] - 1
+    new_end = x(s_m["exon"][-1][-1] - 1)["position"]
 
     for location, f_type in yield_locations(rna_model["annotations"]):
         if f_type in ["CDS", "exon"]:
             new_start_x = x(get_start(location))
-            new_start_g = g(new_start_x[0])
+            new_start_g = g({"position": new_start_x["position"]})
 
-            new_end_x = x(get_end(location))
-            new_end_g = g(new_end_x[0] + new_end_x[1])
+            new_end_x = x(get_end(location) - 1)
 
             set_start(location, new_start_g)
-            set_end(location, new_end_g)
+            set_end(location, new_end_x["position"])
         else:
             set_start(location, new_start)
             set_end(location, new_end)
@@ -95,17 +94,16 @@ def get_position_type(position, exons, len_ss=2, len_as=5):
     """
     x = NonCoding(exons).coordinate_to_noncoding
     exons = _get_flatten_exons(exons)
-    position_x = x(position)
-
-    if position_x[1] == 0:
+    position_x = x(position, degenerate=True)
+    if position_x["offset"] == 0:
         return bisect.bisect_right(exons, position), 0
-    elif 0 < abs(position_x[1]) <= len_ss:
-        if position_x[1] > 0:
+    elif 0 < abs(position_x["offset"]) <= len_ss:
+        if position_x["offset"] > 0:
             return bisect.bisect_right(exons, position), 1
         else:
             return bisect.bisect_left(exons, position), -1
-    elif len_ss < abs(position_x[1]) <= len_ss + len_as:
-        if position_x[1] > 0:
+    elif len_ss < abs(position_x["offset"]) <= len_ss + len_as:
+        if position_x["offset"] > 0:
             return bisect.bisect_right(exons, position), 2
         else:
             return bisect.bisect_left(exons, position), -2
@@ -246,8 +244,8 @@ def to_rna_variants(variants, sequences, selector_model):
     x = NonCoding(selector_model["exon"]).coordinate_to_noncoding
     for variant in trimmed_variants:
         if variant.get("location"):
-            set_start(variant["location"], x(get_start(variant))[0] - 1)
-            set_end(variant["location"], x(get_end(variant))[0] + x(get_end(variant))[1] - 1)
+            set_start(variant["location"], x(get_start(variant))["position"] - 1)
+            set_end(variant["location"], x(get_end(variant)-1)["position"] + x(get_end(variant)-1)["offset"])
             if variant.get("inserted"):
                 variant["inserted"] = [
                     {
@@ -275,10 +273,10 @@ def _point_to_cds_coordinate(point, selector_model, crossmap):
         if point.get("shift"):
             point["position"] -= point["shift"]
     coding = crossmap.coordinate_to_coding(point["position"], degenerate=True)
-    if coding[2] == -1:
-        return genomic_to_point(0)
+    if coding["region"] == "-":
+        return genomic_to_point({"position": 0})
     else:
-        return genomic_to_point(genomic_to_coordinate(coding[0] + coding[1]))
+        return genomic_to_point({"position": genomic_to_coordinate({"position": coding["position"] + coding["offset"]})})
 
 
 def _get_inserted_sequence(insertion, sequences):

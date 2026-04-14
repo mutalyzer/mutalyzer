@@ -23,24 +23,23 @@ def get_point_value(point):
         value *= -1
     if point.get("offset") and point["offset"].get("value"):
         value += point["offset"]["value"]
-    return value
+    return {"position": value}
 
 
 def point_to_x_coding(point):
     position = point["position"]
     if point.get("outside_cds"):
         if point["outside_cds"] == "upstream":
-            section = -1
-            position = -1 * position
+            region = "-"
         elif point["outside_cds"] == "downstream":
-            section = 1
+            region = "*"
     else:
-        section = 0
+        region = ""
     if point.get("offset"):
         offset = point["offset"]["value"]
     else:
         offset = 0
-    return position, offset, section, 0
+    return {"position": position, "offset": offset, "region": region}
 
 
 def create_exact_point_model(point):
