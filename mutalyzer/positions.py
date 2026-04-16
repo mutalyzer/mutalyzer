@@ -282,7 +282,6 @@ def coordinate_to_transcript_protein(transcript_id: str, coordinate: int, protei
     return position_m
 
 
-
 def coordinate_to_genomic_protein(reference_id: str, coordinate: int, protein_id: str) -> dict:
     """Convert a standard coordinate to protein coordinate system on a genomic reference sequence.
 
@@ -298,6 +297,14 @@ def coordinate_to_genomic_protein(reference_id: str, coordinate: int, protein_id
     check_ref(reference_model)
     check_ref_length(reference_model, coordinate)
 
+    selector_model = get_internal_selector_model(reference_model["annotations"], selector_id=protein_id)
     if not is_selector_in_reference(protein_id, reference_model):
         raise ValueError(f"Transcript {protein_id} not found in reference {reference_id}.")
-    return reference_model
+
+    crossmap = Coding(
+        selector_model["exon"],
+        selector_model["cds"][0],
+        selector_model["inverted"]
+    )
+    position_m = crossmap.coordinate_to_protein(coordinate)
+    return position_m
