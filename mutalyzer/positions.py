@@ -1,39 +1,41 @@
 from mutalyzer_crossmapper.crossmapper import Coding, Genomic, NonCoding
-from mutalyzer.position_converter import position_convert
-# from .converter.to_hgvs_coordinates import to_hgvs_locations
 from mutalyzer_hgvs_parser import to_model
 from mutalyzer_hgvs_parser.exceptions import UnexpectedCharacter, UnexpectedEnd
 import mutalyzer.errors as errors
 from mutalyzer.reference import retrieve_reference, get_internal_selector_model
 
 
-ALLOWED_REGIONS = {"", "u", "d", "*", "-"}
+REGIONS = {"", "u", "d", "*", "-"}
 
-def validate_position_model(coordinate_system: str, position_model: dict) -> None:
+def validate_position_model(position_m_type: str, position_model: dict) -> None:
     """Validate the position model based on the coordinate system."""
-    if coordinate_system == "genomic":
+
+    # TODO: check for positive value
+    if position_m_type == "dna":
+        # ignore offset, region and position_in_codon
         if not isinstance(position_model.get("position"), int):
             raise ValueError("Position must be an integer for genomic coordinate system.")
 
-    elif coordinate_system == "transcript":
+    elif position_m_type == "rna":
+        # ignore position_in_codon
         if not isinstance(position_model.get("position"), int):
             raise ValueError("Position must be an integer for transcript coordinate system.")
         if not isinstance(position_model.get("offset"), int):
             raise ValueError("Offset must be an integer for transcript coordinate system.")
-        if position_model.get("region") not in ALLOWED_REGIONS:
-            raise ValueError(f"Region must be one of {ALLOWED_REGIONS} for transcript coordinate system.")
+        if position_model.get("region") not in REGIONS:
+            raise ValueError(f"Region must be one of {REGIONS} for transcript coordinate system.")
 
-    elif coordinate_system == "protein":
+    elif position_m_type == "protein":
         if not isinstance(position_model.get("position"), int):
             raise ValueError("Position must be an integer for protein coordinate system.")
         if position_model.get("position_in_codon") not in (1, 2, 3):
             raise ValueError("Position in codon must be 1, 2, or 3.")
         if not isinstance(position_model.get("offset"), int):
             raise ValueError("Offset must be an integer for protein coordinate system.")
-        if position_model.get("region") not in ALLOWED_REGIONS:
-            raise ValueError(f"Region must be one of {ALLOWED_REGIONS} for protein coordinate system.")
+        if position_model.get("region") not in REGIONS:
+            raise ValueError(f"Region must be one of {REGIONS} for protein coordinate system.")
     else:
-        raise ValueError("Invalid coordinate system.")
+        raise ValueError("Invalid HGVS position model type.")
 
 
 def check_ref_length(reference_m: dict, coordinate: int) -> None:
@@ -66,6 +68,26 @@ def validate_coding_transcript(model: dict, trancript_id: str) -> None:
         raise ValueError(f"{trancript_id} is not a coding transcript.")
 
 
+def check_intron_exon_boundary(exon_list: list, position_m: int) -> None:
+    """Check if the position is on the intron-exon boundary, raise an error if not."""
+    exon_start = [exon[0] for exon in exon_list]
+    exon_end = [exon[1] for exon in exon_list]
+    position = position_m['position']
+    offset = position_m['offset']
+
+    if position in exon_start:
+        if offset < 0:
+            return
+        else:
+            raise ValueError(f"{position} is at the exon start.")
+    if position in exon_end:
+        if offset > 0:
+            return
+        else:
+            raise ValueError(f"{position} is at the exon end.")
+    raise ValueError(f"Position {position} is not on the intron-exon boundary.")
+
+
 def coordinate_to_genomic(coodinate: int) -> dict:
     """Convert a coordinate to HGVS genomic position.
 
@@ -77,6 +99,20 @@ def coordinate_to_genomic(coodinate: int) -> dict:
     """
     crossmap = Genomic()
     return crossmap.coordinate_to_genomic(coodinate)
+
+
+def genomic_to_coordinate(position_model: dict) -> int:
+    """Convert a HGVS genomic position model to coordinate.
+
+    Args:
+        position_model (dict): The HGVS genomic position model to convert.
+
+    Returns:
+        int: The converted coordinate.
+    """
+    validate_position_model("dna", position_model)
+    crossmap = Genomic()
+    return crossmap.genomic_to_coordinate(position_model)
 
 
 def coordinate_to_genomic_coding(reference_id: str, coordinate: int, transcript_id: str) -> dict:
@@ -106,6 +142,37 @@ def coordinate_to_genomic_coding(reference_id: str, coordinate: int, transcript_
     )
 
     return crossmap.coordinate_to_coding(coordinate)
+
+
+def genomic_coding_to_coordinate(reference_id: str, transcript_id: str, position_model: dict) -> int:
+    """Convert a HGVS coding position model on a genomic reference sequence to coordinate.
+
+    Args:
+        reference_id (str): ID of the reference sequence.
+        transcript_id (str): ID of the transcript sequence.
+        position_model (dict): The HGVS coding position model to convert.
+
+    Returns:
+        int: The converted coordinate.
+    """
+    validate_position_model("rna", position_model)
+
+    reference_m = retrieve_reference(reference_id)[0]
+    validate_model(reference_m, reference_id)
+
+    internal_selector_m = get_internal_selector_model(reference_m["annotations"], transcript_id)
+    validate_model(internal_selector_m, reference_id, transcript_id)
+    validate_selector_type(internal_selector_m, "rna", transcript_id)
+    validate_coding_transcript(internal_selector_m, transcript_id)
+    check_intron_exon_boundary(internal_selector_m["exon"], position_model)
+
+    crossmap = Coding(
+        internal_selector_m["exon"],
+        internal_selector_m["cds"][0],
+        internal_selector_m["inverted"]
+    )
+
+    return crossmap.coding_to_coordinate(position_model)
 
 
 def coordinate_to_transcript_coding(transcript_id: str, coordinate: int) -> dict:
@@ -194,9 +261,9 @@ def coordinate_to_protein(coordinate: int) -> dict:
     """
     crossmap = Genomic()
     position_m = crossmap.coordinate_to_genomic(coordinate)
-    position_m["position_in_codon"] = 1
-    position_m["offset"] = 0
-    position_m["region"] = ""
+    position_m['position_in_codon'] = 1
+    position_m['offset'] = 0
+    position_m['region'] = ""
 
     return position_m
 
