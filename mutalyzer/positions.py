@@ -144,7 +144,7 @@ def coordinate_to_genomic_coding(reference_id: str, coordinate: int, transcript_
     return crossmap.coordinate_to_coding(coordinate)
 
 
-def genomic_coding_to_coordinate(reference_id: str, transcript_id: str, position_model: dict) -> int:
+def genomic_coding_to_coordinate(reference_id: str, transcript_id: str, position_m: dict) -> int:
     """Convert a HGVS coding position model on a genomic reference sequence to coordinate.
 
     Args:
@@ -155,7 +155,7 @@ def genomic_coding_to_coordinate(reference_id: str, transcript_id: str, position
     Returns:
         int: The converted coordinate.
     """
-    validate_position_model("rna", position_model)
+    validate_position_model("rna", position_m)
 
     reference_m = retrieve_reference(reference_id)[0]
     validate_model(reference_m, reference_id)
@@ -164,7 +164,6 @@ def genomic_coding_to_coordinate(reference_id: str, transcript_id: str, position
     validate_model(internal_selector_m, reference_id, transcript_id)
     validate_selector_type(internal_selector_m, "rna", transcript_id)
     validate_coding_transcript(internal_selector_m, transcript_id)
-    check_intron_exon_boundary(internal_selector_m["exon"], position_model)
 
     crossmap = Coding(
         internal_selector_m["exon"],
@@ -172,7 +171,7 @@ def genomic_coding_to_coordinate(reference_id: str, transcript_id: str, position
         internal_selector_m["inverted"]
     )
 
-    return crossmap.coding_to_coordinate(position_model)
+    return crossmap.coding_to_coordinate(position_m)
 
 
 def coordinate_to_transcript_coding(transcript_id: str, coordinate: int) -> dict:
@@ -202,6 +201,34 @@ def coordinate_to_transcript_coding(transcript_id: str, coordinate: int) -> dict
     return crossmap.coordinate_to_coding(coordinate)
 
 
+def transcript_coding_to_coordinate(transcript_id: str, position_model: dict) -> int:
+    """Convert a HGVS coding position model on a transcript to coordinate.
+
+    Args:
+        transcript_id (str): ID of the transcript sequence.
+        position_model (dict): The HGVS coding position model to convert.
+
+    Returns:
+        int: The converted coordinate.
+    """
+    validate_position_model("rna", position_model)
+
+    reference_m = retrieve_reference(transcript_id)[0]
+    validate_model(reference_m, transcript_id)
+
+    internal_selector_m = get_internal_selector_model(reference_m["annotations"], transcript_id)
+    validate_selector_type(internal_selector_m, "rna", transcript_id)
+    validate_coding_transcript(internal_selector_m, transcript_id)
+
+    crossmap = Coding(
+        internal_selector_m["exon"],
+        internal_selector_m["cds"][0],
+        internal_selector_m["inverted"]
+    )
+
+    return crossmap.coding_to_coordinate(position_model)
+
+
 def coordinate_to_genomic_noncoding(reference_id: str, coordinate: int, transcript_id: str) -> dict:
     """Convert a coordinate to HGVS non-coding position model on a genomic reference sequence.
 
@@ -226,6 +253,34 @@ def coordinate_to_genomic_noncoding(reference_id: str, coordinate: int, transcri
 
     return crossmap.coordinate_to_noncoding(coordinate)
 
+def coordinate_to_noncoding(reference_id: str, coordinate: int, transcript_id: str="") -> dict:
+    """Convert a coordinate to HGVS non-coding position model on a genomic reference sequence.
+
+    Args:
+        reference_id (str): ID of the reference sequence.
+        coordinate (int): coordinate to convert.
+        transcript_id (str): ID of the non-coding transcript sequence.
+
+    Returns
+        dict: The converted position model in the HGVS non-coding coordinate system.
+    """
+    reference_m = retrieve_reference(reference_id)[0]
+    validate_model(reference_m, reference_id)
+    check_ref_length(reference_m, coordinate)
+
+    if transcript_id == "":
+        selector_id = reference_id
+    else:
+        selector_id = transcript_id
+
+    internal_selector_model = get_internal_selector_model(reference_m["annotations"], selector_id)
+    validate_model(internal_selector_model, reference_id, transcript_id)
+    validate_selector_type(internal_selector_model, "rna", transcript_id)
+
+    # Allow for coding transcript and return noncoding position model
+    crossmap = NonCoding(internal_selector_model["exon"], internal_selector_model["inverted"])
+
+    return crossmap.coordinate_to_noncoding(coordinate)
 
 def coordinate_to_transcript_noncoding(transcript_id: str, coordinate: int) -> dict:
     """Convert a coordinate to HGVS non-coding position model on a transcript.
