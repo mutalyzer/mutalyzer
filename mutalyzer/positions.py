@@ -1,14 +1,10 @@
-import argparse
-import pprint
-
 from mutalyzer_crossmapper.crossmapper import Coding, Genomic, NonCoding
 from mutalyzer.position_converter import position_convert
 # from .converter.to_hgvs_coordinates import to_hgvs_locations
 from mutalyzer_hgvs_parser import to_model
 from mutalyzer_hgvs_parser.exceptions import UnexpectedCharacter, UnexpectedEnd
 import mutalyzer.errors as errors
-from mutalyzer.reference import retrieve_reference, get_internal_selector_model, is_selector_in_reference
-from mutalyzer.hgvs_position_model import HGVSPositionModel
+from mutalyzer.reference import retrieve_reference, get_internal_selector_model
 
 
 ALLOWED_REGIONS = {"", "u", "d", "*", "-"}
@@ -39,272 +35,195 @@ def validate_position_model(coordinate_system: str, position_model: dict) -> Non
     else:
         raise ValueError("Invalid coordinate system.")
 
-def check_ref_length(reference_model: dict, coordinate: int) -> None:
+
+def check_ref_length(reference_m: dict, coordinate: int) -> None:
     """Check if the coordinate exceeds the reference length."""
-    reference_length = len(reference_model.get("sequence", {}).get("seq", ""))
+    reference_length = len(reference_m.get("sequence", {}).get("seq", ""))
     if coordinate > reference_length-1:
         raise ValueError(f"Coordinate {coordinate} exceeds reference length of {reference_length}.")
 
-def check_ref(reference_model: dict) -> None:
-    """Check if the reference model is valid."""
-    if not reference_model:
-        raise ValueError("Reference not found.")
+
+def validate_model(model: dict, r_id: str, s_id: str="") -> None:
+    """Validate reference model or selector model, raise an error if not."""
+    if not model:
+        if s_id:
+            raise ValueError(f"{s_id} not found in reference {r_id}.")
+        raise ValueError(f"{r_id} not retrieved.")
 
 
-
-def coordinate_to_genomic_coding(reference_id: str, coordinate: int, selector_id: str) -> dict:
-    """Convert a standard coordinate to a coding position system on genomic reference sequence.
-
-    Args:
-        reference_id (str): The NCBI ID of the reference sequence.
-        coordinate (int): The coordinate to convert.
-        selector_id (str): The NCBI ID of the selector sequence.
-
-    Returns
-        dict: The converted position model in the HGVS coding coordinate system.
-    """
-    reference_model = retrieve_reference(reference_id)[0]
-    check_ref(reference_model)
-    check_ref_length(reference_model, coordinate)
-
-    selector_model = get_internal_selector_model(reference_model["annotations"], selector_id=selector_id)
-    if not is_selector_in_reference(selector_id, reference_model):
-        raise ValueError(f"Selector {selector_id} not found in reference {reference_id}.")
-    if not selector_model.get("cds"):
-        raise ValueError(f"Transcript {selector_id} is not a coding transcript, cannot convert to coding coordinate.")
-
-    crossmap = Coding(
-        selector_model["exon"],
-        selector_model["cds"][0],
-        selector_model["inverted"]
-    )
-
-    position_m = crossmap.coordinate_to_coding(coordinate)
-    return position_m
+def validate_selector_type(model: dict, bio_type: str, selector_id: str) -> None:
+    """Validate if the selector type is correct, raise an error if not."""
+    if bio_type == "rna" and "rna" not in model.get("type", "").lower():
+        raise ValueError(f"{selector_id} is not a transcript.")
+    if bio_type == "protein" and "cds" not in model.get("type", "").lower():
+        raise ValueError(f"{selector_id} is not a protein.")
+    # support for gene as a selector?
 
 
-def genomic_coding_to_coordinate(reference_id: str, position_model: dict, selector_id: str) -> int:
-    """Convert a coding position system on genomic reference sequence to standard coordinate.
+def validate_coding_transcript(model: dict, trancript_id: str) -> None:
+    """Validate if the selector is a coding transcript, raise an error if not."""
+    if not model.get("cds"):
+        raise ValueError(f"{trancript_id} is not a coding transcript.")
+
+
+def coordinate_to_genomic(coodinate: int) -> dict:
+    """Convert a coordinate to HGVS genomic position.
 
     Args:
-        reference_id (str): The NCBI ID of the reference sequence.
-        position_model (dict): The position model in the HGVS coding coordinate system to convert.
-        selector_id (str): The NCBI ID of the selector sequence.
+        coordinate (int): coordinate position to convert.
+
+    Returnscoding position system on a transcript sequence
+        dict: The converted HGVS genomic position model.
+    """
+    crossmap = Genomic()
+    return crossmap.coordinate_to_genomic(coodinate)
+
+
+def coordinate_to_genomic_coding(reference_id: str, coordinate: int, transcript_id: str) -> dict:
+    """Convert a coordinate to HGVS coding position model on a genomic reference sequence.
+
+    Args:
+        reference_id (str): ID of the reference sequence.
+        coordinate (int): coordinate to convert.
+        transcript_id (str): ID of the transcript sequence.
 
     Returns
-        int: Standard 0-based coordinate.
+        dict: The converted HGVS coding position model.
     """
+    reference_m = retrieve_reference(reference_id)[0]
+    validate_model(reference_m, reference_id)
+    check_ref_length(reference_m, coordinate)
 
-    position = position_model.get("position")
-    if position is None:
-        raise ValueError("Position is required in position model.")
-
-    reference_model = retrieve_reference(reference_id)[0]
-    check_ref(reference_model)
-    check_ref_length(reference_model, abs(position))
-
-    selector_model = get_internal_selector_model(reference_model["annotations"], selector_id=selector_id)
-    if not is_selector_in_reference(selector_id, reference_model):
-        raise ValueError(f"Selector {selector_id} not found in reference {reference_id}.")
-    if not selector_model.get("cds"):
-        raise ValueError(f"Transcript {selector_id} is not a coding transcript, cannot convert from coding coordinate.")
+    internal_selector_m = get_internal_selector_model(reference_m["annotations"], selector_id=transcript_id)
+    validate_model(internal_selector_m, reference_id, transcript_id)
+    validate_selector_type(internal_selector_m, "rna", transcript_id)
+    validate_coding_transcript(internal_selector_m, transcript_id)
 
     crossmap = Coding(
-        selector_model["exon"],
-        selector_model["cds"][0],
-        selector_model["inverted"]
+        internal_selector_m["exon"],
+        internal_selector_m["cds"][0],
+        internal_selector_m["inverted"]
     )
 
-    coordinate = crossmap.coding_to_coordinate(position_model)
-    return coordinate
+    return crossmap.coordinate_to_coding(coordinate)
 
 
 def coordinate_to_transcript_coding(transcript_id: str, coordinate: int) -> dict:
-    """Convert a standard coordinate to a coding position system on a transcript sequence.
+    """Convert a coordinate to a HGVS coding position model on a transcript.
 
     Args:
-        transcript_id (str): The NCBI ID of the transcript sequence.
-        coordinate (int): The coordinate to convert.
+        transcript_id (str): ID of the transcript sequence.
+        coordinate (int): coordinate to convert.
 
     Returns:
-        dict: The converted position model in the HGVS coding coordinate system.
+        dict: The converted HGVS coding position model.
     """
-    reference_model = retrieve_reference(transcript_id)[0]
-    check_ref(reference_model)
-    check_ref_length(reference_model, coordinate)
+    reference_m = retrieve_reference(transcript_id)[0]
+    validate_model(reference_m, transcript_id)
+    check_ref_length(reference_m, coordinate)
 
-    selector_model = get_internal_selector_model(reference_model["annotations"], selector_id=transcript_id)
-    if not is_selector_in_reference(transcript_id, reference_model):
-        raise ValueError(f"Transcript {transcript_id} not found in reference {transcript_id}.")
-    if not selector_model.get("cds"):
-        raise ValueError(f"Transcript {transcript_id} is not a coding transcript, cannot convert to coding coordinate.")
+    internal_selector_m = get_internal_selector_model(reference_m["annotations"], transcript_id)
+    validate_selector_type(internal_selector_m, "rna", transcript_id)
+    validate_coding_transcript(internal_selector_m, transcript_id)
 
     crossmap = Coding(
-        selector_model["exon"],
-        selector_model["cds"][0],
-        selector_model["inverted"]
+        internal_selector_m["exon"],
+        internal_selector_m["cds"][0],
+        internal_selector_m["inverted"]
     )
 
-    position_m = crossmap.coordinate_to_coding(coordinate)
-    return position_m
+    return crossmap.coordinate_to_coding(coordinate)
 
 
-def transcript_coding_to_coordinate(transcript_id: str, position_model: dict) -> int:
-    """Convert a coding position system on a transcript sequence to standard coordinate.
-
-    Args:
-        transcript_id (str): The NCBI ID of the transcript sequence.
-        position_model (dict): The position model in the HGVS coding coordinate system to convert.
-
-    Returns:
-        int: Standard 0-based coordinate.
-    """
-    position = position_model.get("position")
-    if position is None:
-        raise ValueError("Position is required in position model.")
-
-    reference_model = retrieve_reference(transcript_id)[0]
-    check_ref(reference_model)
-    check_ref_length(reference_model, abs(position))
-    # check if position model is valid
-
-def coordinate_to_genomic(coodinate: int) -> dict:
-    """Convert a standard coordinate to genomic coordinate system.
+def coordinate_to_genomic_noncoding(reference_id: str, coordinate: int, transcript_id: str) -> dict:
+    """Convert a coordinate to HGVS non-coding position model on a genomic reference sequence.
 
     Args:
-        coordinate (int): The coordinate position to convert.
-
-    Returns
-        dict: The converted position model in the HGVS genomic coordinate system.
-    """
-    crossmap = Genomic()
-    position_m = crossmap.coordinate_to_genomic(coodinate)
-
-    return position_m
-
-
-def coordinate_to_genomic_noncoding(reference_id: str, coordinate: int, selector_id: str) -> dict:
-    """Convert a standard coordinate to non-coding position system on a genomic reference sequence.
-
-    Args:
-        reference_id (str): The NCBI ID of the reference sequence.
-        coordinate (int): The coordinate to convert.
-        selector_id (str): The NCBI ID of the non-codingselector sequence.
+        reference_id (str): ID of the reference sequence.
+        coordinate (int): coordinate to convert.
+        transcript_id (str): ID of the non-coding transcript sequence.
 
     Returns
         dict: The converted position model in the HGVS non-coding coordinate system.
     """
-    reference_model = retrieve_reference(reference_id)[0]
-    check_ref(reference_model)
-    check_ref_length(reference_model, coordinate)
+    reference_m = retrieve_reference(reference_id)[0]
+    validate_model(reference_m, reference_id)
+    check_ref_length(reference_m, coordinate)
 
-    selector_model = get_internal_selector_model(reference_model["annotations"], selector_id=selector_id)
-    if not is_selector_in_reference(selector_id, reference_model):
-        raise ValueError(f"Selector {selector_id} not found in reference {reference_id}.")
+    internal_selector_model = get_internal_selector_model(reference_m["annotations"], transcript_id)
+    validate_model(internal_selector_model, reference_id, transcript_id)
+    validate_selector_type(internal_selector_model, "rna", transcript_id)
 
     # Allow for coding transcript and return noncoding position model
-    crossmap = NonCoding(selector_model["exon"], selector_model["inverted"])
-    position_m = crossmap.coordinate_to_noncoding(coordinate)
+    crossmap = NonCoding(internal_selector_model["exon"], internal_selector_model["inverted"])
 
-    return position_m
+    return crossmap.coordinate_to_noncoding(coordinate)
 
 
 def coordinate_to_transcript_noncoding(transcript_id: str, coordinate: int) -> dict:
-    """Convert a standard coordinate to non-coding position system on a transcript.
+    """Convert a coordinate to HGVS non-coding position model on a transcript.
 
     Args:
-        transcript_id (str): The NCBI ID of the non-coding transcript sequence.
-        coordinate (int): The coordinate to convert.
+        transcript_id (str): ID of the non-coding transcript sequence.
+        coordinate (int): coordinate to convert.
 
     Returns
         dict: The converted position model in the HGVS non-coding coordinate system.
     """
-    reference_model = retrieve_reference(transcript_id)[0]
-    check_ref(reference_model)
-    check_ref_length(reference_model, coordinate)
+    transcript_m = retrieve_reference(transcript_id)[0]
+    validate_model(transcript_m, transcript_id)
+    check_ref_length(transcript_m, coordinate)
 
-    selector_model = get_internal_selector_model(reference_model["annotations"], selector_id=transcript_id)
-    if not is_selector_in_reference(transcript_id, reference_model):
-        raise ValueError(f"Selector {transcript_id} not found in reference {transcript_id}.")
+    internal_selector_m = get_internal_selector_model(transcript_m["annotations"], transcript_id)
+    validate_selector_type(internal_selector_m, "rna", transcript_id)
 
     # Allow for coding transcript and return noncoding position model
-    crossmap = NonCoding(selector_model["exon"], selector_model["inverted"])
-    position_m = crossmap.coordinate_to_noncoding(coordinate)
+    crossmap = NonCoding(internal_selector_m["exon"], internal_selector_m["inverted"])
 
-    return position_m
+    return crossmap.coordinate_to_noncoding(coordinate)
 
 
 def coordinate_to_protein(coordinate: int) -> dict:
-    """Convert a standard coordinate to protein coordinate system.
+    """Convert a coordinate to HGVS protein position model on a protein sequence.
 
     Args:
-        coordinate (int): The coordinate to convert.
+        coordinate (int): coordinate to convert.
 
     Returns
         dict: The converted position model in the HGVS protein coordinate system.
     """
     crossmap = Genomic()
     position_m = crossmap.coordinate_to_genomic(coordinate)
-    position_m["position_in_codon"] = 0
+    position_m["position_in_codon"] = 1
     position_m["offset"] = 0
     position_m["region"] = ""
 
     return position_m
 
 
-def coordinate_to_transcript_protein(transcript_id: str, coordinate: int, protein_id: str) -> dict:
-    """Convert a standard coordinate to protein coordinate system on a transcript.
+def coordinate_to_reference_protein(reference_id: str, coordinate: int, protein_id: str) -> dict:
+    """Convert a coordinate to protein coordinate system on a genomic reference sequence.
 
     Args:
-        transcript_id (str): The NCBI ID of the transcript sequence.
-        coordinate (int): The coordinate to convert.
-        protein_id (str): The NCBI ID of the protein sequence.
+        reference_id (str):  ID of the reference sequence.
+        coordinate (int): coordinate to convert.
+        protein_id (str):  ID of the protein sequence.
 
     Returns
         dict: The converted position model in the HGVS protein coordinate system.
     """
-    reference_model = retrieve_reference(transcript_id)[0]
-    check_ref(reference_model)
-    check_ref_length(reference_model, coordinate)
-    transcript_model = get_internal_selector_model(reference_model["annotations"], selector_id=transcript_id)
-    if not transcript_model.get("cds"):
-        raise ValueError(f"Transcript {transcript_id} is not a coding transcript, cannot convert to protein coordinate.")
+    reference_m = retrieve_reference(reference_id)[0]
+    validate_model(reference_m, reference_id)
+    check_ref_length(reference_m, coordinate)
 
-    if not is_selector_in_reference(protein_id, reference_model):
-        raise ValueError(f"Transcript {protein_id} not found in reference {transcript_id}.")
+    internal_protein_m = get_internal_selector_model(reference_m["annotations"], protein_id)
+    validate_model(internal_protein_m, reference_id, protein_id)
+    validate_selector_type(internal_protein_m, "protein", protein_id)
 
     crossmap = Coding(
-        transcript_model["exon"],
-        transcript_model["cds"][0],
-        transcript_model["inverted"]
+        internal_protein_m["exon"],
+        internal_protein_m["cds"][0],
+        internal_protein_m["inverted"]
     )
-    position_m = crossmap.coordinate_to_protein(coordinate)
-    return position_m
 
-
-def coordinate_to_genomic_protein(reference_id: str, coordinate: int, protein_id: str) -> dict:
-    """Convert a standard coordinate to protein coordinate system on a genomic reference sequence.
-
-    Args:
-        reference_id (str): The NCBI ID of the reference sequence.
-        coordinate (int): The coordinate to convert.
-        protein_id (str): The NCBI ID of the protein sequence.
-
-    Returns
-        dict: The converted position model in the HGVS protein coordinate system.
-    """
-    reference_model = retrieve_reference(reference_id)[0]
-    check_ref(reference_model)
-    check_ref_length(reference_model, coordinate)
-
-    selector_model = get_internal_selector_model(reference_model["annotations"], selector_id=protein_id)
-    if not is_selector_in_reference(protein_id, reference_model):
-        raise ValueError(f"Transcript {protein_id} not found in reference {reference_id}.")
-
-    crossmap = Coding(
-        selector_model["exon"],
-        selector_model["cds"][0],
-        selector_model["inverted"]
-    )
-    position_m = crossmap.coordinate_to_protein(coordinate)
-    return position_m
+    return crossmap.coordinate_to_protein(coordinate)
