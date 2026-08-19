@@ -1241,7 +1241,8 @@ class Description:
         :param path: Model path towards the variant ["variants", #].
         """
         v = self.internal_coordinates_model["variants"][path[1]]
-        v_r = self.input_model["variants"][path[1]]
+        path_r = reverse_path(self.internal_coordinates_model, path) if self.is_inverted() else path
+        v_r = self.input_model["variants"][path_r[1]]
 
         if v["location"]["type"] == "point" and not v["location"].get("uncertain"):
             self._add_error(errors.insertion_range(v_r["location"], path))

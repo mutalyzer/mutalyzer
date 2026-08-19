@@ -115,6 +115,28 @@ def test_no_errors(input_description):
     assert normalize(input_description).get("errors") is None
 
 
+def test_insertion_range_message_inverted_selector(monkey_patches):
+    # Reverse strand reorders variants between input and internal order;
+    # the message must name 661+402insATG, not the other variant, 12_13del.
+    errors = normalize("ENST00000452863.10:c.[12_13del;661+402insATG]")["errors"]
+    assert code_in("EINSERTIONRANGE", errors)
+    details = [e["details"] for e in errors if e["code"] == "EINSERTIONRANGE"]
+    assert details == [
+        "Insertion variant is invalid; range positions `661+402` are not consecutive."
+    ]
+
+
+def test_insertion_range_message_inverted_selector_ng_nm(monkey_patches):
+    # Reverse strand reorders variants between input and internal order;
+    # the message must name 129_130insT, not the other variant, 10_11del.
+    errors = normalize("NG_012337.1(NM_012459.2):c.[10_11del;129_130insT]")["errors"]
+    assert code_in("EINSERTIONRANGE", errors)
+    details = [e["details"] for e in errors if e["code"] == "EINSERTIONRANGE"]
+    assert details == [
+        "Insertion variant is invalid; range positions `129_130` are not consecutive."
+    ]
+
+
 def get_tests(tests, code_type):
     output = []
     for test in tests:
