@@ -299,6 +299,9 @@ def get_internal_selector_model(annotations, selector_id, fix_exon=False):
                     "qualifiers"]["translation_exception"]
             if cds_sub_feature_model["qualifiers"].get("exception"):
                 output["exception"] = cds_sub_feature_model["qualifiers"]["exception"]
+            if cds_sub_feature_model["qualifiers"].get("translation_table"):
+                output["translation_table"] = cds_sub_feature_model[
+                    "qualifiers"]["translation_table"]
 
     if feature_model["type"] == "CDS":
         parent_model = get_value_by_path(annotations, path[:-1]) if len(path) >= 1 else None

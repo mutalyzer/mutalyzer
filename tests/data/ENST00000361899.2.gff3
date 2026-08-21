@@ -1,0 +1,13 @@
+##gff-version 3
+##sequence-region   MT 8527 9207
+MT	insdc	gene	8366	8572	.	+	.	ID=gene:ENSG00000228253;Name=MT-ATP8;assembly_name=GRCh38;biotype=protein_coding;description=mitochondrially encoded ATP synthase membrane subunit 8 [Source:HGNC Symbol%3BAcc:HGNC:7415];gene_id=ENSG00000228253;logic_name=mt_genbank_import_homo_sapiens;version=1
+MT	insdc	gene	8527	9207	.	+	.	ID=gene:ENSG00000198899;Name=MT-ATP6;assembly_name=GRCh38;biotype=protein_coding;description=mitochondrially encoded ATP synthase membrane subunit 6 [Source:HGNC Symbol%3BAcc:HGNC:7414];gene_id=ENSG00000198899;logic_name=mt_genbank_import_homo_sapiens;version=2
+MT	insdc	gene	9207	9990	.	+	.	ID=gene:ENSG00000198938;Name=MT-CO3;assembly_name=GRCh38;biotype=protein_coding;description=mitochondrially encoded cytochrome c oxidase III [Source:HGNC Symbol%3BAcc:HGNC:7422];gene_id=ENSG00000198938;logic_name=mt_genbank_import_homo_sapiens;version=2
+MT	insdc	mRNA	8366	8572	.	+	.	ID=transcript:ENST00000361851;Name=MT-ATP8-201;Parent=gene:ENSG00000228253;assembly_name=GRCh38;biotype=protein_coding;logic_name=mt_genbank_import_homo_sapiens;tag=gencode_basic,Ensembl_canonical,gencode_primary;transcript_id=ENST00000361851;transcript_support_level=NA;version=1
+MT	insdc	mRNA	8527	9207	.	+	.	ID=transcript:ENST00000361899;Name=MT-ATP6-201;Parent=gene:ENSG00000198899;assembly_name=GRCh38;biotype=protein_coding;logic_name=mt_genbank_import_homo_sapiens;tag=gencode_basic,Ensembl_canonical,gencode_primary;transcript_id=ENST00000361899;transcript_support_level=NA;version=2
+MT	insdc	mRNA	9207	9990	.	+	.	ID=transcript:ENST00000362079;Name=MT-CO3-201;Parent=gene:ENSG00000198938;assembly_name=GRCh38;biotype=protein_coding;logic_name=mt_genbank_import_homo_sapiens;tag=gencode_basic,Ensembl_canonical,gencode_primary;transcript_id=ENST00000362079;transcript_support_level=NA;version=2
+MT	insdc	CDS	8366	8572	.	+	0	ID=CDS:ENSP00000355265;Parent=transcript:ENST00000361851;assembly_name=GRCh38;protein_id=ENSP00000355265;version=1
+MT	insdc	CDS	8527	9207	.	+	0	ID=CDS:ENSP00000354632;Parent=transcript:ENST00000361899;assembly_name=GRCh38;protein_id=ENSP00000354632;version=2
+MT	insdc	CDS	9207	9990	.	+	0	ID=CDS:ENSP00000354982;Parent=transcript:ENST00000362079;assembly_name=GRCh38;protein_id=ENSP00000354982;version=2
+MT	insdc	exon	8366	8572	.	+	.	Name=ENSE00001435286;Parent=transcript:ENST00000361851;assembly_name=GRCh38;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=ENSE00001435286;rank=1;version=1
+MT	insdc	exon	8527	9207	.	+	.	Name=ENSE00001727012;Parent=transcript:ENST00000361899;assembly_name=GRCh38;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=ENSE00001727012;rank=1;version=2
