@@ -159,6 +159,15 @@ TESTS = [
         "normalized": "NP_071436.1:p.(Lys34Xaa)",
         "to_test": True,
     },
+    {
+        "keywords": ["protein", "equal", "mitochondrial", "codon", "translation table"],
+        # ENST00000361899.2 (MT-ATP6) contains an internal in frame TGA
+        # codon, which is Trp under the vertebrate mitochondrial translation
+        # table 2, but a premature stop under the standard table (1).
+        "input": "ENST00000361899.2:p.Trp48=",
+        "normalized": "ENST00000361899.2(ENSP00000354632):p.Trp48=",
+        "to_test": True,
+    },
 ]
 
 

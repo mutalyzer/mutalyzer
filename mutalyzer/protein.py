@@ -324,7 +324,13 @@ def get_protein_sequence(reference_model, selector_model):
     cds_seq = slice_seq(dna_ref_seq, exons, cds[0], cds[1])
     if selector_model["inverted"]:
         cds_seq = reverse_complement(cds_seq)
-    seq = list(str(Seq(add_trailing_ns(cds_seq)).translate()))
+    seq = list(
+        str(
+            Seq(add_trailing_ns(cds_seq)).translate(
+                table=selector_model.get("translation_table", 1)
+            )
+        )
+    )
     if selector_model.get("translation_exception"):
         x = Coding(
             selector_model["exon"], selector_model["cds"][0], selector_model["inverted"]
@@ -364,7 +370,11 @@ def get_protein_description(variants, references, selector_model):
     else:
         cds_seq_ext = slice_seq(dna_ref_seq, exons, cds[0])
 
-    p_ref_seq = str(Seq(add_trailing_ns(cds_seq)).translate())
+    p_ref_seq = str(
+        Seq(add_trailing_ns(cds_seq)).translate(
+            table=selector_model.get("translation_table", 1)
+        )
+    )
 
     cds_variants, splice_site_hits = to_rna_protein_coordinates(
         variants, sequences, selector_model
@@ -389,7 +399,11 @@ def get_protein_description(variants, references, selector_model):
 
     cds_obs_seq = mutate({"reference": cds_seq_ext}, cds_variants)
 
-    p_obs_seq = str(Seq(add_trailing_ns(cds_obs_seq)).translate())
+    p_obs_seq = str(
+        Seq(add_trailing_ns(cds_obs_seq)).translate(
+            table=selector_model.get("translation_table", 1)
+        )
+    )
 
     if cds_seq[:3] != cds_obs_seq[:3]:
         return f"{reference}:p.?", p_ref_seq, "?"
