@@ -3606,6 +3606,16 @@ TESTS = [
         "infos": ["ICORRECTEDSELECTORID"],
         "to_test": True,
     },
+    {
+        "keywords": ["mitochondrial", "codon", "translation table"],
+        # Issue #118: ENST00000361899.2 (MT-ATP6) must be translated with
+        # the vertebrate mitochondrial codon table 2, not 1.
+        "input": "ENST00000361899.2:c.40A>G",
+        "normalized": "ENST00000361899.2:c.40A>G",
+        "rna_description": "ENST00000361899.2:r.(40a>g)",
+        "protein_description": "ENST00000361899.2(ENSP00000354632):p.(Ile14Val)",
+        "to_test": True,
+    },
     # {
     #     "keywords": [
     #         "rna",
