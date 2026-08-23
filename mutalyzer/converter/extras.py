@@ -36,7 +36,7 @@ def convert_tuples(t, x, inverted=False):
 
 
 def convert_selector_model(s_m):
-    if s_m.get("type") == "mRNA":
+    if s_m.get("type") in ("mRNA", "gene"):
         x = crossmap_to_hgvs_setup("g", s_m)
         exon_g = convert_tuples(s_m["exon"], x, s_m["inverted"])
         cds_g = convert_tuples(s_m["cds"], x, s_m["inverted"])

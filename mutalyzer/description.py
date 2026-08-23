@@ -183,7 +183,11 @@ class Description:
 
     def is_selector_model_valid(self):
         selector_model = self.get_selector_model()
-        return selector_model and (selector_model.get("type") == "mRNA" and selector_model.get("cds")) or selector_model.get("type") == "ncRNA"
+        if not selector_model:
+            return False
+        if selector_model.get("type") in ("mRNA", "gene"):
+            return bool(selector_model.get("cds"))
+        return selector_model.get("type") == "ncRNA"
 
     def is_inverted(self):
         selector_model = self.get_selector_model()
@@ -760,20 +764,20 @@ class Description:
 
     def construct_genomic_equivalent(self):
         from_model = self.de_hgvs_internal_indexing_model
+        r_c_s = get_coordinate_system_from_reference(self.references["reference"])
         if (
-            get_coordinate_system_from_reference(self.references["reference"])
-            == "g"
-            != self.corrected_model["coordinate_system"]
+            r_c_s in ("g", "m")
+            and r_c_s != self.corrected_model["coordinate_system"]
             and self.corrected_model["coordinate_system"] != "r"
         ):
             converted_model = to_hgvs_locations(
                 model=from_model,
                 references=self.references,
-                to_coordinate_system="g",
+                to_coordinate_system=r_c_s,
                 to_selector_id=None,
                 degenerate=True,
             )
-            self.equivalent["g"] = [{"description": model_to_string(converted_model)}]
+            self.equivalent[r_c_s] = [{"description": model_to_string(converted_model)}]
 
     def construct_equivalent(self, other=None, as_description=True):
         if self.only_variants:
@@ -786,23 +790,23 @@ class Description:
             return
         equivalent = {}
 
+        r_c_s = get_coordinate_system_from_reference(self.references["reference"])
         if (
-            get_coordinate_system_from_reference(self.references["reference"])
-            == "g"
-            != self.corrected_model["coordinate_system"]
+            r_c_s in ("g", "m")
+            and r_c_s != self.corrected_model["coordinate_system"]
             and self.corrected_model["coordinate_system"] != "r"
         ):
             converted_model = to_hgvs_locations(
                 model=from_model,
                 references=self.references,
-                to_coordinate_system="g",
+                to_coordinate_system=r_c_s,
                 to_selector_id=None,
                 degenerate=True,
             )
             if as_description:
-                equivalent["g"] = [{"description": model_to_string(converted_model)}]
+                equivalent[r_c_s] = [{"description": model_to_string(converted_model)}]
             else:
-                equivalent["g"] = [{"description": converted_model}]
+                equivalent[r_c_s] = [{"description": converted_model}]
             if equivalent:
                 self.equivalent = equivalent
 
@@ -819,6 +823,10 @@ class Description:
         l_min, l_max = overlap_min_max(self.references["reference"], l_min, l_max)
         for selector in yield_overlap_ids(self.references["reference"], l_min, l_max):
             if selector["id"] != self.get_selector_id():
+                # equivalent_descriptions is for DNA only (g/m/c/n).
+                # skip a p. selector reached via a bare gene -> CDS (for MT dna)
+                if get_coordinate_system_from_selector_id(self.references["reference"], selector["id"]) == "p":
+                    continue
                 try:
                     converted_model = to_hgvs_locations(
                         model=from_model,
@@ -1193,7 +1201,7 @@ class Description:
 
             ref_mol_type = get_reference_mol_type(self.references[ref_id])
             if ref_mol_type in ["genomic DNA"] and c_s in ["c", "n"] and sel_id is not None:
-                s_m = get_internal_selector_model(self.references[ref_id]["annotations"], sel_id)
+                s_m = get_internal_selector_model(self.references[ref_id]["annotations"], sel_id, True)
                 crossmap = crossmap_to_internal_setup(c_s, s_m)
                 position = point.get("position")
                 section = 0

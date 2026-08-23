@@ -137,6 +137,18 @@ def get_selectors_ids(reference_annotations, coordinate_system=None):
     return list(ids)
 
 
+def _is_flat_coding_gene(feature):
+    """
+    True for a spliceless gene->CDS gene (mitochondrial DNA, bacteria):
+    one CDS child, no mRNA/ncRNA, can act as its own c. selector.
+    """
+    if feature.get("type") != "gene" or not feature.get("features"):
+        return False
+    cds_children = [f for f in feature["features"] if f.get("type") == "CDS"]
+    other_children = [f for f in feature["features"] if f.get("type") in ("mRNA", "ncRNA")]
+    return len(cds_children) == 1 and not other_children
+
+
 def get_selector_feature(feature_model, feature_id):
     """
     Extract the feature model corresponding to the feature_id that
@@ -146,7 +158,10 @@ def get_selector_feature(feature_model, feature_id):
         if (
             sub_feature_model.get("id")
             and sub_feature_model["id"] == feature_id
-            and sub_feature_model.get("type") in SELECTOR_FEATURE_TYPES
+            and (
+                sub_feature_model.get("type") in SELECTOR_FEATURE_TYPES
+                or _is_flat_coding_gene(sub_feature_model)
+            )
         ):
             return sub_feature_model
     return None
@@ -196,7 +211,10 @@ def get_selector_feature_model(feature_model, feature_id, path=None):
         if (
                 child.get("id")
                 and child["id"] == feature_id
-                and child.get("type") in SELECTOR_FEATURE_TYPES
+                and (
+                    child.get("type") in SELECTOR_FEATURE_TYPES
+                    or _is_flat_coding_gene(child)
+                )
         ):
             return child, path + [i]
 
@@ -248,20 +266,44 @@ def _find_ancestor_by_type(annotations, path, feature_type):
     return None
 
 
+def _resolve_cds_and_exon_features(annotations, feature_model, path):
+    if feature_model["type"] == "CDS":
+        parent = get_value_by_path(annotations, path[:-1]) if path else None
+        return feature_model, parent
+    return _get_cds_id(feature_model), feature_model
+
+
+def _set_related_feature_id(output, key, feature_model, related_feature):
+    if related_feature and related_feature is not feature_model:
+        output[key] = related_feature["id"]
+
+
+def _set_translation_qualifiers(output, cds_feature):
+    if not (cds_feature and cds_feature.get("qualifiers")):
+        return
+    qualifiers = cds_feature["qualifiers"]
+    if qualifiers.get("translation_exception"):
+        output["translation_exception"] = qualifiers["translation_exception"]
+    if qualifiers.get("exception"):
+        output["exception"] = qualifiers["exception"]
+    if qualifiers.get("translation_table"):
+        output["translation_table"] = qualifiers["translation_table"]
+
+
 def get_internal_selector_model(annotations, selector_id, fix_exon=False):
     """
     Extract and flatten the selector model.
 
     Args:
         annotations: Root annotation structure containing genes and transcripts.
-        selector_id: ID of the selector (mRNA, ncRNA, or CDS).
+        selector_id: ID of the selector (gene, mRNA, ncRNA, or CDS).
         fix_exon: If True, creates a single exon spanning the entire transcript when none exist.
 
     Returns:
         dict: Flattened selector model with keys:
             - id: Selector ID.
-            - type: Feature type (mRNA, ncRNA, CDS).
-            - gene_id: Parent gene ID.
+            - type: Feature type (gene, mRNA, ncRNA, CDS).
+            - gene_id: Parent (or, for a gene selector, own) gene ID.
             - exon: List of (start, end) tuples.
             - cds: List of (start, end) tuples (if coding).
             - inverted: Boolean indicating reverse strand.
@@ -279,9 +321,14 @@ def get_internal_selector_model(annotations, selector_id, fix_exon=False):
         "location": feature_model["location"],
     }
 
-    gene_model = _find_ancestor_by_type(annotations, path, "gene")
-    if gene_model and gene_model.get("id"):
-        output["gene_id"] = gene_model["id"]
+    # Unlike cds_id/mrna_id below a gene selector has no other,
+    # different feature to point at.
+    if feature_model["type"] == "gene":
+        output["gene_id"] = feature_model["id"]
+    else:
+        gene_model = _find_ancestor_by_type(annotations, path, "gene")
+        if gene_model and gene_model.get("id"):
+            output["gene_id"] = gene_model["id"]
 
     if (
             feature_model.get("qualifiers")
@@ -290,26 +337,14 @@ def get_internal_selector_model(annotations, selector_id, fix_exon=False):
     ):
         output["tag"] = feature_model["qualifiers"]["tag"]
 
-    cds_sub_feature_model = _get_cds_id(feature_model)
-    if cds_sub_feature_model:
-        output["cds_id"] = cds_sub_feature_model["id"]
-        if cds_sub_feature_model.get("qualifiers"):
-            if cds_sub_feature_model["qualifiers"].get("translation_exception"):
-                output["translation_exception"] = cds_sub_feature_model[
-                    "qualifiers"]["translation_exception"]
-            if cds_sub_feature_model["qualifiers"].get("exception"):
-                output["exception"] = cds_sub_feature_model["qualifiers"]["exception"]
-            if cds_sub_feature_model["qualifiers"].get("translation_table"):
-                output["translation_table"] = cds_sub_feature_model[
-                    "qualifiers"]["translation_table"]
-
-    if feature_model["type"] == "CDS":
-        parent_model = get_value_by_path(annotations, path[:-1]) if len(path) >= 1 else None
-        if parent_model:
-            output["mrna_id"] = parent_model["id"]
-            output.update(sort_locations(get_feature_locations(parent_model)))
-    else:
-        output.update(sort_locations(get_feature_locations(feature_model)))
+    cds_feature, exon_feature = _resolve_cds_and_exon_features(
+        annotations, feature_model, path
+    )
+    _set_related_feature_id(output, "cds_id", feature_model, cds_feature)
+    _set_translation_qualifiers(output, cds_feature)
+    _set_related_feature_id(output, "mrna_id", feature_model, exon_feature)
+    if exon_feature:
+        output.update(sort_locations(get_feature_locations(exon_feature)))
 
     if fix_exon and output.get("exon") is None:
         output["exon"] = [(get_start(output), get_end(output))]
@@ -325,6 +360,10 @@ def get_available_selectors(reference_annotations, coordinate_system):
 def get_protein_selector_model(reference, selector_id):
     selector_model = get_internal_selector_model(reference, selector_id, True)
     mrna = get_selector_feature(reference, selector_id)
+    if mrna["type"] == "CDS":
+        selector_model["protein_id"] = selector_id
+        selector_model["transcript_id"] = selector_id
+        return selector_model
     protein_ids = set()
     if mrna.get("features"):
         for feature in mrna["features"]:
@@ -381,6 +420,8 @@ def is_selector_in_reference(selector_id, model):
 
 def yield_selectors(model):
     for gene in yield_gene_models(model):
+        if _is_flat_coding_gene(gene):
+            yield gene
         if gene.get("features"):
             for selector in gene["features"]:
                 if selector["type"] in SELECTOR_MOL_TYPES_TYPES:
@@ -462,6 +503,8 @@ def overlap_min_max(model, l_min, l_max):
 
 def yield_overlap_ids(model, start, end):
     for gene in yield_gene_models(model):
+        if _is_flat_coding_gene(gene) and is_overlap(gene, start, end):
+            yield gene
         if gene.get("features"):
             for selector in gene["features"]:
                 if selector["type"] in SELECTOR_MOL_TYPES_TYPES:
@@ -484,6 +527,20 @@ def is_only_one_selector(model):
     return count == 1
 
 
+def _gene_selector_ids(gene):
+    """
+    Selector IDs a gene resolves to by name/HGNC lookup: its own id for a
+    flat coding gene (mitochondrial DNA, bacteria), else its mRNA/ncRNA/CDS.
+    """
+    if _is_flat_coding_gene(gene):
+        return [gene["id"]]
+    return [
+        selector["id"]
+        for selector in gene.get("features", [])
+        if selector["type"] in SELECTOR_MOL_TYPES_TYPES
+    ]
+
+
 def get_gene_selectors(gene_name, model):
     """
     Get all selector IDs for a gene identified by gene name.
@@ -497,11 +554,7 @@ def get_gene_selectors(gene_name, model):
     """
     for gene in yield_gene_models(model):
         if gene.get("id") == gene_name:
-            return [
-                selector["id"]
-                for selector in gene.get("features", [])
-                if selector["type"] in SELECTOR_MOL_TYPES_TYPES
-            ]
+            return _gene_selector_ids(gene)
     return []
 
 
@@ -518,11 +571,7 @@ def get_gene_selectors_hgnc(hgnc_id, model):
     """
     for gene in yield_gene_models(model):
         if gene.get("qualifiers", {}).get("HGNC") == hgnc_id:
-            return [
-                selector["id"]
-                for selector in gene.get("features", [])
-                if selector["type"] in SELECTOR_MOL_TYPES_TYPES
-            ]
+            return _gene_selector_ids(gene)
     return []
 
 
@@ -540,6 +589,8 @@ def coordinate_system_from_mol_type(mol_type):
 
 def get_coordinate_system_from_selector_id(model, selector_id):
     selector = get_selector_feature(model["annotations"], selector_id)
+    if selector.get("type") == "gene":
+        return "c"
     return coordinate_system_from_mol_type(selector.get("type"))
 
 

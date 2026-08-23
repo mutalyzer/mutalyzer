@@ -48,6 +48,29 @@ def test_genomic(input_description, genomic):
 
 
 @pytest.mark.parametrize(
+    "input_description, equivalent_descriptions",
+    get_tests(TESTS_ALL, "equivalent_descriptions"),
+)
+def test_equivalent_descriptions(input_description, equivalent_descriptions):
+    d = normalize(input_description)
+    assert d["equivalent_descriptions"] == equivalent_descriptions
+
+
+@pytest.mark.parametrize("input_description, gene_id", get_tests(TESTS_ALL, "gene_id"))
+def test_gene_id(input_description, gene_id):
+    d = normalize(input_description)
+    assert d["gene_id"] == gene_id
+
+
+@pytest.mark.parametrize(
+    "input_description, selector_short", get_tests(TESTS_ALL, "selector_short")
+)
+def test_selector_short(input_description, selector_short):
+    d = normalize(input_description)
+    assert d["selector_short"] == selector_short
+
+
+@pytest.mark.parametrize(
     "input_description, coding", get_tests(TESTS_ALL, "coding_protein_descriptions")
 )
 def test_coding(input_description, coding):
