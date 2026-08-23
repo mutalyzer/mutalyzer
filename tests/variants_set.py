@@ -3638,6 +3638,128 @@ TESTS = [
         "protein_description": "ENST00000361899.2(ENSP00000354632):p.(Ile14Val)",
         "to_test": True,
     },
+    {
+        "keywords": ["mitochondrial", "bare CDS", "gene as selector", "forward strand"],
+        # #120: ND4L (gene->CDS, no mRNA) is its own c.selector,
+        # distinct from its CDS/protein id YP_003024034.1.
+        "input": "NC_012920.1(ND4L):c.10del",
+        "normalized": "NC_012920.1(ND4L):c.10del",
+        "rna_description": "NC_012920.1(ND4L):r.(10del)",
+        "protein_description": "NC_012920.1(YP_003024034.1):p.(Ile4PhefsTer3)",
+        "equivalent_descriptions": {
+            "m": [{"description": "NC_012920.1:m.10479del"}],
+            "n": [
+                {"description": "NC_012920.1(TRNR):n.65+10del"},
+                {"description": "NC_012920.1(TRNH):n.1-1659del"},
+                {"description": "NC_012920.1(TRNS2):n.1-1728del"},
+                {"description": "NC_012920.1(TRNL2):n.1-1787del"},
+                {"description": "NC_012920.1(TRNE):n.69+4195del"},
+            ],
+            "c": [
+                {
+                    "description": "NC_012920.1(ND4):c.-281del",
+                    "reference": {"selector": {"id": "ND4"}},
+                },
+                {
+                    "description": "NC_012920.1(ND5):c.-1858del",
+                    "reference": {"selector": {"id": "ND5"}},
+                },
+                {
+                    "description": "NC_012920.1(ND6):c.*3670del",
+                    "reference": {"selector": {"id": "ND6"}},
+                },
+            ],
+        },
+        "gene_id": "ND4L",
+        "selector_short": {
+            "exon": {"g": [("10470", "10766")], "c": [("1", "297")]},
+            "cds": {"g": [("10470", "10766")], "c": [("1", "297")]},
+        },
+        "to_test": True,
+    },
+    {
+        "keywords": ["mitochondrial", "bare CDS", "protein selector unchanged"],
+        "input": "NC_012920.1(ND4L):p.10del",
+        "normalized": "NC_012920.1(YP_003024034.1):p.Leu10del",
+        "to_test": True,
+    },
+    {
+        "keywords": ["mitochondrial", "bare CDS", "regression", "crash"],
+        "input": "NC_012920.1(ND4L):c.10+5del",
+        "errors": ["EEXONBOUNDARY"],
+        "to_test": True,
+    },
+    {
+        "keywords": ["mitochondrial", "bare CDS", "gene as selector", "reverse strand"],
+        "input": "NC_012920.1(ND6):c.10del",
+        "normalized": "NC_012920.1(ND6):c.10del",
+        "rna_description": "NC_012920.1(ND6):r.(10del)",
+        "protein_description": "NC_012920.1(YP_003024037.1):p.(Ala4LeufsTer9)",
+        "equivalent_descriptions": {
+            "m": [{"description": "NC_012920.1:m.14664del"}],
+            "c": [
+                {
+                    "description": "NC_012920.1(ND5):c.*516del",
+                    "reference": {"selector": {"id": "ND5"}},
+                }
+            ],
+            "n": [{"description": "NC_012920.1(TRNE):n.69+10del"}],
+        },
+        "to_test": True,
+    },
+    {
+        "keywords": ["mitochondrial", "bare CDS", "reverse strand", "protein selector unchanged"],
+        "input": "NC_012920.1(ND6):p.10del",
+        "normalized": "NC_012920.1(YP_003024037.1):p.Val10del",
+        "to_test": True,
+    },
+    {
+        "keywords": ["mitochondrial", "bare CDS", "legacy v001 notation"],
+        # Mutalyzer 2 style ND4L_v001 must still resolve, to the gene
+        # itself now rather than its CDS/protein id (that's p.-only).
+        "input": "NC_012920.1(ND4L_v001):c.10del",
+        "normalized": "NC_012920.1(ND4L):c.10del",
+        "to_test": True,
+    },
+    {
+        "keywords": ["mitochondrial", "bare CDS", "gene as selector", "m to c equivalent"],
+        "input": "NC_012920.1:m.10479del",
+        "normalized": "NC_012920.1:m.10479del",
+        "equivalent_descriptions": {
+            "n": [
+                {"description": "NC_012920.1(TRNR):n.65+10del"},
+                {"description": "NC_012920.1(TRNH):n.1-1659del"},
+                {"description": "NC_012920.1(TRNS2):n.1-1728del"},
+                {"description": "NC_012920.1(TRNL2):n.1-1787del"},
+                {"description": "NC_012920.1(TRNE):n.69+4195del"},
+            ],
+            "c": [
+                {
+                    "description": "NC_012920.1(ND4L):c.10del",
+                    "reference": {"selector": {"id": "ND4L"}},
+                },
+                {
+                    "description": "NC_012920.1(ND4):c.-281del",
+                    "reference": {"selector": {"id": "ND4"}},
+                },
+                {
+                    "description": "NC_012920.1(ND5):c.-1858del",
+                    "reference": {"selector": {"id": "ND5"}},
+                },
+                {
+                    "description": "NC_012920.1(ND6):c.*3670del",
+                    "reference": {"selector": {"id": "ND6"}},
+                },
+            ],
+        },
+        "to_test": True,
+    },
+    {
+        "keywords": ["split CDS", "ribosomal slippage guard", "regression", "real gene"],
+        "input": "NM_004152.3(OAZ1):c.10del",
+        "errors": ["ECDSSLICES"],
+        "to_test": True,
+    },
     # {
     #     "keywords": [
     #         "rna",
