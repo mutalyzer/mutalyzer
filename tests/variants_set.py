@@ -3787,6 +3787,66 @@ TESTS = [
         },
         "to_test": True,
     },
+    {
+        "keywords": ["protein", "selenocysteine", "1-letter to 3-letter"],
+        # SELENON: UGA at codon 127 is recoded to selenocysteine (Sec/U),
+        # not a stop. 1-letter "U" input must convert to 3-letter "Sec".
+        "input": "NM_020451.3(NP_065184.2):p.N126_U127del",
+        "normalized": "NM_020451.3(NP_065184.2):p.Asn126_Sec127del",
+        "to_test": True,
+    },
+    {
+        "keywords": ["protein", "selenocysteine", "reference amino acid"],
+        "input": "NM_020451.3(NP_065184.2):p.Sec127Cys",
+        "normalized": "NM_020451.3(NP_065184.2):p.Sec127Cys",
+        "to_test": True,
+    },
+    {
+        "keywords": ["protein", "selenocysteine", "translate past Sec"],
+        # Deletion spans a region entirely past the first Sec codon (127);
+        # translation must continue correctly through it, not stop there.
+        "input": "NM_020451.3(NP_065184.2):p.Val200_His205del",
+        "normalized": "NM_020451.3(NP_065184.2):p.Val200_His205del",
+        "to_test": True,
+    },
+    {
+        "keywords": ["protein", "selenocysteine", "dna input", "upstream of Sec"],
+        # DNA input can't reliably predict a protein consequence here, must
+        # fail explicitly (p.?) regardless of variant position.
+        "input": "NM_020451.3:c.100C>T",
+        "protein_description": "NM_020451.3(NP_065184.2):p.?",
+        "infos": ["IMRNAGENOMICTIP", "IINFRAMESTOPCODON"],
+        "to_test": True,
+    },
+    {
+        "keywords": ["protein", "selenocysteine", "dna input", "on Sec codon"],
+        "input": "NM_020451.3:c.380G>A",
+        "protein_description": "NM_020451.3(NP_065184.2):p.?",
+        "infos": ["IMRNAGENOMICTIP", "IINFRAMESTOPCODON"],
+        "to_test": True,
+    },
+    {
+        "keywords": ["protein", "selenocysteine", "dna input", "downstream of Sec"],
+        "input": "NM_020451.3:c.1770del",
+        "protein_description": "NM_020451.3(NP_065184.2):p.?",
+        "infos": ["IMRNAGENOMICTIP", "IINFRAMESTOPCODON"],
+        "to_test": True,
+    },
+    {
+        "keywords": ["protein", "selenocysteine", "dna input", "genomic reference"],
+        # Same check, but via a genomic reference + transcript selector.
+        "input": "NG_009930.1(NM_020451.3):c.100C>T",
+        "protein_description": "NG_009930.1(NP_065184.2):p.?",
+        "infos": ["IINFRAMESTOPCODON"],
+        "to_test": True,
+    },
+    {
+        "keywords": ["protein", "selenocysteine", "dna input", "genomic reference"],
+        "input": "NG_009930.1(NM_020451.3):c.1770del",
+        "protein_description": "NG_009930.1(NP_065184.2):p.?",
+        "infos": ["IINFRAMESTOPCODON"],
+        "to_test": True,
+    },
     # {
     #     "keywords": [
     #         "rna",

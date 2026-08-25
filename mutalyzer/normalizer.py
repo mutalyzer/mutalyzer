@@ -13,8 +13,13 @@ from .converter.to_delins import to_delins, variants_to_delins
 from .converter.to_internal_coordinates import to_internal_coordinates
 from .converter.to_internal_indexing import to_internal_indexing
 from .description import Description
-from .description_model import get_selector_id, model_to_string
-from .protein import get_protein_description
+from .description_model import (
+    get_selector_id,
+    model_to_string,
+    yield_point_locations_for_main_reference,
+)
+from . import infos
+from .protein import get_protein_description, has_recoding_translation_exception
 from .reference import get_coordinate_system_from_reference, get_protein_selector_model
 from .rna import dna_to_rna, rna_to_dna
 from .util import construct_sequence, get_end, get_start
@@ -193,6 +198,10 @@ def normalize_alt(description, only_variants=False, sequence=None):
             get_selector_id(d.de_hgvs_model),
         )
         if protein_selector_model:
+            if has_recoding_translation_exception(protein_selector_model):
+                output.setdefault("infos", []).append(
+                    infos.in_frame_stop_codon(get_selector_id(d.de_hgvs_model))
+                )
             p_d = get_protein_description(
                 variants_to_delins(d.de_hgvs_internal_indexing_model["variants"]),
                 d.references,

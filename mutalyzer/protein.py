@@ -317,6 +317,24 @@ def add_trailing_ns(sequence):
     return sequence
 
 
+def apply_translation_exception(seq, selector_model):
+    """
+    Override translated positions with their translation_exception amino
+    acid (e.g. Sec, or a completed TERM stop), per the selector's CDS.
+    """
+    translation_exception = selector_model.get("translation_exception")
+    if not translation_exception:
+        return seq
+    x = Coding(
+        selector_model["exon"], selector_model["cds"][0], selector_model["inverted"]
+    )
+    result = seq
+    for t_e in translation_exception["exceptions"]:
+        i = x.coordinate_to_protein(get_start(t_e))[0] - 1
+        result = result[:i] + t_e["amino_acid"] + result[i + 1 :]
+    return result
+
+
 def get_protein_sequence(reference_model, selector_model):
     exons = selector_model["exon"]
     cds = [selector_model["cds"][0][0], selector_model["cds"][0][1]]
@@ -324,24 +342,26 @@ def get_protein_sequence(reference_model, selector_model):
     cds_seq = slice_seq(dna_ref_seq, exons, cds[0], cds[1])
     if selector_model["inverted"]:
         cds_seq = reverse_complement(cds_seq)
-    seq = list(
-        str(
-            Seq(add_trailing_ns(cds_seq)).translate(
-                table=selector_model.get("translation_table", 1)
-            )
-        )
-    )
-    if selector_model.get("translation_exception"):
-        x = Coding(
-            selector_model["exon"], selector_model["cds"][0], selector_model["inverted"]
-        )
-        for t_e in selector_model.get("translation_exception")["exceptions"]:
-            seq[x.coordinate_to_protein(get_start(t_e))[0] - 1] = t_e["amino_acid"]
-    return "".join(seq)
+    seq = str(Seq(add_trailing_ns(cds_seq)).translate(table=selector_model.get("translation_table", 1)))
+    return apply_translation_exception(seq, selector_model)
 
 
 def get_protein_references(references, selector_model):
     pass
+
+
+def has_recoding_translation_exception(selector_model):
+    """
+    Whether the CDS has a translation exception recoding an in-frame stop
+    codon (e.g. selenocysteine), as opposed to one completing a truncated
+    terminal stop codon (mitochondrial "TERM" style, amino_acid "*").
+    """
+    translation_exception = selector_model.get("translation_exception")
+    if not translation_exception:
+        return False
+    return any(
+        t_e["amino_acid"] != "*" for t_e in translation_exception["exceptions"]
+    )
 
 
 def get_protein_description(variants, references, selector_model):
@@ -392,7 +412,14 @@ def get_protein_description(variants, references, selector_model):
         reference = ref_id + protein_id
     else:
         reference = f"{ref_id}({protein_id})"
-    if splice_site_hits:
+
+    if has_recoding_translation_exception(selector_model):
+        return (
+            f"{reference}:p.?",
+            apply_translation_exception(p_ref_seq, selector_model),
+            "?",
+        )
+    elif splice_site_hits:
         return f"{reference}:p.?", p_ref_seq, "?"
     elif not cds_variants:
         return f"{reference}:p.(=)", p_ref_seq, p_ref_seq

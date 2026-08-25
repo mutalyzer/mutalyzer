@@ -163,6 +163,15 @@ def no_selector(reference_id, selector_id):
     }
 
 
+def in_frame_stop_codon(selector_id):
+    details = (
+        f"`{selector_id}` has a translation exception recoding an in-frame stop "
+        f"codon (e.g. selenocysteine); the protein-level consequence could not "
+        f"be determined."
+    )
+    return {"code": "IINFRAMESTOPCODON", "details": details}
+
+
 def other_versions(reference_id, selector_id, other_versions):
     multiple = "s" if len(other_versions) > 1 else ""
     return {
