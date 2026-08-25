@@ -3760,6 +3760,33 @@ TESTS = [
         "errors": ["ECDSSLICES"],
         "to_test": True,
     },
+    {
+        "keywords": ["mitochondrial", "non-coding", "tRNA", "gene as selector", "#100", "#120"],
+        "input": "NC_012920.1(TRNL1):n.14A>G",
+        "normalized": "NC_012920.1(TRNL1):n.14A>G",
+        "gene_id": "TRNL1",
+        "equivalent_descriptions": {
+            "m": [{"description": "NC_012920.1:m.3243A>G"}],
+            "n": [{"description": "NC_012920.1(RNR2):n.1559+14A>G"}],
+        },
+        "to_test": True,
+    },
+    {
+        "keywords": ["mitochondrial", "non-coding", "rRNA", "gene as selector"],
+        "input": "NC_012920.1(RNR1):n.14C>G",
+        "normalized": "NC_012920.1(RNR1):n.14C>G",
+        "gene_id": "RNR1",
+        "equivalent_descriptions": {
+            "m": [{"description": "NC_012920.1:m.661C>G"}],
+            "n": [
+                {"description": "NC_012920.1(TRNF):n.71+14C>G"},
+                {"description": "NC_012920.1(TRNV):n.1-941C>G"},
+                {"description": "NC_012920.1(RNR2):n.1-1010C>G"},
+                {"description": "NC_012920.1(TRNL1):n.1-2569C>G"},
+            ],
+        },
+        "to_test": True,
+    },
     # {
     #     "keywords": [
     #         "rna",

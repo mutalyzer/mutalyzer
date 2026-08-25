@@ -337,6 +337,9 @@ def get_internal_selector_model(annotations, selector_id, fix_exon=False):
     ):
         output["tag"] = feature_model["qualifiers"]["tag"]
 
+    if feature_model.get("qualifiers") and feature_model["qualifiers"].get("biotype"):
+        output["biotype"] = feature_model["qualifiers"]["biotype"]
+
     cds_feature, exon_feature = _resolve_cds_and_exon_features(
         annotations, feature_model, path
     )

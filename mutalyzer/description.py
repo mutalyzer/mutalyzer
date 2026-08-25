@@ -526,11 +526,14 @@ class Description:
             )
         )
 
-    def _generate_gene_transcript_suggestions_selectors(self, model, transcript_options, path):
+    def _generate_gene_transcript_suggestions_selectors(self, reference_id, model, transcript_options, path):
         suggestions = []
         for transcript_id in transcript_options:
             modified_model = copy.deepcopy(model)
             set_by_path(modified_model, path, transcript_id)
+            coordinate_system = get_coordinate_system_from_selector_id(self.references[reference_id], transcript_id)
+            if coordinate_system:
+                modified_model["coordinate_system"] = coordinate_system
             entry = {
                 "description": model_to_string(modified_model),
                 "transcript_id": transcript_id,
@@ -554,7 +557,7 @@ class Description:
             self._correct_selector_id(path, selector_id, gene_selectors[0], "gene name")
             return
         if len(gene_selectors) > 1:
-            options = self._generate_gene_transcript_suggestions_selectors(self.corrected_model, gene_selectors, path)
+            options = self._generate_gene_transcript_suggestions_selectors(reference_id, self.corrected_model, gene_selectors, path)
             self._add_error(errors.selector_options(selector_id, "gene", options, path))
             return
         if "_v" in selector_id:
@@ -568,7 +571,7 @@ class Description:
                 )
                 return
             if len(gene_selectors) > 1:
-                options = self._generate_gene_transcript_suggestions_selectors(self.corrected_model, gene_selectors, path)
+                options = self._generate_gene_transcript_suggestions_selectors(reference_id, self.corrected_model, gene_selectors, path)
                 self._add_error(errors.selector_options(gene_name, "gene", options, path))
                 return
         gene_selectors = get_gene_selectors_hgnc(
@@ -578,7 +581,7 @@ class Description:
             self._correct_selector_id(path, selector_id, gene_selectors[0], "gene HGNC")
             return
         if len(gene_selectors) > 1:
-            options = self._generate_gene_transcript_suggestions_selectors(self.corrected_model, gene_selectors, path)
+            options = self._generate_gene_transcript_suggestions_selectors(reference_id, self.corrected_model, gene_selectors, path)
             self._add_error(errors.selector_options(selector_id, "gene HGNC", options, path))
             return
         self._add_error(errors.no_selector_found(reference_id, selector_id, path))

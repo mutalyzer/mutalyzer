@@ -571,6 +571,7 @@ def test_rna_protein(input_description, protein_description):
                                         "end": {"type": "point", "position": 503},
                                         "strand": 1,
                                     },
+                                    "qualifiers": {"biotype": "lnc_RNA"},
                                     "features": [
                                         {
                                             "id": "exon-NR_PLUS-1",
@@ -799,6 +800,7 @@ def test_rna_protein(input_description, protein_description):
                                         "end": {"type": "point", "position": 993},
                                         "strand": -1,
                                     },
+                                    "qualifiers": {"biotype": "lnc_RNA"},
                                     "features": [
                                         {
                                             "id": "exon-NR_MINUS-1",
