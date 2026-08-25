@@ -67,7 +67,12 @@ from .description_model import (
     yield_values,
     location_to_description,
 )
-from .protein import get_protein_description, get_protein_sequence, in_frame_description
+from .protein import (
+    get_protein_description,
+    get_protein_sequence,
+    has_recoding_translation_exception,
+    in_frame_description,
+)
 from .reference import (
     get_coordinate_system_from_reference,
     get_coordinate_system_from_selector_id,
@@ -892,6 +897,10 @@ class Description:
                     get_selector_id(self.de_hgvs_model),
                 )
                 if protein_selector_model:
+                    if has_recoding_translation_exception(protein_selector_model):
+                        self.add_info(
+                            infos.in_frame_stop_codon(self.get_selector_id())
+                        )
                     p_d = get_protein_description(variants_to_delins(
                         self.de_hgvs_internal_indexing_model["variants"]
                     ),

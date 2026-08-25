@@ -1,0 +1,26 @@
+##gff-version 3
+#!gff-spec-version 1.21
+#!processor NCBI annotwriter
+##sequence-region NM_020451.3 1 4314
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=9606
+NM_020451.3	RefSeq	region	1	4314	.	+	.	ID=NM_020451.3:1..4314;Dbxref=taxon:9606;Name=1;chromosome=1;gbkey=Src;genome=genomic;map=1p36.11;mol_type=mRNA
+NM_020451.3	RefSeq	gene	1	4314	.	+	.	ID=gene-SELENON;Dbxref=GeneID:57190,HGNC:HGNC:15999,MIM:606210;Name=SELENON;description=selenoprotein N;gbkey=Gene;gene=SELENON;gene_synonym=CFTD,CMYO3,CMYP3,MDRS1,RSMD1,RSS,SELN,SEPN1
+NM_020451.3	RefSeq	CDS	39	1811	.	+	0	ID=cds-NP_065184.2;Parent=gene-SELENON;Dbxref=CCDS:CCDS41282.1,GenBank:NP_065184.2,GeneID:57190,HGNC:HGNC:15999,MIM:606210;Name=NP_065184.2;Note=UGA stop codons recoded as selenocysteine%3B isoform 2 is encoded by transcript variant 2;gbkey=CDS;gene=SELENON;product=selenoprotein N isoform 2;protein_id=NP_065184.2;transl_except=(pos:417..419%2Caa:Sec),(pos:1422..1424%2Caa:Sec)
+NM_020451.3	RefSeq	exon	1	221	.	+	.	ID=id-SELENON;Parent=gene-SELENON;Dbxref=GeneID:57190,HGNC:HGNC:15999,MIM:606210;gbkey=exon;gene=SELENON;inference=alignment:Splign:2.1.0
+NM_020451.3	RefSeq	exon	222	339	.	+	.	ID=id-SELENON-2;Parent=gene-SELENON;Dbxref=GeneID:57190,HGNC:HGNC:15999,MIM:606210;gbkey=exon;gene=SELENON;inference=alignment:Splign:2.1.0
+NM_020451.3	RefSeq	exon	340	441	.	+	.	ID=id-SELENON-3;Parent=gene-SELENON;Dbxref=GeneID:57190,HGNC:HGNC:15999,MIM:606210;gbkey=exon;gene=SELENON;inference=alignment:Splign:2.1.0
+NM_020451.3	RefSeq	exon	442	575	.	+	.	ID=id-SELENON-4;Parent=gene-SELENON;Dbxref=GeneID:57190,HGNC:HGNC:15999,MIM:606210;gbkey=exon;gene=SELENON;inference=alignment:Splign:2.1.0
+NM_020451.3	RefSeq	exon	576	785	.	+	.	ID=id-SELENON-5;Parent=gene-SELENON;Dbxref=GeneID:57190,HGNC:HGNC:15999,MIM:606210;gbkey=exon;gene=SELENON;inference=alignment:Splign:2.1.0
+NM_020451.3	RefSeq	exon	786	910	.	+	.	ID=id-SELENON-6;Parent=gene-SELENON;Dbxref=GeneID:57190,HGNC:HGNC:15999,MIM:606210;gbkey=exon;gene=SELENON;inference=alignment:Splign:2.1.0
+NM_020451.3	RefSeq	exon	911	1048	.	+	.	ID=id-SELENON-7;Parent=gene-SELENON;Dbxref=GeneID:57190,HGNC:HGNC:15999,MIM:606210;gbkey=exon;gene=SELENON;inference=alignment:Splign:2.1.0
+NM_020451.3	RefSeq	exon	1049	1130	.	+	.	ID=id-SELENON-8;Parent=gene-SELENON;Dbxref=GeneID:57190,HGNC:HGNC:15999,MIM:606210;gbkey=exon;gene=SELENON;inference=alignment:Splign:2.1.0
+NM_020451.3	RefSeq	exon	1131	1319	.	+	.	ID=id-SELENON-9;Parent=gene-SELENON;Dbxref=GeneID:57190,HGNC:HGNC:15999,MIM:606210;gbkey=exon;gene=SELENON;inference=alignment:Splign:2.1.0
+NM_020451.3	RefSeq	exon	1320	1425	.	+	.	ID=id-SELENON-10;Parent=gene-SELENON;Dbxref=GeneID:57190,HGNC:HGNC:15999,MIM:606210;gbkey=exon;gene=SELENON;inference=alignment:Splign:2.1.0
+NM_020451.3	RefSeq	exon	1426	1538	.	+	.	ID=id-SELENON-11;Parent=gene-SELENON;Dbxref=GeneID:57190,HGNC:HGNC:15999,MIM:606210;gbkey=exon;gene=SELENON;inference=alignment:Splign:2.1.0
+NM_020451.3	RefSeq	exon	1539	1640	.	+	.	ID=id-SELENON-12;Parent=gene-SELENON;Dbxref=GeneID:57190,HGNC:HGNC:15999,MIM:606210;gbkey=exon;gene=SELENON;inference=alignment:Splign:2.1.0
+NM_020451.3	RefSeq	exon	1641	4314	.	+	.	ID=id-SELENON-13;Parent=gene-SELENON;Dbxref=GeneID:57190,HGNC:HGNC:15999,MIM:606210;gbkey=exon;gene=SELENON;inference=alignment:Splign:2.1.0
+NM_020451.3	RefSeq	polyA_site	4314	4314	.	+	.	ID=id-SELENON-14;Parent=gene-SELENON;Dbxref=GeneID:57190,HGNC:HGNC:15999,MIM:606210;Note=major polyA site;gbkey=polyA_site;gene=SELENON
+NM_020451.3	RefSeq	recoding_stimulatory_region	1431	1469	.	+	.	ID=id-SELENON-15;Parent=gene-SELENON;Dbxref=GeneID:57190,HGNC:HGNC:15999,MIM:606210;Note=stop_codon_readthrough_signal%3B stop-codon redefinition element (SRE);function=stimulates readthrough at the UGA codon;gbkey=regulatory;gene=SELENON;regulatory_class=recoding_stimulatory_region
+NM_020451.3	RefSeq	recoding_stimulatory_region	2905	2972	.	+	.	ID=id-SELENON-16;Parent=gene-SELENON;Dbxref=GeneID:57190,HGNC:HGNC:15999,MIM:606210;Note=SECIS_element;function=essential for recoding UGA to specify selenocysteine;gbkey=regulatory;gene=SELENON;regulatory_class=recoding_stimulatory_region
+NM_020451.3	RefSeq	polyA_signal_sequence	4294	4299	.	+	.	ID=id-SELENON-17;Parent=gene-SELENON;Dbxref=GeneID:57190,HGNC:HGNC:15999,MIM:606210;Note=hexamer: AATAAA;gbkey=regulatory;gene=SELENON;regulatory_class=polyA_signal_sequence
+
