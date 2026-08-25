@@ -3626,11 +3626,26 @@ TESTS = [
         "protein_description": "NC_012920.1(YP_003024034.1):p.(Ile4PhefsTer3)",
         "equivalent_descriptions": {
             "m": [{"description": "NC_012920.1:m.10479del"}],
+            "n": [
+                {"description": "NC_012920.1(TRNR):n.65+10del"},
+                {"description": "NC_012920.1(TRNH):n.1-1659del"},
+                {"description": "NC_012920.1(TRNS2):n.1-1728del"},
+                {"description": "NC_012920.1(TRNL2):n.1-1787del"},
+                {"description": "NC_012920.1(TRNE):n.69+4195del"},
+            ],
             "c": [
                 {
                     "description": "NC_012920.1(ND4):c.-281del",
                     "reference": {"selector": {"id": "ND4"}},
-                }
+                },
+                {
+                    "description": "NC_012920.1(ND5):c.-1858del",
+                    "reference": {"selector": {"id": "ND5"}},
+                },
+                {
+                    "description": "NC_012920.1(ND6):c.*3670del",
+                    "reference": {"selector": {"id": "ND6"}},
+                },
             ],
         },
         "gene_id": "ND4L",
@@ -3666,6 +3681,7 @@ TESTS = [
                     "reference": {"selector": {"id": "ND5"}},
                 }
             ],
+            "n": [{"description": "NC_012920.1(TRNE):n.69+10del"}],
         },
         "to_test": True,
     },
@@ -3688,6 +3704,13 @@ TESTS = [
         "input": "NC_012920.1:m.10479del",
         "normalized": "NC_012920.1:m.10479del",
         "equivalent_descriptions": {
+            "n": [
+                {"description": "NC_012920.1(TRNR):n.65+10del"},
+                {"description": "NC_012920.1(TRNH):n.1-1659del"},
+                {"description": "NC_012920.1(TRNS2):n.1-1728del"},
+                {"description": "NC_012920.1(TRNL2):n.1-1787del"},
+                {"description": "NC_012920.1(TRNE):n.69+4195del"},
+            ],
             "c": [
                 {
                     "description": "NC_012920.1(ND4L):c.10del",
@@ -3697,6 +3720,14 @@ TESTS = [
                     "description": "NC_012920.1(ND4):c.-281del",
                     "reference": {"selector": {"id": "ND4"}},
                 },
+                {
+                    "description": "NC_012920.1(ND5):c.-1858del",
+                    "reference": {"selector": {"id": "ND5"}},
+                },
+                {
+                    "description": "NC_012920.1(ND6):c.*3670del",
+                    "reference": {"selector": {"id": "ND6"}},
+                },
             ],
         },
         "to_test": True,
@@ -3705,6 +3736,33 @@ TESTS = [
         "keywords": ["split CDS", "ribosomal slippage guard", "regression", "real gene"],
         "input": "NM_004152.3(OAZ1):c.10del",
         "errors": ["ECDSSLICES"],
+        "to_test": True,
+    },
+    {
+        "keywords": ["mitochondrial", "non-coding", "tRNA", "gene as selector", "#100", "#120"],
+        "input": "NC_012920.1(TRNL1):n.14A>G",
+        "normalized": "NC_012920.1(TRNL1):n.14A>G",
+        "gene_id": "TRNL1",
+        "equivalent_descriptions": {
+            "m": [{"description": "NC_012920.1:m.3243A>G"}],
+            "n": [{"description": "NC_012920.1(RNR2):n.1559+14A>G"}],
+        },
+        "to_test": True,
+    },
+    {
+        "keywords": ["mitochondrial", "non-coding", "rRNA", "gene as selector"],
+        "input": "NC_012920.1(RNR1):n.14C>G",
+        "normalized": "NC_012920.1(RNR1):n.14C>G",
+        "gene_id": "RNR1",
+        "equivalent_descriptions": {
+            "m": [{"description": "NC_012920.1:m.661C>G"}],
+            "n": [
+                {"description": "NC_012920.1(TRNF):n.71+14C>G"},
+                {"description": "NC_012920.1(TRNV):n.1-941C>G"},
+                {"description": "NC_012920.1(RNR2):n.1-1010C>G"},
+                {"description": "NC_012920.1(TRNL1):n.1-2569C>G"},
+            ],
+        },
         "to_test": True,
     },
     # {
