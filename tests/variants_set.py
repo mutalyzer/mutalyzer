@@ -3825,6 +3825,33 @@ TESTS = [
         "infos": ["IINFRAMESTOPCODON"],
         "to_test": True,
     },
+    {
+        "keywords": ["rna", "duplication", "#99"],
+        "input": "NM_003002.4:c.278dup",
+        "rna_description": "NM_003002.4:r.(278dup)",
+        "to_test": True,
+    },
+    {
+        "keywords": ["rna", "duplication", "#99"],
+        "input": "NM_003002.4:c.270_271dup",
+        "rna_description": "NM_003002.4:r.(270_271dup)",
+        "to_test": True,
+    },
+    {
+        "keywords": ["rna", "duplication", "repeat", "#99"],
+        "input": "NM_003002.4:c.100_102dup",
+        "rna_description": "NM_003002.4:r.(100_102u[6])",
+        "to_test": True,
+    },
+    {
+        "keywords": ["rna", "exon boundary", "cancellation", "#99", "real correctness bug"],
+        "input": "NG_008939.1(NM_000532.5):c.[429del;430_431insA]",
+        "normalized": "NG_008939.1(NM_000532.5):c.[429del;430dup]",
+        "rna_description": "NG_008939.1(NM_000532.5):r.(=)",
+        # Different splice site detector here.
+        "rna_description_alt": False,
+        "to_test": True,
+    },
     # {
     #     "keywords": [
     #         "rna",

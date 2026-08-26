@@ -940,11 +940,16 @@ class Description:
                 get_reference_id(self.corrected_model): rna_reference_model,
                 "reference": rna_reference_model,
             }
+            rna_sequences = {
+                k: str(Seq(model["sequence"]["seq"]).transcribe().lower())
+                for k, model in rna_references.items()
+            }
+            rna_observed_sequence = mutate(rna_sequences, rna_variants_coordinate)
+            rna_sequences["observed"] = rna_observed_sequence
+            # Run another extraction at this level
             rna_variants_coordinate = de_to_hgvs(
-                rna_variants_coordinate,
-                {
-                    k: str(Seq(model["sequence"]["seq"]).transcribe().lower()) for k, model in rna_references.items()
-                },
+                describe_dna(rna_sequences["reference"], rna_observed_sequence),
+                rna_sequences,
             )
             to_rna_sequences(rna_variants_coordinate)
             rna_model = to_hgvs_locations(
