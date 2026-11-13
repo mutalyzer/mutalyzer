@@ -28,3 +28,9 @@ docs/html/
 *.svg
 *.gff*
 *.sequence
+.vscode/
+build/
+docs/_build/
+.coverage
+.coverage.*
+htmlcov/
