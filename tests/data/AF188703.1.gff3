@@ -1,0 +1,8 @@
+##gff-version 3
+#!gff-spec-version 1.21
+#!processor NCBI annotwriter
+##sequence-region AF188703.1 1 2470
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=9606
+AF188703.1	Genbank	region	1	2470	.	+	.	ID=AF188703.1:1..2470;Dbxref=taxon:9606;Name=17;chromosome=17;gbkey=Src;map=17q21-q22;mol_type=mRNA
+AF188703.1	Genbank	CDS	46	1683	.	+	0	ID=cds-AAF68854.1;Dbxref=NCBI_GP:AAF68854.1;Name=AAF68854.1;Note=similar to sequences with GenBank Accession Number AC005901 and AI150577;gbkey=CDS;product=T-box TBX4;protein_id=AAF68854.1
+

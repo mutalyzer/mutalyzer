@@ -259,46 +259,6 @@ def test_get_reference_model_segmented_transcript_include_siblings():
                 },
                 "features": [
                     {
-                        "id": "id-SDHD-1",
-                        "type": "exon",
-                        "location": {
-                            "type": "range",
-                            "start": {"type": "point", "position": 5000},
-                            "end": {"type": "point", "position": 5113},
-                            "strand": 1,
-                        },
-                    },
-                    {
-                        "id": "id-SDHD-2",
-                        "type": "exon",
-                        "location": {
-                            "type": "range",
-                            "start": {"type": "point", "position": 6010},
-                            "end": {"type": "point", "position": 6127},
-                            "strand": 1,
-                        },
-                    },
-                    {
-                        "id": "id-SDHD-3",
-                        "type": "exon",
-                        "location": {
-                            "type": "range",
-                            "start": {"type": "point", "position": 7020},
-                            "end": {"type": "point", "position": 7165},
-                            "strand": 1,
-                        },
-                    },
-                    {
-                        "id": "id-SDHD-4",
-                        "type": "exon",
-                        "location": {
-                            "type": "range",
-                            "start": {"type": "point", "position": 12958},
-                            "end": {"type": "point", "position": 13948},
-                            "strand": 1,
-                        },
-                    },
-                    {
                         "id": "NM_003002.2",
                         "type": "mRNA",
                         "location": {
@@ -403,46 +363,6 @@ def test_get_reference_model_segmented_gene_no_siblings():
                     "HGNC": "10683",
                 },
                 "features": [
-                    {
-                        "id": "id-SDHD-1",
-                        "type": "exon",
-                        "location": {
-                            "type": "range",
-                            "start": {"type": "point", "position": 5000},
-                            "end": {"type": "point", "position": 5113},
-                            "strand": 1,
-                        },
-                    },
-                    {
-                        "id": "id-SDHD-2",
-                        "type": "exon",
-                        "location": {
-                            "type": "range",
-                            "start": {"type": "point", "position": 6010},
-                            "end": {"type": "point", "position": 6127},
-                            "strand": 1,
-                        },
-                    },
-                    {
-                        "id": "id-SDHD-3",
-                        "type": "exon",
-                        "location": {
-                            "type": "range",
-                            "start": {"type": "point", "position": 7020},
-                            "end": {"type": "point", "position": 7165},
-                            "strand": 1,
-                        },
-                    },
-                    {
-                        "id": "id-SDHD-4",
-                        "type": "exon",
-                        "location": {
-                            "type": "range",
-                            "start": {"type": "point", "position": 12958},
-                            "end": {"type": "point", "position": 13948},
-                            "strand": 1,
-                        },
-                    },
                     {
                         "id": "NM_003002.2",
                         "type": "mRNA",

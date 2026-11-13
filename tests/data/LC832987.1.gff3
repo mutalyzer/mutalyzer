@@ -1,0 +1,25 @@
+##gff-version 3
+#!gff-spec-version 1.21
+#!processor NCBI annotwriter
+##sequence-region LC832987.1 1 5348
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=689403
+LC832987.1	DDBJ	region	1	5348	.	+	.	ID=LC832987.1:1..5348;Dbxref=taxon:689403;collection-date=2024;country=Japan;gbkey=Src;isolate=HBoV1/human/Japan/NIID24-146/2024;isolation-source=sputum;mol_type=genomic DNA;nat-host=Homo sapiens
+LC832987.1	DDBJ	gene	253	2164	.	+	.	ID=gene-NS1;Name=NS1;gbkey=Gene;gene=NS1;gene_biotype=protein_coding;is_ordered=true
+LC832987.1	DDBJ	gene	2236	2669	.	+	.	ID=gene-NS1;Name=NS1;gbkey=Gene;gene=NS1;gene_biotype=protein_coding;is_ordered=true
+LC832987.1	DDBJ	CDS	253	2164	.	+	0	ID=cds-BFP69721.1;Parent=gene-NS1;Dbxref=NCBI_GP:BFP69721.1;Name=BFP69721.1;gbkey=CDS;gene=NS1;product=nonstructural protein NS1;protein_id=BFP69721.1
+LC832987.1	DDBJ	CDS	2236	2669	.	+	2	ID=cds-BFP69721.1;Parent=gene-NS1;Dbxref=NCBI_GP:BFP69721.1;Name=BFP69721.1;gbkey=CDS;gene=NS1;product=nonstructural protein NS1;protein_id=BFP69721.1
+LC832987.1	DDBJ	gene	253	2172	.	+	.	ID=gene-NS1-70;Name=NS1-70;gbkey=Gene;gene=NS1-70;gene_biotype=protein_coding
+LC832987.1	DDBJ	CDS	253	2172	.	+	0	ID=cds-BFP69722.1;Parent=gene-NS1-70;Dbxref=NCBI_GP:BFP69722.1;Name=BFP69722.1;gbkey=CDS;gene=NS1-70;product=nonstructural protein NS1-70;protein_id=BFP69722.1
+LC832987.1	DDBJ	gene	2116	2164	.	+	.	ID=gene-UP1;Name=UP1;gbkey=Gene;gene=UP1;gene_biotype=protein_coding;is_ordered=true
+LC832987.1	DDBJ	gene	2236	2669	.	+	.	ID=gene-UP1;Name=UP1;gbkey=Gene;gene=UP1;gene_biotype=protein_coding;is_ordered=true
+LC832987.1	DDBJ	CDS	2116	2164	.	+	0	ID=cds-BFP69723.1;Parent=gene-UP1;Dbxref=NCBI_GP:BFP69723.1;Name=BFP69723.1;gbkey=CDS;gene=UP1;product=nonstructural protein UP1;protein_id=BFP69723.1
+LC832987.1	DDBJ	CDS	2236	2669	.	+	2	ID=cds-BFP69723.1;Parent=gene-UP1;Dbxref=NCBI_GP:BFP69723.1;Name=BFP69723.1;gbkey=CDS;gene=UP1;product=nonstructural protein UP1;protein_id=BFP69723.1
+LC832987.1	DDBJ	gene	2410	3069	.	+	.	ID=gene-NP1;Name=NP1;gbkey=Gene;gene=NP1;gene_biotype=protein_coding
+LC832987.1	DDBJ	CDS	2410	3069	.	+	0	ID=cds-BFP69724.1;Parent=gene-NP1;Dbxref=NCBI_GP:BFP69724.1;Name=BFP69724.1;gbkey=CDS;gene=NP1;product=nonstructural protein NP1;protein_id=BFP69724.1
+LC832987.1	DDBJ	gene	3056	5071	.	+	.	ID=gene-VP1;Name=VP1;gbkey=Gene;gene=VP1;gene_biotype=protein_coding
+LC832987.1	DDBJ	CDS	3056	5071	.	+	0	ID=cds-BFP69725.1;Parent=gene-VP1;Dbxref=NCBI_GP:BFP69725.1;Name=BFP69725.1;gbkey=CDS;gene=VP1;product=structural protein VP1;protein_id=BFP69725.1
+LC832987.1	DDBJ	gene	3443	5071	.	+	.	ID=gene-VP2;Name=VP2;gbkey=Gene;gene=VP2;gene_biotype=protein_coding
+LC832987.1	DDBJ	CDS	3443	5071	.	+	0	ID=cds-BFP69726.1;Parent=gene-VP2;Dbxref=NCBI_GP:BFP69726.1;Name=BFP69726.1;gbkey=CDS;gene=VP2;product=structural protein VP2;protein_id=BFP69726.1
+LC832987.1	DDBJ	gene	3864	4226	.	+	.	ID=gene-ORFx;Name=ORFx;gbkey=Gene;gene=ORFx;gene_biotype=protein_coding
+LC832987.1	DDBJ	CDS	3864	4226	.	+	0	ID=cds-BFP69727.1;Parent=gene-ORFx;Dbxref=NCBI_GP:BFP69727.1;Name=BFP69727.1;gbkey=CDS;gene=ORFx;product=nonstructural protein ORFx;protein_id=BFP69727.1
+

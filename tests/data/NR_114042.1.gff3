@@ -1,0 +1,9 @@
+##gff-version 3
+#!gff-spec-version 1.21
+#!processor NCBI annotwriter
+##sequence-region NR_114042.1 1 1467
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=562
+NR_114042.1	RefSeq	region	1	1467	.	+	.	ID=NR_114042.1:1..1467;Dbxref=NBRC:102203,taxon:562;culture-collection=NBRC:102203;gbkey=Src;genome=genomic;mol_type=rRNA;strain=NBRC 102203;type-material=neotype strain of Escherichia coli
+NR_114042.1	RefSeq	rRNA	1	1467	.	+	.	ID=rna-NR_114042.1:1..1467;end_range=1467,.;gbkey=rRNA;partial=true;product=16S ribosomal RNA;start_range=.,1
+NR_114042.1	RefSeq	exon	1	1467	.	+	.	ID=exon-NR_114042.1:1..1467-1;Parent=rna-NR_114042.1:1..1467;end_range=1467,.;gbkey=rRNA;partial=true;product=16S ribosomal RNA;start_range=.,1
+

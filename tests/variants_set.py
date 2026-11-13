@@ -3323,6 +3323,14 @@ TESTS = [
         "to_test": True,
     },
     {
+        "keywords": ["no cds for coding transcripts #73", "intronic offset"],
+        "input": "NG_009930.1(NM_001099625.2):c.1010+1del",
+        "errors": [
+            "ENOCDS",
+        ],
+        "to_test": True,
+    },
+    {
         "keywords": ["no cds for coding transcripts #73"],
         "input": "NG_012337.3(NM_003002.4):c.274delinsNG_009930.1(NM_001099625.2):c.1010",
         "errors": [
@@ -3850,6 +3858,121 @@ TESTS = [
         "rna_description": "NG_008939.1(NM_000532.5):r.(=)",
         # Different splice site detector here.
         "rna_description_alt": False,
+        "to_test": True,
+    },
+    {
+        "keywords": ["genomic RNA mol_type", "flat coding gene"],
+        "input": "NC_003468.2(ANDVsLgp1):c.10del",
+        "normalized": "NC_003468.2(ANDVsLgp1):c.10del",
+        "protein_description": "NC_003468.2(NP_604473.1):p.(Tyr4IlefsTer19)",
+        "to_test": True,
+    },
+    {
+        "keywords": ["protein", "bare CDS", "sibling CDS", "no gene wrapper"],
+        "input": "KJ082064.1(AHN50432.1):p.10del",
+        "normalized": "KJ082064.1(AHN50432.1):p.Arg11del",
+        "to_test": True,
+    },
+    {
+        "keywords": ["mRNA missing transcript_id qualifier", "local id fallback"],
+        "input": "NC_001806.2(HHV1gp00p76):c.10del",
+        "normalized": "NC_001806.2(HHV1gp00p76):c.10del",
+        "protein_description": "NC_001806.2(YP_009137074.1):p.(Arg4AlafsTer140)",
+        "to_test": True,
+    },
+    {
+        "keywords": ["gene without Name", "description as gene id"],
+        "input": "NC_011507.2(VP1):c.10del",
+        "normalized": "NC_011507.2(VP1):c.10del",
+        "protein_description": "NC_011507.2(YP_002302227.1):p.(Tyr4ThrfsTer3)",
+        "to_test": True,
+    },
+    {
+        "keywords": ["gene split over several lines", "spliced gene without mRNA"],
+        "input": "LC832987.1(NS1):c.1914del",
+        "normalized": "LC832987.1(NS1):c.1914del",
+        "protein_description": "LC832987.1(BFP69721.1):p.(Ser638ArgfsTer28)",
+        "to_test": True,
+    },
+    {
+        "keywords": ["pseudogene", "gene name selector", "transcribed pseudogene"],
+        "input": "NR_163594.1(SSPOP):n.100del",
+        "normalized": "NR_163594.1:n.103del",
+        "to_test": True,
+    },
+    {
+        "keywords": ["bare top-level ncRNA", "no gene"],
+        "input": "NR_114042.1:n.10del",
+        "normalized": "NR_114042.1:n.10del",
+        "to_test": True,
+    },
+    {
+        "keywords": ["no selector", "only coding selector", "other ncRNA selectors"],
+        "input": "NG_009497.1:c.8682-19dup",
+        "normalized": "NG_009497.1(NM_206933.2):c.8682-19dup",
+        "to_test": True,
+    },
+    {
+        "keywords": ["n. on a coding transcript", "converted to c. with a warning"],
+        "input": "NM_003002.4:n.10del",
+        "normalized": "NM_003002.4:c.-26del",
+        "infos": ["INONCODINGCOORDINATESYSTEM"],
+        "to_test": True,
+    },
+    {
+        "keywords": ["mRNA record", "lone CDS", "record as c. selector"],
+        "input": "AF188703.1:c.184C>T",
+        "normalized": "AF188703.1:c.184C>T",
+        "protein_description": "AF188703.1(AAF68854.1):p.(Gln62Ter)",
+        "to_test": True,
+    },
+    {
+        "keywords": ["mRNA record", "lone CDS", "CDS selector only for p."],
+        "input": "AF188703.1(AAF68854.1):c.184C>T",
+        "errors": ["ECOORDINATESYSTEMMISMATCH"],
+        "to_test": True,
+    },
+    {
+        "keywords": ["no selector", "flat coding gene", "CDS not counted for c."],
+        "input": "NC_003468.2:c.10del",
+        "normalized": "NC_003468.2(ANDVsLgp1):c.10del",
+        "to_test": True,
+    },
+    {
+        "keywords": ["no selector", "flat coding gene", "gene and its CDS counted once"],
+        "input": "NC_003468.2:p.Tyr4del",
+        "normalized": "NC_003468.2(NP_604473.1):p.Tyr4del",
+        "to_test": True,
+    },
+    {
+        "keywords": ["no selector", "g. never takes a selector"],
+        "input": "NC_003468.2:g.10del",
+        "errors": ["ECOORDINATESYSTEMMISMATCH"],
+        "to_test": True,
+    },
+    {
+        "keywords": ["no selector", "only non-coding selector", "other mRNA selectors"],
+        "input": "NG_008376.4:n.10del",
+        "normalized": "NG_008376.4(NR_034118.2):n.10del",
+        "to_test": True,
+    },
+    {
+        "keywords": ["CDS with no protein_id", "gene and CDS sharing an id"],
+        # rpL21 (pseudo CDS) once, although its gene and CDS have the same id.
+        "input": "L78833.1:g.48950del",
+        "normalized": "L78833.1:g.48950del",
+        "equivalent_descriptions": {
+            "c": [
+                {
+                    "description": "L78833.1(BRCA1):c.4357+2623del",
+                    "reference": {"selector": {"id": "BRCA1"}},
+                },
+                {
+                    "description": "L78833.1(rpL21):c.441del",
+                    "reference": {"selector": {"id": "rpL21"}},
+                },
+            ]
+        },
         "to_test": True,
     },
     # {

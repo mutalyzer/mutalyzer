@@ -41,6 +41,10 @@ from .commons import code_in, monkey_patches
                 "NG_012337.1(NM_003002.2):c.([276C>A;289G>A])",
             ],
         ),
+        # Gene with one CDS and no transcript: the gene is the c. selector.
+        ("L78833.1(rpL21):p.Met1Val", ["L78833.1(rpL21):c.(1A>G)"]),
+        # Bare CDS: no transcript, so no c. description.
+        ("KJ082064.1(AHN50432.1):p.Arg11Gln", []),
     ],
 )
 def test_protein(protein_description, back_translated_descriptions):

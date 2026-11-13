@@ -46,6 +46,15 @@ def reference_not_retrieved(reference_id, path):
     }
 
 
+def reference_not_parsed(reference_id, path):
+    # NC_037304.1:g.100del
+    return {
+        "code": "EREFERENCEPARSE",
+        "details": f"`{reference_id}` was retrieved, but its annotations could not be parsed.",
+        "paths": [path],
+    }
+
+
 def no_selector_found(reference_id, selector_id, path):
     # NG_012337.1(DUMMYACCNO_9999.9):c.12_13insGATC
     # NG_012337.3(NM_003002.1):c.274G>T -> we may suggest that a newer version (NM_003002.4) is available.
@@ -78,10 +87,16 @@ def coordinate_system_mismatch(coordinate_system, mismatch_id, mismatch_coordina
     # NR_038420.1:c.10del
     # Check if it can be merged with ECOORDINATESYSTEMINVALID
     # Check if there could be multiple options (NM with c. or r.).
+    if mismatch_coordinate_system is None:
+        details = f"`{coordinate_system}.` is an invalid coordinate system in the context of {mismatch_id}."
+    else:
+        details = (
+            f"`{coordinate_system}.` is an invalid coordinate system in the context of {mismatch_id}; "
+            f"`{mismatch_coordinate_system}.` is expected, for example."
+        )
     return {
         "code": "ECOORDINATESYSTEMMISMATCH",
-        "details": f"`{coordinate_system}.` is an invalid coordinate system in the context of {mismatch_id}; "
-                   f"`{mismatch_coordinate_system}.` is expected, for example.",
+        "details": details,
         "paths": [path],
     }
 
@@ -409,10 +424,15 @@ def cds_slices(selector_id, exception_message):
     }
 
 
-def no_cds(reference_id, selector_id, path):
+def no_cds(reference_id, selector_id, path, selector_type=None):
     # NG_009930.1(NM_001099625.2):c.1010
+    # ENST00000642141.1:c.10A>T
+    details = f"`{reference_id}` has no CDS annotation for transcript selector `{selector_id}`"
+    if selector_type:
+        details += f", whose type (`{selector_type}`) indicates a coding sequence is expected"
+    details += "."
     return {
         "code": "ENOCDS",
-        "details": f"`{reference_id}` has no CDS annotation for transcript selector `{selector_id}`.",
+        "details": details,
         "paths": [path],
     }

@@ -7,16 +7,19 @@ from mutalyzer_retriever.reference import ASSEMBLIES, get_reference_mol_type
 from mutalyzer_retriever.retriever import (
     NoReferenceError,
     NoReferenceRetrieved,
+    ReferenceParseError,
     extract_feature_model,
     get_reference_model,
 )
 
 from .util import get_end, get_start, get_submodel_by_path
 
+# Gene types in the model: pseudogenes are kept as such (as by HGNC).
+GENE_TYPES = ["gene", "pseudogene"]
 SELECTOR_MOL_TYPES_TYPES = ["mRNA", "ncRNA", "CDS"]
 SELECTOR_FEATURE_TYPES = ["mRNA", "ncRNA", "CDS"]
 COORDINATE_C_MOL_TYPES_TYPES = ["mRNA"]
-COORDINATE_N_MOL_TYPES_TYPES = ["ncRNA", "transcribed RNA"]
+COORDINATE_N_MOL_TYPES_TYPES = ["ncRNA", "transcribed RNA", "rRNA", "tRNA"]
 COORDINATE_G_MOL_TYPES_TYPES = ["dna", "genomic DNA", "DNA"]
 COORDINATE_P_MOL_TYPES_TYPES = ["CDS", "unassigned"]
 
@@ -88,6 +91,8 @@ def _fix_ensembl(r_m, r_id):
 def retrieve_reference(reference_id, selector_id=None):
     try:
         r_m = get_reference_model(re.sub(r"\s+", "", reference_id), selector_id)
+    except ReferenceParseError as e:
+        return None, e
     except NoReferenceRetrieved:
         return None, None
     except NoReferenceError as e:
@@ -130,10 +135,14 @@ def get_selectors_ids(reference_annotations, coordinate_system=None):
         # TODO: raise some error.
     if reference_annotations.get("features"):
         for feature in reference_annotations["features"]:
-            if feature["type"] == "gene" and feature.get("features"):
+            if feature["type"] in GENE_TYPES and feature.get("features"):
                 for sub_feature in feature["features"]:
                     if sub_feature["type"] in check:
                         ids.add(sub_feature["id"])
+            elif feature["type"] in check:
+                # A bare, gene-less top-level RNA feature can act as its
+                # own selector (e.g. NR_114042.1).
+                ids.add(feature["id"])
     return list(ids)
 
 
@@ -147,6 +156,21 @@ def _is_flat_coding_gene(feature):
     cds_children = [f for f in feature["features"] if f.get("type") == "CDS"]
     other_children = [f for f in feature["features"] if f.get("type") in ("mRNA", "ncRNA")]
     return len(cds_children) == 1 and not other_children
+
+
+def _get_reference_as_selector(annotations, selector_id):
+    """
+    A genuinely feature-less reference can act as its own implicit
+    selector, spanning the whole sequence.
+    """
+    if selector_id == annotations.get("id") and annotations.get("location"):
+        mol_type = (annotations.get("qualifiers") or {}).get("mol_type")
+        return {
+            "type": mol_type if mol_type else "ncRNA",
+            "id": selector_id,
+            "location": annotations["location"],
+        }
+    return None
 
 
 def get_selector_feature(feature_model, feature_id):
@@ -164,7 +188,7 @@ def get_selector_feature(feature_model, feature_id):
             )
         ):
             return sub_feature_model
-    return None
+    return _get_reference_as_selector(feature_model, feature_id)
 
 
 def get_feature_locations(feature):
@@ -247,28 +271,31 @@ def get_value_by_path(annotations, path):
     return current
 
 
-def _find_ancestor_by_type(annotations, path, feature_type):
+def _find_ancestor_by_type(annotations, path, feature_types):
     """
-    Find the first ancestor of a given type by traversing up the path.
+    Find the first ancestor of one of the given types by traversing up the path.
 
     Args:
         annotations: Root annotation structure
         path: List of indices
-        feature_type: Type to search for (e.g., "gene", "mRNA")
+        feature_types: Types to search for (e.g., GENE_TYPES)
 
     Returns:
         The ancestor feature or None
     """
     for i in range(len(path) - 1, -1, -1):
         ancestor = get_value_by_path(annotations, path[:i])
-        if ancestor and ancestor.get("type") == feature_type:
+        if ancestor and ancestor.get("type") in feature_types:
             return ancestor
     return None
 
 
 def _resolve_cds_and_exon_features(annotations, feature_model, path):
     if feature_model["type"] == "CDS":
-        parent = get_value_by_path(annotations, path[:-1]) if path else None
+        # path[:-1] empty means this CDS is a direct top-level child (no
+        # gene/mRNA wrapper) -- get_value_by_path would return the whole
+        # record, not a real parent feature, so treat it as having none.
+        parent = get_value_by_path(annotations, path[:-1]) if path[:-1] else None
         return feature_model, parent
     return _get_cds_id(feature_model), feature_model
 
@@ -312,7 +339,11 @@ def get_internal_selector_model(annotations, selector_id, fix_exon=False):
     feature_model, path = get_selector_feature_model(annotations, selector_id)
 
     if not feature_model:
-        return None
+        if fix_exon:
+            feature_model = _get_reference_as_selector(annotations, selector_id)
+        if not feature_model:
+            return None
+        path = []
 
     output = {
         "id": selector_id,
@@ -326,7 +357,7 @@ def get_internal_selector_model(annotations, selector_id, fix_exon=False):
     if feature_model["type"] == "gene":
         output["gene_id"] = feature_model["id"]
     else:
-        gene_model = _find_ancestor_by_type(annotations, path, "gene")
+        gene_model = _find_ancestor_by_type(annotations, path, GENE_TYPES)
         if gene_model and gene_model.get("id"):
             output["gene_id"] = gene_model["id"]
 
@@ -348,6 +379,12 @@ def get_internal_selector_model(annotations, selector_id, fix_exon=False):
     _set_related_feature_id(output, "mrna_id", feature_model, exon_feature)
     if exon_feature:
         output.update(sort_locations(get_feature_locations(exon_feature)))
+
+    if feature_model["type"] == "CDS" and output.get("cds") is None:
+        # A bare CDS selector with no real gene/mRNA parent (e.g. a
+        # top-level CDS among sibling CDS features, no shared wrapper):
+        # its own location is its only sensible "cds" range.
+        output["cds"] = [(get_start(output), get_end(output))]
 
     if fix_exon and output.get("exon") is None:
         output["exon"] = [(get_start(output), get_end(output))]
@@ -424,25 +461,31 @@ def is_selector_in_reference(selector_id, model):
 def yield_selectors(model):
     for gene in yield_gene_models(model):
         if _is_flat_coding_gene(gene):
+            # Its CDS is the same selector (see yield_selector_ids).
             yield gene
-        if gene.get("features"):
+        elif gene.get("features"):
             for selector in gene["features"]:
                 if selector["type"] in SELECTOR_MOL_TYPES_TYPES:
                     yield selector
+    # A bare, gene-less top-level RNA/CDS feature can act as its own
+    # selector (e.g. NR_114042.1).
+    for feature in model["annotations"].get("features", []):
+        if feature["type"] in SELECTOR_MOL_TYPES_TYPES:
+            yield feature
 
 
 def yield_gene_models(model):
     annotations = model["annotations"]
     if annotations.get("features"):
         for feature in annotations["features"]:
-            if feature["type"] == "gene":
+            if feature["type"] in GENE_TYPES:
                 yield feature
 
 
 def yield_selector_ids(model):
     for selector in yield_selectors(model):
         yield selector["id"]
-        if selector["type"] == "mRNA" and selector.get("features"):
+        if selector["type"] in ("mRNA", "gene") and selector.get("features"):
             for s in selector["features"]:
                 if s["type"] == "CDS":
                     yield s["id"]
@@ -506,9 +549,10 @@ def overlap_min_max(model, l_min, l_max):
 
 def yield_overlap_ids(model, start, end):
     for gene in yield_gene_models(model):
-        if _is_flat_coding_gene(gene) and is_overlap(gene, start, end):
-            yield gene
-        if gene.get("features"):
+        if _is_flat_coding_gene(gene):
+            if is_overlap(gene, start, end):
+                yield gene
+        elif gene.get("features"):
             for selector in gene["features"]:
                 if selector["type"] in SELECTOR_MOL_TYPES_TYPES:
                     if is_overlap(selector, start, end):
@@ -520,14 +564,22 @@ def get_first_selector_id(model):
     return next(yield_selector_ids(model), None)
 
 
-def is_only_one_selector(model):
-    """Check if the model contains exactly one selector."""
-    count = 0
-    for _ in yield_selectors(model):
-        count += 1
-        if count > 1:
-            return False
-    return count == 1
+def get_only_selector_id(model, coordinate_system):
+    """
+    The id of the only selector that fits the coordinate system, or None:
+    a CDS only for p., c./p. only count coding selectors, n. falls back to
+    the only ncRNA, r. (from either) needs a single selector.
+    """
+    if coordinate_system not in ("c", "n", "r", "p"):
+        return None
+    selectors = list(yield_selectors(model))
+    if coordinate_system != "p":
+        selectors = [s for s in selectors if s["type"] != "CDS"]
+    if coordinate_system in ("c", "p"):
+        selectors = [s for s in selectors if s["type"] != "ncRNA"]
+    elif coordinate_system == "n" and len(selectors) > 1:
+        selectors = [s for s in selectors if s["type"] == "ncRNA"]
+    return selectors[0]["id"] if len(selectors) == 1 else None
 
 
 def _gene_selector_ids(gene):

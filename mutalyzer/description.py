@@ -20,6 +20,7 @@ from mutalyzer_retriever.reference import (
 )
 from mutalyzer_retriever.related import get_cds_to_mrna
 from mutalyzer_retriever.retriever import (
+    ReferenceParseError,
     get_chromosome_from_selector,
     get_overlap_models,
     get_gene_suggestions
@@ -74,6 +75,7 @@ from .protein import (
     in_frame_description,
 )
 from .reference import (
+    coordinate_system_from_mol_type,
     get_coordinate_system_from_reference,
     get_coordinate_system_from_selector_id,
     get_gene_selectors,
@@ -84,7 +86,7 @@ from .reference import (
     get_reference_id_from_model,
     get_selectors_ids,
     get_sequence_length,
-    is_only_one_selector,
+    get_only_selector_id,
     is_selector_in_reference,
     overlap_min_max,
     retrieve_reference,
@@ -192,7 +194,7 @@ class Description:
             return False
         if selector_model.get("type") in ("mRNA", "gene"):
             return bool(selector_model.get("cds"))
-        return selector_model.get("type") == "ncRNA"
+        return coordinate_system_from_mol_type(selector_model.get("type")) == "n"
 
     def is_inverted(self):
         selector_model = self.get_selector_model()
@@ -353,10 +355,13 @@ class Description:
         Retrieve a single reference by ID and store it.
         """
         selector_id = get_selector_id(get_submodel_by_path(self.corrected_model, path[:-2]))
-        reference_model, _ = retrieve_reference(reference_id, selector_id)
+        reference_model, error = retrieve_reference(reference_id, selector_id)
 
         if not reference_model:
-            self._add_error(errors.reference_not_retrieved(reference_id, [path]))
+            if isinstance(error, ReferenceParseError):
+                self._add_error(errors.reference_not_parsed(reference_id, path))
+            else:
+                self._add_error(errors.reference_not_retrieved(reference_id, path))
             return
 
         # Check if a different reference_id was retrieved (e.g., version correction)
@@ -542,16 +547,21 @@ class Description:
                         errors.coordinate_system_mismatch(c_s, r_id, r_c_s, c_s_path)
                     )
                 elif not ((r_c_s == c_s) and (c_s in ["g", "m", "p"])):
-                    if is_only_one_selector(self.references[r_id]):
+                    only_selector_id = get_only_selector_id(self.references[r_id], c_s)
+                    if only_selector_id:
                         self._correct_selector_id_from_coordinate_system(
-                            r_id,
-                            r_path,
-                            get_first_selector_id(self.references[r_id]),
+                            r_id, r_path, only_selector_id
                         )
                     elif r_c_s == "m" and c_s == "g":
                         self._correct_coordinate_system(
                             r_c_s, c_s_path, r_id + " reference"
                         )
+                    elif (
+                        r_c_s == "n"
+                        and c_s in ("n", "r")
+                        and get_first_selector_id(self.references[r_id]) is None
+                    ):
+                        self._correct_selector_id_from_coordinate_system(r_id, r_path, r_id)
                     else:
                         self._add_error(
                             errors.coordinate_system_mismatch(
@@ -740,19 +750,18 @@ class Description:
             ):
                 to_coordinate_system = "c"
                 self.add_info(
-                    infos.corrected_coordinate_system(
-                        "c", self.get_selector_id(), ["coordinate_system"]
+                    infos.non_coding_coordinate_system_on_coding(
+                        self.get_selector_id(), ["coordinate_system"]
                     )
                 )
-            if (
-                to_coordinate_system == "c"
-                and self.get_selector_model().get("cds") is None
-            ):
+            selector_model = self.get_selector_model()
+            if to_coordinate_system == "c" and selector_model.get("cds") is None:
                 self._add_error(
                     errors.no_cds(
                         get_reference_id(self.corrected_model),
                         self.get_selector_id(),
                         [],
+                        selector_model.get("type"),
                     )
                 )
             else:
@@ -1091,7 +1100,7 @@ class Description:
                     break
 
             ref_mol_type = get_reference_mol_type(self.references[ref_id])
-            if ref_mol_type in ["mRNA", "ncRNA", "transcribed RNA"] and c_s in ["c", "n"]:
+            if coordinate_system_from_mol_type(ref_mol_type) in ("c", "n") and c_s in ["c", "n"]:
                 intronic_errors.append((ref_id, point, path, is_nested))
                 ref_paths.setdefault(ref_id, []).append(ref_path)
 
@@ -1219,6 +1228,8 @@ class Description:
             ref_mol_type = get_reference_mol_type(self.references[ref_id])
             if ref_mol_type in ["genomic DNA"] and c_s in ["c", "n"] and sel_id is not None:
                 s_m = get_internal_selector_model(self.references[ref_id]["annotations"], sel_id, True)
+                if c_s == "c" and s_m.get("cds") is None:
+                    continue  # reported as ENOCDS by _check_cds
                 crossmap = crossmap_to_internal_setup(c_s, s_m)
                 position = point.get("position")
                 section = 0
@@ -1442,7 +1453,7 @@ class Description:
             if c_s in ["c", "r"] and r_id in self.references:
                 s_m = get_internal_selector_model(self.references[r_id]["annotations"], s_id)
                 if s_m and s_m.get("type") == "mRNA" and s_m.get("cds") is None:
-                    self._add_error(errors.no_cds(r_id, s_id, s_p))
+                    self._add_error(errors.no_cds(r_id, s_id, s_p, s_m.get("type")))
 
     def _check_variants(self):
         if self.corrected_model.get("variants"):
@@ -1646,8 +1657,10 @@ class Description:
             s_m = self.get_selector_model()
             if s_m:
                 mrna_id = s_m.get("mrna_id")
-            if mrna_id is None and s_m.get("type") == "mRNA":
+            if mrna_id is None and s_m.get("type") in ("mRNA", "gene"):
                 mrna_id = s_m["id"]
+            if mrna_id is None:
+                return []  # a bare CDS: no transcript for c.
             if reference_id == mrna_id:
                 reference = f"{mrna_id}"
             elif (

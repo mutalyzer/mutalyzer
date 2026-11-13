@@ -51,6 +51,15 @@ def corrected_coordinate_system(coordinate_system, correction_source, path):
     }
 
 
+def non_coding_coordinate_system_on_coding(selector_id, path):
+    return {
+        "code": "INONCODINGCOORDINATESYSTEM",
+        "details": "Coordinate system n. is meant for non-coding transcripts, but {} is "
+        "coding: the n. positions were converted to c.".format(selector_id),
+        "paths": [path],
+    }
+
+
 def to_coordinate_system_from_reference(coordinate_system):
     return {
         "code": "ITOSELECTORFROMREFERENCE",
