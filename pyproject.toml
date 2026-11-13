@@ -1,0 +1,76 @@
+[build-system]
+requires = ['setuptools>=77']
+build-backend = 'setuptools.build_meta'
+
+[project]
+name = 'mutalyzer'
+description = 'Mutalyzer HGVS variant description tools.'
+version = '3.2.0.dev0'
+
+authors = [
+    {name = 'LUMC, Mihai Lefter', email = 'M.Lefter@lumc.nl'}]
+readme = 'README.rst'
+urls = {Homepage = 'https://github.com/mutalyzer/mutalyzer'}
+keywords = ['Mutalyzer', 'HGVS']
+license = 'MIT'
+classifiers = [
+    'Intended Audience :: Developers',
+    'Intended Audience :: Science/Research',
+    'Operating System :: OS Independent',
+    'Programming Language :: Python',
+    'Programming Language :: Python :: 3',
+    'Topic :: Scientific/Engineering :: Bio-Informatics']
+
+requires-python = '>=3.9'
+dependencies = [
+    'mutalyzer-hgvs-parser>=0.4.0',
+    'mutalyzer-spdi-parser>=0.3.1',
+    'mutalyzer-retriever>=0.7.3',
+    'mutalyzer-mutator>=0.2.0',
+    'mutalyzer_crossmapper>=2.0.1',
+    'mutalyzer-backtranslate>=1.0.0',
+    'description-extractor>=3.0.0',
+    'mutalyzer-algebra>=1.5.0',
+    # mutalyzer_crossmapper 2.0.1 imports pkg_resources (removed in setuptools 81)
+    # without depending on setuptools; drop once a crossmapper release fixes it.
+    'setuptools<81']
+
+[tool.setuptools.packages.find]
+include = ['mutalyzer*']
+
+[project.scripts]
+mutalyzer_normalizer = 'mutalyzer.cli:normalizer'
+mutalyzer_mapper = 'mutalyzer.cli:mapper'
+
+[project.optional-dependencies]
+dev = [
+    'pytest-cov>=4.0.0',
+    'pytest>=7.4.0',
+    'ruff>=0.17.0']
+release = [
+    'build>=1.6.1',
+    'twine>=7.0.0']
+docs = [
+    'sphinx-argparse>=0.4.0',
+    'sphinx>=9.1']
+
+[tool.ruff]
+line-length = 89
+
+[tool.ruff.lint]
+select = ['C90', 'E', 'F', 'I', 'W']
+ignore = ['E501', 'F401', 'F403']
+
+[tool.ruff.lint.mccabe]
+# Raised from 18 (the other Mutalyzer packages) to the current maximum,
+# to_hgvs_dict and map_description; refactor these and lower it back to 18.
+max-complexity = 33
+
+[tool.coverage.run]
+source = ['mutalyzer']
+
+[tool.coverage.report]
+show_missing = true
+
+[tool.coverage.html]
+show_contexts = true

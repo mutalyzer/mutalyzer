@@ -3,11 +3,11 @@ from mutalyzer_hgvs_parser import to_model
 
 from mutalyzer.checker import splice_sites
 from mutalyzer.converter.to_rna import (
-    trim_to_exons,
     get_location_type,
     get_position_type,
     to_rna_reference_model,
     to_rna_variants,
+    trim_to_exons,
 )
 from mutalyzer.normalizer import normalize
 from mutalyzer.reference import get_internal_selector_model, retrieve_reference

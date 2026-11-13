@@ -360,7 +360,7 @@ def _splice_sites_affected(exons, local_supremal, exon_margin=2, intron_margin=4
                 affected = True
         ss.append(affected)
 
-    return not all(x==False for x in ss)
+    return any(ss)
 
 
 def _to_rna_variants(variants, exons):
@@ -526,7 +526,7 @@ def _splice_sites_affected_back(exons, local_supremal, exon_margin=2):
                 affected = True
         ss.append(affected)
 
-    return not all(x==False for x in ss)
+    return any(ss)
 
 
 def rna_to_dna(description):

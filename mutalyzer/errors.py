@@ -1,9 +1,9 @@
 from .description_model import (
     location_to_description,
-    point_to_description,
-    variant_to_description,
     point_outside_cds,
     point_position,
+    point_to_description,
+    variant_to_description,
 )
 
 

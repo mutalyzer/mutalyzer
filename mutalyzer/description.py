@@ -12,7 +12,6 @@ from mutalyzer_hgvs_parser.exceptions import (
     UnexpectedEnd,
 )
 from mutalyzer_mutator import mutate
-from mutalyzer_mutator.util import reverse_complement
 from mutalyzer_retriever.reference import (
     get_assembly_chromosome_accession,
     get_assembly_id,
@@ -22,8 +21,8 @@ from mutalyzer_retriever.related import get_cds_to_mrna
 from mutalyzer_retriever.retriever import (
     ReferenceParseError,
     get_chromosome_from_selector,
+    get_gene_suggestions,
     get_overlap_models,
-    get_gene_suggestions
 )
 
 from . import errors, infos
@@ -59,6 +58,7 @@ from .description_model import (
     get_locations_min_max,
     get_reference_id,
     get_selector_id,
+    location_to_description,
     model_to_string,
     variant_to_description,
     yield_reference_ids,
@@ -66,7 +66,6 @@ from .description_model import (
     yield_reference_selector_ids_coordinate_system,
     yield_sub_model,
     yield_values,
-    location_to_description,
 )
 from .protein import (
     get_protein_description,
@@ -76,23 +75,23 @@ from .protein import (
 )
 from .reference import (
     coordinate_system_from_mol_type,
+    get_assembly_from_chr_id,
     get_coordinate_system_from_reference,
     get_coordinate_system_from_selector_id,
+    get_first_selector_id,
     get_gene_selectors,
     get_gene_selectors_hgnc,
     get_internal_selector_model,
-    get_first_selector_id,
+    get_only_selector_id,
     get_protein_selector_model,
     get_reference_id_from_model,
     get_selectors_ids,
     get_sequence_length,
-    get_only_selector_id,
     is_selector_in_reference,
     overlap_min_max,
     retrieve_reference,
     slice_to_selector,
     yield_overlap_ids,
-    get_assembly_from_chr_id,
 )
 from .util import (
     check_errors,

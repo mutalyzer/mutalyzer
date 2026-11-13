@@ -1,8 +1,8 @@
 import configparser
 import os
+from _collections import OrderedDict
 from pathlib import Path
 
-from _collections import OrderedDict
 from mutalyzer_mutator.util import reverse_complement
 
 

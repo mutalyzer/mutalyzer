@@ -1,7 +1,7 @@
 import pytest
 
-from mutalyzer.rna import dna_to_rna, rna_to_dna, get_position_type
 from mutalyzer.description_model import model_to_string
+from mutalyzer.rna import dna_to_rna, get_position_type, rna_to_dna
 
 from .commons import code_in, monkey_patches
 from .variants_set import TESTS_ALL

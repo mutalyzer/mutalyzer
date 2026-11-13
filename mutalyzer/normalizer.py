@@ -13,6 +13,7 @@ from mutalyzer_hgvs_parser import to_model
 
 from mutalyzer.util import get_inserted_sequence
 
+from . import infos
 from .algebra import algebra_variant_to_delins, algebra_variant_to_name_model
 from .converter.to_delins import to_delins, variants_to_delins
 from .converter.to_hgvs_coordinates import (
@@ -28,7 +29,6 @@ from .description_model import (
     model_to_string,
     yield_point_locations_for_main_reference,
 )
-from . import infos
 from .protein import get_protein_description, has_recoding_translation_exception
 from .reference import get_protein_selector_model
 from .rna import dna_to_rna, rna_to_dna
