@@ -55,6 +55,7 @@ TESTS_ERROR = [
     ("NG_012337.3(NM_003002.4):c.52-?>T", "EOFFSETDIRECTION"),
     ("NG_012337.3(NM_003002.4):c.53+?>T", "EOFFSETDIRECTION"),
     ("NG_012337.3(NM_003002.4):c.54+10>T", "EEXONBOUNDARY"),
+    ("NG_012337.3(NM_003002.4):c.?-10_54+10del", "EUNCERTAIN"),
     ("NG_012337.1:g.10_11insLRG_24:g.2+5", "EOFFSET"),
     ("NG_012337.1:g.274dup[1;A]", "EINSERTEDLENGTH"),
     ("NG_012337.1:g.20_21ins[(123);30_40]", "EINSERTEDLENGTH"),
@@ -144,3 +145,11 @@ def get_tests(tests, code_type):
         if test.get("to_test") and test.get(code_type):
             output.append((test["input"], test[code_type]))
     return output
+
+
+def test_intronic_no_suggestion_for_chromosome_without_selector(monkeypatch):
+    # The chromosome is found for the transcript, but its model does not annotate it.
+    monkeypatch.setattr(
+        "mutalyzer.description.get_chromosome_from_selector", lambda a_id, s_id: "NG_012337.1"
+    )
+    assert code_in("EINTRONIC", normalize("NM_003002.4:c.274+20C>T")["errors"])

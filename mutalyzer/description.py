@@ -1122,7 +1122,9 @@ class Description:
             assembly_id_suggestions = {}
             for ref_id in unique_refs:
                 chr_id = get_chromosome_from_selector(assembly_id, ref_id)
-                if chr_id:
+                chr_model = retrieve_reference(chr_id, ref_id)[0] if chr_id else None
+                s_m = chr_model and get_internal_selector_model(chr_model["annotations"], ref_id)
+                if s_m:
                     slices_differ = _slices_differ(chr_id, ref_id)
                     suggestion = {
                         'chr_id': chr_id,
@@ -1207,8 +1209,8 @@ class Description:
         def _offset_downstream(offset):
             return offset.get("downstream", False) or offset.get("value", 0) > 0
         for point, path in yield_sub_model(self.corrected_model, ["location", "start", "end"], ["point"]):
-            if not point.get("offset"):
-                continue
+            if not point.get("offset") or point.get("uncertain"):
+                continue  # `?-65`: no position to check, reported as EUNCERTAIN
             ref_id = self.corrected_model["reference"]["id"]
             sel_id = get_selector_id(self.corrected_model)
             c_s = self.corrected_model["coordinate_system"]
