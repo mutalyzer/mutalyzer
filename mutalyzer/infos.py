@@ -60,6 +60,13 @@ def non_coding_coordinate_system_on_coding(selector_id, path):
     }
 
 
+def no_back_translation(protein_id, reason):
+    return {
+        "code": "IBACKTRANSLATION",
+        "details": "No back-translated descriptions for {}: {}.".format(protein_id, reason),
+    }
+
+
 def to_coordinate_system_from_reference(coordinate_system):
     return {
         "code": "ITOSELECTORFROMREFERENCE",

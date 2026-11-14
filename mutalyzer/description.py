@@ -18,6 +18,7 @@ from mutalyzer_retriever.reference import (
     get_reference_mol_type,
 )
 from mutalyzer_retriever.related import get_cds_to_mrna
+from mutalyzer_retriever.request import Http400, RequestErrors
 from mutalyzer_retriever.retriever import (
     ReferenceParseError,
     get_chromosome_from_selector,
@@ -1619,7 +1620,12 @@ class Description:
         selector_id = self.get_selector_id()
         if not selector_id:
             cds_id = reference_id
-            mrna_id = get_cds_to_mrna(cds_id)
+            try:
+                mrna_id = get_cds_to_mrna(cds_id)
+            except (RequestErrors, Http400, ValueError):
+                self.add_info(infos.no_back_translation(
+                    cds_id, "its transcript could not be looked up; please try again later"))
+                return []
             if mrna_id and len(mrna_id) >= 1:
                 mrna_id = mrna_id[-1]
         else:
@@ -1627,13 +1633,14 @@ class Description:
             cds_id = self.get_selector_id()
 
         if not mrna_id:
+            self.add_info(infos.no_back_translation(cds_id, "no transcript encoding it was found"))
             return []
-        cds_seq = slice_to_selector(
-            retrieve_reference(mrna_id, cds_id)[0],
-            cds_id,
-            True,
-            True,
-        )
+        mrna_model = retrieve_reference(mrna_id, cds_id)[0]
+        if mrna_model is None:
+            self.add_info(infos.no_back_translation(
+                cds_id, f"its transcript {mrna_id} could not be retrieved; please try again later"))
+            return []
+        cds_seq = slice_to_selector(mrna_model, cds_id, True, True)
         bt = BackTranslate()
         translated_vars = []
         for variant in self.internal_indexing_model["variants"]:
@@ -1661,7 +1668,9 @@ class Description:
             if mrna_id is None and s_m.get("type") in ("mRNA", "gene"):
                 mrna_id = s_m["id"]
             if mrna_id is None:
-                return []  # a bare CDS: no transcript for c.
+                self.add_info(infos.no_back_translation(
+                    cds_id, f"it has no annotated transcript in {reference_id}"))
+                return []
             if reference_id == mrna_id:
                 reference = f"{mrna_id}"
             elif (
