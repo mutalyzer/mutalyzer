@@ -83,6 +83,7 @@ from .reference import (
     get_gene_selectors,
     get_gene_selectors_hgnc,
     get_internal_selector_model,
+    get_mane_tag_value,
     get_only_selector_id,
     get_protein_selector_model,
     get_reference_id_from_model,
@@ -867,15 +868,9 @@ class Description:
                         }
                     else:
                         e_d = {"description": converted_model}
-                    if (
-                        selector.get("qualifiers")
-                        and selector["qualifiers"].get("tag")
-                        and "MANE" in selector["qualifiers"]["tag"]
-                    ):
-                        e_d["tag"] = {
-                            "id": selector["id"],
-                            "details": selector["qualifiers"]["tag"],
-                        }
+                    mane_tag = get_mane_tag_value((selector.get("qualifiers") or {}).get("tag"))
+                    if mane_tag:
+                        e_d["tag"] = {"id": selector["id"], "details": mane_tag}
 
                     equivalent[c_s].append(e_d)
                 else:
@@ -1133,14 +1128,9 @@ class Description:
                     }
 
                     if assembly_id == "GRCh38":
-                        reference_model, _ = retrieve_reference(chr_id, ref_id)
-                        if reference_model:
-                            s_m = get_internal_selector_model(reference_model["annotations"], ref_id)
-                            if not s_m:
-                                continue
-                            tag = get_mane_tag(s_m)
-                            if tag:
-                                suggestion["tag"] = tag
+                        tag = get_mane_tag(s_m)
+                        if tag:
+                            suggestion["tag"] = tag
                     assembly_id_suggestions[ref_id] = suggestion
             if assembly_id_suggestions:
                 suggestions[assembly_id] = assembly_id_suggestions

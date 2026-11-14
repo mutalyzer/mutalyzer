@@ -158,6 +158,18 @@ def _is_flat_coding_gene(feature):
     return len(cds_children) == 1 and not other_children
 
 
+def get_mane_tag_value(tag):
+    """
+    The MANE tag ("MANE Select", "MANE Plus Clinical") from a tag qualifier,
+    a list (Ensembl writes MANE_Select). A plain string still comes from
+    chromosome models cached before the retriever made tags lists.
+    """
+    for value in tag if isinstance(tag, list) else [tag]:
+        if value and "MANE" in value:
+            return value.replace("_", " ")
+    return None
+
+
 def _get_reference_as_selector(annotations, selector_id):
     """
     A genuinely feature-less reference can act as its own implicit
@@ -361,12 +373,9 @@ def get_internal_selector_model(annotations, selector_id, fix_exon=False):
         if gene_model and gene_model.get("id"):
             output["gene_id"] = gene_model["id"]
 
-    if (
-            feature_model.get("qualifiers")
-            and feature_model["qualifiers"].get("tag")
-            and "MANE" in feature_model["qualifiers"]["tag"]
-    ):
-        output["tag"] = feature_model["qualifiers"]["tag"]
+    mane_tag = get_mane_tag_value((feature_model.get("qualifiers") or {}).get("tag"))
+    if mane_tag:
+        output["tag"] = mane_tag
 
     if feature_model.get("qualifiers") and feature_model["qualifiers"].get("biotype"):
         output["biotype"] = feature_model["qualifiers"]["biotype"]
