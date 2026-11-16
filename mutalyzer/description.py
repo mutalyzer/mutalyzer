@@ -565,9 +565,17 @@ class Description:
                     ):
                         self._correct_selector_id_from_coordinate_system(r_id, r_path, r_id)
                     else:
+                        # An Ensembl transcript has a genomic model whose only
+                        # transcript is the record itself: suggest its coordinate system.
+                        suggestion = r_c_s
+                        annotations = self.references[r_id]["annotations"]
+                        if get_selectors_ids(annotations) == [annotations["id"]]:
+                            suggestion = get_coordinate_system_from_selector_id(
+                                self.references[r_id], annotations["id"]
+                            )
                         self._add_error(
                             errors.coordinate_system_mismatch(
-                                c_s, r_id, r_c_s, c_s_path
+                                c_s, r_id, suggestion, c_s_path
                             )
                         )
 

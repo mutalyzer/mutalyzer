@@ -153,3 +153,13 @@ def test_intronic_no_suggestion_for_chromosome_without_selector(monkeypatch):
         "mutalyzer.description.get_chromosome_from_selector", lambda a_id, s_id: "NG_012337.1"
     )
     assert code_in("EINTRONIC", normalize("NM_003002.4:c.274+20C>T")["errors"])
+
+
+def test_coordinate_system_mismatch_suggests_transcript_coordinate_system():
+    # The Ensembl reference is genomic, but its only transcript is non-coding: suggest n.
+    errors = normalize("ENST00000553927.1:c.52A>G")["errors"]
+    details = [e["details"] for e in errors if e["code"] == "ECOORDINATESYSTEMMISMATCH"]
+    assert details == [
+        "`c.` is an invalid coordinate system in the context of ENST00000553927.1; "
+        "`n.` is expected, for example."
+    ]
