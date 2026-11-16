@@ -341,6 +341,14 @@ def variant_to_description(variant, protein=False, aa="verbatim"):
             else:
                 inserted = f"*{ins[1]['location']['position']}"
             deleted_location += ins[0]["sequence"]
+    elif variant_type == "extension":
+        # C-terminal p.Ter110GlnextTer17 or N-terminal p.Met1ext-5.
+        ins = variant["inserted"]
+        end = ins[-1].get("location")
+        length = location_to_description(end) if end else ""
+        sequences = [i["sequence"] for i in ins if i.get("sequence")]
+        variant_type = "".join(sequences[:-1]) + "ext"
+        inserted = (sequences[-1] if sequences else "") + length
     else:
         variant_type = ""
     return "{}{}{}".format(deleted_location, variant_type, inserted)

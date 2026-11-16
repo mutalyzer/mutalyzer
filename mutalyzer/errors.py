@@ -4,6 +4,7 @@ from .description_model import (
     point_position,
     point_to_description,
     variant_to_description,
+    variants_to_description,
 )
 
 
@@ -182,24 +183,25 @@ def intronic_rna(location, path):
     }
 
 
-def out_of_boundary_lesser(position, shift, path):
+def out_of_boundary_lesser(position, shift, path, unit="nucleotide"):
     # NG_007485.1(NM_000077.4):c.0del
     plural = "s" if shift > 1 else ""
     return {
         "code": "EOUTOFBOUNDARY",
-        "details": f"Position `{point_to_description(position)}` is invalid; it is {shift} nucleotide{plural} before "
+        "details": f"Position `{point_to_description(position)}` is invalid; it is {shift} {unit}{plural} before "
                    f"the start of the sequence.",
         "paths": [path],
     }
 
 
-def out_of_boundary_greater(point, shift, sequence_length, path):
+def out_of_boundary_greater(point, shift, sequence_length, path, unit="nucleotide", stop=False):
     # NG_007485.1(NM_000077.4):c.40000del
     plural = "s" if shift > 1 else ""
+    and_stop = " and the stop codon" if stop else ""
     return {
         "code": "EOUTOFBOUNDARY",
-        "details": f"Position `{point_to_description(point)}` is invalid; it is {shift} nucleotide{plural} after the "
-                   f"end of the sequence (sequence length is {sequence_length} nucleotides).",
+        "details": f"Position `{point_to_description(point)}` is invalid; it is {shift} {unit}{plural} after the "
+                   f"end of the sequence (sequence length is {sequence_length} {unit}s{and_stop}).",
         "paths": [path],
     }
 
@@ -306,6 +308,25 @@ def variant_not_supported(variant, variant_type, path):
         "code": "EVARIANTNOTSUPPORTED",
         "details": f"Variant `{variant_to_description(variant)}` of type `{variant_type}` is not supported.",
         "paths": [path],
+    }
+
+
+def invalid_extension(variant, reason, path):
+    # NP_000503.1:p.Glu10GlyextTer5
+    return {
+        "code": "EEXTENSION",
+        "details": f"Extension `{variant_to_description(variant)}` is invalid; {reason}.",
+        "paths": [path],
+    }
+
+
+def stop_codon_loss(variants):
+    # NP_775931.3:p.Ter505del
+    return {
+        "code": "ESTOPLOSS",
+        "details": f"Variant `{variants_to_description(variants, protein=True)}` removes the stop codon; the "
+                   f"resulting extension cannot be described from the protein sequence.",
+        "paths": [["variants"]],
     }
 
 

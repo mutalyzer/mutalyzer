@@ -31,6 +31,7 @@ from .checker import (
     are_sorted,
     contains_insert_length,
     contains_uncertain,
+    is_extension_or_frameshift_length,
     is_overlap,
     splice_sites,
 )
@@ -986,50 +987,45 @@ class Description:
         return ref_id
 
     def _check_location_boundaries(self):
-        for point, path in yield_sub_model(
-            self.internal_coordinates_model, ["location", "start", "end"], ["point"]
-        ):
+        model = self.internal_coordinates_model
+        protein = self.corrected_model.get("coordinate_system") == "p"
+        unit = "amino acid" if protein else "nucleotide"
+        locations = yield_sub_model(model, ["location", "start", "end"], ["point"])
+        for point, path in locations:
+            position = point.get("position")
+            if (
+                point.get("uncertain")
+                or not position
+                or is_extension_or_frameshift_length(model, path)
+            ):
+                continue
+            # The main reference, or another one for an inserted or deleted part.
             ref_id = "reference"
-            for ins_or_del in ["inserted", "deleted"]:
-                if ins_or_del in path:
-                    ins_or_del_ref = get_reference_id(
-                        get_submodel_by_path(
-                            self.internal_coordinates_model,
-                            path[: path.index(ins_or_del) + 2],
-                        )
-                    )
-                    if ins_or_del_ref:
-                        ref_id = ins_or_del_ref
-            len_seq = get_sequence_length(self.references, ref_id)
-            if point_in_insertion(self.internal_coordinates_model, path):
-                left_boundary = -1
-                right_boundary = len_seq + 1
+            for part in ["inserted", "deleted"]:
+                if part in path:
+                    part_path = path[: path.index(part) + 2]
+                    part_model = get_submodel_by_path(model, part_path)
+                    ref_id = get_reference_id(part_model) or ref_id
+            seq = self.references[ref_id]["sequence"]["seq"]
+            # An insertion may be placed just outside the sequence.
+            left, right = 0, len(seq)
+            if point_in_insertion(model, path):
+                left, right = -1, len(seq) + 1
+            if left <= position < right:
+                continue
+            if self.is_inverted():
+                path = reverse_path(model, path)
+            point_c = get_submodel_by_path(self.corrected_model, path)
+            if position < left:
+                error = errors.out_of_boundary_lesser(point_c, -position, path, unit)
             else:
-                left_boundary = 0
-                right_boundary = len_seq
-            if not point.get("uncertain") and point.get("position"):
-                point = point["position"]
-                if right_boundary <= point:
-                    if self.is_inverted():
-                        path = reverse_path(self.internal_coordinates_model, path)
-                    self._add_error(
-                        errors.out_of_boundary_greater(
-                            get_submodel_by_path(self.corrected_model, path),
-                            point - right_boundary + 1,
-                            right_boundary,
-                            path,
-                        )
-                    )
-                elif point < left_boundary:
-                    if self.is_inverted():
-                        path = reverse_path(self.internal_coordinates_model, path)
-                    self._add_error(
-                        errors.out_of_boundary_lesser(
-                            get_submodel_by_path(self.corrected_model, path),
-                            -point,
-                            path,
-                        )
-                    )
+                stop = protein and seq.endswith("*")
+                length = right - 1 if stop else right
+                shift = position - right + 1
+                error = errors.out_of_boundary_greater(
+                    point_c, shift, length, path, unit, stop
+                )
+            self._add_error(error)
 
     def _check_location_range(self):
         for location, path in yield_sub_model(
@@ -1431,7 +1427,7 @@ class Description:
             ref_id = self._get_reference_id(self.internal_indexing_model, path)
             if (
                 point.get("amino_acid")
-                and point.get("position")
+                and point.get("position") is not None
                 and sequences[ref_id][point["position"]] != point["amino_acid"]
             ):
                 self._add_error(
@@ -1591,6 +1587,57 @@ class Description:
                     }
                 )
 
+    def _add_protein_stop(self, reference_id):
+        # Protein sequences exclude the stop codon, HGVS numbers it (e.g. `Ter110`).
+        seq = self.references["reference"]["sequence"]["seq"]
+        if not seq.endswith("*"):
+            self.references = copy.deepcopy(self.references)
+            self.references["reference"]["sequence"]["seq"] = seq + "*"
+            self.references[reference_id]["sequence"]["seq"] = seq + "*"
+
+    def _is_extension(self):
+        variants = self.corrected_model["variants"]
+        return len(variants) == 1 and variants[0].get("type") == "extension"
+
+    @check_errors
+    def _check_extension(self):
+        reason = self._extension_error()
+        if reason:
+            variant = self.corrected_model["variants"][0]
+            self._add_error(errors.invalid_extension(variant, reason, ["variants", 0]))
+
+    def _extension_error(self):
+        """
+        Only the extension start can be checked on a protein reference:
+        `Met1` (p.Met1ext-5) or the stop codon (p.Ter110GlnextTer17).
+        """
+        variant = self.internal_coordinates_model["variants"][0]
+        corrected = self.corrected_model["variants"][0]
+        seq = self.references["reference"]["sequence"]["seq"]
+        position = variant["location"].get("position")  # None for a range
+        start = location_to_description(corrected["location"])
+        length = corrected["inserted"][-1].get("location", {})
+        if length.get("outside_cds") == "upstream":
+            if position != 0 or seq[0] != "M":
+                return f"an N-terminal extension starts at `Met1`, not at `{start}`"
+            if not length.get("position"):
+                return "the new initiation position must be negative, not zero"
+            return None
+        # The parser always gives the new amino acid(s) and the new stop.
+        sequences = [i["sequence"] for i in variant["inserted"] if "sequence" in i]
+        new_aa, new_stop = sequences
+        if position != len(seq) - 1 or not seq.endswith("*"):
+            return f"a C-terminal extension starts at the stop codon, not at `{start}`"
+        if len(new_aa) != 1 or new_aa == "*":
+            return f"the stop codon must become one amino acid, not `{seq3(new_aa)}`"
+        if new_stop != "*":
+            return f"the extension must end with `Ter`, not `{seq3(new_stop)}`"
+        if length.get("type") != "point" or not (
+            length.get("uncertain") or length.get("position")
+        ):
+            return "the extension length must be a positive number or `?`"
+        return None
+
     def _check_supported_variants(self, model):
         for i, variant in enumerate(model["variants"]):
             if variant.get("type") in ["frame_shift", "extension"]:
@@ -1698,18 +1745,23 @@ class Description:
             cds_id = self.get_selector_model().get("cds_id")
             if cds_id:
                 self._correct_selector_id(["reference", "selector", "id"], self.get_selector_id(), cds_id, "the annotations")
+        else:
+            self._add_protein_stop(reference_id)
 
         self.to_internal_indexing_model()
         self._convert_amino_acids()
         self._correct_variants_type()
         self._check_and_correct_sequences()
         self.check()
-        self._check_supported_variants(self.corrected_model)
+        if self._is_extension():
+            self._check_extension()
+        else:
+            self._check_supported_variants(self.corrected_model)
 
         if self.errors:
             return
 
-        if self.only_equals() or self.no_operation():
+        if self.only_equals() or self.no_operation() or self._is_extension():
             self.de_hgvs_model = copy.deepcopy(self.corrected_model)
             convert_amino_acids(self.de_hgvs_model, "1a")
 
@@ -1723,9 +1775,19 @@ class Description:
                 to_delins(self.internal_indexing_model)["variants"],
             )
             if "*" in observed_sequence:
-                observed_sequence = observed_sequence.split('*', maxsplit=1)[0]
+                # Up to and including the first stop, which in_frame_description uses.
+                observed_sequence = observed_sequence.split('*', maxsplit=1)[0] + "*"
             self.references["observed"] = {"sequence": {"seq": observed_sequence}}
-            p_variant = in_frame_description(self.references["reference"]["sequence"]["seq"], observed_sequence)[0]
+            reference_sequence = self.references["reference"]["sequence"]["seq"]
+            p_variant = in_frame_description(reference_sequence, observed_sequence)[0]
+            # The stop codon is lost, but the protein extractor gives no extension.
+            if (
+                reference_sequence.endswith("*")
+                and "*" not in observed_sequence
+                and "ext" not in p_variant
+            ):
+                self._add_error(errors.stop_codon_loss(self.corrected_model["variants"]))
+                return
             self.de_hgvs_model = {
                 "reference": {"id": reference_id},
                 "coordinate_system": "p",
@@ -1822,6 +1884,8 @@ class Description:
                     self._correct_selector_id(["reference", "selector", "id"],
                                               self.get_selector_id(), cds_id,
                                               "the annotations")
+            else:
+                self._add_protein_stop(reference_id)
 
             self.to_internal_indexing_model()
             self._convert_amino_acids()
