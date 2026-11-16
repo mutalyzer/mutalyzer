@@ -78,6 +78,9 @@ TESTS_ERROR = [
     ("NM_004152.3:c.205_685del", "ECDSSLICES"),
     ("NM_004152.3:p.205_685del", "ECDSSLICES"),
     ("NC_037304.1:g.100del", "EREFERENCEPARSE"),
+    # The only transcript is non-coding, so it is not used as the c./p. selector.
+    ("NR_114042.1:c.10del", "ECOORDINATESYSTEMMISMATCH"),
+    ("NR_114042.1:p.10del", "ECOORDINATESYSTEMMISMATCH"),
 ]
 
 TESTS_NO_ERROR = [
