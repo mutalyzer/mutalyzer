@@ -1,0 +1,11 @@
+##gff-version 3
+#!gff-spec-version 1.21
+#!processor NCBI annotwriter
+##sequence-region KJ082064.1 1 3649
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=3051623
+KJ082064.1	Genbank	region	1	3649	.	+	.	ID=KJ082064.1:1..3649;Dbxref=taxon:3051623;Is_circular=true;collection-date=23-Oct-2013;country=China;gbkey=Src;genome=genomic;isolate=TTV-Hebei-1;isolation-source=serum;mol_type=genomic DNA;note=previous_name: Torque teno virus%2C updated per ICTV VMR 40.1
+KJ082064.1	Genbank	CDS	282	746	.	+	0	ID=cds-AHN50431.1;Dbxref=NCBI_GP:AHN50431.1;Name=AHN50431.1;gbkey=CDS;product=ORF2;protein_id=AHN50431.1
+KJ082064.1	Genbank	CDS	620	2824	.	+	0	ID=cds-AHN50432.1;Dbxref=NCBI_GP:AHN50432.1;Name=AHN50432.1;gbkey=CDS;product=ORF1;protein_id=AHN50432.1
+KJ082064.1	Genbank	CDS	2301	2771	.	+	0	ID=cds-AHN50433.1;Dbxref=NCBI_GP:AHN50433.1;Name=AHN50433.1;gbkey=CDS;product=ORF3;protein_id=AHN50433.1
+KJ082064.1	Genbank	CDS	2632	3015	.	+	0	ID=cds-AHN50434.1;Dbxref=NCBI_GP:AHN50434.1;Name=AHN50434.1;gbkey=CDS;product=ORF4;protein_id=AHN50434.1
+

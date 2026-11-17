@@ -7,6 +7,7 @@ from algebra import LCSgraph, Variant
 
 from mutalyzer.util import get_inserted_sequence
 
+from . import infos
 from .algebra import algebra_variant_to_delins, to_hgvs_dict
 from .compare import algebra_variant_to_name_model
 from .converter.to_delins import to_delins, variants_to_delins
@@ -18,7 +19,6 @@ from .description_model import (
     model_to_string,
     yield_point_locations_for_main_reference,
 )
-from . import infos
 from .protein import get_protein_description, has_recoding_translation_exception
 from .reference import get_coordinate_system_from_reference, get_protein_selector_model
 from .rna import dna_to_rna, rna_to_dna

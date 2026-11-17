@@ -1,9 +1,10 @@
 from .description_model import (
     location_to_description,
-    point_to_description,
-    variant_to_description,
     point_outside_cds,
     point_position,
+    point_to_description,
+    variant_to_description,
+    variants_to_description,
 )
 
 
@@ -46,6 +47,15 @@ def reference_not_retrieved(reference_id, path):
     }
 
 
+def reference_not_parsed(reference_id, path):
+    # NC_037304.1:g.100del
+    return {
+        "code": "EREFERENCEPARSE",
+        "details": f"`{reference_id}` was retrieved, but its annotations could not be parsed.",
+        "paths": [path],
+    }
+
+
 def no_selector_found(reference_id, selector_id, path):
     # NG_012337.1(DUMMYACCNO_9999.9):c.12_13insGATC
     # NG_012337.3(NM_003002.1):c.274G>T -> we may suggest that a newer version (NM_003002.4) is available.
@@ -78,10 +88,16 @@ def coordinate_system_mismatch(coordinate_system, mismatch_id, mismatch_coordina
     # NR_038420.1:c.10del
     # Check if it can be merged with ECOORDINATESYSTEMINVALID
     # Check if there could be multiple options (NM with c. or r.).
+    if mismatch_coordinate_system is None:
+        details = f"`{coordinate_system}.` is an invalid coordinate system in the context of {mismatch_id}."
+    else:
+        details = (
+            f"`{coordinate_system}.` is an invalid coordinate system in the context of {mismatch_id}; "
+            f"`{mismatch_coordinate_system}.` is expected, for example."
+        )
     return {
         "code": "ECOORDINATESYSTEMMISMATCH",
-        "details": f"`{coordinate_system}.` is an invalid coordinate system in the context of {mismatch_id}; "
-                   f"`{mismatch_coordinate_system}.` is expected, for example.",
+        "details": details,
         "paths": [path],
     }
 
@@ -167,24 +183,25 @@ def intronic_rna(location, path):
     }
 
 
-def out_of_boundary_lesser(position, shift, path):
+def out_of_boundary_lesser(position, shift, path, unit="nucleotide"):
     # NG_007485.1(NM_000077.4):c.0del
     plural = "s" if shift > 1 else ""
     return {
         "code": "EOUTOFBOUNDARY",
-        "details": f"Position `{point_to_description(position)}` is invalid; it is {shift} nucleotide{plural} before "
+        "details": f"Position `{point_to_description(position)}` is invalid; it is {shift} {unit}{plural} before "
                    f"the start of the sequence.",
         "paths": [path],
     }
 
 
-def out_of_boundary_greater(point, shift, sequence_length, path):
+def out_of_boundary_greater(point, shift, sequence_length, path, unit="nucleotide", stop=False):
     # NG_007485.1(NM_000077.4):c.40000del
     plural = "s" if shift > 1 else ""
+    and_stop = " and the stop codon" if stop else ""
     return {
         "code": "EOUTOFBOUNDARY",
-        "details": f"Position `{point_to_description(point)}` is invalid; it is {shift} nucleotide{plural} after the "
-                   f"end of the sequence (sequence length is {sequence_length} nucleotides).",
+        "details": f"Position `{point_to_description(point)}` is invalid; it is {shift} {unit}{plural} after the "
+                   f"end of the sequence (sequence length is {sequence_length} {unit}s{and_stop}).",
         "paths": [path],
     }
 
@@ -291,6 +308,25 @@ def variant_not_supported(variant, variant_type, path):
         "code": "EVARIANTNOTSUPPORTED",
         "details": f"Variant `{variant_to_description(variant)}` of type `{variant_type}` is not supported.",
         "paths": [path],
+    }
+
+
+def invalid_extension(variant, reason, path):
+    # NP_000503.1:p.Glu10GlyextTer5
+    return {
+        "code": "EEXTENSION",
+        "details": f"Extension `{variant_to_description(variant)}` is invalid; {reason}.",
+        "paths": [path],
+    }
+
+
+def stop_codon_loss(variants):
+    # NP_775931.3:p.Ter505del
+    return {
+        "code": "ESTOPLOSS",
+        "details": f"Variant `{variants_to_description(variants, protein=True)}` removes the stop codon; the "
+                   f"resulting extension cannot be described from the protein sequence.",
+        "paths": [["variants"]],
     }
 
 
@@ -409,10 +445,15 @@ def cds_slices(selector_id, exception_message):
     }
 
 
-def no_cds(reference_id, selector_id, path):
+def no_cds(reference_id, selector_id, path, selector_type=None):
     # NG_009930.1(NM_001099625.2):c.1010
+    # ENST00000642141.1:c.10A>T
+    details = f"`{reference_id}` has no CDS annotation for transcript selector `{selector_id}`"
+    if selector_type:
+        details += f", whose type (`{selector_type}`) indicates a coding sequence is expected"
+    details += "."
     return {
         "code": "ENOCDS",
-        "details": f"`{reference_id}` has no CDS annotation for transcript selector `{selector_id}`.",
+        "details": details,
         "paths": [path],
     }

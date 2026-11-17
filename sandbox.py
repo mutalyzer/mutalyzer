@@ -1,4 +1,4 @@
-from schema import Schema, And, Or, Optional, Use
+from schema import And, Optional, Or, Schema, Use
 
 feature_point = Schema({'position':            And(int, lambda n : n >= 0),
                         Optional('uncertain'): And(bool, True)})

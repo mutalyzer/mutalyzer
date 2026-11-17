@@ -4,7 +4,7 @@ import json
 from mutalyzer.mapper import map_description
 from mutalyzer.normalizer import normalize
 
-from . import usage, version
+from . import info, summary
 
 
 def _normalizer_arg_parser():
@@ -12,11 +12,11 @@ def _normalizer_arg_parser():
     Argument parser for the normalizer.
     """
     parser = argparse.ArgumentParser(
-        description=usage[0],
-        epilog=usage[1],
+        description=summary,
+        epilog=info,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    parser.add_argument("-v", action="version", version=version(parser.prog))
+    parser.add_argument("-v", action="version", version=info)
     parser.add_argument("description", help="HGVS variant description to be parsed")
 
     return parser
@@ -39,12 +39,12 @@ def _mapper_arg_parser():
     Argument parser for the mapper.
     """
     parser = argparse.ArgumentParser(
-        description=usage[0],
-        epilog=usage[1],
+        description=summary,
+        epilog=info,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 
-    parser.add_argument("-v", action="version", version=version(parser.prog))
+    parser.add_argument("-v", action="version", version=info)
     parser.add_argument("description", help="HGVS variant description to be parsed")
     parser.add_argument(
         "--reference-id", help="reference ID onto which the description is mapped"

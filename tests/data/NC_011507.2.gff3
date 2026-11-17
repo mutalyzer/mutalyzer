@@ -1,0 +1,9 @@
+##gff-version 3
+#!gff-spec-version 1.21
+#!processor NCBI annotwriter
+##sequence-region NC_011507.2 1 3302
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=28875
+NC_011507.2	RefSeq	region	1	3302	.	+	.	ID=NC_011507.2:1..3302;Dbxref=taxon:28875;Name=1;gbkey=Src;genome=genomic;mol_type=genomic RNA;segment=1;serotype=G3;strain=RVA/Simian-tc/ZAF/SA11-H96/1958/G3P5B[2]
+NC_011507.2	RefSeq	gene	19	3285	.	+	.	ID=gene-GeneID:7011368;Dbxref=GeneID:7011368;description=VP1;gbkey=Gene;gene_biotype=protein_coding
+NC_011507.2	RefSeq	CDS	19	3285	.	+	0	ID=cds-YP_002302227.1;Parent=gene-GeneID:7011368;Dbxref=GenBank:YP_002302227.1,GeneID:7011368;Name=YP_002302227.1;gbkey=CDS;product=VP1;protein_id=YP_002302227.1
+

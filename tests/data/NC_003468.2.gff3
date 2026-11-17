@@ -1,0 +1,9 @@
+##gff-version 3
+#!gff-spec-version 1.21
+#!processor NCBI annotwriter
+##sequence-region NC_003468.2 1 6562
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=1980456
+NC_003468.2	RefSeq	region	1	6562	.	+	.	ID=NC_003468.2:1..6562;Dbxref=taxon:1980456;Name=L;gbkey=Src;genome=genomic;mol_type=genomic RNA;old-name=Andes virus;segment=L;strain=Chile-9717869
+NC_003468.2	RefSeq	gene	36	6497	.	+	.	ID=gene-ANDVsLgp1;Dbxref=GeneID:991234;Name=ANDVsLgp1;gbkey=Gene;gene_biotype=protein_coding;locus_tag=ANDVsLgp1
+NC_003468.2	RefSeq	CDS	36	6497	.	+	0	ID=cds-NP_604473.1;Parent=gene-ANDVsLgp1;Dbxref=GenBank:NP_604473.1,GeneID:991234;Name=NP_604473.1;gbkey=CDS;locus_tag=ANDVsLgp1;product=RNA polymerase;protein_id=NP_604473.1
+

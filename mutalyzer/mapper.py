@@ -27,8 +27,8 @@ from .description_model import model_to_string
 from .reference import (
     get_coordinate_system_from_reference,
     get_coordinate_system_from_selector_id,
-    get_internal_selector_model,
     get_first_selector_id,
+    get_internal_selector_model,
     retrieve_reference,
 )
 from .util import slice_seq

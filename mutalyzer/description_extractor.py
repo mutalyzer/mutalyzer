@@ -1,6 +1,8 @@
 # from algebra.extractor import extract_sequence, to_hgvs
 from algebra import LCSgraph, Variant
+
 from .algebra import to_hgvs
+
 
 def description_extractor(reference, observed):
     graph = LCSgraph.from_variants(reference, [Variant(0, len(reference), observed)])

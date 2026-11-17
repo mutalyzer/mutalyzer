@@ -55,6 +55,7 @@ TESTS_ERROR = [
     ("NG_012337.3(NM_003002.4):c.52-?>T", "EOFFSETDIRECTION"),
     ("NG_012337.3(NM_003002.4):c.53+?>T", "EOFFSETDIRECTION"),
     ("NG_012337.3(NM_003002.4):c.54+10>T", "EEXONBOUNDARY"),
+    ("NG_012337.3(NM_003002.4):c.?-10_54+10del", "EUNCERTAIN"),
     ("NG_012337.1:g.10_11insLRG_24:g.2+5", "EOFFSET"),
     ("NG_012337.1:g.274dup[1;A]", "EINSERTEDLENGTH"),
     ("NG_012337.1:g.20_21ins[(123);30_40]", "EINSERTEDLENGTH"),
@@ -76,6 +77,10 @@ TESTS_ERROR = [
     ("NG_012337.1:g.722_742dup?", "EUNCERTAIN"),
     ("NM_004152.3:c.205_685del", "ECDSSLICES"),
     ("NM_004152.3:p.205_685del", "ECDSSLICES"),
+    ("NC_037304.1:g.100del", "EREFERENCEPARSE"),
+    # The only transcript is non-coding, so it is not used as the c./p. selector.
+    ("NR_114042.1:c.10del", "ECOORDINATESYSTEMMISMATCH"),
+    ("NR_114042.1:p.10del", "ECOORDINATESYSTEMMISMATCH"),
 ]
 
 TESTS_NO_ERROR = [
@@ -115,7 +120,7 @@ def test_no_errors(input_description):
     assert normalize(input_description).get("errors") is None
 
 
-def test_insertion_range_message_inverted_selector(monkey_patches):
+def test_insertion_range_message_inverted_selector():
     # Reverse strand reorders variants between input and internal order;
     # the message must name 661+402insATG, not the other variant, 12_13del.
     errors = normalize("ENST00000452863.10:c.[12_13del;661+402insATG]")["errors"]
@@ -126,7 +131,7 @@ def test_insertion_range_message_inverted_selector(monkey_patches):
     ]
 
 
-def test_insertion_range_message_inverted_selector_ng_nm(monkey_patches):
+def test_insertion_range_message_inverted_selector_ng_nm():
     # Reverse strand reorders variants between input and internal order;
     # the message must name 129_130insT, not the other variant, 10_11del.
     errors = normalize("NG_012337.1(NM_012459.2):c.[10_11del;129_130insT]")["errors"]
@@ -143,3 +148,21 @@ def get_tests(tests, code_type):
         if test.get("to_test") and test.get(code_type):
             output.append((test["input"], test[code_type]))
     return output
+
+
+def test_intronic_no_suggestion_for_chromosome_without_selector(monkeypatch):
+    # The chromosome is found for the transcript, but its model does not annotate it.
+    monkeypatch.setattr(
+        "mutalyzer.description.get_chromosome_from_selector", lambda a_id, s_id: "NG_012337.1"
+    )
+    assert code_in("EINTRONIC", normalize("NM_003002.4:c.274+20C>T")["errors"])
+
+
+def test_coordinate_system_mismatch_suggests_transcript_coordinate_system():
+    # The Ensembl reference is genomic, but its only transcript is non-coding: suggest n.
+    errors = normalize("ENST00000553927.1:c.52A>G")["errors"]
+    details = [e["details"] for e in errors if e["code"] == "ECOORDINATESYSTEMMISMATCH"]
+    assert details == [
+        "`c.` is an invalid coordinate system in the context of ENST00000553927.1; "
+        "`n.` is expected, for example."
+    ]

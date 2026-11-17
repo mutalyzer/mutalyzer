@@ -302,7 +302,7 @@ def graph_to_dot(graph, reference, selector=None, dominators=True, edges_limit=1
         "digraph {",
         "rankdir=LR",
         "edge[fontname=monospace]",
-        f'node[fixedsize=true,fontname=serif,shape=circle,width=1]'
+        'node[fixedsize=true,fontname=serif,shape=circle,width=1]'
     ]
 
     summary = _collect_nodes(graph, selector, edges_limit)

@@ -18,10 +18,12 @@ from mutalyzer_retriever.reference import (
     get_reference_mol_type,
 )
 from mutalyzer_retriever.related import get_cds_to_mrna
+from mutalyzer_retriever.request import Http400, RequestErrors
 from mutalyzer_retriever.retriever import (
+    ReferenceParseError,
     get_chromosome_from_selector,
+    get_gene_suggestions,
     get_overlap_models,
-    get_gene_suggestions
 )
 
 from . import errors, infos
@@ -38,6 +40,7 @@ from .checker import (
     are_sorted,
     contains_insert_length,
     contains_uncertain,
+    is_extension_or_frameshift_length,
     is_overlap,
     splice_sites,
 )
@@ -60,6 +63,7 @@ from .description_model import (
     get_locations_min_max,
     get_reference_id,
     get_selector_id,
+    location_to_description,
     model_to_string,
     variant_to_description,
     yield_reference_ids,
@@ -67,7 +71,6 @@ from .description_model import (
     yield_reference_selector_ids_coordinate_system,
     yield_sub_model,
     yield_values,
-    location_to_description,
 )
 from .protein import (
     get_protein_description,
@@ -76,23 +79,25 @@ from .protein import (
     in_frame_description,
 )
 from .reference import (
+    coordinate_system_from_mol_type,
+    get_assembly_from_chr_id,
     get_coordinate_system_from_reference,
     get_coordinate_system_from_selector_id,
+    get_first_selector_id,
     get_gene_selectors,
     get_gene_selectors_hgnc,
     get_internal_selector_model,
-    get_first_selector_id,
+    get_mane_tag_value,
+    get_only_selector_id,
     get_protein_selector_model,
     get_reference_id_from_model,
     get_selectors_ids,
     get_sequence_length,
-    is_only_one_selector,
     is_selector_in_reference,
     overlap_min_max,
     retrieve_reference,
     slice_to_selector,
     yield_overlap_ids,
-    get_assembly_from_chr_id,
 )
 from .util import (
     check_errors,
@@ -111,6 +116,7 @@ from .util import (
     slice_sequence,
     sort_variants,
 )
+
 
 def _slices_differ(chr_id, s_id):
     return slice_to_selector(
@@ -301,7 +307,7 @@ class Description:
             return False
         if selector_model.get("type") in ("mRNA", "gene"):
             return bool(selector_model.get("cds"))
-        return selector_model.get("type") == "ncRNA"
+        return coordinate_system_from_mol_type(selector_model.get("type")) == "n"
 
     def is_inverted(self):
         selector_model = self.get_selector_model()
@@ -462,10 +468,13 @@ class Description:
         Retrieve a single reference by ID and store it.
         """
         selector_id = get_selector_id(get_submodel_by_path(self.corrected_model, path[:-2]))
-        reference_model, _ = retrieve_reference(reference_id, selector_id)
+        reference_model, error = retrieve_reference(reference_id, selector_id)
 
         if not reference_model:
-            self._add_error(errors.reference_not_retrieved(reference_id, [path]))
+            if isinstance(error, ReferenceParseError):
+                self._add_error(errors.reference_not_parsed(reference_id, path))
+            else:
+                self._add_error(errors.reference_not_retrieved(reference_id, path))
             return
 
         # Check if a different reference_id was retrieved (e.g., version correction)
@@ -652,20 +661,33 @@ class Description:
                         errors.coordinate_system_mismatch(c_s, r_id, r_c_s, c_s_path)
                     )
                 elif not ((r_c_s == c_s) and (c_s in ["g", "m", "p"])):
-                    if is_only_one_selector(self.references[r_id]):
+                    only_selector_id = get_only_selector_id(self.references[r_id], c_s)
+                    if only_selector_id:
                         self._correct_selector_id_from_coordinate_system(
-                            r_id,
-                            r_path,
-                            get_first_selector_id(self.references[r_id]),
+                            r_id, r_path, only_selector_id
                         )
                     elif r_c_s == "m" and c_s == "g":
                         self._correct_coordinate_system(
                             r_c_s, c_s_path, r_id + " reference"
                         )
+                    elif (
+                        r_c_s == "n"
+                        and c_s in ("n", "r")
+                        and get_first_selector_id(self.references[r_id]) is None
+                    ):
+                        self._correct_selector_id_from_coordinate_system(r_id, r_path, r_id)
                     else:
+                        # An Ensembl transcript has a genomic model whose only
+                        # transcript is the record itself: suggest its coordinate system.
+                        suggestion = r_c_s
+                        annotations = self.references[r_id]["annotations"]
+                        if get_selectors_ids(annotations) == [annotations["id"]]:
+                            suggestion = get_coordinate_system_from_selector_id(
+                                self.references[r_id], annotations["id"]
+                            )
                         self._add_error(
                             errors.coordinate_system_mismatch(
-                                c_s, r_id, r_c_s, c_s_path
+                                c_s, r_id, suggestion, c_s_path
                             )
                         )
 
@@ -851,19 +873,18 @@ class Description:
             ):
                 to_coordinate_system = "c"
                 self.add_info(
-                    infos.corrected_coordinate_system(
-                        "c", self.get_selector_id(), ["coordinate_system"]
+                    infos.non_coding_coordinate_system_on_coding(
+                        self.get_selector_id(), ["coordinate_system"]
                     )
                 )
-            if (
-                to_coordinate_system == "c"
-                and self.get_selector_model().get("cds") is None
-            ):
+            selector_model = self.get_selector_model()
+            if to_coordinate_system == "c" and selector_model.get("cds") is None:
                 self._add_error(
                     errors.no_cds(
                         get_reference_id(self.corrected_model),
                         self.get_selector_id(),
                         [],
+                        selector_model.get("type"),
                     )
                 )
             else:
@@ -964,15 +985,10 @@ class Description:
                         }
                     else:
                         e_d = {"description": converted_model}
-                    if (
-                        selector.get("qualifiers")
-                        and selector["qualifiers"].get("tag")
-                        and "MANE" in selector["qualifiers"]["tag"]
-                    ):
-                        e_d["tag"] = {
-                            "id": selector["id"],
-                            "details": selector["qualifiers"]["tag"],
-                        }
+                    mane_tag = get_mane_tag_value((selector.get("qualifiers") or {}).get("tag"))
+                    if mane_tag:
+                        e_d["tag"] = {"id": selector["id"], "details": mane_tag}
+
                     equivalent[c_s].append(e_d)
                 else:
                     if as_description:
@@ -1095,50 +1111,45 @@ class Description:
         return ref_id
 
     def _check_location_boundaries(self):
-        for point, path in yield_sub_model(
-            self.internal_coordinates_model, ["location", "start", "end"], ["point"]
-        ):
+        model = self.internal_coordinates_model
+        protein = self.corrected_model.get("coordinate_system") == "p"
+        unit = "amino acid" if protein else "nucleotide"
+        locations = yield_sub_model(model, ["location", "start", "end"], ["point"])
+        for point, path in locations:
+            position = point.get("position")
+            if (
+                point.get("uncertain")
+                or not position
+                or is_extension_or_frameshift_length(model, path)
+            ):
+                continue
+            # The main reference, or another one for an inserted or deleted part.
             ref_id = "reference"
-            for ins_or_del in ["inserted", "deleted"]:
-                if ins_or_del in path:
-                    ins_or_del_ref = get_reference_id(
-                        get_submodel_by_path(
-                            self.internal_coordinates_model,
-                            path[: path.index(ins_or_del) + 2],
-                        )
-                    )
-                    if ins_or_del_ref:
-                        ref_id = ins_or_del_ref
-            len_seq = get_sequence_length(self.references, ref_id)
-            if point_in_insertion(self.internal_coordinates_model, path):
-                left_boundary = -1
-                right_boundary = len_seq + 1
+            for part in ["inserted", "deleted"]:
+                if part in path:
+                    part_path = path[: path.index(part) + 2]
+                    part_model = get_submodel_by_path(model, part_path)
+                    ref_id = get_reference_id(part_model) or ref_id
+            seq = self.references[ref_id]["sequence"]["seq"]
+            # An insertion may be placed just outside the sequence.
+            left, right = 0, len(seq)
+            if point_in_insertion(model, path):
+                left, right = -1, len(seq) + 1
+            if left <= position < right:
+                continue
+            if self.is_inverted():
+                path = reverse_path(model, path)
+            point_c = get_submodel_by_path(self.corrected_model, path)
+            if position < left:
+                error = errors.out_of_boundary_lesser(point_c, -position, path, unit)
             else:
-                left_boundary = 0
-                right_boundary = len_seq
-            if not point.get("uncertain") and point.get("position"):
-                point = point["position"]
-                if right_boundary <= point:
-                    if self.is_inverted():
-                        path = reverse_path(self.internal_coordinates_model, path)
-                    self._add_error(
-                        errors.out_of_boundary_greater(
-                            get_submodel_by_path(self.corrected_model, path),
-                            point - right_boundary + 1,
-                            right_boundary,
-                            path,
-                        )
-                    )
-                elif point < left_boundary:
-                    if self.is_inverted():
-                        path = reverse_path(self.internal_coordinates_model, path)
-                    self._add_error(
-                        errors.out_of_boundary_lesser(
-                            get_submodel_by_path(self.corrected_model, path),
-                            -point,
-                            path,
-                        )
-                    )
+                stop = protein and seq.endswith("*")
+                length = right - 1 if stop else right
+                shift = position - right + 1
+                error = errors.out_of_boundary_greater(
+                    point_c, shift, length, path, unit, stop
+                )
+            self._add_error(error)
 
     def _check_location_range(self):
         for location, path in yield_sub_model(
@@ -1204,7 +1215,7 @@ class Description:
                     break
 
             ref_mol_type = get_reference_mol_type(self.references[ref_id])
-            if ref_mol_type in ["mRNA", "ncRNA", "transcribed RNA"] and c_s in ["c", "n"]:
+            if coordinate_system_from_mol_type(ref_mol_type) in ("c", "n") and c_s in ["c", "n"]:
                 intronic_errors.append((ref_id, point, path, is_nested))
                 ref_paths.setdefault(ref_id, []).append(ref_path)
 
@@ -1227,7 +1238,9 @@ class Description:
             assembly_id_suggestions = {}
             for ref_id in unique_refs:
                 chr_id = get_chromosome_from_selector(assembly_id, ref_id)
-                if chr_id:
+                chr_model = retrieve_reference(chr_id, ref_id)[0] if chr_id else None
+                s_m = chr_model and get_internal_selector_model(chr_model["annotations"], ref_id)
+                if s_m:
                     slices_differ = _slices_differ(chr_id, ref_id)
                     suggestion = {
                         'chr_id': chr_id,
@@ -1235,14 +1248,9 @@ class Description:
                     }
 
                     if assembly_id == "GRCh38":
-                        reference_model, _ = retrieve_reference(chr_id, ref_id)
-                        if reference_model:
-                            s_m = get_internal_selector_model(reference_model["annotations"], ref_id)
-                            if not s_m:
-                                continue
-                            tag = get_mane_tag(s_m)
-                            if tag:
-                                suggestion["tag"] = tag
+                        tag = get_mane_tag(s_m)
+                        if tag:
+                            suggestion["tag"] = tag
                     assembly_id_suggestions[ref_id] = suggestion
             if assembly_id_suggestions:
                 suggestions[assembly_id] = assembly_id_suggestions
@@ -1312,8 +1320,8 @@ class Description:
         def _offset_downstream(offset):
             return offset.get("downstream", False) or offset.get("value", 0) > 0
         for point, path in yield_sub_model(self.corrected_model, ["location", "start", "end"], ["point"]):
-            if not point.get("offset"):
-                continue
+            if not point.get("offset") or point.get("uncertain"):
+                continue  # `?-65`: no position to check, reported as EUNCERTAIN
             ref_id = self.corrected_model["reference"]["id"]
             sel_id = get_selector_id(self.corrected_model)
             c_s = self.corrected_model["coordinate_system"]
@@ -1332,6 +1340,8 @@ class Description:
             ref_mol_type = get_reference_mol_type(self.references[ref_id])
             if ref_mol_type in ["genomic DNA"] and c_s in ["c", "n"] and sel_id is not None:
                 s_m = get_internal_selector_model(self.references[ref_id]["annotations"], sel_id, True)
+                if c_s == "c" and s_m.get("cds") is None:
+                    continue  # reported as ENOCDS by _check_cds
                 crossmap = crossmap_to_internal_setup(c_s, s_m)
                 position = point.get("position")
                 section = 0
@@ -1541,7 +1551,7 @@ class Description:
             ref_id = self._get_reference_id(self.internal_indexing_model, path)
             if (
                 point.get("amino_acid")
-                and point.get("position")
+                and point.get("position") is not None
                 and sequences[ref_id][point["position"]] != point["amino_acid"]
             ):
                 self._add_error(
@@ -1555,7 +1565,7 @@ class Description:
             if c_s in ["c", "r"] and r_id in self.references:
                 s_m = get_internal_selector_model(self.references[r_id]["annotations"], s_id)
                 if s_m and s_m.get("type") == "mRNA" and s_m.get("cds") is None:
-                    self._add_error(errors.no_cds(r_id, s_id, s_p))
+                    self._add_error(errors.no_cds(r_id, s_id, s_p, s_m.get("type")))
 
     def _check_variants(self):
         if self.corrected_model.get("variants"):
@@ -1701,6 +1711,57 @@ class Description:
                     }
                 )
 
+    def _add_protein_stop(self, reference_id):
+        # Protein sequences exclude the stop codon, HGVS numbers it (e.g. `Ter110`).
+        seq = self.references["reference"]["sequence"]["seq"]
+        if not seq.endswith("*"):
+            self.references = copy.deepcopy(self.references)
+            self.references["reference"]["sequence"]["seq"] = seq + "*"
+            self.references[reference_id]["sequence"]["seq"] = seq + "*"
+
+    def _is_extension(self):
+        variants = self.corrected_model["variants"]
+        return len(variants) == 1 and variants[0].get("type") == "extension"
+
+    @check_errors
+    def _check_extension(self):
+        reason = self._extension_error()
+        if reason:
+            variant = self.corrected_model["variants"][0]
+            self._add_error(errors.invalid_extension(variant, reason, ["variants", 0]))
+
+    def _extension_error(self):
+        """
+        Only the extension start can be checked on a protein reference:
+        `Met1` (p.Met1ext-5) or the stop codon (p.Ter110GlnextTer17).
+        """
+        variant = self.internal_coordinates_model["variants"][0]
+        corrected = self.corrected_model["variants"][0]
+        seq = self.references["reference"]["sequence"]["seq"]
+        position = variant["location"].get("position")  # None for a range
+        start = location_to_description(corrected["location"])
+        length = corrected["inserted"][-1].get("location", {})
+        if length.get("outside_cds") == "upstream":
+            if position != 0 or seq[0] != "M":
+                return f"an N-terminal extension starts at `Met1`, not at `{start}`"
+            if not length.get("position"):
+                return "the new initiation position must be negative, not zero"
+            return None
+        # The parser always gives the new amino acid(s) and the new stop.
+        sequences = [i["sequence"] for i in variant["inserted"] if "sequence" in i]
+        new_aa, new_stop = sequences
+        if position != len(seq) - 1 or not seq.endswith("*"):
+            return f"a C-terminal extension starts at the stop codon, not at `{start}`"
+        if len(new_aa) != 1 or new_aa == "*":
+            return f"the stop codon must become one amino acid, not `{seq3(new_aa)}`"
+        if new_stop != "*":
+            return f"the extension must end with `Ter`, not `{seq3(new_stop)}`"
+        if length.get("type") != "point" or not (
+            length.get("uncertain") or length.get("position")
+        ):
+            return "the extension length must be a positive number or `?`"
+        return None
+
     def _check_supported_variants(self, model):
         for i, variant in enumerate(model["variants"]):
             if variant.get("type") in ["frame_shift", "extension"]:
@@ -1720,7 +1781,12 @@ class Description:
         selector_id = self.get_selector_id()
         if not selector_id:
             cds_id = reference_id
-            mrna_id = get_cds_to_mrna(cds_id)
+            try:
+                mrna_id = get_cds_to_mrna(cds_id)
+            except (RequestErrors, Http400, ValueError):
+                self.add_info(infos.no_back_translation(
+                    cds_id, "its transcript could not be looked up; please try again later"))
+                return []
             if mrna_id and len(mrna_id) >= 1:
                 mrna_id = mrna_id[-1]
         else:
@@ -1728,13 +1794,14 @@ class Description:
             cds_id = self.get_selector_id()
 
         if not mrna_id:
+            self.add_info(infos.no_back_translation(cds_id, "no transcript encoding it was found"))
             return []
-        cds_seq = slice_to_selector(
-            retrieve_reference(mrna_id, cds_id)[0],
-            cds_id,
-            True,
-            True,
-        )
+        mrna_model = retrieve_reference(mrna_id, cds_id)[0]
+        if mrna_model is None:
+            self.add_info(infos.no_back_translation(
+                cds_id, f"its transcript {mrna_id} could not be retrieved; please try again later"))
+            return []
+        cds_seq = slice_to_selector(mrna_model, cds_id, True, True)
         bt = BackTranslate()
         translated_vars = []
         for variant in self.internal_indexing_model["variants"]:
@@ -1759,8 +1826,12 @@ class Description:
             s_m = self.get_selector_model()
             if s_m:
                 mrna_id = s_m.get("mrna_id")
-            if mrna_id is None and s_m.get("type") == "mRNA":
+            if mrna_id is None and s_m.get("type") in ("mRNA", "gene"):
                 mrna_id = s_m["id"]
+            if mrna_id is None:
+                self.add_info(infos.no_back_translation(
+                    cds_id, f"it has no annotated transcript in {reference_id}"))
+                return []
             if reference_id == mrna_id:
                 reference = f"{mrna_id}"
             elif (
@@ -1798,18 +1869,23 @@ class Description:
             cds_id = self.get_selector_model().get("cds_id")
             if cds_id:
                 self._correct_selector_id(["reference", "selector", "id"], self.get_selector_id(), cds_id, "the annotations")
+        else:
+            self._add_protein_stop(reference_id)
 
         self.to_internal_indexing_model()
         self._convert_amino_acids()
         self._correct_variants_type()
         self._check_and_correct_sequences()
         self.check()
-        self._check_supported_variants(self.corrected_model)
+        if self._is_extension():
+            self._check_extension()
+        else:
+            self._check_supported_variants(self.corrected_model)
 
         if self.errors:
             return
 
-        if self.only_equals() or self.no_operation():
+        if self.only_equals() or self.no_operation() or self._is_extension():
             self.de_hgvs_model = copy.deepcopy(self.corrected_model)
             convert_amino_acids(self.de_hgvs_model, "1a")
 
@@ -1823,9 +1899,19 @@ class Description:
                 to_delins(self.internal_indexing_model)["variants"],
             )
             if "*" in observed_sequence:
-                observed_sequence = observed_sequence.split('*', maxsplit=1)[0]
+                # Up to and including the first stop, which in_frame_description uses.
+                observed_sequence = observed_sequence.split('*', maxsplit=1)[0] + "*"
             self.references["observed"] = {"sequence": {"seq": observed_sequence}}
-            p_variant = in_frame_description(self.references["reference"]["sequence"]["seq"], observed_sequence)[0]
+            reference_sequence = self.references["reference"]["sequence"]["seq"]
+            p_variant = in_frame_description(reference_sequence, observed_sequence)[0]
+            # The stop codon is lost, but the protein extractor gives no extension.
+            if (
+                reference_sequence.endswith("*")
+                and "*" not in observed_sequence
+                and "ext" not in p_variant
+            ):
+                self._add_error(errors.stop_codon_loss(self.corrected_model["variants"]))
+                return
             self.de_hgvs_model = {
                 "reference": {"id": reference_id},
                 "coordinate_system": "p",
@@ -1922,6 +2008,8 @@ class Description:
                     self._correct_selector_id(["reference", "selector", "id"],
                                               self.get_selector_id(), cds_id,
                                               "the annotations")
+            else:
+                self._add_protein_stop(reference_id)
 
             self.to_internal_indexing_model()
             self._convert_amino_acids()

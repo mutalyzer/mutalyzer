@@ -259,46 +259,6 @@ def test_get_reference_model_segmented_transcript_include_siblings():
                 },
                 "features": [
                     {
-                        "id": "id-SDHD-1",
-                        "type": "exon",
-                        "location": {
-                            "type": "range",
-                            "start": {"type": "point", "position": 5000},
-                            "end": {"type": "point", "position": 5113},
-                            "strand": 1,
-                        },
-                    },
-                    {
-                        "id": "id-SDHD-2",
-                        "type": "exon",
-                        "location": {
-                            "type": "range",
-                            "start": {"type": "point", "position": 6010},
-                            "end": {"type": "point", "position": 6127},
-                            "strand": 1,
-                        },
-                    },
-                    {
-                        "id": "id-SDHD-3",
-                        "type": "exon",
-                        "location": {
-                            "type": "range",
-                            "start": {"type": "point", "position": 7020},
-                            "end": {"type": "point", "position": 7165},
-                            "strand": 1,
-                        },
-                    },
-                    {
-                        "id": "id-SDHD-4",
-                        "type": "exon",
-                        "location": {
-                            "type": "range",
-                            "start": {"type": "point", "position": 12958},
-                            "end": {"type": "point", "position": 13948},
-                            "strand": 1,
-                        },
-                    },
-                    {
                         "id": "NM_003002.2",
                         "type": "mRNA",
                         "location": {
@@ -403,46 +363,6 @@ def test_get_reference_model_segmented_gene_no_siblings():
                     "HGNC": "10683",
                 },
                 "features": [
-                    {
-                        "id": "id-SDHD-1",
-                        "type": "exon",
-                        "location": {
-                            "type": "range",
-                            "start": {"type": "point", "position": 5000},
-                            "end": {"type": "point", "position": 5113},
-                            "strand": 1,
-                        },
-                    },
-                    {
-                        "id": "id-SDHD-2",
-                        "type": "exon",
-                        "location": {
-                            "type": "range",
-                            "start": {"type": "point", "position": 6010},
-                            "end": {"type": "point", "position": 6127},
-                            "strand": 1,
-                        },
-                    },
-                    {
-                        "id": "id-SDHD-3",
-                        "type": "exon",
-                        "location": {
-                            "type": "range",
-                            "start": {"type": "point", "position": 7020},
-                            "end": {"type": "point", "position": 7165},
-                            "strand": 1,
-                        },
-                    },
-                    {
-                        "id": "id-SDHD-4",
-                        "type": "exon",
-                        "location": {
-                            "type": "range",
-                            "start": {"type": "point", "position": 12958},
-                            "end": {"type": "point", "position": 13948},
-                            "strand": 1,
-                        },
-                    },
                     {
                         "id": "NM_003002.2",
                         "type": "mRNA",
@@ -649,3 +569,40 @@ def test_get_feature(reference_id, feature_id, feature_model):
 def test_get_internal_selector_model(reference_id, feature_id, feature_model):
     reference_model = get_reference_model_segmented(reference_id)["annotations"]
     assert get_internal_selector_model(reference_model, feature_id) == feature_model
+
+
+def _location(start, end):
+    return {
+        "type": "range",
+        "start": {"type": "point", "position": start},
+        "end": {"type": "point", "position": end},
+        "strand": 1,
+    }
+
+
+@pytest.mark.parametrize(
+    "tag, mane_tag",
+    [
+        (["gencode_basic", "Ensembl_canonical", "MANE_Select"], "MANE Select"),
+        (["MANE_Plus_Clinical"], "MANE Plus Clinical"),
+        (["MANE Select"], "MANE Select"),
+        (["gencode_basic", "gencode_primary"], None),
+        # A string from a chromosome model cached before tags became lists.
+        ("MANE Select", "MANE Select"),
+    ],
+)
+def test_get_internal_selector_model_mane_tag(tag, mane_tag):
+    # Ensembl writes MANE_Select, NCBI MANE Select.
+    mrna = {
+        "id": "ENST00000000001.1",
+        "type": "mRNA",
+        "location": _location(0, 100),
+        "qualifiers": {"tag": tag},
+        "features": [
+            {"id": "exon-1", "type": "exon", "location": _location(0, 100)},
+            {"id": "ENSP00000000001.1", "type": "CDS", "location": _location(10, 90)},
+        ],
+    }
+    gene = {"id": "GENE", "type": "gene", "location": _location(0, 100), "features": [mrna]}
+    annotations = {"id": "REF", "type": "record", "location": _location(0, 100), "features": [gene]}
+    assert get_internal_selector_model(annotations, "ENST00000000001.1").get("tag") == mane_tag

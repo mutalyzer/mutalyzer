@@ -195,22 +195,12 @@ def test_only_variants_errors(description, sequence, codes):
                         {
                             "assembly_id": "GRCh38",
                             "description": "NC_000011.10(NM_003002.4):c.50+10del"
-                        },
-                        {
-                            "assembly_id": "GRCh37",
-                            "description": "NC_000011.9(NM_003002.4):c.50+10del"
                         }
                     ],
                     "assemblies": {
                         "GRCh38": {
                             "NM_003002.4": {
                                 "chr_id": "NC_000011.10",
-                                "slices_differ": False
-                            }
-                        },
-                        "GRCh37": {
-                            "NM_003002.4": {
-                                "chr_id": "NC_000011.9",
                                 "slices_differ": False
                             }
                         }
@@ -234,22 +224,12 @@ def test_only_variants_errors(description, sequence, codes):
                         {
                             "assembly_id": "GRCh38",
                             "description": "NC_000011.10(NM_003002.4):c.50+10_50+12del"
-                        },
-                        {
-                            "assembly_id": "GRCh37",
-                            "description": "NC_000011.9(NM_003002.4):c.50+10_50+12del"
                         }
                     ],
                     "assemblies": {
                         "GRCh38": {
                             "NM_003002.4": {
                                 "chr_id": "NC_000011.10",
-                                "slices_differ": False
-                            }
-                        },
-                        "GRCh37": {
-                            "NM_003002.4": {
-                                "chr_id": "NC_000011.9",
                                 "slices_differ": False
                             }
                         }
@@ -272,22 +252,12 @@ def test_only_variants_errors(description, sequence, codes):
                         {
                             "assembly_id": "GRCh38",
                             "description": "NG_012337.3(NM_003002.4):c.274delinsNC_000011.10(NM_003002.4):c.310+10"
-                        },
-                        {
-                            "assembly_id": "GRCh37",
-                            "description": "NG_012337.3(NM_003002.4):c.274delinsNC_000011.9(NM_003002.4):c.310+10"
                         }
                     ],
                     "assemblies": {
                         "GRCh38": {
                             "NM_003002.4": {
                                 "chr_id": "NC_000011.10",
-                                "slices_differ": False
-                            }
-                        },
-                        "GRCh37": {
-                            "NM_003002.4": {
-                                "chr_id": "NC_000011.9",
                                 "slices_differ": False
                             }
                         }
@@ -319,26 +289,12 @@ def test_only_variants_errors(description, sequence, codes):
                         {
                             "assembly_id": "GRCh38",
                             "description": "NM_024426.4:c.[52+5_52+10del;100delinsNC_000011.10(NM_003002.4):c.52+2;169+1delins52+10_52+15]"
-                        },
-                        {
-                            "assembly_id": "GRCh37",
-                            "description": "NC_000011.9(NM_024426.4):c.[52+5_52+10del;100delinsNC_000011.9(NM_003002.4):c.52+2;169+1delins52+10_52+15]"
                         }
                     ],
                     "assemblies": {
                         "GRCh38": {
                             "NM_003002.4": {
                                 "chr_id": "NC_000011.10",
-                                "slices_differ": False
-                            }
-                        },
-                        "GRCh37": {
-                            "NM_024426.4": {
-                                "chr_id": "NC_000011.9",
-                                "slices_differ": False
-                            },
-                            "NM_003002.4": {
-                                "chr_id": "NC_000011.9",
                                 "slices_differ": False
                             }
                         }
@@ -368,26 +324,12 @@ def test_only_variants_errors(description, sequence, codes):
                         {
                             "assembly_id": "GRCh38",
                             "description": "NG_012337.3(NM_003002.4):c.274delins[NC_000011.10(NM_003002.4):c.310+10;NM_024426.4:c.100+50_100+55]"
-                        },
-                        {
-                            "assembly_id": "GRCh37",
-                            "description": "NG_012337.3(NM_003002.4):c.274delins[NC_000011.9(NM_003002.4):c.310+10;NC_000011.9(NM_024426.4):c.100+50_100+55]"
                         }
                     ],
                     "assemblies": {
                         "GRCh38": {
                             "NM_003002.4": {
                                 "chr_id": "NC_000011.10",
-                                "slices_differ": False
-                            }
-                        },
-                        "GRCh37": {
-                            "NM_024426.4": {
-                                "chr_id": "NC_000011.9",
-                                "slices_differ": False
-                            },
-                            "NM_003002.4": {
-                                "chr_id": "NC_000011.9",
                                 "slices_differ": False
                             }
                         }
@@ -485,7 +427,7 @@ def test_intronic(monkeypatch, description, errors):
             [{
                 "code": "ERETR",
                 "details": "`UNKNOWNGENE` could not be retrieved; it may be an invalid reference identifier.",
-                "paths": [[("reference", "id")]]
+                "paths": [("reference", "id")]
             }]
         ),
     ],

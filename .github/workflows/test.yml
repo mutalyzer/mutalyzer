@@ -1,39 +1,39 @@
-name: Python package CI
+name: Test
 on:
   push:
-    branches: 
+    branches:
       - master
   pull_request:
     branches:
       - master
+  workflow_call:
   schedule:
-      - cron:  '0 0 * * 0'
+    - cron: '0 0 * * 0'
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version:
-          - '3.8'
-          - '3.9'
-          - '3.10'
-          - '3.11'
-          - '3.12'
-          - '3.13'
+          - "3.10"
+          - "3.11"
+          - "3.12"
+          - "3.13"
+          - "3.14"
+          - "3.15"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v7
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
           pip install --upgrade pip
           pip install .[dev]
-      - name: Lint with flake8
+      - name: Lint with ruff
         run: |
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          flake8 . --count --exit-zero --max-complexity=12 --max-line-length=127 --statistics
+          ruff check .
       - name: Test with pytest
         run: |
           pytest

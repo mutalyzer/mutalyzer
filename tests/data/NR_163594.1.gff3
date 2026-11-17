@@ -1,0 +1,113 @@
+##gff-version 3
+#!gff-spec-version 1.21
+#!processor NCBI annotwriter
+##sequence-region NR_163594.1 1 15690
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=9606
+NR_163594.1	RefSeq	region	1	15690	.	+	.	ID=NR_163594.1:1..15690;Dbxref=taxon:9606;Name=7;chromosome=7;gbkey=Src;genome=genomic;map=7q36.1;mol_type=transcribed RNA
+NR_163594.1	RefSeq	pseudogene	1	15690	.	+	.	ID=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;Name=SSPOP;description=SCO-spondin%2C pseudogene;gbkey=Gene;gene=SSPOP;gene_synonym=SSPO;pseudo=true
+NR_163594.1	RefSeq	transcript	1	15690	.	+	.	ID=rna-SSPOP;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=misc_RNA;gene=SSPOP;product=SCO-spondin%2C pseudogene;pseudo=true
+NR_163594.1	RefSeq	exon	1	15690	.	+	.	ID=exon-SSPOP-1;Parent=rna-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=misc_RNA;gene=SSPOP;product=SCO-spondin%2C pseudogene;pseudo=true
+NR_163594.1	RefSeq	exon	1	50	.	+	.	ID=id-SSPOP;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	51	233	.	+	.	ID=id-SSPOP-2;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	234	316	.	+	.	ID=id-SSPOP-3;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	317	496	.	+	.	ID=id-SSPOP-4;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	497	741	.	+	.	ID=id-SSPOP-5;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	742	841	.	+	.	ID=id-SSPOP-6;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	842	1000	.	+	.	ID=id-SSPOP-7;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	1001	1080	.	+	.	ID=id-SSPOP-8;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	1081	1233	.	+	.	ID=id-SSPOP-9;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	1234	1405	.	+	.	ID=id-SSPOP-10;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	1406	1646	.	+	.	ID=id-SSPOP-11;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	1647	1791	.	+	.	ID=id-SSPOP-12;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	1792	1909	.	+	.	ID=id-SSPOP-13;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	1910	2085	.	+	.	ID=id-SSPOP-14;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	2086	2313	.	+	.	ID=id-SSPOP-15;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	2314	2479	.	+	.	ID=id-SSPOP-16;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	2480	2714	.	+	.	ID=id-SSPOP-17;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	2715	2903	.	+	.	ID=id-SSPOP-18;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	2904	2998	.	+	.	ID=id-SSPOP-19;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	2999	3255	.	+	.	ID=id-SSPOP-20;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	3256	3390	.	+	.	ID=id-SSPOP-21;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	3391	3587	.	+	.	ID=id-SSPOP-22;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	3588	3715	.	+	.	ID=id-SSPOP-23;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	3716	3825	.	+	.	ID=id-SSPOP-24;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	3826	3975	.	+	.	ID=id-SSPOP-25;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	3976	4069	.	+	.	ID=id-SSPOP-26;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	4070	4239	.	+	.	ID=id-SSPOP-27;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	4240	4473	.	+	.	ID=id-SSPOP-28;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	4474	4695	.	+	.	ID=id-SSPOP-29;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	4696	5033	.	+	.	ID=id-SSPOP-30;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	5034	5217	.	+	.	ID=id-SSPOP-31;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	5218	5309	.	+	.	ID=id-SSPOP-32;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	5310	5541	.	+	.	ID=id-SSPOP-33;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	5542	5694	.	+	.	ID=id-SSPOP-34;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	5695	5835	.	+	.	ID=id-SSPOP-35;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	5836	6018	.	+	.	ID=id-SSPOP-36;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	6019	6169	.	+	.	ID=id-SSPOP-37;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	6170	6323	.	+	.	ID=id-SSPOP-38;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	6324	6378	.	+	.	ID=id-SSPOP-39;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	6379	6483	.	+	.	ID=id-SSPOP-40;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	6484	6702	.	+	.	ID=id-SSPOP-41;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	6703	6830	.	+	.	ID=id-SSPOP-42;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	6831	6975	.	+	.	ID=id-SSPOP-43;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	6976	7126	.	+	.	ID=id-SSPOP-44;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	7127	7199	.	+	.	ID=id-SSPOP-45;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	7200	7257	.	+	.	ID=id-SSPOP-46;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	7258	7428	.	+	.	ID=id-SSPOP-47;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	7429	7572	.	+	.	ID=id-SSPOP-48;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	7573	7791	.	+	.	ID=id-SSPOP-49;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	7792	7956	.	+	.	ID=id-SSPOP-50;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	7957	8136	.	+	.	ID=id-SSPOP-51;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	8137	8259	.	+	.	ID=id-SSPOP-52;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	8260	8389	.	+	.	ID=id-SSPOP-53;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	8390	8515	.	+	.	ID=id-SSPOP-54;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	8516	8607	.	+	.	ID=id-SSPOP-55;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	8608	8781	.	+	.	ID=id-SSPOP-56;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	8782	8946	.	+	.	ID=id-SSPOP-57;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	8947	9203	.	+	.	ID=id-SSPOP-58;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	9204	9250	.	+	.	ID=id-SSPOP-59;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	9251	9421	.	+	.	ID=id-SSPOP-60;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	9422	9552	.	+	.	ID=id-SSPOP-61;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	9553	9698	.	+	.	ID=id-SSPOP-62;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	9699	9793	.	+	.	ID=id-SSPOP-63;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	9794	9846	.	+	.	ID=id-SSPOP-64;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	9847	10017	.	+	.	ID=id-SSPOP-65;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	10018	10097	.	+	.	ID=id-SSPOP-66;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	10098	10267	.	+	.	ID=id-SSPOP-67;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	10268	10314	.	+	.	ID=id-SSPOP-68;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	10315	10506	.	+	.	ID=id-SSPOP-69;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	10507	10677	.	+	.	ID=id-SSPOP-70;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	10678	10878	.	+	.	ID=id-SSPOP-71;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	10879	10975	.	+	.	ID=id-SSPOP-72;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	10976	11175	.	+	.	ID=id-SSPOP-73;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	11176	11342	.	+	.	ID=id-SSPOP-74;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	11343	11473	.	+	.	ID=id-SSPOP-75;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	11474	11697	.	+	.	ID=id-SSPOP-76;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	11698	11739	.	+	.	ID=id-SSPOP-77;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	11740	11895	.	+	.	ID=id-SSPOP-78;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	11896	12105	.	+	.	ID=id-SSPOP-79;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	12106	12273	.	+	.	ID=id-SSPOP-80;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	12274	12405	.	+	.	ID=id-SSPOP-81;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	12406	12652	.	+	.	ID=id-SSPOP-82;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	12653	12805	.	+	.	ID=id-SSPOP-83;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	12806	12852	.	+	.	ID=id-SSPOP-84;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	12853	13188	.	+	.	ID=id-SSPOP-85;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	13189	13356	.	+	.	ID=id-SSPOP-86;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	13357	13487	.	+	.	ID=id-SSPOP-87;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	13488	13612	.	+	.	ID=id-SSPOP-88;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	13613	13659	.	+	.	ID=id-SSPOP-89;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	13660	13938	.	+	.	ID=id-SSPOP-90;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	13939	14098	.	+	.	ID=id-SSPOP-91;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	14099	14215	.	+	.	ID=id-SSPOP-92;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	14216	14354	.	+	.	ID=id-SSPOP-93;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	14355	14557	.	+	.	ID=id-SSPOP-94;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	14558	14685	.	+	.	ID=id-SSPOP-95;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	14686	14828	.	+	.	ID=id-SSPOP-96;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	14829	14875	.	+	.	ID=id-SSPOP-97;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	14876	15092	.	+	.	ID=id-SSPOP-98;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	15093	15188	.	+	.	ID=id-SSPOP-99;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	15189	15249	.	+	.	ID=id-SSPOP-100;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	15250	15380	.	+	.	ID=id-SSPOP-101;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	15381	15531	.	+	.	ID=id-SSPOP-102;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+NR_163594.1	RefSeq	exon	15532	15690	.	+	.	ID=id-SSPOP-103;Parent=gene-SSPOP;Dbxref=GeneID:23145,HGNC:HGNC:21998,MIM:617356;gbkey=exon;gene=SSPOP;inference=alignment:Splign:2.1.0;pseudo=true
+

@@ -137,7 +137,14 @@ def extract_descriptions_tests_all():
 
 @pytest.mark.parametrize(
     "description",
-    extract_descriptions_tests_all() + ["R1:g.4_5con7_8"],
+    extract_descriptions_tests_all()
+    + [
+        "R1:g.4_5con7_8",
+        "R1:p.Ter110GlnextTer17",
+        "R1:p.*110Glnext*17",
+        "R1:p.(Ter327ArgextTer?)",
+        "R1:p.Met1ext-5",
+    ],
 )
 def test_description_to_model_to_description(description):
     """

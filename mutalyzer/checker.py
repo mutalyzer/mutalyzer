@@ -47,6 +47,16 @@ def contains_uncertain(model):
     )
 
 
+def is_extension_or_frameshift_length(model, path):
+    """Whether the path is within an extension or frameshift's inserted length."""
+    return (
+        len(path) > 2
+        and path[0] == "variants"
+        and path[2] == "inserted"
+        and model["variants"][path[1]].get("type") in ["extension", "frame_shift"]
+    )
+
+
 def contains_uncertain_locations(model):
     """
     Goes through model locations to see if any is uncertain.
@@ -56,6 +66,8 @@ def contains_uncertain_locations(model):
              and False if none is encountered.
     """
     for location, path in yield_sub_model(model, ["location", "start", "end"], ["point", "range"]):
+        if is_extension_or_frameshift_length(model, path):
+            continue
         if location.get("uncertain") or (location.get("offset") and location["offset"].get("uncertain")):
             return True
     return False

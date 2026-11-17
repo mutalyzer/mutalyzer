@@ -332,6 +332,23 @@ def variant_to_description(variant, protein=False, aa="verbatim"):
         variant_type = "con"
     elif variant_type == "equal":
         variant_type = "="
+    elif variant_type == "frame_shift":
+        variant_type = "fs"
+        ins = variant.get("inserted", [])
+        if len(ins) == 2 and ins[0].get("sequence") and ins[1].get("location") and ins[1]["location"].get("position"):
+            if len(ins[0]["sequence"]) == 3:
+                inserted = f"Ter{ins[1]['location']['position']}"
+            else:
+                inserted = f"*{ins[1]['location']['position']}"
+            deleted_location += ins[0]["sequence"]
+    elif variant_type == "extension":
+        # C-terminal p.Ter110GlnextTer17 or N-terminal p.Met1ext-5.
+        ins = variant["inserted"]
+        end = ins[-1].get("location")
+        length = location_to_description(end) if end else ""
+        sequences = [i["sequence"] for i in ins if i.get("sequence")]
+        variant_type = "".join(sequences[:-1]) + "ext"
+        inserted = (sequences[-1] if sequences else "") + length
     else:
         variant_type = ""
     return "{}{}{}".format(deleted_location, variant_type, inserted)
@@ -427,7 +444,7 @@ def point_offset_sign(point):
     return ""
 
 def point_position(point):
-    return f"{point_outside_cds(point)}{point.get("position")}"
+    return f"{point_outside_cds(point)}{point.get('position')}"
 
 def length_to_description(length):
     """
